@@ -1,0 +1,552 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 02 · ตรวจขอบเขต NPAEs บทที่ 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Sarabun","TH Sarabun New","Noto Sans Thai","Leelawadee UI","Thonburi",system-ui,sans-serif;
+  --body:"Sarabun","TH Sarabun New","Noto Sans Thai","Leelawadee UI","Thonburi",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="tl"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ชุดเครื่องมือประกอบตำรา การบัญชีตาม TFRS for NPAEs: หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565</span>
+  </div>
+    <style>
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  </style>
+  <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 2 ขอบเขตและนิยาม NPAEs</div>
+      <h1>แอป 02 · ตรวจขอบเขตกิจการตามย่อหน้า 2.1–2.4</h1>
+      <p class="lede">ตอบคำถามตามลำดับของมาตรฐาน แล้วได้สถานะของกิจการ เส้นทางการพิจารณาพร้อมเลขย่อหน้า และร่างบันทึกการพิจารณาขอบเขตสำหรับแฟ้มงาน จำแนกลูกค้าหลายรายพร้อมกันได้ และทดสอบตนเองตาม LO ของบท</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>ย่อหน้า 2.1–2.4</b><br>ตำราบทที่ 2 หัวข้อ 2.6 · ฉบับ 16-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> ตรวจรายกิจการและคัดลอกบันทึก → จำแนกหลายกิจการ → ทดสอบตนเอง → เนื้อหาเสริม</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="scope"><span class="n">0</span>ตรวจขอบเขตรายกิจการ</button>
+    <button role="tab" aria-selected="false" data-tab="batch"><span class="n">1</span>จำแนกหลายกิจการ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">2</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">3</span>เนื้อหาเสริม S2</button>
+  </nav>
+
+  <!-- 0 SINGLE ENTITY -->
+  <div class="grid" data-pane="scope">
+    <section class="panel">
+      <h2>ข้อเท็จจริงของกิจการ</h2>
+      <p class="hint">ตอบตามสภาพ ณ วันสิ้นรอบระยะเวลารายงาน ถ้ายังไม่แน่ใจข้อใด ให้เว้นไว้ แอปจะเตือนในบันทึก</p>
+      <span class="sample" id="sTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 2.1 กิจการ ก</span>
+      <div class="row-actions" style="margin-bottom:10px">
+        <button class="btn" data-s="e1">2.1 ก</button><button class="btn" data-s="e2">2.1 ข</button><button class="btn" data-s="e3">2.1 ค</button><button class="btn" data-s="e4">2.1 ง</button>
+        <button class="btn" data-s="e5">2.1 จ</button><button class="btn" data-s="e6">2.1 ฉ</button><button class="btn" data-s="e7">2.1 ช</button><button class="btn" data-s="e8">2.1 ซ</button>
+        <button class="btn" data-s="case">กรณีศึกษา 2.1</button><button class="btn" data-s="clr">ล้างทั้งหมด</button>
+      </div>
+      <div class="fields">
+        <label class="f">ชื่อกิจการ<input type="text" id="sName" value="" autocomplete="off" placeholder="เช่น บริษัท ตัวอย่าง จำกัด"></label>
+        <label class="f">รอบระยะเวลารายงานสิ้นสุด<input type="date" id="sEnd" value="2025-12-31"></label>
+      </div>
+      <div class="checks" style="margin:8px 0"><label><input type="checkbox" id="sAnon" checked><span><b>ปกปิดชื่อกิจการ</b> ผลลัพธ์และบันทึกแสดงเป็นรหัสแทนชื่อจริง ข้อมูลทั้งหมดประมวลผลในเบราว์เซอร์นี้เท่านั้น ไม่ถูกส่งออก</span></label></div>
+      <h3>ขั้นที่ 1 รูปแบบกิจการ (ย่อหน้า 2.1)</h3>
+      <select id="sForm" aria-label="รูปแบบกิจการ">
+        <option value="co">บริษัทจำกัด</option>
+        <option value="pt">ห้างหุ้นส่วนจดทะเบียน (ห้างหุ้นส่วนจำกัด ห้างหุ้นส่วนสามัญนิติบุคคล)</option>
+        <option value="pcl">บริษัทมหาชนจำกัด</option>
+        <option value="fr">นิติบุคคลที่ตั้งขึ้นตามกฎหมายต่างประเทศที่ประกอบธุรกิจในประเทศไทย</option>
+        <option value="jv">กิจการร่วมค้าตามประมวลรัษฎากร</option>
+        <option value="coop">สหกรณ์</option>
+        <option value="condo">นิติบุคคลอาคารชุด หรือนิติบุคคลหมู่บ้านจัดสรร</option>
+        <option value="npo">มูลนิธิ สมาคม หรือองค์กรไม่แสวงหากำไรอื่น</option>
+        <option value="ind">บุคคลธรรมดา คณะบุคคล หรือห้างหุ้นส่วนสามัญที่ไม่จดทะเบียน</option>
+      </select>
+      <h3>ขั้นที่ 2–5 เกณฑ์กิจการที่มีส่วนได้เสียสาธารณะ (ย่อหน้า 2.2)</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="c1a"><span>มีตราสารทุนหรือตราสารหนี้ซื้อขายต่อประชาชน ในหรือนอกตลาดหลักทรัพย์ ในประเทศหรือต่างประเทศ (2.2.1)</span></label>
+        <label><input type="checkbox" id="c1b"><span>นำส่งหรืออยู่ในกระบวนการนำส่งงบการเงินต่อ ก.ล.ต. หรือหน่วยงานกำกับอื่น เพื่อออกขายหลักทรัพย์ต่อประชาชน (2.2.1)</span></label>
+        <label><input type="checkbox" id="c2"><span>ธุรกิจหลักคือดูแลสินทรัพย์ของกลุ่มบุคคลภายนอกในวงกว้าง ตามกฎหมายว่าด้วยการนั้น เช่น สถาบันการเงิน บริษัทประกันภัย บริษัทหลักทรัพย์ กองทุนรวม (2.2.2)</span></label>
+        <label><input type="checkbox" id="c4"><span>สภาวิชาชีพบัญชีประกาศกำหนดให้กิจการประเภทนี้เป็นกิจการที่มีส่วนได้เสียสาธารณะเพิ่มเติม (2.2.4) การค้นคว้าถึงพฤศจิกายน 2569 ไม่พบประกาศตามข้อนี้</span></label>
+      </div>
+      <p class="hint" style="margin-top:6px">เกณฑ์ 2.2.3 บริษัทมหาชนจำกัด แอปตรวจจากรูปแบบกิจการในขั้นที่ 1</p>
+      <h3>กิจการที่ได้รับความไว้วางใจจากลูกค้า (ย่อหน้า 2.3)</h3>
+      <select id="sTrust" aria-label="ประเภทตามย่อหน้า 2.3">
+        <option value="">ไม่ใช่กิจการลักษณะนี้</option>
+        <option value="travel">ตัวแทนการท่องเที่ยว</option>
+        <option value="re">ตัวแทนหรือนายหน้าค้าอสังหาริมทรัพย์</option>
+        <option value="pawn">โรงรับจำนำ</option>
+        <option value="amc">บริษัทบริหารสินทรัพย์ที่มีสถานภาพเป็นบริษัทจำกัด</option>
+        <option value="other">กิจการอื่นที่ดูแลทรัพยากรทางการเงินของลูกค้า โดยลูกค้าไม่ได้มีส่วนบริหาร</option>
+      </select>
+      <h3>ขั้นที่ 6 ทางเลือก (ย่อหน้า 2.4)</h3>
+      <div class="checks"><label><input type="checkbox" id="cVol"><span>กิจการเลือกจัดทำรายงานทางการเงินตาม TFRS for PAEs ทุกฉบับโดยสมัครใจ</span></label></div>
+      <h3>ข้อเท็จจริงประกอบ (ไม่เปลี่ยนสถานะ แต่ต้องบันทึก)</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="fBig"><span>รายได้หรือสินทรัพย์สูงมาก หรือไม่เข้านิยามวิสาหกิจขนาดกลางและขนาดย่อม (SMEs)</span></label>
+        <label><input type="checkbox" id="fExempt"><span>เป็นห้างหุ้นส่วนจดทะเบียนขนาดเล็กที่ได้รับยกเว้นการตรวจสอบโดยผู้สอบบัญชีรับอนุญาต</span></label>
+        <label><input type="checkbox" id="fSub"><span>เป็นบริษัทย่อย บริษัทร่วม หรือมีผู้ถือหุ้นใหญ่เป็นบริษัทจดทะเบียนในตลาดหลักทรัพย์</span></label>
+        <label><input type="checkbox" id="fIpo"><span>มีแผนแปรสภาพเป็นบริษัทมหาชนจำกัด หรือเสนอขายหลักทรัพย์ต่อประชาชนในอนาคต</span></label>
+        <label><input type="checkbox" id="fDep"><span>รับเงินมัดจำ เงินจองหรือเงินทดรองจากลูกค้า</span></label>
+        <label><input type="checkbox" id="fBack"><span>เคยเลือกใช้ TFRS for PAEs และต้องการกลับมาใช้ TFRS for NPAEs</span></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="sOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 1 BATCH -->
+  <div class="grid" data-pane="batch" hidden>
+    <section class="panel">
+      <h2>จำแนกหลายกิจการ</h2>
+      <p class="hint">วางข้อมูลจาก Excel (คัดลอกทั้งตารางรวมหัวคอลัมน์) หรือพิมพ์คั่นด้วยจุลภาค หนึ่งบรรทัดต่อหนึ่งกิจการ ชื่อกิจการถูกแปลงเป็นรหัสทันทีที่ประมวลผลเมื่อเลือกปกปิดชื่อ</p>
+      <span class="sample" id="bTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 2.1 (8 กิจการ)</span>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" id="bEx">ตัวอย่างที่ 2.1</button><button class="btn" id="bQ2">โจทย์ข้อ 1</button><button class="btn" id="bTpl">คัดลอกหัวตาราง</button><span class="copied" id="bTplOk" hidden>คัดลอกแล้ว</span><button class="btn" id="bClr">ล้าง</button></div>
+      <div class="checks" style="margin-bottom:8px"><label><input type="checkbox" id="bAnon" checked><span><b>ปกปิดชื่อกิจการ</b> แสดงผลเป็น กิจการ 001, 002 …</span></label></div>
+      <textarea id="bIn" spellcheck="false" aria-label="ข้อมูลกิจการ"></textarea>
+      <p class="hint" style="margin-top:8px">คอลัมน์: ชื่อ · รูปแบบ (บจ. หจ. บมจ. ต่างประเทศ ร่วมค้า สหกรณ์ อาคารชุด มูลนิธิ) · ตราสารต่อประชาชน · ยื่น ก.ล.ต. · ดูแลสินทรัพย์เป็นธุรกิจหลัก · กำหนดเพิ่ม 2.2.4 · ประเภท 2.3 · เลือก PAEs ช่องใช่หรือไม่ใช้ Y/N หรือ ใช่/ไม่</p>
+    </section>
+    <section class="panel voucher" id="bOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 2 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden>
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง</h2>
+      <p class="hint">ข้อสอบชุดเดียวกับแบบฝึกหัดท้ายบทส่วนที่ 1 ทุกข้อติดป้าย LO และระดับบลูม เลือกคำตอบแล้วดูผลทันที</p>
+      <div id="qBox"></div>
+      <div class="row-actions"><button class="btn" id="qReset">เริ่มใหม่</button></div>
+    </section>
+    <section class="panel voucher" id="qOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 3 ONLINE SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden>
+    <section class="panel" style="grid-column:1/-1">
+      <h2>เนื้อหาเสริมออนไลน์ บทที่ 2</h2>
+      <p class="hint">ส่วนนี้ย้ายจากฉบับพิมพ์มาไว้ออนไลน์เพื่อลดจำนวนหน้า ในเล่มมีรหัส S2.1–S2.5 กำกับตรงจุดที่อ้างถึง เลือกรหัสด้านล่างเพื่อไปยังหัวข้อนั้น</p>
+      <div class="row-actions" style="margin-bottom:12px"><a class="btn" href="#S2.1">S2.1 กรณีเพิ่มเติม</a><a class="btn" href="#S2.2">S2.2 กฎหมายที่เกี่ยวข้อง</a><a class="btn" href="#S2.3">S2.3 แม่แบบบันทึก</a><a class="btn" href="#S2.4">S2.4 เฉลยแบบฝึกหัด</a><a class="btn" href="#S2.5">S2.5 แนวคำตอบกรณีศึกษา</a></div>
+
+      <h3 id="S2.1">S2.1 กรณีเพิ่มเติม 8 กรณี (อ้างจากหัวข้อ 2.2 2.3 และ 2.6)</h3>
+      <div class="tbl"><table><thead><tr><th>กรณี</th><th>ข้อเท็จจริงสำคัญ</th><th>การพิจารณา</th><th>สถานะ</th></tr></thead><tbody>
+      <tr><td>โรงรับจำนำในรูปบริษัทจำกัด</td><td>รับทรัพย์สินของลูกค้าจำนวนมากเป็นหลักประกันเงินให้กู้ระยะสั้น ลูกค้าไม่มีส่วนบริหาร</td><td>ย่อหน้า 2.3 ยกโรงรับจำนำเป็นตัวอย่างกิจการที่ไม่ได้ดำเนินธุรกิจหลักในการดูแลสินทรัพย์ของกลุ่มบุคคลภายนอกในวงกว้าง ไม่เข้า 2.2.1 และ 2.2.3</td><td>NPAEs</td></tr>
+      <tr><td>บริษัทบริหารสินทรัพย์ (บริษัทจำกัด)</td><td>ซื้อสินทรัพย์ด้อยคุณภาพจากสถาบันการเงินมาบริหารในนามตนเอง ไม่รับฝากเงินจากประชาชน</td><td>ย่อหน้า 2.3 ระบุบริษัทบริหารสินทรัพย์ที่มีสถานภาพเป็นบริษัทจำกัด ถ้าแปรสภาพเป็นบริษัทมหาชนจำกัด จะเข้า 2.2.3</td><td>NPAEs</td></tr>
+      <tr><td>บริษัทมหาชนจำกัดที่ยื่นเสนอขายหุ้นครั้งแรก</td><td>ยื่นแบบแสดงรายการข้อมูลต่อ ก.ล.ต. หุ้นยังไม่เริ่มซื้อขาย</td><td>เข้า 2.2.3 ตั้งแต่แปรสภาพ และเข้า 2.2.1 เพราะอยู่ในกระบวนการนำส่งงบการเงินเพื่อออกขายหลักทรัพย์ต่อประชาชน</td><td>PAEs</td></tr>
+      <tr><td>สาขาของนิติบุคคลต่างประเทศ</td><td>ให้บริการที่ปรึกษาในประเทศไทย ตัวสาขาไม่มีหลักทรัพย์ซื้อขายต่อประชาชน</td><td>เป็นผู้มีหน้าที่จัดทำบัญชีตามมาตรา 8 อยู่ในย่อหน้า 2.1 ไม่เข้าเกณฑ์ 2.2 บริษัทแม่อาจขอข้อมูลตามมาตรฐานของกลุ่มเพื่อจัดทำงบการเงินรวม ซึ่งเป็นรายงานเพื่อการภายใน</td><td>NPAEs</td></tr>
+      <tr><td>สหกรณ์ออมทรัพย์</td><td>รับเงินฝากและให้กู้แก่สมาชิก สมาชิกเลือกตั้งคณะกรรมการดำเนินการ</td><td>สหกรณ์ไม่อยู่ในรายชื่อผู้มีหน้าที่จัดทำบัญชีตามมาตรา 8 จึงไม่อยู่ในขอบเขตย่อหน้า 2.1 การจัดทำบัญชีเป็นไปตามกฎหมายว่าด้วยสหกรณ์และระเบียบของนายทะเบียนสหกรณ์</td><td>นอกขอบเขต</td></tr>
+      <tr><td>นิติบุคคลอาคารชุด</td><td>บริหารทรัพย์ส่วนกลาง เก็บค่าส่วนกลางจากเจ้าของร่วม</td><td>จัดตั้งตามกฎหมายว่าด้วยอาคารชุด ไม่อยู่ในรายชื่อตามมาตรา 8 จึงไม่อยู่ในขอบเขตย่อหน้า 2.1 การจัดทำบัญชีเป็นไปตามกฎหมายเฉพาะ</td><td>นอกขอบเขต</td></tr>
+      <tr><td>บริษัทมหาชนจำกัดที่ถูกเพิกถอนออกจากตลาดหลักทรัพย์</td><td>หุ้นไม่ได้ซื้อขายในตลาดแล้ว แต่ยังไม่แปรสภาพกลับเป็นบริษัทจำกัด</td><td>คำถาม-คำตอบของสภาวิชาชีพบัญชี (8 เมษายน 2564 คำถามที่ 3 ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน) ตอบว่าเปลี่ยนมาใช้ TFRS for NPAEs ไม่ได้ เพราะยังเป็นบริษัทมหาชนตามกฎหมายว่าด้วยบริษัทมหาชน (ฉบับ 2554 ย่อหน้า 6.3 ตรงกับ 2.2.3)</td><td>PAEs</td></tr>
+      <tr><td>บริษัทหลักทรัพย์จัดการกองทุนในรูปบริษัทจำกัด</td><td>ได้รับใบอนุญาตจัดการกองทุนรวมและกองทุนส่วนบุคคล บริหารเงินของผู้ลงทุนจำนวนมาก</td><td>แนวการตีความ: การค้นคว้าไม่พบคำวินิจฉัยของสภาวิชาชีพบัญชี กิจการเป็นบริษัทหลักทรัพย์ที่ได้รับใบอนุญาต (พ.ร.บ.หลักทรัพย์ฯ มาตรา 4 และ 90 ซึ่งให้จัดตั้งเป็นบริษัทจำกัดได้) และธุรกิจหลักคือบริหารสินทรัพย์ของกลุ่มบุคคลภายนอกในวงกว้าง จึงเข้า 2.2.2 ทั้งสองชั้นของการทดสอบในหัวข้อ 2.3</td><td>PAEs</td></tr>
+      </tbody></table></div>
+
+      <h3 id="S2.2">S2.2 กฎหมายที่เกี่ยวข้องกับขอบเขต (อ้างจากหัวข้อ 2.1 และ 2.5)</h3>
+      <div class="tbl"><table><thead><tr><th>กฎหมาย</th><th>สาระที่เกี่ยวกับบทนี้</th><th>บทที่เกี่ยวข้อง</th></tr></thead><tbody>
+      <tr><td>พระราชบัญญัติการบัญชี พ.ศ. 2543 มาตรา 8 (ราชกิจจานุเบกษา เล่ม 117 ตอนที่ 41 ก วันที่ 12 พฤษภาคม 2543)</td><td>วรรคหนึ่ง ผู้มีหน้าที่จัดทำบัญชี คือ ห้างหุ้นส่วนจดทะเบียน บริษัทจำกัด บริษัทมหาชนจำกัดที่จัดตั้งขึ้นตามกฎหมายไทย นิติบุคคลที่ตั้งขึ้นตามกฎหมายต่างประเทศที่ประกอบธุรกิจในประเทศไทย และกิจการร่วมค้าตามประมวลรัษฎากร · วรรคสองและวรรคสาม ผู้รับผิดชอบเมื่อประกอบธุรกิจหลายแห่งและกิจการร่วมค้า · วรรคสี่ รัฐมนตรีโดยความเห็นชอบของคณะรัฐมนตรีประกาศให้บุคคลธรรมดาหรือห้างหุ้นส่วนที่มิได้จดทะเบียนเป็นผู้มีหน้าที่จัดทำบัญชีได้ · วรรคห้า ประกาศล่วงหน้าไม่น้อยกว่าหกเดือน · วรรคหก อธิบดีกำหนดหลักเกณฑ์และวิธีการจัดทำบัญชีของบุคคลตามวรรคสี่</td><td>2</td></tr>
+      <tr><td>พระราชบัญญัติการบัญชี พ.ศ. 2543 มาตรา 11 และกฎกระทรวงที่ออกตามมาตรานี้</td><td>วรรคหนึ่ง ห้างหุ้นส่วน นิติบุคคลต่างประเทศ และกิจการร่วมค้ายื่นงบการเงินภายใน 5 เดือนนับแต่วันปิดบัญชี บริษัทจำกัดและบริษัทมหาชนจำกัดยื่นภายใน 1 เดือนนับแต่วันที่ที่ประชุมใหญ่อนุมัติ · วรรคสาม รายการย่อตามที่อธิบดีกำหนด · วรรคสี่ ผู้สอบบัญชีรับอนุญาตตรวจสอบ ยกเว้นห้างหุ้นส่วนจดทะเบียนตามกฎกระทรวง พ.ศ. 2544 (ให้ไว้ 4 มิถุนายน 2544) ที่มีทุนไม่เกิน 5 ล้านบาท สินทรัพย์รวมไม่เกิน 30 ล้านบาท และรายได้รวมไม่เกิน 30 ล้านบาท ทุกรายการ (รอบที่สิ้นสุดตั้งแต่ 31 ธันวาคม 2545) ห้างหุ้นส่วนกลุ่มนี้ยังให้ผู้สอบบัญชีภาษีอากรตรวจและรับรองเพื่อยื่นภาษี การยกเว้นเป็นเรื่องการตรวจสอบ ไม่ใช่ขอบเขตของมาตรฐาน</td><td>2</td></tr>
+      <tr><td>พระราชบัญญัติวิชาชีพบัญชี พ.ศ. 2547</td><td>ให้อำนาจสภาวิชาชีพบัญชีกำหนดมาตรฐานการบัญชี รวมถึงประกาศที่ 48/2565</td><td>1</td></tr>
+      <tr><td>กฎหมายว่าด้วยบริษัทมหาชนจำกัด</td><td>กำหนดสถานะบริษัทมหาชนจำกัด ซึ่งย่อหน้า 2.2.3 ใช้เป็นเกณฑ์</td><td>2</td></tr>
+      <tr><td>ประกาศกรมพัฒนาธุรกิจการค้า เรื่อง รายการย่อที่ต้องมีในงบการเงิน</td><td>รูปแบบรายการย่อของงบการเงินแยกตามประเภทผู้มีหน้าที่จัดทำบัญชี</td><td>29</td></tr>
+      <tr><td>กฎกระทรวงกำหนดลักษณะของวิสาหกิจขนาดกลางและขนาดย่อม พ.ศ. 2562</td><td>ราชกิจจานุเบกษา เล่ม 137 ตอนที่ 1 ก วันที่ 7 มกราคม 2563 นิยาม SMEs ด้วยจำนวนการจ้างงานและรายได้ เพื่อการส่งเสริมวิสาหกิจ ภาคการผลิต ขนาดย่อม ไม่เกิน 50 คนหรือรายได้ไม่เกิน 100 ล้านบาท ขนาดกลาง ไม่เกิน 200 คนหรือรายได้ไม่เกิน 500 ล้านบาท ภาคการค้าและบริการ ขนาดย่อม ไม่เกิน 30 คนหรือรายได้ไม่เกิน 50 ล้านบาท ขนาดกลาง ไม่เกิน 100 คนหรือรายได้ไม่เกิน 300 ล้านบาท เมื่อสองเกณฑ์ชี้ต่างกันให้ถือรายได้ ไม่ใช่เกณฑ์ของ TFRS for NPAEs</td><td>2</td></tr>
+      <tr><td>พระราชบัญญัติหลักทรัพย์และตลาดหลักทรัพย์ พ.ศ. 2535 มาตรา 4 และมาตรา 90</td><td>บริษัทหลักทรัพย์คือบริษัทหรือสถาบันการเงินที่ได้รับใบอนุญาต และประกอบธุรกิจหลักทรัพย์ได้ในรูปบริษัทจำกัดหรือบริษัทมหาชนจำกัด บริษัทหลักทรัพย์ที่เป็นบริษัทจำกัดจึงเข้า 2.2.2 จากลักษณะธุรกิจ</td><td>2</td></tr>
+      <tr><td>ประกาศคณะกรรมการกำกับตลาดทุน ที่ ทจ. 39/2559 ข้อ 12 (3) (ข) และข้อ 18 (แก้ไขโดย ทจ. 53/2561)</td><td>ผู้ขออนุญาตเสนอขายหุ้นครั้งแรกยื่นงบการเงินประจำปี 3 ปีล่าสุดและงบไตรมาสสุดท้าย (เมื่องบล่าสุดสิ้นสุดในหรือหลัง 31 ธันวาคม 2566) จัดทำตามมาตรฐานการรายงานทางการเงิน</td><td>2, 28</td></tr>
+      </tbody></table></div>
+      <p class="hint">ตรวจถ้อยคำและฉบับล่าสุดของกฎหมายจากราชกิจจานุเบกษาก่อนอ้างในงานจริง</p>
+
+      <h3 id="S2.3">S2.3 แม่แบบและตัวอย่างบันทึกการพิจารณาขอบเขต (อ้างจากหัวข้อ 2.6)</h3>
+      <div class="tbl"><table><thead><tr><th>หัวข้อ</th><th>สิ่งที่บันทึก</th><th>หลักฐานที่แนบ</th></tr></thead><tbody>
+      <tr><td>1. ข้อมูลกิจการ</td><td>รหัสกิจการ รูปแบบ รอบระยะเวลารายงาน</td><td>หนังสือรับรองนิติบุคคล</td></tr>
+      <tr><td>2. ย่อหน้า 2.1</td><td>เป็นผู้มีหน้าที่จัดทำบัญชีตามมาตรา 8 หรือไม่</td><td>หนังสือรับรอง สัญญาร่วมค้า</td></tr>
+      <tr><td>3. ย่อหน้า 2.2.1</td><td>มีหลักทรัพย์ซื้อขายต่อประชาชน หรืออยู่ในกระบวนการนำส่งงบการเงินต่อ ก.ล.ต. หรือไม่</td><td>ทะเบียนผู้ถือหุ้น หนังสือยืนยันจากผู้บริหาร</td></tr>
+      <tr><td>4. ย่อหน้า 2.2.2 และ 2.3</td><td>ธุรกิจหลักและใบอนุญาตตามกฎหมายเฉพาะ ถ้าดูแลทรัพยากรทางการเงินของลูกค้า ระบุว่าเข้าตัวอย่างในย่อหน้า 2.3 หรือไม่</td><td>วัตถุประสงค์บริษัท ใบอนุญาต งบการเงิน</td></tr>
+      <tr><td>5. ย่อหน้า 2.2.3–2.2.4</td><td>รูปแบบบริษัทมหาชนจำกัด และประกาศเพิ่มเติมของสภาวิชาชีพบัญชีที่มีผลในปีนั้น</td><td>รายการประกาศที่ตรวจแล้ว</td></tr>
+      <tr><td>6. ย่อหน้า 2.4</td><td>เลือกใช้ TFRS for PAEs ทุกฉบับหรือไม่ ผู้อนุมัติ และปีที่เริ่ม</td><td>มติคณะกรรมการ</td></tr>
+      <tr><td>7. สรุปและทบทวน</td><td>สถานะ ผู้จัดทำ ผู้อนุมัติ เหตุการณ์ที่ต้องทบทวนก่อนปีถัดไป</td><td>–</td></tr>
+      </tbody></table></div>
+      <p class="hint">แท็บ 0 ร่างบันทึกตามแม่แบบนี้ให้ และแท็บ 1 คัดลอกผลจำแนกหลายกิจการไปวางใน Excel ได้</p>
+      <h4>ตัวอย่างบันทึกการพิจารณาขอบเขตของกิจการ ค (โรงรับจำนำในรูปบริษัทจำกัด ตัวอย่างที่ 2.1)</h4>
+      <div class="tbl"><table><thead><tr><th>หัวข้อ</th><th>ผลการพิจารณา</th><th>หลักฐาน</th></tr></thead><tbody>
+      <tr><td>ย่อหน้า 2.1</td><td>บริษัทจำกัด เป็นผู้มีหน้าที่จัดทำบัญชีตามมาตรา 8</td><td>หนังสือรับรองนิติบุคคล</td></tr>
+      <tr><td>ย่อหน้า 2.2.1</td><td>ไม่มีหลักทรัพย์ซื้อขายต่อประชาชน ไม่ได้ยื่นงบการเงินต่อ ก.ล.ต.</td><td>ทะเบียนผู้ถือหุ้น หนังสือยืนยันจากกรรมการ</td></tr>
+      <tr><td>ย่อหน้า 2.2.2 และ 2.3</td><td>ธุรกิจหลักคือโรงรับจำนำ ซึ่งย่อหน้า 2.3 ยกเป็นตัวอย่างกิจการที่ไม่มีส่วนได้เสียสาธารณะ</td><td>ใบอนุญาตตั้งโรงรับจำนำ</td></tr>
+      <tr><td>ย่อหน้า 2.2.3–2.2.4</td><td>ไม่ใช่บริษัทมหาชนจำกัด ไม่มีประกาศเพิ่มเติมที่เกี่ยวข้อง</td><td>รายการประกาศที่ตรวจแล้ว</td></tr>
+      <tr><td>ย่อหน้า 2.4</td><td>ไม่เลือกใช้ TFRS for PAEs</td><td>–</td></tr>
+      <tr><td>สรุป</td><td>NPAEs ใช้ TFRS for NPAEs ทบทวนอีกครั้งถ้าแปรสภาพเป็นบริษัทมหาชนจำกัด</td><td>ผู้จัดทำและผู้อนุมัติลงนาม</td></tr>
+      </tbody></table></div>
+
+      <h3 id="S2.4">S2.4 เฉลยแบบฝึกหัดท้ายบท</h3>
+      <p><b>ส่วนที่ 1:</b> 1. ง · 2. ข (ย่อหน้า 2.2.3) · 3. ข (ย่อหน้า 2.2.1) · 4. ค (ย่อหน้า 2.3) · 5. ข (ย่อหน้า 2.3) · 6. ค · 7. ข (ย่อหน้า 2.2 และ 2.4) · 8. ค (ย่อหน้า 2.4) เหตุผลรายข้ออยู่ในแท็บ 2</p>
+      <p><b>ส่วนที่ 2 โจทย์ปฏิบัติงาน</b></p>
+      <p><b>โจทย์ข้อ 1:</b> ใช้แท็บ 1 ปุ่ม "โจทย์ข้อ 1" (1) บริษัท ภูผา จำกัด (มหาชน) ใช้ TFRS for PAEs ตามย่อหน้า 2.2.3 แม้หุ้นไม่ได้ซื้อขาย หลักฐาน: หนังสือรับรองบริษัทมหาชน (2) บริษัทหลักทรัพย์ ธารา จำกัด ใช้ TFRS for PAEs ตาม 2.2.2 เพราะธุรกิจหลักคือดูแลสินทรัพย์ของบุคคลภายนอกในวงกว้างตามกฎหมายเฉพาะ หลักฐาน: ใบอนุญาตประกอบธุรกิจหลักทรัพย์ (3) บริษัท ครอบครัวรุ่งเรือง จำกัด ใช้ TFRS for NPAEs ขนาดไม่ใช่เกณฑ์ของย่อหน้า 2.2 หลักฐาน: หนังสือรับรองนิติบุคคล ทะเบียนผู้ถือหุ้น (4) สาขาบริษัท โอเชียน ใช้ TFRS for NPAEs เป็นผู้มีหน้าที่จัดทำบัญชีตามมาตรา 8 และไม่เข้าเกณฑ์ 2.2 หลักฐาน: หนังสือรับรองการจดทะเบียนสาขา (5) นิติบุคคลอาคารชุด ริมน้ำ อยู่นอกขอบเขตย่อหน้า 2.1 เพราะไม่อยู่ในมาตรา 8 จัดทำบัญชีตามกฎหมายว่าด้วยอาคารชุด (6) กิจการร่วมค้า เอบี ใช้ TFRS for NPAEs เป็นผู้มีหน้าที่จัดทำบัญชีตามมาตรา 8 หลักฐาน: สัญญาร่วมค้าและหลักฐานการจดทะเบียนภาษี</p>
+      <p><b>โจทย์ข้อ 2:</b> (ก) บริษัท ทองดี จำกัด เป็น NPAEs ย่อหน้า 2.3 ยกโรงรับจำนำเป็นตัวอย่างกิจการที่ได้รับความไว้วางใจให้ดูแลทรัพย์สินของลูกค้า แต่ไม่ได้ดำเนินธุรกิจหลักในการดูแลสินทรัพย์ของกลุ่มบุคคลภายนอกในวงกว้างตาม 2.2.2 ทรัพย์จำนำเป็นหลักประกันเงินให้กู้ ไม่ใช่สินทรัพย์ที่รับมาบริหาร (ข) บริษัทจัดการกองทุนส่วนบุคคลเป็น PAEs ตาม 2.2.2 เพราะธุรกิจหลักคือบริหารสินทรัพย์ของลูกค้าจำนวนมากภายใต้ใบอนุญาตตามกฎหมายเฉพาะ ข้อนี้เป็นแนวการตีความตามการทดสอบสองชั้นในหัวข้อ 2.3 เพราะการค้นคว้าไม่พบคำวินิจฉัยของสภาวิชาชีพบัญชีเรื่องบริษัทหลักทรัพย์จัดการกองทุน เหตุการณ์ที่ต้องทบทวน: ทองดีแปรสภาพเป็นบริษัทมหาชนจำกัด (2.2.3) หรือขยายไปรับบริหารเงินของประชาชน และสภาวิชาชีพบัญชีออกประกาศเพิ่มเติมตาม 2.2.4</p>
+      <p><b>โจทย์ข้อ 3:</b> ใช้แท็บ 0 ปุ่ม "2.1 ช" และทำเครื่องหมายรับเงินมัดจำจากลูกค้า บันทึกต้องสรุปว่ากิจการเป็น NPAEs ผ่าน 6 ขั้น: มาตรา 8 ใช่ · 2.2.1 ไม่มีหลักทรัพย์ต่อประชาชน · 2.2.2 การรับเงินมัดจำไม่ใช่ธุรกิจหลักในการดูแลสินทรัพย์ · 2.2.3 ไม่ใช่บริษัทมหาชนจำกัด · 2.2.4 ไม่มีประกาศที่เกี่ยวข้อง · 2.4 ไม่เลือกใช้ TFRS for PAEs การมีผู้ถือหุ้นใหญ่เป็นบริษัทจดทะเบียนไม่ใช่เกณฑ์ในย่อหน้า 2.2 หลักฐาน: หนังสือรับรอง ทะเบียนผู้ถือหุ้น หนังสือยืนยันจากกรรมการ รายการประกาศที่ตรวจแล้ว ข้อมูลที่บริษัทแม่อาจขอ: ตัวเลขที่ปรับตาม TFRS for PAEs เพื่อจัดทำงบการเงินรวม ซึ่งเป็นรายงานแยกจากงบการเงินตามกฎหมายของบริษัท</p>
+      <p><b>โจทย์ข้อ 4:</b> ข้อเสนอของผู้บริหารไม่ถูกต้อง สถานะเปลี่ยนเป็น PAEs ตั้งแต่ 1 กรกฎาคม 2569 ที่จดทะเบียนแปรสภาพเป็นบริษัทมหาชนจำกัด (ย่อหน้า 2.2.3) ไม่ต้องรอให้หุ้นเริ่มซื้อขาย และเมื่อยื่นงบการเงินต่อ ก.ล.ต. ในเดือนมีนาคม 2570 ก็เข้า 2.2.1 ด้วย นิยาม SMEs ไม่ใช่เกณฑ์ของย่อหน้า 2.2 แนวการตีความ (การค้นคว้าไม่พบแนวของสภาวิชาชีพบัญชีเรื่องสถานะเปลี่ยนระหว่างรอบ): งบการเงินปีที่สิ้นสุด 31 ธันวาคม 2569 ซึ่ง ณ วันสิ้นรอบกิจการเป็นบริษัทมหาชนจำกัดแล้ว จัดทำตาม TFRS for PAEs ทั้งรอบโดยใช้ TFRS 1 ประกาศ ทจ. 39/2559 ข้อ 12 (3) (ข) ให้ยื่นงบการเงินประจำปี 3 ปีล่าสุด (2567–2569) ตามมาตรฐานการรายงานทางการเงิน และตัวอย่างรายงาน IPO ของสภาวิชาชีพบัญชี (มีนาคม 2566) ให้วันที่เปลี่ยนผ่านของงบเพื่อยื่นขออนุญาตกับงบตามกฎหมายเป็นวันเดียวกัน คือ 1 มกราคม 2567 สิ่งที่ต้องเตรียม: ยอดยกมา ณ 1 มกราคม 2567 และข้อมูลปี 2567–2568 ตาม TFRS for PAEs นโยบายการบัญชีที่ต่างจากเดิม การกระทบยอดตาม TFRS 1 ข้อมูลที่ ก.ล.ต. ต้องใช้ในแบบคำขอ และบันทึกการพิจารณาขอบเขตฉบับใหม่</p>
+
+      <h3 id="S2.5">S2.5 แนวคำตอบกรณีศึกษา 2.1 (สำหรับผู้สอน)</h3>
+      <p>ทาง (ค) ใช้ไม่ได้ เพราะย่อหน้า 2.4 ให้เลือกใช้ TFRS for PAEs ทุกฉบับเท่านั้น การผู้ถือหุ้นร้อยละ 40 เป็นบริษัทจดทะเบียนในต่างประเทศไม่เปลี่ยนสถานะ เพราะย่อหน้า 2.2 พิจารณาที่ตัวกิจการ ระหว่าง (ก) กับ (ข) ผู้ตอบควรชั่งต้นทุนการจัดทำกับความพร้อมของแผนระดมทุน ถ้าแผนแปรสภาพเป็นบริษัทมหาชนจำกัดชัดเจนแล้ว ทาง (ข) ลดภาระการจัดทำงบการเงินย้อนหลังและทำให้ข้อมูลเปรียบเทียบสม่ำเสมอ ถ้าแผนยังไม่แน่นอน ทาง (ก) ประหยัดกว่า และบริษัทควรระบุเหตุการณ์ที่จะทำให้ต้องทบทวนสถานะไว้ในบันทึก ทั้งสองทางยอมรับได้ถ้าเหตุผลเชื่อมกับข้อเท็จจริงของกรณี ผู้ตอบที่ได้คะแนนด้านจริยธรรมควรชี้ว่าการเลือกมาตรฐานไม่ควรมีเป้าหมายเพื่อตกแต่งตัวเลขให้ผ่านเงื่อนไขเงินกู้</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ใช้ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 2 ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพ ข้อมูลที่กรอกไม่ถูกส่งออกจากเครื่องของคุณ</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 2.1 · กรณีศึกษา 2.1 · แบบฝึกหัดส่วนที่ 1</span>
+  </footer>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=2)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:d});
+  const pct=(x,d=2)=>isFinite(x)?(x*100).toFixed(d)+'%':'–';
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* ---------- shared renderers ---------- */
+  function je(title,lines,ref){
+    const rows=lines.map(l=>l.dr
+      ?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`
+      :`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,isPct])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${isPct?pct(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const facts=(title,items)=>`<div class="facts"><h4>${esc(title)}</h4><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  const theory=(items,open)=>`<details class="theory"${open?' open':''}><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes02tab',name)}catch(e){}
+  }
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='scope';
+  const h=(location.hash||'').slice(1);
+  if(names.includes(h)) start=h; else {try{const s=localStorage.getItem('npaes02tab'); if(names.includes(s)) start=s}catch(e){}}
+  show(start);
+
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-'||s==='–')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  const nz=v=>isFinite(v)?v:0;
+  function fmtD(d){return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`}
+  function parseDate(v){
+    if(v instanceof Date&&!isNaN(v)) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+    if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*86400000));return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}
+    const s=String(v||'').trim();if(!s) return null;
+    let m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if(m){let y=+m[1];if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[3])}
+    m=s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+    if(m){let y=+m[3];if(y<100)y+=y>50?2500:2000;if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[1])}
+    return null;
+  }
+  function parseCSV(text){
+    const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true; else if(ch===delim){row.push(f);f=''} else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''} else if(ch!=='\r') f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+  }
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{const x=$(okId);if(x)x.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,fb); else fb();}
+  const r2=x=>Math.round(x*100)/100;
+  function jeAuto(title,lines,ref){const L=lines.filter(l=>Math.abs(l.amt)>=0.005);if(!L.length)return '';
+    const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);return je(title,dr.concat(cr),ref)}
+  const alertBox=(cls,html)=>`<div class="alert ${cls}">${html}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const DAY=86400000;const days=(a,b)=>Math.max(0,Math.round((b-a)/DAY));
+  const yfrac=(a,b)=>Math.max(0,(b.getFullYear()-a.getFullYear())+(b.getMonth()-a.getMonth())/12+(b.getDate()-a.getDate())/365);
+    /* ============ shared scope engine ============ */
+  const FORMS={co:'บริษัทจำกัด',pt:'ห้างหุ้นส่วนจดทะเบียน',pcl:'บริษัทมหาชนจำกัด',fr:'นิติบุคคลต่างประเทศที่ประกอบธุรกิจในไทย',jv:'กิจการร่วมค้าตามประมวลรัษฎากร',coop:'สหกรณ์',condo:'นิติบุคคลอาคารชุดหรือหมู่บ้านจัดสรร',npo:'มูลนิธิ สมาคม หรือองค์กรไม่แสวงหากำไร',ind:'บุคคลธรรมดา คณะบุคคล หรือห้างหุ้นส่วนสามัญที่ไม่จดทะเบียน'};
+  const IN8=['co','pt','pcl','fr','jv'];
+  const OUTWHY={coop:'สหกรณ์จัดทำบัญชีตามกฎหมายว่าด้วยสหกรณ์และระเบียบของนายทะเบียนสหกรณ์',condo:'จัดทำบัญชีตามกฎหมายเฉพาะที่จัดตั้งนิติบุคคลนั้น',npo:'ดูแนวทางขององค์กรไม่แสวงหากำไรในบทที่ 30',ind:'ไม่อยู่ในรายชื่อผู้มีหน้าที่จัดทำบัญชีตามมาตรา 8'};
+  const TRUST={travel:'ตัวแทนการท่องเที่ยว',re:'ตัวแทนหรือนายหน้าค้าอสังหาริมทรัพย์',pawn:'โรงรับจำนำ',amc:'บริษัทบริหารสินทรัพย์ที่มีสถานภาพเป็นบริษัทจำกัด',other:'กิจการอื่นที่ดูแลทรัพยากรทางการเงินของลูกค้า'};
+  /* f: {form,c1a,c1b,c2,c4,trust,vol} -> {status,code,steps[],warn[]} */
+  function judge(f){
+    const st=[];const warn=[];let status=null,code='';
+    const in8=IN8.includes(f.form);
+    st.push(['2.1','เป็นผู้มีหน้าที่จัดทำบัญชีตาม พ.ร.บ.การบัญชี มาตรา 8 หรือไม่',in8?'ใช่ ('+FORMS[f.form]+')':'ไม่ใช่ ('+FORMS[f.form]+')',!in8]);
+    if(!in8){status='นอกขอบเขต TFRS for NPAEs';code='OUT';warn.push(OUTWHY[f.form]||'');return {status,code,st,warn}}
+    const pae1=f.c1a||f.c1b;
+    st.push(['2.2.1','มีตราสารซื้อขายต่อประชาชน หรืออยู่ในกระบวนการนำส่งงบการเงินเพื่อออกขายหลักทรัพย์ต่อประชาชน',pae1?'ใช่':'ไม่ใช่',pae1]);
+    st.push(['2.2.2','ธุรกิจหลักคือดูแลสินทรัพย์ของกลุ่มบุคคลภายนอกในวงกว้าง ตามกฎหมายว่าด้วยการนั้น',f.c2?'ใช่':'ไม่ใช่',f.c2]);
+    const pcl=f.form==='pcl';
+    st.push(['2.2.3','เป็นบริษัทมหาชนจำกัด',pcl?'ใช่':'ไม่ใช่',pcl]);
+    st.push(['2.2.4','เป็นกิจการที่สภาวิชาชีพบัญชีกำหนดเพิ่มเติม',f.c4?'ใช่':'ไม่ใช่',f.c4]);
+    const hits=st.filter(s=>s[3]&&s[0]!=='2.1').map(s=>s[0]);
+    if(f.trust){
+      st.push(['2.3','กิจการที่ได้รับความไว้วางใจจากลูกค้า แต่ไม่ได้ดำเนินธุรกิจหลักในการดูแลสินทรัพย์',TRUST[f.trust],false]);
+      if(f.c2) warn.push('ขัดกันระหว่าง 2.2.2 กับ 2.3: ย่อหน้า 2.3 ระบุว่ากิจการลักษณะนี้ไม่ได้ดำเนินธุรกิจหลักในการดูแลสินทรัพย์ของกลุ่มบุคคลภายนอกในวงกว้าง ตรวจใบอนุญาตและธุรกิจหลักอีกครั้ง');
+      if(f.trust==='amc'&&f.form!=='co') warn.push('ย่อหน้า 2.3 ยกตัวอย่างบริษัทบริหารสินทรัพย์ที่มีสถานภาพเป็นบริษัทจำกัดเท่านั้น');
+      if(f.trust==='other') warn.push('กิจการที่ไม่อยู่ในตัวอย่างของย่อหน้า 2.3 ควรบันทึกเหตุผลว่าการดูแลทรัพยากรของลูกค้าไม่ใช่ธุรกิจหลัก และลูกค้าไม่ได้มีส่วนบริหาร');
+    }
+    if(hits.length){status='กิจการที่มีส่วนได้เสียสาธารณะ (PAEs)';code='PAE';
+      st.push(['2.2','ผลการพิจารณา','เข้าเกณฑ์ย่อหน้า '+hits.join(', ')+' ใช้ TFRS for PAEs',true]);
+      if(f.vol) warn.push('ย่อหน้า 2.4 ใช้กับกิจการที่ไม่มีส่วนได้เสียสาธารณะเท่านั้น กิจการนี้ต้องใช้ TFRS for PAEs อยู่แล้ว');
+      return {status,code,st,warn}}
+    st.push(['2.4','เลือกใช้ TFRS for PAEs ทุกฉบับโดยสมัครใจ',f.vol?'เลือก':'ไม่เลือก',f.vol]);
+    if(f.vol){status='NPAEs ที่เลือกใช้ TFRS for PAEs ทุกฉบับ (ย่อหน้า 2.4)';code='VOL'}
+    else {status='กิจการที่ไม่มีส่วนได้เสียสาธารณะ (NPAEs) ใช้ TFRS for NPAEs';code='NPAE'}
+    return {status,code,st,warn};
+  }
+  const CLS={OUT:'warn',PAE:'bad',VOL:'warn',NPAE:'ok'};
+
+  /* ============ 0 SINGLE ENTITY ============ */
+  const SIDS=['c1a','c1b','c2','c4','cVol','fBig','fExempt','fSub','fIpo','fDep','fBack'];
+  const SS={
+    e1:['ตัวอย่างที่ 2.1 กิจการ ก','บริษัท ก จำกัด','co','',['fBig']],
+    e2:['ตัวอย่างที่ 2.1 กิจการ ข','บริษัท ข จำกัด (มหาชน)','pcl','',[]],
+    e3:['ตัวอย่างที่ 2.1 กิจการ ค','บริษัท ค จำกัด','co','pawn',['fDep']],
+    e4:['ตัวอย่างที่ 2.1 กิจการ ง','บริษัทหลักทรัพย์ ง จำกัด','co','',['c2']],
+    e5:['ตัวอย่างที่ 2.1 กิจการ จ','สาขาบริษัท จ','fr','',[]],
+    e6:['ตัวอย่างที่ 2.1 กิจการ ฉ','สหกรณ์ออมทรัพย์ ฉ จำกัด','coop','',[]],
+    e7:['ตัวอย่างที่ 2.1 กิจการ ช','บริษัท ช จำกัด','co','',['fSub']],
+    e8:['ตัวอย่างที่ 2.1 กิจการ ซ','ห้างหุ้นส่วนจำกัด ซ','pt','',['fExempt']],
+    case:['กรณีศึกษา 2.1 บริษัท ไทยพาร์ท จำกัด','บริษัท ไทยพาร์ท จำกัด','co','',['fBig','fSub','fIpo']],
+    clr:['ล้างแล้ว','','co','',[]]};
+  function sLoad(k){const s=SS[k];$('sName').value=s[1];$('sForm').value=s[2];$('sTrust').value=s[3];SIDS.forEach(id=>$(id).checked=s[4].includes(id));$('sTag').textContent='ข้อมูลตัวอย่าง: '+s[0];sCalc()}
+  document.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>sLoad(b.dataset.s)));
+  SIDS.concat(['sName','sEnd','sForm','sTrust','sAnon']).forEach(id=>{$(id).addEventListener('change',sCalc);$(id).addEventListener('input',sCalc)});
+  let MEMO='';
+  const thDate=v=>{if(!v)return '–';const d=new Date(v+'T00:00:00');return isNaN(d)?'–':d.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})};
+  function sCalc(){
+    const c=id=>$(id).checked;
+    const f={form:$('sForm').value,c1a:c('c1a'),c1b:c('c1b'),c2:c('c2'),c4:c('c4'),trust:$('sTrust').value,vol:c('cVol')};
+    const r=judge(f);const real=$('sName').value.trim();
+    const alias=$('sAnon').checked?'กิจการ A':(real||'กิจการ');
+    const notes=[];
+    if(r.code==='NPAE'||r.code==='VOL'){
+      if(c('fBig')) notes.push('ขนาดของกิจการไม่ใช่เกณฑ์ของย่อหน้า 2.2 กิจการขนาดใหญ่ที่ไม่เข้าเกณฑ์ข้อใดยังเป็น NPAEs และ NPAEs ไม่ใช่นิยามเดียวกับ SMEs');
+      if(c('fSub')) notes.push('มาตรฐานพิจารณาสถานะที่ตัวกิจการ การมีผู้ถือหุ้นเป็นบริษัทจดทะเบียนไม่ทำให้กิจการเป็น PAEs บริษัทแม่อาจขอข้อมูลตาม TFRS for PAEs เพื่อจัดทำงบการเงินรวม ซึ่งเป็นรายงานแยกจากงบการเงินของกิจการ');
+      if(c('fIpo')) notes.push('สถานะเปลี่ยนเป็น PAEs ทันทีเมื่อแปรสภาพเป็นบริษัทมหาชนจำกัด (2.2.3) หรือเมื่อเริ่มนำส่งงบการเงินเพื่อออกขายหลักทรัพย์ต่อประชาชน (2.2.1) ประกาศ ทจ. 39/2559 ข้อ 12 (3) (ข) ให้ยื่นงบการเงิน 3 ปีล่าสุดตามมาตรฐานการรายงานทางการเงิน และตัวอย่างรายงาน IPO ของสภาวิชาชีพบัญชีให้วันที่เปลี่ยนผ่านตาม TFRS 1 ของงบเพื่อยื่นขออนุญาตกับงบตามกฎหมายเป็นวันเดียวกัน ควรวางแผนปีที่เริ่มใช้ TFRS for PAEs และทบทวนบันทึกนี้ทุกปี');
+      if(c('fBack')&&!r.code.startsWith('PAE')) notes.push('คำถาม-คำตอบของสภาวิชาชีพบัญชี (8 เมษายน 2564 คำถามที่ 2 ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน): ตรวจว่าไม่เข้าเกณฑ์ 2.2 ให้เหตุผลตามบทที่ 5 ว่า TFRS for NPAEs ให้ข้อมูลที่เชื่อถือได้และเกี่ยวข้องมากขึ้นอย่างไร เปิดเผยเหตุผล และปรับงบการเงินย้อนหลังเสมือนใช้ TFRS for NPAEs มาตั้งแต่แรก บทที่ 28 ไม่ใช่ฐานของการเปลี่ยนนี้');
+      if(c('fDep')&&!f.c2) notes.push('การรับเงินมัดจำหรือเงินทดรองจากลูกค้าไม่ทำให้เข้า 2.2.2 ถ้าการดูแลสินทรัพย์ไม่ใช่ธุรกิจหลัก (เทียบตัวอย่างในย่อหน้า 2.3)');
+    }
+    if(f.form==='pcl') notes.push('บริษัทมหาชนจำกัดเป็น PAEs ตาม 2.2.3 แม้ถูกเพิกถอนหลักทรัพย์ออกจากตลาดหรือไม่เคยเข้าจดทะเบียน (คำถาม-คำตอบของสภาวิชาชีพบัญชี 8 เมษายน 2564 คำถามที่ 3)');
+    if(c('fExempt')) notes.push(f.form==='pt'?'การยกเว้นการตรวจสอบโดยผู้สอบบัญชีรับอนุญาตเป็นเรื่องตามกฎหมายการบัญชี ไม่ใช่ขอบเขตของมาตรฐาน ห้างหุ้นส่วนยังต้องจัดทำงบการเงินตามมาตรฐานที่ใช้กับตน':'การยกเว้นการตรวจสอบตามกฎกระทรวงใช้กับห้างหุ้นส่วนจดทะเบียนขนาดเล็กเท่านั้น ตรวจรูปแบบกิจการอีกครั้ง');
+    if(r.code==='VOL') notes.push('ต้องใช้ TFRS for PAEs ทุกฉบับอย่างสม่ำเสมอ เลือกใช้เฉพาะบางฉบับไม่ได้ (2.4) บันทึกมติผู้อนุมัติและปีที่เริ่ม');
+    const steps=r.st.map((s,i)=>`<li class="${s[3]?'hit':''}"><span class="no">${i+1}</span><div><b>ย่อหน้า ${esc(s[0])}</b> ${esc(s[1])}<div class="r">${esc(s[2])}</div></div></li>`).join('');
+    const ev=['หนังสือรับรองนิติบุคคลและวัตถุประสงค์','ทะเบียนผู้ถือหุ้นหรือหนังสือยืนยันว่าไม่มีหลักทรัพย์ซื้อขายต่อประชาชน','ใบอนุญาตประกอบธุรกิจตามกฎหมายเฉพาะ (ถ้ามี)','รายการประกาศสภาวิชาชีพบัญชีที่ตรวจแล้วสำหรับย่อหน้า 2.2.4'].concat(r.code==='VOL'?['มติคณะกรรมการที่เลือกใช้ TFRS for PAEs']:[]);
+    MEMO=['บันทึกการพิจารณาขอบเขตตาม TFRS for NPAEs (ปรับปรุง 2565) ย่อหน้า 2.1–2.4',
+      'กิจการ: '+alias+' · รูปแบบ: '+FORMS[f.form]+' · รอบระยะเวลารายงานสิ้นสุด: '+thDate($('sEnd').value),'']
+      .concat(r.st.map((s,i)=>`${i+1}. ย่อหน้า ${s[0]} ${s[1]}: ${s[2]}`))
+      .concat(['','สรุป: '+r.status])
+      .concat(r.warn.filter(Boolean).length?['','ประเด็นที่ต้องตรวจ:'].concat(r.warn.filter(Boolean).map(w=>'- '+w)):[])
+      .concat(notes.length?['','ข้อสังเกต:'].concat(notes.map(n=>'- '+n)):[])
+      .concat(['','หลักฐานที่แนบ:'].concat(ev.map(e=>'- '+e)))
+      .concat(['','ผู้จัดทำ: ................ วันที่ ........   ผู้อนุมัติ: ................ วันที่ ........','ทบทวนครั้งต่อไป: ก่อนปิดบัญชีรอบถัดไป หรือเมื่อรูปแบบกิจการ ธุรกิจหลัก หรือแผนระดมทุนเปลี่ยน']).join('\n');
+    $('sOut').innerHTML=verdict(CLS[r.code],r.status,`${esc(alias)} · ${esc(FORMS[f.form])}`)
+      +`<h3>เส้นทางการพิจารณา</h3><ol class="steps">${steps}</ol>`
+      +(r.warn.filter(Boolean).length?alertBox('warn','<b>ประเด็นที่ต้องตรวจ</b><br>'+r.warn.filter(Boolean).map(esc).join('<br>')):'')
+      +(notes.length?facts('ข้อสังเกตสำหรับแฟ้มงาน',notes.map(esc)):'')
+      +`<h3>ร่างบันทึกการพิจารณาขอบเขต</h3><pre class="memo" id="sMemo">${esc(MEMO)}</pre>
+      <div class="row-actions"><button class="btn primary" id="sCopy">คัดลอกบันทึก</button><span class="copied" id="sCopied" hidden>คัดลอกแล้ว</span></div>`
+      +theory([['ย่อหน้า 2.1','ขอบเขตครอบคลุมผู้มีหน้าที่จัดทำบัญชีตามมาตรา 8 ที่มิใช่กิจการที่มีส่วนได้เสียสาธารณะ'],['ย่อหน้า 2.2','นิยามเชิงปฏิเสธ เข้าเกณฑ์ข้อใดข้อหนึ่งใน 2.2.1–2.2.4 เป็นกิจการที่มีส่วนได้เสียสาธารณะ'],['ย่อหน้า 2.3','ตัวอย่างกิจการที่ได้รับความไว้วางใจจากลูกค้า แต่ถือเป็นกิจการที่ไม่มีส่วนได้เสียสาธารณะ'],['ย่อหน้า 2.4','เลือกใช้ TFRS for PAEs ได้ แต่ต้องใช้ทุกฉบับโดยปฏิบัติอย่างสม่ำเสมอ']]);
+    $('sCopy').addEventListener('click',()=>copyText(MEMO,'sCopied'));
+  }
+
+  /* ============ 1 BATCH ============ */
+  const BH=['ชื่อ','รูปแบบ','ตราสารต่อประชาชน','ยื่น ก.ล.ต.','ดูแลสินทรัพย์เป็นธุรกิจหลัก','กำหนดเพิ่ม 2.2.4','ประเภท 2.3','เลือก PAEs'];
+  const BEX=[BH.join('\t'),
+    'บริษัท ก จำกัด\tบจ.\tN\tN\tN\tN\t\tN','บริษัท ข จำกัด (มหาชน)\tบมจ.\tN\tN\tN\tN\t\tN','บริษัท ค จำกัด\tบจ.\tN\tN\tN\tN\tโรงรับจำนำ\tN','บริษัทหลักทรัพย์ ง จำกัด\tบจ.\tN\tN\tY\tN\t\tN',
+    'สาขาบริษัท จ\tต่างประเทศ\tN\tN\tN\tN\t\tN','สหกรณ์ออมทรัพย์ ฉ จำกัด\tสหกรณ์\tN\tN\tN\tN\t\tN','บริษัท ช จำกัด\tบจ.\tN\tN\tN\tN\t\tN','ห้างหุ้นส่วนจำกัด ซ\tหจ.\tN\tN\tN\tN\t\tN'].join('\n');
+  const BQ2=[BH.join('\t'),
+    'บริษัท ภูผา จำกัด (มหาชน)\tบมจ.\tN\tN\tN\tN\t\tN','บริษัทหลักทรัพย์ ธารา จำกัด\tบจ.\tN\tN\tY\tN\t\tN','บริษัท ครอบครัวรุ่งเรือง จำกัด\tบจ.\tN\tN\tN\tN\t\tN',
+    'สาขาบริษัท โอเชียน\tต่างประเทศ\tN\tN\tN\tN\t\tN','นิติบุคคลอาคารชุด ริมน้ำ\tอาคารชุด\tN\tN\tN\tN\t\tN','กิจการร่วมค้า เอบี\tร่วมค้า\tN\tN\tN\tN\t\tN'].join('\n');
+  const yes=v=>/^(y|yes|ใช่|1|true|มี|✓)$/i.test(String(v||'').trim());
+  function formOf(v){const s=String(v||'').replace(/\s/g,'');
+    if(/มหาชน|บมจ|pcl|public/i.test(s))return 'pcl';if(/หจ|ห้างหุ้นส่วน|partnership/i.test(s))return 'pt';if(/ต่างประเทศ|สาขา|foreign|branch/i.test(s))return 'fr';
+    if(/ร่วมค้า|jv|joint/i.test(s))return 'jv';if(/สหกรณ์|coop/i.test(s))return 'coop';if(/อาคารชุด|หมู่บ้าน|condo/i.test(s))return 'condo';
+    if(/มูลนิธิ|สมาคม|ไม่แสวง|npo|foundation/i.test(s))return 'npo';if(/บุคคล|individual/i.test(s))return 'ind';if(/บจ|บริษัท|จำกัด|co|ltd/i.test(s))return 'co';return null}
+  function trustOf(v){const s=String(v||'');if(!s.trim())return '';if(/ท่องเที่ยว|travel/i.test(s))return 'travel';if(/อสังหา|นายหน้า|real/i.test(s))return 're';if(/จำนำ|pawn/i.test(s))return 'pawn';if(/บริหารสินทรัพย์|amc/i.test(s))return 'amc';return 'other'}
+  let BROWS=[];
+  function bCalc(){
+    const rows=parseCSV($("bIn").value,$("bIn").value.includes("\t")?"\t":",");
+    let start=0;if(rows.length&&/ชื่อ|name/i.test(rows[0][0]||''))start=1;
+    const anon=$('bAnon').checked;BROWS=[];
+    rows.slice(start).forEach((r,i)=>{const form=formOf(r[1]);const name=anon?'กิจการ '+String(i+1).padStart(3,'0'):String(r[0]||'').trim();
+      if(!form){BROWS.push([name,String(r[1]||''),'ตรวจรูปแบบกิจการ','–','','warn']);return}
+      const j=judge({form,c1a:yes(r[2]),c1b:yes(r[3]),c2:yes(r[4]),c4:yes(r[5]),trust:trustOf(r[6]),vol:yes(r[7])});
+      const para=j.code==='OUT'?'2.1':j.code==='PAE'?j.st.filter(s=>s[3]&&/^2\.2\.\d/.test(s[0])).map(s=>s[0]).join(', '):j.code==='VOL'?'2.2, 2.4':(trustOf(r[6])?'2.2, 2.3':'2.2');
+      BROWS.push([name,FORMS[form],j.status,para,j.warn.filter(Boolean).join(' '),CLS[j.code]])});
+    const cnt=k=>BROWS.filter(r=>r[5]===k).length;
+    $('bOut').innerHTML=`<h2>ผลการจำแนก</h2>${figs([['กิจการ',BROWS.length],['NPAEs',cnt('ok')],['PAEs',cnt('bad')],['นอกขอบเขตหรือต้องตรวจ',cnt('warn')]])}
+      <div class="tbl"><table><thead><tr><th>กิจการ</th><th>รูปแบบ</th><th>สถานะ</th><th>ย่อหน้า</th></tr></thead><tbody>${BROWS.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td><span class="pill ${r[5]}">${esc(r[2])}</span>${r[4]?`<div class="hint" style="margin:4px 0 0">${esc(r[4])}</div>`:''}</td><td class="nw">${esc(r[3])}</td></tr>`).join('')||'<tr><td colspan="4">ยังไม่มีข้อมูล</td></tr>'}</tbody></table></div>
+      <div class="row-actions"><button class="btn primary" id="bCopy">คัดลอกผลไป Excel</button><span class="copied" id="bCopied" hidden>คัดลอกแล้ว</span></div>
+      ${facts('ใช้ผลอย่างไร',['ผลนี้ใช้คัดกรองเบื้องต้น กิจการที่เป็น PAEs หรือมีประเด็นที่ต้องตรวจ ควรทำบันทึกรายกิจการในแท็บ 0','ชื่อจริงอยู่ในเบราว์เซอร์นี้เท่านั้น เมื่อปกปิดชื่อ ผลที่คัดลอกจะมีเฉพาะรหัส'])}`;
+    $('bCopy').addEventListener('click',()=>copyText([['กิจการ','รูปแบบ','สถานะ','ย่อหน้า','ประเด็นที่ต้องตรวจ']].concat(BROWS.map(r=>r.slice(0,5))).map(r=>r.join('\t')).join('\n'),'bCopied'));
+  }
+  $('bIn').addEventListener('input',bCalc);$('bAnon').addEventListener('change',bCalc);
+  $('bEx').addEventListener('click',()=>{$('bIn').value=BEX;$('bTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 2.1 (8 กิจการ)';bCalc()});
+  $('bQ2').addEventListener('click',()=>{$('bIn').value=BQ2;$('bTag').textContent='ข้อมูลตัวอย่าง: โจทย์ปฏิบัติงานข้อ 1 (6 กิจการ)';bCalc()});
+  $('bClr').addEventListener('click',()=>{$('bIn').value=BH.join('\t');$('bTag').textContent='ข้อมูลของคุณ';bCalc()});
+  $('bTpl').addEventListener('click',()=>copyText(BH.join('\t'),'bTplOk'));
+
+  /* ============ 2 QUIZ ============ */
+  const QZ=[['LO 2.1','เข้าใจ','ข้อใดไม่อยู่ในรายการผู้มีหน้าที่จัดทำบัญชีที่ย่อหน้า 2.1 อ้างถึง',['ห้างหุ้นส่วนจดทะเบียน','นิติบุคคลที่ตั้งขึ้นตามกฎหมายต่างประเทศที่ประกอบธุรกิจในประเทศไทย','กิจการร่วมค้าตามประมวลรัษฎากร','สหกรณ์ออมทรัพย์'],3,'สหกรณ์ไม่อยู่ในรายชื่อตามมาตรา 8 ซึ่งย่อหน้า 2.1 อ้างถึง'],
+    ['LO 2.2','เข้าใจ','บริษัทมหาชนจำกัดที่ยังไม่จดทะเบียนในตลาดหลักทรัพย์ ใช้มาตรฐานใด',['TFRS for NPAEs เพราะไม่มีหุ้นซื้อขายต่อประชาชน','TFRS for PAEs ตามย่อหน้า 2.2.3','เลือกได้ตามย่อหน้า 2.4','ขึ้นกับขนาดของกิจการ'],1,'ย่อหน้า 2.2.3 ใช้รูปแบบบริษัทมหาชนจำกัดเป็นเกณฑ์ ไม่ว่าหุ้นจะซื้อขายหรือไม่'],
+    ['LO 2.2','เข้าใจ','กิจการยื่นงบการเงินต่อ ก.ล.ต. เพื่อเสนอขายหลักทรัพย์ต่อประชาชน แต่หลักทรัพย์ยังไม่เริ่มซื้อขาย ข้อใดถูกต้อง',['เป็น NPAEs จนกว่าหลักทรัพย์จะเริ่มซื้อขาย','เป็น PAEs เพราะอยู่ในกระบวนการนำส่งงบการเงินเพื่อออกขายหลักทรัพย์ (2.2.1)','เป็น NPAEs ถ้ารายได้ต่ำ','อยู่นอกขอบเขตของมาตรฐาน'],1,'ย่อหน้า 2.2.1 รวมกิจการที่นำส่งหรืออยู่ในกระบวนการนำส่งงบการเงินต่อ ก.ล.ต.'],
+    ['LO 2.3','วิเคราะห์','ถ้าไม่เข้าเกณฑ์อื่นในย่อหน้า 2.2 กิจการใดเป็น NPAEs ตามย่อหน้า 2.3',['บริษัทประกันวินาศภัย','กองทุนรวม','โรงรับจำนำในรูปบริษัทจำกัด','ธนาคารพาณิชย์'],2,'ย่อหน้า 2.3 ยกโรงรับจำนำเป็นตัวอย่าง ส่วนตัวเลือกอื่นอยู่ในย่อหน้า 2.2.2'],
+    ['LO 2.3','วิเคราะห์','ตัวแทนการท่องเที่ยวรับเงินค่าทัวร์ล่วงหน้าจากลูกค้าจำนวนมาก ข้อใดถูกต้อง',['เป็น PAEs เพราะดูแลเงินของบุคคลภายนอกวงกว้าง','เป็น NPAEs เพราะย่อหน้า 2.3 ระบุว่าไม่ได้ดำเนินธุรกิจหลักในการดูแลสินทรัพย์','อยู่นอกขอบเขตของมาตรฐาน','ขึ้นกับจำนวนลูกค้า'],1,'ย่อหน้า 2.3 ยกตัวแทนการท่องเที่ยวเป็นตัวอย่างกิจการที่ไม่มีส่วนได้เสียสาธารณะ'],
+    ['LO 2.5','วิเคราะห์','ห้างหุ้นส่วนจดทะเบียนขนาดเล็กที่ได้รับยกเว้นการตรวจสอบโดยผู้สอบบัญชีรับอนุญาต ข้อใดถูกต้อง',['ไม่ต้องใช้มาตรฐานใด','ใช้หลักภาษีแทนมาตรฐาน','ยังต้องจัดทำงบการเงินตาม TFRS for NPAEs เพราะการยกเว้นเป็นเรื่องการตรวจสอบ','ต้องใช้ TFRS for PAEs'],2,'การยกเว้นตามกฎกระทรวงไม่เปลี่ยนขอบเขตของมาตรฐาน'],
+    ['LO 2.4','ประยุกต์ใช้','บริษัทจำกัดของครอบครัว รายได้ 9,500 ล้านบาท ไม่มีหลักทรัพย์ซื้อขายต่อประชาชน และไม่ได้ดูแลสินทรัพย์ของผู้อื่น ใช้มาตรฐานใด',['TFRS for PAEs เพราะขนาดใหญ่','TFRS for NPAEs เว้นแต่เลือกใช้ TFRS for PAEs ทุกฉบับ','IFRS for SMEs','TFRS for NPAEs บางบทและ TFRS for PAEs บางบท'],1,'ขนาดไม่ใช่เกณฑ์ในย่อหน้า 2.2 และย่อหน้า 2.4 ให้เลือกได้ทั้งชุดเท่านั้น'],
+    ['LO 2.4','ประยุกต์ใช้','บริษัทจำกัดที่เลือกใช้ TFRS for PAEs ตามย่อหน้า 2.4 ต้องการกลับไปใช้ TFRS for NPAEs เฉพาะเรื่องสัญญาเช่า ข้อใดถูกต้อง',['ทำได้','ทำได้ถ้าเปิดเผยในหมายเหตุ','ทำไม่ได้ ต้องใช้ TFRS for PAEs ทุกฉบับโดยปฏิบัติอย่างสม่ำเสมอ','ทำได้เฉพาะปีแรก'],2,'ย่อหน้า 2.4 ใช้คำว่า "ทุกฉบับ โดยปฏิบัติอย่างสม่ำเสมอ"']];
+  let ANS={};
+  function qRender(){$('qBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} · [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}"${ANS[i]===j?' checked':''}><span>${'กขคง'[j]}. ${esc(o)}</span></label>`).join('')}<div class="fb" id="fb${i}"></div></div>`).join('');qCalc()}
+  $('qBox').addEventListener('change',e=>{const m=e.target.name&&e.target.name.match(/^q(\d+)$/);if(m){ANS[+m[1]]=+e.target.value;qCalc()}});
+  $('qReset').addEventListener('click',()=>{ANS={};qRender()});
+  const BACK={'LO 2.1':'2.1','LO 2.2':'2.2','LO 2.3':'2.3','LO 2.4':'2.4, 2.6','LO 2.5':'2.5'};
+  function qCalc(){
+    let ok=0,done=0;const by={};
+    QZ.forEach((q,i)=>{by[q[0]]=by[q[0]]||[0,0];const fb=$('fb'+i);if(ANS[i]==null){fb.innerHTML='';return}done++;by[q[0]][1]++;
+      const r=ANS[i]===q[4];if(r){ok++;by[q[0]][0]++}fb.innerHTML=`<span class="${r?'ok-t':'bad-t'}">${r?'ถูก':'ยังไม่ถูก คำตอบคือ '+'กขคง'[q[4]]}</span> · ${esc(q[5])}`});
+    $('qOut').innerHTML=`<h2>ผลรายวัตถุประสงค์</h2>${figs([['ตอบแล้ว',done],['ถูก',ok],['ร้อยละ',done?ok/done:0,true]])}
+      <div class="tbl"><table><thead><tr><th>LO</th><th class="num">ถูก/ตอบ</th><th>หากยังไม่บรรลุ กลับไปอ่าน</th></tr></thead><tbody>${Object.entries(by).map(([k,[a,b]])=>`<tr><td>${k}</td><td class="num">${a}/${b}</td><td>${BACK[k]}</td></tr>`).join('')}</tbody></table></div>
+      ${facts('สิ่งที่ควรทำต่อ',[done<QZ.length?'ตอบให้ครบทุกข้อก่อนสรุปผล':(ok===QZ.length?'ผ่านทุกข้อ ทำกรณีศึกษา 2.1 ต่อเพื่อฝึก LO 2.6 ระดับประเมินค่า':'กลับไปอ่านหัวข้อตามตาราง แล้วทำข้อที่ผิดอีกครั้ง'),'LO 2.6 วัดด้วยกรณีศึกษาพร้อมเกณฑ์ให้คะแนน ไม่อยู่ในแบบทดสอบปรนัยนี้'])}`;
+  }
+  sLoad('e1');$('bIn').value=BEX;bCalc();qRender();
+  const goS=()=>{const m=(location.hash||'').match(/^#(S2\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body></html>

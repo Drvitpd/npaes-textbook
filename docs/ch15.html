@@ -1,0 +1,455 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 15 · กระดาษทำการภาษีเงินได้</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="reg"],[data-pane="tax"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 15 ภาษีเงินได้</div>
+      <h1>แอป 15 · กระดาษทำการภาษีเงินได้</h1>
+      <p class="lede">กระทบยอดกำไรทางบัญชีกับกำไรสุทธิทางภาษีจากบทที่ 7–14 คำนวณภาษีอัตราวิสาหกิจขนาดกลางและขนาดย่อม (SME) และร้อยละ 20 ทดสอบประมาณการ ภ.ง.ด.51 บันทึกภาษีค้างจ่ายหรือขอคืนตามแบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566) และคำนวณภาษีเงินได้รอการตัดบัญชีสำหรับกิจการที่เลือกตามย่อหน้า 15.2</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 15 ย่อหน้า 15.1–15.2</b><br>ตำราบทที่ 15 · ฉบับ 17-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> ข้อมูลกิจการ → รายการปรับปรุง → ภาษีงวดปัจจุบัน → ภ.ง.ด.51 → ค้างจ่ายหรือขอคืน → (ถ้าเลือก 15.2) ภาษีรอการตัดบัญชี → ร่างหมายเหตุ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="info"><span class="n">0</span>ข้อมูลกิจการและนำเข้า</button>
+    <button role="tab" aria-selected="false" data-tab="adj"><span class="n">1</span>รายการปรับปรุงข้ามบท</button>
+    <button role="tab" aria-selected="false" data-tab="cur"><span class="n">2</span>ภาษีงวดปัจจุบัน</button>
+    <button role="tab" aria-selected="false" data-tab="p51"><span class="n">3</span>ภ.ง.ด.51</button>
+    <button role="tab" aria-selected="false" data-tab="pay"><span class="n">4</span>ค้างจ่ายหรือขอคืน</button>
+    <button role="tab" aria-selected="false" data-tab="dt"><span class="n">5</span>ทางเลือก 15.2</button>
+    <button role="tab" aria-selected="false" data-tab="note"><span class="n">6</span>ร่างหมายเหตุ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">7</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">8</span>เนื้อหาเสริม S15</button>
+  </nav>
+
+  <!-- 0 INFO -->
+  <div class="grid" data-pane="info">
+    <section class="panel">
+      <h2>ข้อมูลกิจการ</h2>
+      <p class="hint">ค่าเริ่มต้นคือบริษัทสมมติในตัวอย่างที่ 15.1–15.6 ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น ไม่ส่งออกจากเครื่อง</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 15.1 บริษัท ตัวอย่างการค้า จำกัด</span>
+      <div class="fields">
+        <label class="f">วันสิ้นรอบระยะเวลาบัญชี<input type="date" id="iYe" value="2025-12-31"></label>
+        <label class="f">ทุนชำระแล้ว ณ วันสิ้นรอบ (บาท)<input type="number" id="iCap" value="4000000"></label>
+        <label class="f">รายได้จากการขายสินค้าหรือให้บริการ (บาท)<input type="number" id="iRev" value="25000000"></label>
+        <label class="f">กำไรก่อนภาษีเงินได้ตามบัญชี (บาท)<input type="number" id="iPbt" value="1421000"></label>
+        <label class="f">ทางเลือกตามบทที่ 15<select id="iOpt"><option value="15.1">ย่อหน้า 15.1 วิธีภาษีเงินได้ค้างจ่าย</option><option value="15.2">ย่อหน้า 15.2 วิธีหนี้สินตามงบฐานะการเงิน (มาตรฐานการบัญชี ฉบับที่ 12 เรื่อง ภาษีเงินได้ (TAS 12))</option></select></label>
+      </div>
+      <h3>หนังสือรับรองการหักภาษี ณ ที่จ่าย</h3>
+      <p class="hint">นำเข้าไฟล์ CSV (UTF-8) คอลัมน์ ผู้จ่ายเงิน, วันที่, เงินได้, ภาษีที่ถูกหัก หรือกรอกในตาราง ชื่อผู้จ่ายเงินปกปิดโดยค่าเริ่มต้น</p>
+      <div class="fields"><label class="f">ไฟล์ CSV<input type="file" id="wFile" accept=".csv,.txt"></label></div>
+      <div class="checks" style="margin:8px 0"><label><input type="checkbox" id="wAnon" checked><span><b>ปกปิดชื่อผู้จ่ายเงิน</b> แสดงเป็น "ผู้จ่ายเงิน 1, 2, …"</span></label></div>
+      <p class="hint" id="wStatus"></p>
+      <div class="tbl"><table><thead><tr><th>ผู้จ่ายเงิน</th><th>วันที่</th><th class="num">เงินได้</th><th class="num">ภาษีที่ถูกหัก</th><th></th></tr></thead><tbody id="wBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="wAdd">เพิ่มรายการ</button><button class="btn" id="wReset">ค่าเริ่มต้น</button></div>
+    </section>
+    <section class="panel voucher" id="iOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 1 ADJ -->
+  <div class="grid" data-pane="adj" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>รายการปรับปรุงข้ามบท (ตารางที่ 15-2)</h2>
+      <p class="hint">แก้จำนวน ประเภท และทิศทางได้ ผลต่างถาวรไม่กลับรายการ ผลต่างชั่วคราวกลับรายการในงวดหน้า หลักทางภาษีเป็นข้อมูลอ้างอิงของตำรา ตรวจกับตัวบทฉบับปัจจุบันก่อนใช้</p>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th>บท</th><th>ประเภท</th><th>ทิศทาง</th><th class="num">จำนวน</th><th>หลักทางภาษี</th><th></th></tr></thead><tbody id="aBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="aAdd">เพิ่มรายการ</button><button class="btn" id="aReset">ค่าเริ่มต้น</button></div>
+      <div id="aOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 2 CUR -->
+  <div class="grid" data-pane="cur" hidden>
+    <section class="panel">
+      <h2>ภาษีงวดปัจจุบัน</h2>
+      <p class="hint">แอปตรวจเงื่อนไข SME จากทุนชำระแล้วและรายได้ในแท็บ 0 ผู้ใช้ยืนยันอัตราที่ใช้ได้เอง</p>
+      <div class="fields"><label class="f">อัตราที่ใช้<select id="cRate"><option value="auto">ตามเงื่อนไขที่แอปตรวจ</option><option value="sme">อัตรา SME</option><option value="gen">ร้อยละ 20</option></select></label></div>
+    </section>
+    <section class="panel voucher" id="cOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 3 P51 -->
+  <div class="grid" data-pane="p51" hidden>
+    <section class="panel">
+      <h2>ภ.ง.ด.51 และการทดสอบร้อยละ 25</h2>
+      <p class="hint">กรอกประมาณการกำไรสุทธิทั้งปีที่ใช้ยื่น ภ.ง.ด.51 แอปคำนวณภาษีครึ่งปีและเทียบส่วนที่ขาดกับกำไรสุทธิจริงจากแท็บ 1</p>
+      <div class="fields">
+        <label class="f">ประมาณการกำไรสุทธิทั้งปี (บาท)<input type="number" id="pEst" value="1250000"></label>
+        <label class="f">ภาษีที่ชำระจริงตาม ภ.ง.ด.51 (เว้นว่างให้ใช้ค่าคำนวณ)<input type="number" id="pPaid" value=""></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="pOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 4 PAY -->
+  <div class="grid" data-pane="pay" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel voucher" id="yOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 5 DT -->
+  <div class="grid" data-pane="dt" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ภาษีเงินได้รอการตัดบัญชี (ตัวอย่างที่ 15.6)</h2>
+      <div class="alert warn"><b>เฉพาะกิจการที่เลือกตาม 15.2</b> แท็บนี้ใช้ข้อกำหนดของ TAS 12 ตามที่ย่อหน้า 15.2 อ้างถึง กิจการที่ใช้ย่อหน้า 15.1 ไม่รับรู้รายการในแท็บนี้</div>
+      <div class="fields">
+        <label class="f">อัตราที่คาดว่าจะใช้ (%) เว้นว่างให้ใช้อัตราเฉลี่ยจากแท็บ 2<input type="number" id="dRate" value="" step="0.01"></label>
+        <label class="f">อัตราที่ใช้วัดยอดต้นงวด (%) เว้นว่างให้เท่าอัตราปลายงวด<input type="number" id="dRateO" value="" step="0.01"></label>
+      </div>
+      <div class="checks" style="margin:8px 0"><label><input type="checkbox" id="dOff" checked><span>เข้าเงื่อนไขหักกลบ (หน่วยงานจัดเก็บเดียวกัน กิจการเดียวกัน มีสิทธิตามกฎหมาย)</span></label></div>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th>ชนิดผลต่าง</th><th class="num">ปลายงวด</th><th class="num">ต้นงวด</th><th></th></tr></thead><tbody id="dBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="dAdd">เพิ่มรายการ</button><button class="btn" id="dReset">ค่าเริ่มต้น</button></div>
+      <div id="dOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 6 NOTE -->
+  <div class="grid" data-pane="note" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ร่างหมายเหตุประกอบงบการเงิน</h2>
+      <p class="hint">ร่างตามทางเลือกในแท็บ 0 ตัวเลขมาจากแท็บ 1–5 คัดลอกไปปรับถ้อยคำในงบการเงินของกิจการ</p>
+      <div class="row-actions"><button class="btn" id="nCopy">คัดลอกร่างหมายเหตุ</button><span class="copied" id="nOk" hidden>คัดลอกแล้ว</span></div>
+      <div id="nOut"></div>
+    </section>
+  </div>
+
+  <!-- 7 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 8 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S15</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 15 ลิงก์ #S15.1 ถึง #S15.8 เปิดหัวข้อนั้นได้โดยตรง ตัวเลขใช้ข้อมูลชุดเดียวกับตำรา (ชื่อบริษัทเป็นชื่อสมมติ)</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S15.1">S15.1</a><a class="btn" href="#S15.2">S15.2</a><a class="btn" href="#S15.3">S15.3</a><a class="btn" href="#S15.4">S15.4</a><a class="btn" href="#S15.5">S15.5</a><a class="btn" href="#S15.6">S15.6</a><a class="btn" href="#S15.7">S15.7</a><a class="btn" href="#S15.8">S15.8</a></div>
+<h3 id="S15.1">S15.1 ตารางรายการปรับปรุงฉบับเต็ม</h3><p>ตารางนี้ใช้เป็นรายการตรวจก่อนจัดทำ ภ.ง.ด.50 ช่อง &quot;หลักทางภาษี&quot; ระบุเฉพาะหลักที่ตรวจกับแหล่งของกรมสรรพากรแล้ว รายการที่เขียนว่า &quot;ตามประมวลรัษฎากร&quot; ให้ตรวจตัวบทฉบับปัจจุบันก่อนใช้ ประเภท &quot;ชั่วคราว&quot; หมายถึงผลต่างที่กลับรายการได้ในงวดหน้า</p><div class="tbl"><table><thead><tr><th>รายการ</th><th>บท</th><th>ประเภท</th><th>ทิศทางในปีที่เกิด</th><th>หลักทางภาษี</th></tr></thead><tbody><tr><td>ค่ารับรองส่วนที่เกินร้อยละ 0.3 ของรายได้ หรือเกิน 10 ล้านบาท</td><td>–</td><td>ถาวร</td><td>บวก</td><td>กฎกระทรวง ฉบับที่ 143 ข้อ 4 แก้ไขโดยฉบับที่ 222</td></tr><tr><td>ค่าปรับ เงินเพิ่ม และค่าปรับทางอาญา</td><td>–</td><td>ถาวร</td><td>บวก</td><td>ตามประมวลรัษฎากร</td></tr><tr><td>ภาษีเงินได้นิติบุคคลที่บันทึกเป็นค่าใช้จ่ายก่อนกำไรก่อนภาษี</td><td>15</td><td>ถาวร</td><td>บวก</td><td>ตามประมวลรัษฎากร</td></tr><tr><td>รายจ่ายส่วนตัวหรือรายจ่ายที่ไม่ใช่เพื่อกิจการ</td><td>–</td><td>ถาวร</td><td>บวก</td><td>ตามประมวลรัษฎากร</td></tr><tr><td>รายจ่ายที่กำหนดตัวผู้รับไม่ได้ หรือไม่มีหลักฐาน</td><td>–</td><td>ถาวร</td><td>บวก</td><td>ตามประมวลรัษฎากร</td></tr><tr><td>เงินบริจาคส่วนที่เกินเพดาน</td><td>–</td><td>ถาวร</td><td>บวก</td><td>ตามประมวลรัษฎากร</td></tr><tr><td>เงินปันผลรับที่เข้าเงื่อนไขยกเว้น</td><td>9</td><td>ถาวร</td><td>หัก</td><td>ตามประมวลรัษฎากร ตรวจเงื่อนไขการถือหุ้นและระยะเวลา</td></tr><tr><td>รายจ่ายที่กฎหมายให้หักได้เพิ่ม</td><td>–</td><td>ถาวร</td><td>หัก</td><td>ตามพระราชกฤษฎีกาฉบับที่ใช้กับรายจ่ายนั้น</td></tr><tr><td>ค่าเผื่อหนี้สงสัยจะสูญที่ตั้งเพิ่ม</td><td>7</td><td>ชั่วคราว</td><td>บวก</td><td>มาตรา 65 ตรี (1)</td></tr><tr><td>หนี้สูญที่ตัดจากค่าเผื่อและเข้าเงื่อนไข</td><td>7</td><td>ชั่วคราว</td><td>หัก</td><td>กฎกระทรวง ฉบับที่ 186 แก้ไขโดยฉบับที่ 374</td></tr><tr><td>ค่าเผื่อมูลค่าสุทธิที่จะได้รับแบบรวมกลุ่ม</td><td>8</td><td>ชั่วคราว</td><td>บวก</td><td>มาตรา 65 ตรี (1)</td></tr><tr><td>การลดมูลค่าสินค้ารายตัวที่มีหลักฐานราคาตลาด</td><td>8</td><td>ไม่ปรับ</td><td>–</td><td>มาตรา 65 ทวิ (6)</td></tr><tr><td>ค่าเสื่อมราคาทางบัญชีต่างจากทางภาษี</td><td>10</td><td>ชั่วคราว</td><td>บวกหรือหัก</td><td>มาตรา 65 ทวิ (2) และ พ.ร.ฎ. ฉบับที่ 145</td></tr><tr><td>ค่าเสื่อมราคาของส่วนที่ตีราคาเพิ่ม</td><td>10</td><td>15.1: รายการบวกกลับที่ไม่กลับรายการในกำไรสุทธิทางภาษี · 15.2: ส่วนหนึ่งของผลต่างชั่วคราวตามงบฐานะการเงิน (ส่วนเกินทุนเทียบฐานภาษี)</td><td>บวก</td><td>มาตรา 65 ทวิ (3)</td></tr><tr><td>ผลกำไรหรือขาดทุนจากการปรับมูลค่ายุติธรรมของอสังหาริมทรัพย์เพื่อการลงทุน</td><td>12</td><td>ชั่วคราว</td><td>หักกำไร บวกขาดทุน</td><td>ทางภาษีใช้ราคาทุน</td></tr><tr><td>ดอกเบี้ยที่บัญชีและภาษีรวมเป็นต้นทุนต่างกัน</td><td>13</td><td>ชั่วคราว</td><td>บวกหรือหัก</td><td>แนวที่สรุปในบทที่ 13</td></tr><tr><td>สัญญาลีสซิ่งที่บัญชีเป็นสัญญาเช่าเงินทุน</td><td>14</td><td>ชั่วคราว</td><td>บวกหรือหัก</td><td>ทางภาษีหักค่าเช่าตามที่จ่าย</td></tr><tr><td>สัญญาเช่าซื้อ</td><td>14</td><td>ชั่วคราว</td><td>บวกหรือหัก</td><td>คำสั่งกรมสรรพากรที่ ป.3/2527 ข้อ 7</td></tr><tr><td>ประมาณการหนี้สินผลประโยชน์พนักงาน</td><td>16</td><td>ชั่วคราว</td><td>บวก ปีที่ตั้ง หัก ปีที่จ่าย</td><td>มาตรา 65 ตรี (1)</td></tr><tr><td>ประมาณการหนี้สินอื่น เช่น การรับประกันสินค้า คดีความ</td><td>16</td><td>ชั่วคราว</td><td>บวก ปีที่ตั้ง หัก ปีที่จ่าย</td><td>มาตรา 65 ตรี (1)</td></tr><tr><td>ผลขาดทุนสุทธิยกมา</td><td>15</td><td>–</td><td>หัก</td><td>ภายในระยะเวลาที่ประมวลรัษฎากรกำหนด</td></tr></tbody></table></div><h3 id="S15.2">S15.2 วงจร ภ.ง.ด.51 และ ภ.ง.ด.50 พร้อมการคำนวณเงินเพิ่ม</h3><div class="tbl"><table><thead><tr><th>ขั้น</th><th>เวลา</th><th>สาระ</th></tr></thead><tbody><tr><td>1 ประมาณการ</td><td>ก่อนยื่น ภ.ง.ด.51 (ภายในสองเดือนนับแต่วันสุดท้ายของเดือนที่หกของรอบระยะเวลาบัญชี)</td><td>ประมาณกำไรสุทธิทั้งปี หารสอง คำนวณภาษีด้วยอัตราที่ใช้กับกิจการ (SME ใช้อัตราขั้นบันไดกับกำไรครึ่งปี)</td></tr><tr><td>2 ยื่น ภ.ง.ด.51</td><td>ภายในสองเดือนนับแต่วันสุดท้ายของหกเดือนแรก (มาตรา 67 ทวิ)</td><td>บันทึกภาษีเงินได้จ่ายล่วงหน้า</td></tr><tr><td>3 ปิดบัญชี</td><td>วันสิ้นรอบระยะเวลาบัญชี</td><td>คำนวณภาษีทั้งปี ล้างภาษีจ่ายล่วงหน้าและภาษีหัก ณ ที่จ่าย บันทึกภาษีค้างจ่ายหรือรอขอคืน</td></tr><tr><td>4 ยื่น ภ.ง.ด.50</td><td>ภายใน 150 วันนับแต่วันสิ้นรอบ</td><td>ชำระภาษีค้างจ่าย หรือขอคืนภาษี</td></tr><tr><td>5 ทดสอบร้อยละ 25</td><td>พร้อม ภ.ง.ด.50</td><td>เทียบส่วนที่ประมาณการขาดกับกำไรสุทธิจริง (มาตรา 67 ตรี)</td></tr></tbody></table></div><h4>การทดสอบร้อยละ 25 สามสถานการณ์ (กำไรสุทธิจริง 1,500,000 บาท)</h4><div class="tbl"><table><thead><tr><th class="num">ประมาณการ</th><th class="num">ส่วนที่ขาด</th><th class="num">ร้อยละของกำไรจริง</th><th>ผล</th></tr></thead><tbody><tr><td class="num">1,250,000</td><td class="num">250,000</td><td class="num">16.7</td><td>ไม่เกินร้อยละ 25</td></tr><tr><td class="num">1,100,000</td><td class="num">400,000</td><td class="num">26.7</td><td>เกินร้อยละ 25 เสี่ยงเงินเพิ่ม เว้นแต่มีเหตุผลที่กฎหมายยอมรับ (ป.50/2537)</td></tr><tr><td class="num">1,000,000</td><td class="num">500,000</td><td class="num">33.3</td><td>เกินร้อยละ 25 เสี่ยงเงินเพิ่ม เว้นแต่มีเหตุผลที่กฎหมายยอมรับ (ป.50/2537)</td></tr></tbody></table></div><p>แนวการตีความการคำนวณเงินเพิ่ม (กรณีประมาณการ 1,000,000 บาท อัตรา SME): ภาษีครึ่งปีจากกำไรจริงครึ่งหนึ่ง (750,000 − 300,000) × 15% = 67,500 บาท ภาษีที่ชำระจากประมาณการ (500,000 − 300,000) × 15% = 30,000 บาท ภาษีที่ชำระขาด 37,500 บาท เงินเพิ่มร้อยละ 20 เท่ากับ 7,500 บาท วิธีคำนวณให้ตรวจกับตัวบทมาตรา 67 ตรี และแนวปฏิบัติของกรมสรรพากรฉบับปัจจุบัน เงินเพิ่มบันทึกเป็นค่าใช้จ่ายและเป็นผลต่างถาวร</p><h4>รายการบันทึก (ตัวเลขตัวอย่างที่ 15.3)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ภาษีเงินได้จ่ายล่วงหน้า</td><td class="num">48,750</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">48,750</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ภาษีเงินได้</td><td class="num">180,000</td><td class="num"></td></tr><tr><td>    เครดิต ภาษีเงินได้จ่ายล่วงหน้า</td><td class="num"></td><td class="num">48,750</td></tr><tr><td>    เครดิต ภาษีเงินได้ถูกหัก ณ ที่จ่าย</td><td class="num"></td><td class="num">30,000</td></tr><tr><td>    เครดิต ภาษีเงินได้นิติบุคคลค้างจ่าย</td><td class="num"></td><td class="num">101,250</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ภาษีเงินได้นิติบุคคลค้างจ่าย</td><td class="num">101,250</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">101,250</td></tr></tbody></table></div><p>รายการสุดท้ายบันทึกเมื่อยื่น ภ.ง.ด.50 ในปีถัดไป</p><h3 id="S15.3">S15.3 อัตรา SME ตัวอย่างการคำนวณ และเงื่อนไขที่ต้องตรวจ</h3><div class="tbl"><table><thead><tr><th class="num">กำไรสุทธิทางภาษี</th><th class="num">ภาษีอัตรา SME</th><th class="num">ภาษีอัตราร้อยละ 20</th><th class="num">ผลต่าง</th></tr></thead><tbody><tr><td class="num">-200,000</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr><tr><td class="num">250,000</td><td class="num">0</td><td class="num">50,000</td><td class="num">50,000</td></tr><tr><td class="num">1,500,000</td><td class="num">180,000</td><td class="num">300,000</td><td class="num">120,000</td></tr><tr><td class="num">3,000,000</td><td class="num">405,000</td><td class="num">600,000</td><td class="num">195,000</td></tr><tr><td class="num">4,000,000</td><td class="num">605,000</td><td class="num">800,000</td><td class="num">195,000</td></tr></tbody></table></div><p>ผลขาดทุนไม่มีภาษี และยกไปหักในปีถัดไปได้ภายในระยะเวลาที่ประมวลรัษฎากรกำหนด</p><h4>รายการตรวจเงื่อนไข SME</h4><ol><li>ทุนชำระแล้ว ณ วันสุดท้ายของรอบระยะเวลาบัญชีไม่เกิน 5 ล้านบาท (ตรวจหนังสือรับรองและการเพิ่มทุนระหว่างปี)</li><li>รายได้จากการขายสินค้าหรือการให้บริการในรอบระยะเวลาบัญชีไม่เกิน 30 ล้านบาท</li><li>รอบระยะเวลาบัญชีไม่ครบสิบสองเดือนให้ตรวจเงื่อนไขตามประกาศของกรมสรรพากร</li><li>บันทึกหลักฐานในกระดาษทำการภาษีทุกปี</li></ol><p>แหล่งอ้างอิง: กรมสรรพากร การเสียภาษีเงินได้นิติบุคคลของ SME ตาม พ.ร.ฎ. ฉบับที่ 530 (พ.ศ. 2554) และที่แก้ไขเพิ่มเติม</p><h3 id="S15.4">S15.4 รายละเอียดเพิ่มเติมของย่อหน้า 15.2 และกรณีที่ 2–6</h3><p>เฉพาะกิจการที่เลือกตาม 15.2 อัตราร้อยละ 20 ทุกกรณี</p><h4>กรณีที่ 2 มูลค่าเครื่องจักรลดลง</h4><p>เครื่องจักรมูลค่าตามบัญชี 5,000,000 บาท ฐานภาษี 3,500,000 บาท หนี้สินภาษีเงินได้รอการตัดบัญชีต้นงวด 300,000 บาท ปลายงวดบริษัทรับรู้ผลขาดทุนจากการลดลงของมูลค่า 1,000,000 บาทตามบทที่ 10 มูลค่าตามบัญชีเหลือ 4,000,000 บาท ผลต่างที่ต้องเสียภาษีเหลือ 500,000 บาท หนี้สินภาษีเงินได้รอการตัดบัญชีเหลือ 100,000 บาท</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต หนี้สินภาษีเงินได้รอการตัดบัญชี</td><td class="num">200,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าใช้จ่าย (รายได้) ภาษีเงินได้</td><td class="num"></td><td class="num">200,000</td></tr></tbody></table></div><h4>กรณีที่ 3 ค่าเผื่อหนี้สงสัยจะสูญ</h4><p>ค่าเผื่อ 100,000 บาท ทางภาษีบวกกลับตามมาตรา 65 ตรี (1) ฐานภาษีของลูกหนี้สูงกว่ามูลค่าตามบัญชี 100,000 บาท สินทรัพย์ภาษีเงินได้รอการตัดบัญชี 20,000 บาท เมื่อหนี้สูญเข้าเงื่อนไขกฎกระทรวง ฉบับที่ 186 สินทรัพย์นี้กลับรายการ</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต สินทรัพย์ภาษีเงินได้รอการตัดบัญชี</td><td class="num">20,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าใช้จ่าย (รายได้) ภาษีเงินได้</td><td class="num"></td><td class="num">20,000</td></tr></tbody></table></div><h4>กรณีที่ 4 ผลประโยชน์พนักงาน</h4><p>ประมาณการหนี้สินผลประโยชน์พนักงานหลังออกจากงานตามย่อหน้า 16.14 จำนวน 500,000 บาท ทางภาษีเป็นเงินสำรองตามมาตรา 65 ตรี (1) และหักได้เมื่อจ่าย ฐานภาษีของหนี้สินเป็นศูนย์ ผลต่างที่ใช้หักภาษี 500,000 บาท สินทรัพย์ภาษีเงินได้รอการตัดบัญชี 100,000 บาท ถ้ากิจการวัดหนี้สินตามมาตรฐานการบัญชี ฉบับที่ 19 เรื่อง ผลประโยชน์ของพนักงาน (TAS 19) และมีผลกำไรหรือขาดทุนจากการประมาณการตามหลักคณิตศาสตร์ประกันภัยในกำไรขาดทุนเบ็ดเสร็จอื่น ภาษีของส่วนนั้นรับรู้ในกำไรขาดทุนเบ็ดเสร็จอื่น</p><h4>กรณีที่ 5 การรวมธุรกิจ</h4><p>ผู้ซื้อวัดสินทรัพย์ที่ได้มาด้วยมูลค่ายุติธรรมสูงกว่าฐานภาษีของผู้ถูกซื้อ 700,000 บาท หนี้สินภาษีเงินได้รอการตัดบัญชี 140,000 บาทเป็นส่วนหนึ่งของสินทรัพย์สุทธิที่ได้มา ค่าความนิยมจึงเพิ่มขึ้น 140,000 บาท ไม่ผ่านงบกำไรขาดทุน ตัวอย่างประกอบความเข้าใจบทที่ 25 ของสภาวิชาชีพบัญชีใช้ข้อสมมติว่ากิจการไม่ได้เลือกถือปฏิบัติตาม TAS 12 กิจการที่เลือกตาม 15.2 จึงต้องปรับตัวเลขของตัวอย่างนั้นเอง</p><h4>กรณีที่ 6 ค่าเสื่อมราคาทางภาษีเร็วกว่าบัญชี</h4><p>ข้อมูลของกรณีกำหนดว่าทางภาษีหักค่าเสื่อมราคาเร็วกว่าบัญชี (ใช้เป็นข้อมูลของกรณี ไม่ได้อ้างสิทธิทางภาษีเฉพาะ) หน่วย: พันบาท</p><div class="tbl"><table><thead><tr><th>สิ้นปีที่</th><th class="num">มูลค่าตามบัญชี</th><th class="num">ฐานภาษี</th><th class="num">ผลต่างที่ต้องเสียภาษี</th><th class="num">หนี้สินภาษีเงินได้รอการตัดบัญชี</th><th class="num">เปลี่ยนแปลง</th></tr></thead><tbody><tr><td>1</td><td class="num">800</td><td class="num">700</td><td class="num">100</td><td class="num">20.0</td><td class="num">20.0</td></tr><tr><td>2</td><td class="num">600</td><td class="num">400</td><td class="num">200</td><td class="num">40.0</td><td class="num">20.0</td></tr><tr><td>3</td><td class="num">400</td><td class="num">100</td><td class="num">300</td><td class="num">60.0</td><td class="num">20.0</td></tr><tr><td>4</td><td class="num">200</td><td class="num">50</td><td class="num">150</td><td class="num">30.0</td><td class="num">-30.0</td></tr><tr><td>5</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0.0</td><td class="num">-30.0</td></tr></tbody></table></div><h4>การวัดยอดใหม่เมื่ออัตราเปลี่ยน</h4><p>ตัวอย่างที่ 15.6: ถ้าปลายงวดบริษัทคาดว่าจะไม่เข้าเงื่อนไข SME อัตราที่ใช้เปลี่ยนจากร้อยละ 12 เป็น 20 ยอดปลายงวดเป็นสินทรัพย์ 202,800 บาท หนี้สิน 170,000 บาท สุทธิ 32,800 บาท เทียบยอดต้นงวดสุทธิที่ร้อยละ 12 จำนวน 14,400 บาท รายได้ภาษีเงินได้รอการตัดบัญชีรวมผลของการเปลี่ยนอัตราเท่ากับ 18,400 บาท</p><h4>รายการตรวจการหักกลบ</h4><ol><li>มีสิทธิตามกฎหมายที่จะหักกลบภาษีงวดปัจจุบัน</li><li>ภาษีจัดเก็บโดยหน่วยงานเดียวกันจากกิจการเดียวกัน</li><li>หมายเหตุแสดงยอดก่อนหักกลบและการเปลี่ยนแปลงแยกตามรายการ</li></ol><h3 id="S15.5">S15.5 แม่แบบหมายเหตุของทั้งสองทางเลือกและรายการตรวจสอบก่อนปิดบัญชี</h3><h4>ก. กิจการที่ใช้ย่อหน้า 15.1</h4><p>นโยบายการบัญชี: บริษัทบันทึกภาษีเงินได้ตามจำนวนที่ต้องชำระตามประมวลรัษฎากร และแสดงภาษีค้างชำระสุทธิจากภาษีหัก ณ ที่จ่ายและภาษีที่ชำระล่วงหน้าเป็นหนี้สิน บริษัทไม่รับรู้ภาษีเงินได้รอการตัดบัญชี</p><div class="tbl"><table><thead><tr><th>การกระทบยอด (หน่วย: บาท)</th><th class="num">2568</th></tr></thead><tbody><tr><td>กำไรก่อนภาษีเงินได้</td><td class="num">1,421,000</td></tr><tr><td>บวก รายจ่ายที่ไม่ให้ถือเป็นรายจ่ายทางภาษี</td><td class="num">35,000</td></tr><tr><td>บวก (หัก) ผลต่างที่กลับรายการได้ในงวดหน้า สุทธิ</td><td class="num">44,000</td></tr><tr><td>กำไรสุทธิทางภาษี</td><td class="num">1,500,000</td></tr><tr><td>ภาษีเงินได้ (อัตรา SME)</td><td class="num">180,000</td></tr><tr><td>หัก ภาษีที่ชำระล่วงหน้าและถูกหัก ณ ที่จ่าย</td><td class="num">78,750</td></tr><tr><td>ภาษีเงินได้นิติบุคคลค้างจ่าย</td><td class="num">101,250</td></tr></tbody></table></div><h4>ข. กิจการที่เลือกตามย่อหน้า 15.2</h4><p>นโยบายการบัญชี: ดูกรอบตัวอย่างนโยบายในหัวข้อ 15.2.6 ของตำรา</p><div class="tbl"><table><thead><tr><th>ค่าใช้จ่าย (รายได้) ภาษีเงินได้</th><th class="num">2568</th></tr></thead><tbody><tr><td>ภาษีงวดปัจจุบัน</td><td class="num">180,000</td></tr><tr><td>ภาษีเงินได้รอการตัดบัญชีจากผลต่างชั่วคราว</td><td class="num">(5,280)</td></tr><tr><td>รวม</td><td class="num">174,720</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>การกระทบยอดอัตราภาษี</th><th class="num">บาท</th></tr></thead><tbody><tr><td>กำไรก่อนภาษี × อัตราที่ใช้ร้อยละ 12</td><td class="num">170,520</td></tr><tr><td>ผลกระทบของรายจ่ายที่หักไม่ได้</td><td class="num">4,200</td></tr><tr><td>ค่าใช้จ่ายภาษีเงินได้</td><td class="num">174,720</td></tr><tr><td>อัตราภาษีที่แท้จริง</td><td class="num">ร้อยละ 12.30</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>ภาษีเงินได้รอการตัดบัญชี</th><th class="num">1 ม.ค. 2568</th><th class="num">รับรู้ในกำไรขาดทุน</th><th class="num">31 ธ.ค. 2568</th></tr></thead><tbody><tr><td>ลูกหนี้การค้า: ค่าเผื่อหนี้สงสัยจะสูญ (บทที่ 7)</td><td class="num">10,800</td><td class="num">7,200</td><td class="num">18,000</td></tr><tr><td>สินค้าคงเหลือ: ค่าเผื่อแบบรวมกลุ่ม (บทที่ 8)</td><td class="num">4,800</td><td class="num">3,600</td><td class="num">8,400</td></tr><tr><td>เครื่องจักร: ฐานภาษีสูงกว่ามูลค่าตามบัญชี (บทที่ 10)</td><td class="num">8,400</td><td class="num">6,000</td><td class="num">14,400</td></tr><tr><td>อาคารระหว่างก่อสร้าง: ดอกเบี้ยที่รวมในฐานภาษี (บทที่ 13)</td><td class="num">0</td><td class="num">2,880</td><td class="num">2,880</td></tr><tr><td>หนี้สินตามสัญญาเช่าเงินทุน ฐานภาษีเป็นศูนย์ (บทที่ 14)</td><td class="num">104,400</td><td class="num">(26,400)</td><td class="num">78,000</td></tr><tr><td>สินทรัพย์ตามสัญญาเช่าเงินทุน ฐานภาษีเป็นศูนย์ (บทที่ 14)</td><td class="num">(96,000)</td><td class="num">24,000</td><td class="num">(72,000)</td></tr><tr><td>อสังหาริมทรัพย์เพื่อการลงทุน: มูลค่ายุติธรรมสูงกว่าราคาทุน (บทที่ 12)</td><td class="num">(18,000)</td><td class="num">(12,000)</td><td class="num">(30,000)</td></tr><tr><td>สุทธิ</td><td class="num">14,400</td><td class="num">5,280</td><td class="num">19,680</td></tr></tbody></table></div><h4>รายการตรวจสอบก่อนปิดบัญชี</h4><ol><li>ยืนยันทางเลือกที่ใช้และความสม่ำเสมอกับงวดก่อน</li><li>ตรวจเงื่อนไข SME ณ วันสิ้นรอบ</li><li>กระทบยอดกำไรทางบัญชีกับกำไรสุทธิทางภาษีครบทุกบท (7, 8, 10, 12, 13, 14, 16)</li><li>แยกผลต่างถาวรกับผลต่างชั่วคราว พร้อมหลักฐาน</li><li>ตรวจหนังสือรับรองการหักภาษี ณ ที่จ่ายครบ</li><li>ตรวจ ภ.ง.ด.51 และทดสอบร้อยละ 25</li><li>บันทึกภาษีค้างจ่ายหรือรอขอคืนในบัญชีที่ถูกต้อง (3.7 หรือ 1.3 / 1.7)</li><li>15.2: ทะเบียนฐานภาษีของสินทรัพย์และหนี้สินครบ</li><li>15.2: ยืนยันอัตราที่คาดว่าจะใช้</li><li>15.2: ทบทวนความเป็นไปได้ของกำไรทางภาษีสำหรับสินทรัพย์ภาษีเงินได้รอการตัดบัญชี</li><li>15.2: ภาษีของกำไรขาดทุนเบ็ดเสร็จอื่นแยกรับรู้และเปิดเผยตามย่อหน้า 4.17</li><li>15.2: ตรวจเงื่อนไขการหักกลบ</li></ol><h3 id="S15.6">S15.6 แนวคำตอบกรณีศึกษา 15.1 (สำหรับผู้สอน)</h3><p>(ก) สินทรัพย์ภาษีเงินได้รอการตัดบัญชี 600,000 × 20% = 120,000 บาท หนี้สินภาษีเงินได้รอการตัดบัญชี 1,500,000 × 20% = 300,000 บาท สุทธิเป็นหนี้สิน 180,000 บาท การเปลี่ยนแปลงของปี: หนี้สินเพิ่ม 400,000 × 20% = 80,000 บาท สินทรัพย์เพิ่ม 100,000 × 20% = 20,000 บาท ค่าใช้จ่ายภาษีเงินได้รอการตัดบัญชีสุทธิ 60,000 บาท</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต สินทรัพย์ภาษีเงินได้รอการตัดบัญชี</td><td class="num">20,000</td><td class="num"></td></tr><tr><td>เดบิต ค่าใช้จ่าย (รายได้) ภาษีเงินได้</td><td class="num">60,000</td><td class="num"></td></tr><tr><td>    เครดิต หนี้สินภาษีเงินได้รอการตัดบัญชี</td><td class="num"></td><td class="num">80,000</td></tr></tbody></table></div><p>(ข) หักกลบได้เพราะเป็นภาษีที่กรมสรรพากรจัดเก็บจากบริษัทเดียวกัน แสดงหนี้สินภาษีเงินได้รอการตัดบัญชีสุทธิ 180,000 บาทในรายการ 4.5 ภาษีค้างจ่ายในรายการ 3.7 ชื่อรายการในงบกำไรขาดทุน &quot;ค่าใช้จ่าย (รายได้) ภาษีเงินได้&quot; หมายเหตุแสดงยอดก่อนหักกลบ</p><p>(ค) ข้อเสนอขัดย่อหน้า 15.2 ที่ให้ถือปฏิบัติทุกข้ออย่างสม่ำเสมอ และย่อหน้า 5.8 และ 5.10 ที่ให้ใช้นโยบายการบัญชีเดียวกันทุกงวด ย่อหน้า 5.9 ให้เปลี่ยนนโยบายได้เมื่อเกิดจากข้อกำหนดของมาตรฐาน (5.9.1) หรือทำให้ข้อมูลน่าเชื่อถือและเกี่ยวข้องกับการตัดสินใจมากขึ้น (5.9.2) การเลือกช่วงเวลาเปลี่ยนตามผลกำไรไม่เข้าเงื่อนไขทั้งสองข้อ การรอปีที่ขาดทุนเพื่อรับรู้สินทรัพย์ภาษีเงินได้รอการตัดบัญชียังขัดหลักรับรู้ทุกผลต่าง เพราะหนี้สินภาษีเงินได้รอการตัดบัญชีจากอสังหาริมทรัพย์เพื่อการลงทุนต้องรับรู้ด้วย และการรับรู้สินทรัพย์จากผลขาดทุนต้องมีหลักฐานกำไรในอนาคต</p><p>(ง) ทางเลือกที่ตอบคำถามของธนาคาร: (1) เปลี่ยนเป็น 15.2 ครั้งเดียวด้วยเหตุผลตามย่อหน้า 5.9.2 ว่าให้ข้อมูลที่เกี่ยวข้องกับผู้ให้กู้มากกว่า ปฏิบัติตามบทที่ 5 สำหรับการเปลี่ยนนโยบาย หาฐานภาษีทุกรายการ ณ วันเริ่มใช้ และใช้ต่อเนื่อง หรือ (2) คง 15.1 และเปิดเผยการกระทบยอดกำไรทางบัญชีกับกำไรสุทธิทางภาษี พร้อมอธิบายผลต่างชั่วคราวที่ทำให้อัตราภาษีที่แท้จริงแกว่ง</p><p>ประเด็นอภิปราย: ความสม่ำเสมอกับความเกี่ยวข้องของข้อมูล บทบาทของผู้ทำบัญชีเมื่อผู้บริหารเสนอทางเลือกเพื่อผลกำไร และต้นทุนของการจัดทำทะเบียนฐานภาษี</p><h3 id="S15.7">S15.7 เฉลยแบบฝึกหัดท้ายบท</h3><h4>ส่วนที่ 1</h4><ol><li>ค · ย่อหน้า 15.1 ให้แสดงภาระภาษีที่ค้างชำระสุทธิจากภาษีหัก ณ ที่จ่ายเป็นหนี้สิน แนวการตีความ: ภาษีที่ชำระด้วย ภ.ง.ด.51 เป็นเครดิตภาษีเช่นเดียวกัน จึงหักออกด้วย (หัวข้อ 15.1.1)</li><li>ก · ค่าเผื่อบวกกลับตามมาตรา 65 ตรี (1) ในปีที่ตั้ง และหักได้ในปีที่หนี้สูญเข้าเงื่อนไขกฎกระทรวง ฉบับที่ 186 ผลต่างจึงกลับรายการได้ อีกสามรายการไม่กลับรายการ (หัวข้อ 15.1.2)</li><li>ง · ส่วนแรก 300,000 บาทได้รับยกเว้น ส่วนที่เหลือ 1,200,000 บาท คูณร้อยละ 15 ได้ 180,000 บาท ถ้าใช้อัตราร้อยละ 20 จะได้ 300,000 บาท (หัวข้อ 15.1.4)</li><li>ข · ส่วนต่าง 400,000 ÷ กำไรจริง 1,400,000 = ร้อยละ 28.6 ฐานของการเทียบคือกำไรสุทธิจริง ไม่ใช่ประมาณการ (หัวข้อ 15.1.5)</li><li>ก · รายการ 1.7, 2.14 และ 4.5 ใช้เฉพาะกิจการที่เลือกถือปฏิบัติตาม TAS 12 กิจการที่ใช้ 15.1 แสดงภาษีที่ขอคืนเป็นลูกหนี้อื่น (หัวข้อ 15.1.6)</li><li>ค · 1,014,000 × 12% = 121,680 บาท ตัวเลข 128,400 เป็นยอดต้นงวด 6,720 เป็นการลดลงระหว่างปี และ 202,800 ใช้อัตราร้อยละ 20 ซึ่งไม่ใช่อัตราที่คาดว่าจะใช้ (หัวข้อ 15.2.5)</li><li>ข · ภาษีตามรายการที่เกี่ยวข้อง ส่วนเกินทุนอยู่ในกำไรขาดทุนเบ็ดเสร็จอื่น ภาษีที่เกี่ยวข้องจึงอยู่ที่เดียวกัน ย่อหน้า 10.23 และ 4.17 กำหนดการรับรู้และเปิดเผย (หัวข้อ 15.2.6)</li><li>ง · ย่อหน้า 15.2 ให้ใช้สม่ำเสมอ ย่อหน้า 5.8 และ 5.10 ให้ใช้นโยบายเดียวกันทุกงวด และย่อหน้า 5.9 ให้เปลี่ยนได้เมื่อมาตรฐานกำหนด (5.9.1) หรือทำให้ข้อมูลน่าเชื่อถือและเกี่ยวข้องมากขึ้น (5.9.2) การสลับตามผลกำไรไม่เข้าเงื่อนไขใด (หัวข้อ 15.3)</li></ol><h4>ส่วนที่ 2</h4><ol><li>(ก) ผลต่างชั่วคราว บวก 50,000 (ข) ผลต่างถาวร บวก 12,000 (ค) ผลต่างชั่วคราว หัก 30,000 เพราะทางภาษีหักได้มากกว่า (ง) ผลต่างถาวร บวก 4,000 (จ) ผลต่างชั่วคราว บวก 80,000 หักได้ในปีที่จ่าย</li><li>ภาษีอัตรา SME (2,400,000 − 300,000) × 15% = 315,000 บาท ภาษีค้างจ่าย 315,000 − 100,000 − 40,000 = 175,000 บาท บันทึก เดบิต ภาษีเงินได้ 315,000 เครดิต ภาษีเงินได้จ่ายล่วงหน้า 100,000 ภาษีเงินได้ถูกหัก ณ ที่จ่าย 40,000 ภาษีเงินได้นิติบุคคลค้างจ่าย 175,000 ถ้าไม่เข้าเงื่อนไข SME ภาษี 2,400,000 × 20% = 480,000 บาท</li><li>ส่วนที่ขาด 500,000 ÷ 1,500,000 = ร้อยละ 33.3 เกินร้อยละ 25 เสี่ยงเงินเพิ่มร้อยละ 20 ของภาษีที่ชำระขาดตามมาตรา 67 ตรี เว้นแต่เข้ากรณีตามคำสั่ง ป.50/2537 (แก้ไขโดย ป.152/2558) เช่น ภาษีที่ชำระครึ่งปีไม่น้อยกว่ากึ่งหนึ่งของภาษีปีก่อน ยังไม่พบข้อหารือที่ยอมรับรายได้ที่ไม่คาดคิดเป็นเหตุผลดังกล่าว</li><li>สินทรัพย์ภาษีเงินได้รอการตัดบัญชี ปลายงวด 60,000 ต้นงวด 40,000 เพิ่ม 20,000 บาท หนี้สินภาษีเงินได้รอการตัดบัญชี ปลายงวด 100,000 ต้นงวด 60,000 เพิ่ม 40,000 บาท ค่าใช้จ่ายภาษีเงินได้รอการตัดบัญชีสุทธิ 20,000 บาท บันทึก เดบิต สินทรัพย์ภาษีเงินได้รอการตัดบัญชี 20,000 เดบิต ค่าใช้จ่าย (รายได้) ภาษีเงินได้ 20,000 เครดิต หนี้สินภาษีเงินได้รอการตัดบัญชี 40,000 เมื่อหักกลบ แสดงหนี้สินภาษีเงินได้รอการตัดบัญชีสุทธิ 40,000 บาทในรายการ 4.5 (ต้นงวด 20,000 บาท)</li><li>เครดิตภาษีรวม 70,000 บาท สูงกว่าภาษี 50,000 บาท ขอคืนได้ 20,000 บาท ใช้ 15.1 แสดงเป็นลูกหนี้กรมสรรพากรในรายการ 1.3 ลูกหนี้อื่น ใช้ 15.2 แสดงในรายการ 1.7 สินทรัพย์ภาษีเงินได้ของงวดปัจจุบัน และไม่แสดงในรายการ 3.7</li></ol>
+      <h3 id="S15.8">S15.8 ผลวิจัยปี 2569: ฉบับ 2554 ตัวบทภาษีที่ยืนยันแล้ว มาตรฐานการบัญชี ฉบับที่ 12 รายการย่อ และงานของผู้สอบบัญชี</h3>
+      <p class="hint">เลขย่อหน้าใน S15.8 เป็นเลขของ TFRS for NPAEs ฉบับปรับปรุง 2565 · ฉบับ 2554 ย่อหน้า 299 ตรงกับ 15.1 (ถ้อยคำเหมือนกัน) ย่อหน้า 300 ตรงกับ 15.2 ซึ่งเปลี่ยนจาก "มาตรฐานการรายงานทางการเงินของไทย" เป็น "มาตรฐานการบัญชี ฉบับที่ 12" เอกสารอบรม 9 ธ.ค. 2565 สไลด์ 65 และ 157 จัดบทนี้ไว้ในกลุ่มบทที่ไม่ได้แก้ไข</p>
+      <h4>ก. ตัวบทภาษีที่ยืนยันกับกรมสรรพากร</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>หลักและที่มา</th></tr></thead><tbody><tr><td>อัตราทั่วไปร้อยละ 20</td><td>บัญชีอัตราภาษีเงินได้ท้ายหมวด 3 ลักษณะ 2 แก้ไขโดย พ.ร.บ. (ฉบับที่ 42) พ.ศ. 2559</td></tr><tr><td>อัตรา SME 0/15/20 (ทุนชำระแล้วไม่เกิน 5 ล้านบาท รายได้จากการขายสินค้าและให้บริการไม่เกิน 30 ล้านบาท)</td><td>พ.ร.ฎ. 530 (2554) แก้ไขโดยฉบับที่ 583 (2558) และ 603 (2559) แนวการตีความ: รายได้อื่นไม่นับในเงื่อนไข 30 ล้านบาท</td></tr><tr><td>ภ.ง.ด.51 ของ SME</td><td>ใช้อัตราขั้นบันไดกับกึ่งหนึ่งของประมาณการกำไรสุทธิโดยตรง (ยกเว้น 300,000 บาทแรกของฐานครึ่งปี) ไม่ใช่คำนวณภาษีทั้งปีแล้วหารสอง</td></tr><tr><td>ทางเลือกกำไรจริงหกเดือน</td><td>ม.67 ทวิ (2) บริษัทจดทะเบียน สถาบันการเงิน และบริษัทตามประกาศอธิบดีฯ ฉบับที่ 128 (ยื่นคำร้องภายใน 90 วันนับแต่วันแรกของรอบบัญชี)</td></tr><tr><td>เงินเพิ่ม ม.67 ตรี</td><td>ร้อยละ 20 ของภาษีที่ชำระขาด เมื่อประมาณการขาดเกินร้อยละ 25 ของกำไรสุทธิจริง เว้นแต่เข้ากรณีตาม ป.50/2537 แก้ไขโดย ป.152/2558: (1) ภาษีครึ่งปีไม่น้อยกว่ากึ่งหนึ่งของภาษีปีก่อน (2) ประมาณการไม่น้อยกว่ากำไรปีก่อน แต่ภาษีต่ำกว่าเพราะได้รับยกเว้นหรือลดอัตรา</td></tr><tr><td>ยื่นทางอินเทอร์เน็ต</td><td>ภ.ง.ด.51 สองเดือนแปดวัน · ภ.ง.ด.50 158 วัน สำหรับแบบที่ครบกำหนดระหว่าง 1 ก.พ. 2567 ถึง 31 ม.ค. 2570 (ประกาศกระทรวงการคลัง)</td></tr><tr><td>ขอคืนภาษี</td><td>ภายในสามปีนับแต่วันสุดท้ายแห่งกำหนดเวลายื่นรายการ (ม.27 ตรี) กรณียื่นเกินกำหนดนับจากวันยื่นรายการ</td></tr><tr><td>ผลขาดทุนสะสม</td><td>หักได้ไม่เกินห้ารอบระยะเวลาบัญชีก่อนรอบปัจจุบัน (ม.65 ตรี (12))</td></tr><tr><td>หักรายจ่ายสองเท่า e-Tax Invoice & e-Receipt</td><td>พ.ร.ฎ. 766 (2566) รายจ่าย 1 ม.ค. 2566 ถึง 31 ธ.ค. 2568 · ครม. เห็นชอบร่างขยายถึง 31 ธ.ค. 2570 เมื่อ 16 มิ.ย. 2569 ตรวจราชกิจจานุเบกษาก่อนใช้ · เป็นผลต่างถาวรด้านหัก</td></tr></tbody></table></div>
+      <h4>ข. มาตรฐานการบัญชี ฉบับที่ 12 และภาษีส่วนเพิ่ม (กิจการที่เลือก 15.2 ใช้ทุกข้อ)</h4>
+      <div class="tbl"><table><thead><tr><th>ที่มา</th><th>สาระ</th></tr></thead><tbody><tr><td>ประกาศ 16/2566</td><td>ภาษีเงินได้รอการตัดบัญชีของสินทรัพย์และหนี้สินที่เกิดจากรายการเดียว (สัญญาเช่า การรื้อถอน) ใช้กับรอบที่เริ่ม 1 ม.ค. 2567</td></tr><tr><td>ประกาศ 51/2566</td><td>ข้อยกเว้นชั่วคราว ไม่รับรู้และไม่เปิดเผยภาษีเงินได้รอการตัดบัญชีของภาษีส่วนเพิ่มตามกฎแบบจำลองเสาหลักที่ 2 และเปิดเผยภาษีงวดปัจจุบันส่วนนั้นแยก</td></tr><tr><td>พ.ร.ก. ภาษีส่วนเพิ่ม พ.ศ. 2567</td><td>ใช้ 1 ม.ค. 2568 กับกลุ่มข้ามชาติรายได้รวมไม่น้อยกว่า 750 ล้านยูโรอย่างน้อยสองในสี่รอบก่อน ภาษีขั้นต่ำร้อยละ 15 แนวการตีความ: บริษัทย่อยที่ใช้ 15.1 รับรู้เป็นค่าใช้จ่ายภาษีของงวด</td></tr></tbody></table></div>
+      <h4>ค. รายการย่อแบบ 2 (ประกาศกรมพัฒนาธุรกิจการค้า พ.ศ. 2566)</h4>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th>ใช้กับ</th></tr></thead><tbody><tr><td>1.3 ลูกหนี้หมุนเวียนอื่น</td><td>ภาษีที่ขอคืนของกิจการที่ใช้ 15.1 (ลูกหนี้กรมสรรพากร) ถ้าเกิน 12 เดือนใช้ 2.6</td></tr><tr><td>1.7 สินทรัพย์ภาษีเงินได้ของงวดปัจจุบัน</td><td>ภาษีที่ขอคืนได้ ตามมาตรฐานการบัญชี ฉบับที่ 12 (กิจการที่เลือก 15.2)</td></tr><tr><td>2.14 / 4.5</td><td>สินทรัพย์ / หนี้สินภาษีเงินได้รอการตัดบัญชี (เฉพาะ 15.2)</td></tr><tr><td>3.7 ภาษีเงินได้นิติบุคคลค้างจ่าย</td><td>ภาษีค้างจ่ายแก่หน่วยงานจัดเก็บภาษีของรัฐ รายการ 3.2 เจ้าหนี้กรมสรรพากรไม่รวมรายการนี้ (แก้ไข 17 มี.ค. 2568)</td></tr><tr><td>งบกำไรขาดทุน</td><td>"ภาษีเงินได้" สำหรับ 15.1 · "ค่าใช้จ่าย (รายได้) ภาษีเงินได้" สำหรับ 15.2</td></tr></tbody></table></div>
+      <h4>ง. งานของผู้สอบบัญชี</h4>
+      <div class="tbl"><table><thead><tr><th>จุดเสี่ยง</th><th>หลักฐาน</th><th>มาตรฐานการสอบบัญชี</th></tr></thead><tbody><tr><td>ความครบถ้วนของรายการปรับปรุงในตารางกระทบยอด</td><td>ภ.ง.ด.50 กระดาษทำการภาษี บัญชีแยกประเภทรายจ่ายต้องห้าม</td><td>รหัส 250 (ปรับปรุง) และ 500</td></tr><tr><td>เงื่อนไข SME ณ วันสิ้นรอบ</td><td>หนังสือรับรองนิติบุคคล งบทดลองรายได้</td><td>รหัส 500</td></tr><tr><td>ทดสอบร้อยละ 25 และเงินเพิ่ม</td><td>ภ.ง.ด.51 เทียบ ภ.ง.ด.50 ภาษีปีก่อน</td><td>รหัส 250 (ปรับปรุง)</td></tr><tr><td>สินทรัพย์ภาษีเงินได้รอการตัดบัญชี (เฉพาะ 15.2)</td><td>ประมาณการกำไรทางภาษีในอนาคต อัตราเฉลี่ยที่คาดว่าจะใช้</td><td>รหัส 540 (ปรับปรุง)</td></tr><tr><td>กิจการที่มีความซับซ้อนน้อย</td><td>ประกาศ 32/2568 มาตรฐานทางเลือก ใช้กับรอบที่เริ่มในหรือหลัง 15 ธ.ค. 2568</td><td>—</td></tr></tbody></table></div>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการรายงานทางการเงินระหว่างประเทศ (International Financial Reporting Standards: IFRS) สำหรับกิจการขนาดกลางและขนาดย่อม (Small and Medium-sized Entities: SMEs) ฉบับที่ 3 (27 ก.พ. 2568 ใช้ 1 ม.ค. 2570) หมวด 29 บังคับรับรู้ภาษีเงินได้รอการตัดบัญชีทุกกิจการ ไม่มีทางเลือกแบบย่อหน้า 15.1</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 15 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์ ใช้งานออฟไลน์ได้</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 15.1–15.7 และตารางที่ 15-1 ถึง 15-7 ในตำรา · สภาวิชาชีพบัญชีไม่ได้ออกตัวอย่างประกอบความเข้าใจสำหรับบทที่ 15</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=0)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fp=x=>x<0?'('+fmt(-x)+')':fmt(x);
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function je(title,lines,ref){
+    const L=lines.filter(l=>Math.abs(l.amt)>=0.5);const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);
+    const rows=dr.concat(cr).map(l=>l.dr?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`:`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,t])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${t?esc(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const theory=items=>`<details class="theory"><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  const tbl=(h,rows,num)=>`<div class="tbl"><table><thead><tr>${h.map((x,i)=>`<th${num.includes(i)?' class="num"':''}>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td${num.includes(i)?' class="num"':''}>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  /* tabs */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];const names=tabs.map(b=>b.dataset.tab);
+  function show(name){tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);try{localStorage.setItem('npaes15tab',name)}catch(e){}}
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='info';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes15tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  function parseCSV(text){const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true;else if(ch===delim){row.push(f);f=''}else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''}else if(ch!=='\r')f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''))}
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{e.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+  const sme=x=>Math.max(0,Math.min(x,3000000)-300000)*0.15+Math.max(0,x-3000000)*0.20;
+  const gen=x=>Math.max(0,x)*0.20;
+  /* data */
+  const ADJ0=[["ค่ารับรองส่วนที่เกินเกณฑ์", "–", "ถาวร", 1, 20000, "กฎกระทรวง ฉบับที่ 143 (พ.ศ. 2522) ข้อ 4 แก้ไขโดยฉบับที่ 222 (พ.ศ. 2542)"], ["ค่าปรับและเงินเพิ่มภาษีอากร", "–", "ถาวร", 1, 15000, "ประมวลรัษฎากรไม่ให้ถือเป็นรายจ่าย"], ["ค่าเผื่อหนี้สงสัยจะสูญที่ตั้งเพิ่มในปี", "7", "ชั่วคราว", 1, 80000, "มาตรา 65 ตรี (1) เงินสำรอง"], ["หนี้สูญที่ตัดจากค่าเผื่อและเข้าเงื่อนไขทางภาษี", "7", "ชั่วคราว", -1, 20000, "กฎกระทรวง ฉบับที่ 186 (พ.ศ. 2534) แก้ไขโดยฉบับที่ 374 (พ.ศ. 2562)"], ["ค่าเผื่อมูลค่าสุทธิที่จะได้รับแบบรวมกลุ่มที่เพิ่มขึ้น", "8", "ชั่วคราว", 1, 30000, "มาตรา 65 ตรี (1) เงินสำรอง"], ["ค่าเสื่อมราคาทางบัญชีสูงกว่าทางภาษี", "10", "ชั่วคราว", 1, 50000, "มาตรา 65 ทวิ (2) และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527)"], ["กำไรจากการปรับมูลค่ายุติธรรมของอสังหาริมทรัพย์เพื่อการลงทุน", "12", "ชั่วคราว", -1, 100000, "ทางภาษีใช้ราคาทุน"], ["ดอกเบี้ยช่วงหยุดก่อสร้างที่บัญชีรับรู้เป็นค่าใช้จ่าย แต่ทางภาษีรวมเป็นต้นทุนทรัพย์สิน", "13", "ชั่วคราว", 1, 24000, "แนวที่สรุปในบทที่ 13"], ["สัญญาลีสซิ่ง: ดอกเบี้ยและค่าเสื่อมราคาตามบัญชี 260,000 เทียบค่าเช่าที่จ่าย 280,000", "14", "ชั่วคราว", -1, 20000, "ทางภาษีตามรูปแบบสัญญาเช่า หักค่าเช่าตามที่จ่าย"]];const TD0=[["ลูกหนี้การค้า: ค่าเผื่อหนี้สงสัยจะสูญ (บทที่ 7)", "หัก", 150000, 90000], ["สินค้าคงเหลือ: ค่าเผื่อแบบรวมกลุ่ม (บทที่ 8)", "หัก", 70000, 40000], ["เครื่องจักร: ฐานภาษีสูงกว่ามูลค่าตามบัญชี (บทที่ 10)", "หัก", 120000, 70000], ["อาคารระหว่างก่อสร้าง: ดอกเบี้ยที่รวมในฐานภาษี (บทที่ 13)", "หัก", 24000, 0], ["หนี้สินตามสัญญาเช่าเงินทุน ฐานภาษีเป็นศูนย์ (บทที่ 14)", "หัก", 650000, 870000], ["สินทรัพย์ตามสัญญาเช่าเงินทุน ฐานภาษีเป็นศูนย์ (บทที่ 14)", "ภาษี", 600000, 800000], ["อสังหาริมทรัพย์เพื่อการลงทุน: มูลค่ายุติธรรมสูงกว่าราคาทุน (บทที่ 12)", "ภาษี", 250000, 150000]];
+  const W0=[['บริษัท ลูกค้า ก จำกัด','2025-03-31',300000,9000],['บริษัท ลูกค้า ข จำกัด','2025-07-31',400000,12000],['บริษัท ลูกค้า ค จำกัด','2025-11-30',300000,9000]];
+  let A=ADJ0.map(r=>r.slice()),TDR=TD0.map(r=>r.slice()),WR=W0.map(r=>r.slice());
+  /* tab 0 */
+  function wRender(){const an=$('wAnon').checked;
+    $('wBody').innerHTML=WR.map((r,i)=>`<tr><td>${an?'ผู้จ่ายเงิน '+(i+1):`<input type="text" data-w="${i}" data-k="0" value="${esc(r[0])}">`}</td><td><input type="date" data-w="${i}" data-k="1" value="${esc(r[1])}"></td><td><input class="num" type="number" data-w="${i}" data-k="2" value="${r[2]}"></td><td><input class="num" type="number" data-w="${i}" data-k="3" value="${r[3]}"></td><td><button class="btn del" data-wd="${i}">ลบ</button></td></tr>`).join('');calc()}
+  $('wBody').addEventListener('input',e=>{const t=e.target;if(t.dataset.w==null)return;const i=+t.dataset.w,k=+t.dataset.k;WR[i][k]=(k>=2)?val(t):t.value;calc()});
+  $('wBody').addEventListener('click',e=>{const d=e.target.dataset.wd;if(d!=null){WR.splice(+d,1);wRender()}});
+  $('wAdd').addEventListener('click',()=>{WR.push(['ผู้จ่ายเงินใหม่','',0,0]);wRender()});
+  $('wReset').addEventListener('click',()=>{WR=W0.map(r=>r.slice());$('wStatus').textContent='';wRender()});
+  $('wAnon').addEventListener('change',wRender);
+  $('wFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(!/\.(csv|txt)$/i.test(f.name)){$('wStatus').textContent='แอปรับเฉพาะไฟล์ CSV (UTF-8) บันทึกไฟล์ Excel เป็น CSV แล้วนำเข้าอีกครั้ง';return}
+    const rd=new FileReader();rd.onload=()=>{const rows=parseCSV(String(rd.result).replace(/^\ufeff/,''));if(!rows.length){$('wStatus').textContent='ไม่พบข้อมูล';return}
+      const hd=rows[0].map(x=>String(x).trim());const ci=re=>hd.findIndex(x=>re.test(x));
+      const c0=ci(/ผู้จ่าย|payer|name/i),c1=ci(/วันที่|date/i),c2=ci(/เงินได้|income|amount/i),c3=ci(/ภาษี|tax|wht/i);
+      if(c3<0){$('wStatus').textContent='ไม่พบคอลัมน์ "ภาษีที่ถูกหัก"';return}
+      WR=rows.slice(1).map(r=>[c0>=0?r[c0]:'',c1>=0?r[c1]:'',c2>=0&&isFinite(num(r[c2]))?num(r[c2]):0,isFinite(num(r[c3]))?num(r[c3]):0]).filter(r=>r[3]||r[2]);
+      $('wStatus').textContent=`นำเข้า ${WR.length} รายการ (ชื่อผู้จ่ายเงินปกปิดตามตัวเลือก)`;wRender()};rd.readAsText(f,'utf-8')});
+  ['iYe','iCap','iRev','iPbt','iOpt','cRate','pEst','pPaid','dRate','dRateO','dOff'].forEach(id=>$(id).addEventListener(id==='iOpt'||id==='cRate'||id==='dOff'?'change':'input',calc));
+  /* tab 1 */
+  function aRender(){$('aBody').innerHTML=A.map((r,i)=>`<tr><td><input type="text" data-a="${i}" data-k="0" value="${esc(r[0])}"></td><td><input type="text" data-a="${i}" data-k="1" value="${esc(r[1])}" style="width:3.5em"></td><td><select data-a="${i}" data-k="2"><option${r[2]==='ถาวร'?' selected':''}>ถาวร</option><option${r[2]==='ชั่วคราว'?' selected':''}>ชั่วคราว</option></select></td><td><select data-a="${i}" data-k="3"><option value="1"${r[3]>0?' selected':''}>บวก</option><option value="-1"${r[3]<0?' selected':''}>หัก</option></select></td><td><input class="num" type="number" data-a="${i}" data-k="4" value="${r[4]}"></td><td><input type="text" data-a="${i}" data-k="5" value="${esc(r[5])}"></td><td><button class="btn del" data-ad="${i}">ลบ</button></td></tr>`).join('');calc()}
+  $('aBody').addEventListener('input',e=>{const t=e.target;if(t.dataset.a==null)return;const i=+t.dataset.a,k=+t.dataset.k;A[i][k]=k===4?val(t):k===3?+t.value:t.value;calc()});
+  $('aBody').addEventListener('change',e=>{const t=e.target;if(t.dataset.a==null)return;const i=+t.dataset.a,k=+t.dataset.k;A[i][k]=k===4?val(t):k===3?+t.value:t.value;calc()});
+  $('aBody').addEventListener('click',e=>{const d=e.target.dataset.ad;if(d!=null){A.splice(+d,1);aRender()}});
+  $('aAdd').addEventListener('click',()=>{A.push(['รายการใหม่','','ชั่วคราว',1,0,'']);aRender()});
+  $('aReset').addEventListener('click',()=>{A=ADJ0.map(r=>r.slice());aRender()});
+  /* tab 5 */
+  function dRender(){$('dBody').innerHTML=TDR.map((r,i)=>`<tr><td><input type="text" data-d="${i}" data-k="0" value="${esc(r[0])}"></td><td><select data-d="${i}" data-k="1"><option value="หัก"${r[1]==='หัก'?' selected':''}>ใช้หักภาษี</option><option value="ภาษี"${r[1]==='ภาษี'?' selected':''}>ต้องเสียภาษี</option></select></td><td><input class="num" type="number" data-d="${i}" data-k="2" value="${r[2]}"></td><td><input class="num" type="number" data-d="${i}" data-k="3" value="${r[3]}"></td><td><button class="btn del" data-dd="${i}">ลบ</button></td></tr>`).join('');calc()}
+  const dUpd=e=>{const t=e.target;if(t.dataset.d==null)return;const i=+t.dataset.d,k=+t.dataset.k;TDR[i][k]=k>=2?val(t):t.value;calc()};
+  $('dBody').addEventListener('input',dUpd);$('dBody').addEventListener('change',dUpd);
+  $('dBody').addEventListener('click',e=>{const d=e.target.dataset.dd;if(d!=null){TDR.splice(+d,1);dRender()}});
+  $('dAdd').addEventListener('click',()=>{TDR.push(['รายการใหม่','หัก',0,0]);dRender()});
+  $('dReset').addEventListener('click',()=>{TDR=TD0.map(r=>r.slice());$('dRate').value='';$('dRateO').value='';dRender()});
+  $('nCopy').addEventListener('click',()=>copyText($('nOut').innerText,'nOk'));
+  /* main calc */
+  let NOTE='';
+  function calc(){
+    const cap=val($('iCap')),rev=val($('iRev')),pbt=val($('iPbt')),opt=$('iOpt').value;
+    const isSme=cap<=5000000&&rev<=30000000;
+    const perm=A.filter(r=>r[2]==='ถาวร').reduce((s,r)=>s+r[3]*r[4],0),temp=A.filter(r=>r[2]==='ชั่วคราว').reduce((s,r)=>s+r[3]*r[4],0);
+    const tp=pbt+perm+temp;
+    const wht=WR.reduce((s,r)=>s+(+r[3]||0),0);
+    $('iOut').innerHTML=`<h2>สรุปข้อมูล</h2>`+figs([['ทุนชำระแล้ว',cap],['รายได้',rev],['ภาษีหัก ณ ที่จ่ายรวม',wht]])+verdict(isSme?'ok':'warn',isSme?'เข้าเงื่อนไข SME':'ไม่เข้าเงื่อนไข SME',`ทุนชำระแล้ว ${fmt(cap)} บาท (เกณฑ์ไม่เกิน 5,000,000) · รายได้ ${fmt(rev)} บาท (เกณฑ์ไม่เกิน 30,000,000) · ทางเลือก ย่อหน้า ${opt}`);
+    // tab1
+    $('aOut').innerHTML=figs([['กำไรก่อนภาษีตามบัญชี',pbt],['ผลต่างถาวร',perm],['ผลต่างชั่วคราวสุทธิ',temp],['กำไรสุทธิทางภาษี',tp]])+theory([['ผลต่างถาวร','ไม่กลับรายการในงวดหน้า เช่น ค่ารับรองส่วนที่เกินเกณฑ์ ค่าปรับและเงินเพิ่ม'],['ผลต่างชั่วคราว','กลับรายการในงวดหน้า เช่น เงินสำรองตามมาตรา 65 ตรี (1) ค่าเสื่อมราคาที่ใช้อายุต่างกัน'],['ทางภาษี','ทางภาษีใช้ราคาทุนเท่านั้น หักค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) แห่งประมวลรัษฎากร และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527) และที่แก้ไขเพิ่มเติม ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3)']]);
+    // tab2
+    const rm=$('cRate').value,useSme=rm==='auto'?isSme:rm==='sme';
+    const tS=sme(tp),tG=gen(tp),tax=tp>0?(useSme?tS:tG):0,avg=tp>0?tax/tp:0;
+    $('cOut').innerHTML=`<h2>ผลการคำนวณ</h2>`+tbl(['การคำนวณ','อัตรา SME','ร้อยละ 20'],[['กำไรสุทธิทางภาษี',fmt(tp),fmt(tp)],['ภาษีเงินได้',fmt(tS),fmt(tG)],['อัตราเฉลี่ย',(tp>0?(tS/tp*100).toFixed(2):'0.00')+'%',(tp>0?'20.00':'0.00')+'%']],[1,2])+
+      verdict(useSme===isSme?'ok':'warn','อัตราที่ใช้: '+(useSme?'SME':'ร้อยละ 20'),`ภาษีของปี ${fmt(tax)} บาท อัตราเฉลี่ย ${(avg*100).toFixed(2)}%${useSme!==isSme?' · อัตราที่เลือกไม่ตรงกับเงื่อนไขที่แอปตรวจ ตรวจทุนชำระแล้วและรายได้อีกครั้ง':''}${tp<=0?' · ขาดทุนทางภาษี ไม่มีภาษี ยกผลขาดทุนไปได้ตามระยะเวลาที่ประมวลรัษฎากรกำหนด':''}`)+theory([['อัตรา SME','0–300,000 ยกเว้น · 300,001–3,000,000 ร้อยละ 15 · เกิน 3,000,000 ร้อยละ 20 (พ.ร.ฎ. ฉบับที่ 530 และที่แก้ไขเพิ่มเติม)'],['15.1','รับรู้ภาษีที่ต้องชำระเป็นค่าใช้จ่ายในงบกำไรขาดทุน']]);
+    // tab3
+    const est=val($('pEst')),half=est/2,p51c=Math.max(0,useSme?sme(half):gen(half));
+    const p51=$('pPaid').value===''?p51c:val($('pPaid'));
+    const short=tp>0?Math.max(0,tp-est)/tp:0;
+    const sAct=useSme?sme(tp/2):gen(tp/2),sur=short>0.25?Math.max(0,sAct-p51c)*0.2:0;
+    $('pOut').innerHTML=`<h2>ผลการทดสอบ</h2>`+figs([['กำไรครึ่งปีจากประมาณการ',half],['ภาษี ภ.ง.ด.51 คำนวณ',p51c],['ภาษีที่ใช้เครดิต',p51]])+
+      verdict(short>0.25?'warn':'ok',short>0.25?'ประมาณการขาดเกินร้อยละ 25':'ประมาณการขาดไม่เกินร้อยละ 25',`กำไรสุทธิจริง ${fmt(tp)} บาท ส่วนที่ขาด ${fmt(Math.max(0,tp-est))} บาท = ร้อยละ ${(short*100).toFixed(1)} ของกำไรจริง${short>0.25?` · เสี่ยงเงินเพิ่มร้อยละ 20 ของภาษีที่ชำระขาดตามมาตรา 67 ตรี เว้นแต่มีเหตุผลที่กฎหมายยอมรับตามคำสั่ง ป.50/2537 แนวการตีความ: ประมาณ ${fmt(sur)} บาท (ตรวจวิธีคำนวณกับแนวปฏิบัติของกรมสรรพากร)`:''}`)+
+      je('รายการบันทึกเมื่อยื่น ภ.ง.ด.51',[{dr:1,acct:'ภาษีเงินได้จ่ายล่วงหน้า',amt:p51},{dr:0,acct:'เงินสด',amt:p51}],'ตัวอย่างที่ 15.3');
+    // tab4
+    const bal=tax-p51-wht,is2=opt==='15.2';
+    const tAcct=is2?'ค่าใช้จ่าย (รายได้) ภาษีเงินได้':'ภาษีเงินได้';
+    const lines=[{dr:1,acct:tAcct,amt:tax},{dr:0,acct:'ภาษีเงินได้จ่ายล่วงหน้า',amt:p51},{dr:0,acct:'ภาษีเงินได้ถูกหัก ณ ที่จ่าย',amt:wht}];
+    if(bal>=0)lines.push({dr:0,acct:'ภาษีเงินได้นิติบุคคลค้างจ่าย',amt:bal});else lines.push({dr:1,acct:is2?'สินทรัพย์ภาษีเงินได้ของงวดปัจจุบัน':'ลูกหนี้กรมสรรพากร (ภาษีเงินได้รอขอคืน)',amt:-bal});
+    const line=bal>=0?'รายการ 3.7 ภาษีเงินได้นิติบุคคลค้างจ่าย':(is2?'รายการ 1.7 สินทรัพย์ภาษีเงินได้ของงวดปัจจุบัน':'รายการ 1.3 ลูกหนี้อื่น (ลูกหนี้กรมสรรพากร)');
+    $('yOut').innerHTML=`<h2>ภาษีค้างจ่ายหรือขอคืน</h2>`+figs([['ภาษีของปี',tax],['ภ.ง.ด.51',p51],['ภาษีหัก ณ ที่จ่าย',wht],[bal>=0?'ภาษีค้างจ่าย':'ภาษีรอขอคืน',Math.abs(bal)]])+
+      verdict('ok','แสดงในแบบ 2: '+line,`ทางเลือกย่อหน้า ${opt} · ค่าใช้จ่ายแสดงในรายการ 14 (งบแบบจำแนกตามลักษณะ) หรือรายการ 11 (แบบจำแนกตามหน้าที่) ชื่อรายการ "${tAcct}"${bal<0&&!is2?' · รายการ 1.7 ใช้เฉพาะกิจการที่เลือก TAS 12':''}`)+
+      je('รายการบันทึก ณ วันสิ้นรอบระยะเวลาบัญชี',lines,is2?'ภาษีงวดปัจจุบันภายใต้ 15.2':'ย่อหน้า 15.1')+'<p class="hint">ย่อหน้า 15.1 ให้แสดงภาษีค้างชำระสุทธิจากภาษีหัก ณ ที่จ่าย การหักภาษีที่ชำระด้วย ภ.ง.ด.51 เป็นแนวการตีความ เพราะเป็นเครดิตภาษีในแบบ ภ.ง.ด.50 เช่นกัน</p>';
+    // tab5
+    const rC=$('dRate').value===''?avg:val($('dRate'))/100,rO=$('dRateO').value===''?rC:val($('dRateO'))/100;
+    const dc=TDR.filter(r=>r[1]==='หัก').reduce((s,r)=>s+r[2],0),do_=TDR.filter(r=>r[1]==='หัก').reduce((s,r)=>s+r[3],0);
+    const xc=TDR.filter(r=>r[1]==='ภาษี').reduce((s,r)=>s+r[2],0),xo=TDR.filter(r=>r[1]==='ภาษี').reduce((s,r)=>s+r[3],0);
+    const R0=x=>Math.round(x);
+    const aC=R0(dc*rC),aO=R0(do_*rO),lC=R0(xc*rC),lO=R0(xo*rO),dA=aC-aO,dL=lC-lO,inc=dA-dL,exp=tax-inc,off=$('dOff').checked;
+    const net=aC-lC;
+    $('dOut').innerHTML=tbl(['ยอด','ปลายงวด','ต้นงวด','เปลี่ยนแปลง'],[['ผลต่างที่ใช้หักภาษี',fmt(dc),fmt(do_),fp(dc-do_)],['ผลต่างที่ต้องเสียภาษี',fmt(xc),fmt(xo),fp(xc-xo)],['สินทรัพย์ภาษีเงินได้รอการตัดบัญชี',fmt(aC),fmt(aO),fp(dA)],['หนี้สินภาษีเงินได้รอการตัดบัญชี',fmt(lC),fmt(lO),fp(dL)],['รายได้ (ค่าใช้จ่าย) ภาษีเงินได้รอการตัดบัญชี','','',fp(inc)]],[1,2,3])+
+      figs([['อัตราปลายงวด (%)',(rC*100).toFixed(2),1],['ภาษีงวดปัจจุบัน',tax],['ค่าใช้จ่าย (รายได้) ภาษีเงินได้',exp]])+
+      je('รายการบันทึกภาษีเงินได้รอการตัดบัญชี',[{dr:dA>0,acct:'สินทรัพย์ภาษีเงินได้รอการตัดบัญชี',amt:Math.abs(dA)},{dr:dL<0,acct:'หนี้สินภาษีเงินได้รอการตัดบัญชี',amt:Math.abs(dL)},{dr:inc<0,acct:'ค่าใช้จ่าย (รายได้) ภาษีเงินได้',amt:Math.abs(inc)}],'ตัวอย่างที่ 15.6')+
+      verdict('ok','การแสดงรายการ',off?(net>=0?`หักกลบแล้วแสดงสินทรัพย์ภาษีเงินได้รอการตัดบัญชีสุทธิ ${fmt(net)} บาทในรายการ 2.14`:`หักกลบแล้วแสดงหนี้สินภาษีเงินได้รอการตัดบัญชีสุทธิ ${fmt(-net)} บาทในรายการ 4.5`)+' หมายเหตุแสดงยอดก่อนหักกลบ':`ไม่เข้าเงื่อนไขหักกลบ แสดงรายการ 2.14 จำนวน ${fmt(aC)} บาท และรายการ 4.5 จำนวน ${fmt(lC)} บาท`)+
+      `<p class="hint">ตรวจสอบ: (กำไรก่อนภาษี + ผลต่างถาวร) × อัตรา = ${fmt((pbt+perm)*rC)} บาท ${Math.abs((pbt+perm)*rC-exp)<1?'เท่ากับค่าใช้จ่ายภาษี':'ต่างจากค่าใช้จ่ายภาษี เพราะอัตราต่างกันหรือผลต่างชั่วคราวในแท็บ 5 ไม่ตรงกับแท็บ 1'}</p>`+
+      theory([['15.2','ถือปฏิบัติตาม TAS 12 ทุกข้ออย่างสม่ำเสมอ'],['อัตรา','อัตราที่คาดว่าจะใช้เมื่อผลต่างกลับรายการ อัตราขั้นบันไดใช้อัตราเฉลี่ยที่คาดว่าจะใช้ ไม่คิดลด'],['สินทรัพย์','รับรู้เมื่อมีความเป็นไปได้ค่อนข้างแน่ว่าจะมีกำไรทางภาษีพอ ทบทวนทุกงวด'],['4.17 และ 10.23','ภาษีของกำไรขาดทุนเบ็ดเสร็จอื่นรับรู้และเปิดเผยแยก']]);
+    // tab6
+    const TM=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    const ye=(()=>{const m=($('iYe').value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${+m[3]} ${TM[+m[2]-1]} ${+m[1]+543}`:''})();
+    let n6='';
+    if(!is2){n6=`<h3>นโยบายการบัญชี: ภาษีเงินได้</h3><p>บริษัทบันทึกภาษีเงินได้ตามจำนวนที่ต้องชำระให้แก่กรมสรรพากรตามประมวลรัษฎากร คำนวณจากกำไรสุทธิทางภาษีของปีด้วยอัตรา${useSme?'สำหรับวิสาหกิจขนาดกลางและขนาดย่อม':'ร้อยละ 20'} และแสดงภาษีค้างชำระสุทธิจากภาษีหัก ณ ที่จ่ายและภาษีที่ชำระล่วงหน้าเป็นหนี้สิน บริษัทไม่รับรู้ภาษีเงินได้รอการตัดบัญชี</p><h3>ภาษีเงินได้ (วันสิ้นรอบ ${esc(ye)})</h3>`+tbl(['รายการ','บาท'],[['กำไรก่อนภาษีเงินได้',fmt(pbt)],['บวก (หัก) รายจ่ายที่ไม่ให้ถือเป็นรายจ่ายทางภาษี',fp(perm)],['บวก (หัก) ผลต่างที่กลับรายการได้ในงวดหน้า สุทธิ',fp(temp)],['กำไรสุทธิทางภาษี',fmt(tp)],['ภาษีเงินได้',fmt(tax)],['หัก ภาษีที่ชำระล่วงหน้าและถูกหัก ณ ที่จ่าย',fmt(p51+wht)],[bal>=0?'ภาษีเงินได้นิติบุคคลค้างจ่าย':'ภาษีเงินได้รอขอคืน (แสดงในลูกหนี้อื่น)',fmt(Math.abs(bal))]],[1])}
+    else{n6=`<h3>นโยบายการบัญชี: ภาษีเงินได้</h3><p>บริษัทเลือกถือปฏิบัติตามมาตรฐานการบัญชี ฉบับที่ 12 เรื่อง ภาษีเงินได้ ตามย่อหน้า 15.2 ค่าใช้จ่าย (รายได้) ภาษีเงินได้ประกอบด้วยภาษีงวดปัจจุบันและภาษีเงินได้รอการตัดบัญชี บริษัทรับรู้ภาษีเงินได้รอการตัดบัญชีจากผลต่างชั่วคราวระหว่างมูลค่าตามบัญชีกับฐานภาษีของสินทรัพย์และหนี้สินด้วยอัตราที่คาดว่าจะใช้ในงวดที่ผลต่างกลับรายการ รับรู้สินทรัพย์ภาษีเงินได้รอการตัดบัญชีเมื่อมีความเป็นไปได้ค่อนข้างแน่ว่าจะมีกำไรทางภาษีเพียงพอ และทบทวนทุกวันสิ้นรอบระยะเวลารายงาน</p><h3>ค่าใช้จ่าย (รายได้) ภาษีเงินได้</h3>`+tbl(['รายการ','บาท'],[['ภาษีงวดปัจจุบัน',fmt(tax)],['ภาษีเงินได้รอการตัดบัญชี',fp(-inc)],['รวม',fmt(exp)]],[1])+`<h3>การกระทบยอดอัตราภาษี</h3>`+tbl(['รายการ','บาท'],[['กำไรก่อนภาษี × อัตรา '+(rC*100).toFixed(2)+'%',fmt(pbt*rC)],['ผลกระทบของรายจ่ายที่หักไม่ได้',fp(perm*rC)],['ค่าใช้จ่ายภาษีเงินได้',fmt(exp)]],[1])+`<h3>ภาษีเงินได้รอการตัดบัญชี</h3>`+tbl(['รายการ','ต้นงวด','ปลายงวด'],[['สินทรัพย์ภาษีเงินได้รอการตัดบัญชี',fmt(aO),fmt(aC)],['หนี้สินภาษีเงินได้รอการตัดบัญชี',fp(-lO),fp(-lC)],['สุทธิ',fp(aO-lO),fp(net)]],[1,2])}
+    $('nOut').innerHTML=n6;
+    window.__R={tp,perm,temp,tax,avg,p51,wht,bal,short,aC,lC,inc,exp,net};
+  }
+  wRender();aRender();dRender();
+  /* quiz */
+  const QZ=[["LO 15.1", "เข้าใจ", "ภายใต้วิธีภาษีเงินได้ค้างจ่ายตามย่อหน้า 15.1 กิจการแสดงหนี้สินภาษีเงินได้ ณ วันสิ้นงวดด้วยจำนวนใด", ["ก. ภาษีเงินได้ทั้งปีก่อนหักภาษีที่ชำระล่วงหน้า", "ข. ภาษีคำนวณจากกำไรทางบัญชีคูณอัตราภาษี", "ค. ภาษีที่ค้างชำระสุทธิจากภาษีหัก ณ ที่จ่ายและภาษีที่ชำระล่วงหน้า", "ง. ภาษีงวดปัจจุบันบวกภาษีเงินได้รอการตัดบัญชี"], 2, "ย่อหน้า 15.1 ให้แสดงภาระภาษีที่ค้างชำระสุทธิจากภาษีหัก ณ ที่จ่ายเป็นหนี้สิน แนวการตีความ: ภาษีที่ชำระด้วย ภ.ง.ด.51 เป็นเครดิตภาษีเช่นเดียวกัน จึงหักออกด้วย", "15.1.1"], ["LO 15.2", "ประยุกต์ใช้", "รายการใดเป็นผลต่างชั่วคราวระหว่างกำไรทางบัญชีกับกำไรสุทธิทางภาษี", ["ก. ค่าเผื่อหนี้สงสัยจะสูญที่ตั้งเพิ่มในปี (บทที่ 7)", "ข. ค่าปรับและเงินเพิ่มภาษี", "ค. ค่ารับรองส่วนที่เกินเกณฑ์ตามกฎกระทรวง", "ง. รายจ่ายส่วนตัวของกรรมการที่บริษัทจ่ายแทน"], 0, "ค่าเผื่อบวกกลับตามมาตรา 65 ตรี (1) ในปีที่ตั้ง และหักได้ในปีที่หนี้สูญเข้าเงื่อนไขกฎกระทรวง ฉบับที่ 186 ผลต่างจึงกลับรายการได้ อีกสามรายการไม่กลับรายการ", "15.1.2"], ["LO 15.3", "ประยุกต์ใช้", "บริษัทเข้าเงื่อนไข SME มีกำไรสุทธิทางภาษี 1,500,000 บาท ภาษีเงินได้นิติบุคคลของปีเป็นเท่าใด", ["ก. 300,000 บาท", "ข. 225,000 บาท", "ค. 195,000 บาท", "ง. 180,000 บาท"], 3, "ส่วนแรก 300,000 บาทได้รับยกเว้น ส่วนที่เหลือ 1,200,000 บาท คูณร้อยละ 15 ได้ 180,000 บาท ถ้าใช้อัตราร้อยละ 20 จะได้ 300,000 บาท", "15.1.4"], ["LO 15.4", "วิเคราะห์", "บริษัทประมาณการกำไรสุทธิใน ภ.ง.ด.51 ไว้ 1,000,000 บาท กำไรสุทธิจริงทั้งปี 1,400,000 บาท ข้อสรุปใดถูก", ["ก. ไม่มีผล เพราะ ภ.ง.ด.50 ชำระส่วนที่ขาดครบแล้ว", "ข. ประมาณการขาดร้อยละ 28.6 ของกำไรจริง เกินร้อยละ 25 เสี่ยงเงินเพิ่มตามมาตรา 67 ตรี เว้นแต่มีเหตุผลที่กฎหมายยอมรับตามคำสั่ง ป.50/2537", "ค. ประมาณการขาดร้อยละ 40 ของประมาณการ ต้องยื่นแบบเพิ่มเติมทันที", "ง. ต้องบันทึกประมาณการหนี้สินตามบทที่ 16"], 1, "ส่วนต่าง 400,000 ÷ กำไรจริง 1,400,000 = ร้อยละ 28.6 ฐานของการเทียบคือกำไรสุทธิจริง ไม่ใช่ประมาณการ", "15.1.5"], ["LO 15.6", "วิเคราะห์", "กิจการที่ใช้ย่อหน้า 15.1 มีภาษีที่ชำระล่วงหน้าและถูกหัก ณ ที่จ่ายสูงกว่าภาษีทั้งปี จำนวนที่ขอคืนแสดงในแบบ 2 รายการใด", ["ก. รายการ 1.3 ลูกหนี้อื่น", "ข. รายการ 1.7 สินทรัพย์ภาษีเงินได้ของงวดปัจจุบัน", "ค. รายการ 2.14 สินทรัพย์ภาษีเงินได้รอการตัดบัญชี", "ง. แสดงหักจากรายการ 3.7 ให้ติดลบ"], 0, "รายการ 1.7, 2.14 และ 4.5 ใช้เฉพาะกิจการที่เลือกถือปฏิบัติตาม TAS 12 กิจการที่ใช้ 15.1 แสดงภาษีที่ขอคืนเป็นลูกหนี้อื่น", "15.1.6"], ["LO 15.5", "ประยุกต์ใช้", "เฉพาะกิจการที่เลือกตาม 15.2: ผลต่างชั่วคราวที่ใช้หักภาษีปลายงวดรวม 1,014,000 บาท อัตราภาษีที่คาดว่าจะใช้ร้อยละ 12 สินทรัพย์ภาษีเงินได้รอการตัดบัญชีก่อนหักกลบเป็นเท่าใด", ["ก. 202,800 บาท", "ข. 6,720 บาท", "ค. 121,680 บาท", "ง. 128,400 บาท"], 2, "1,014,000 × 12% = 121,680 บาท ตัวเลข 128,400 เป็นยอดต้นงวด 6,720 เป็นการลดลงระหว่างปี และ 202,800 ใช้อัตราร้อยละ 20 ซึ่งไม่ใช่อัตราที่คาดว่าจะใช้", "15.2.5"], ["LO 15.5", "เข้าใจ", "เฉพาะกิจการที่เลือกตาม 15.2: ภาษีเงินได้รอการตัดบัญชีจากส่วนเกินทุนจากการตีราคาที่ดินรับรู้ที่ใด", ["ก. ค่าใช้จ่ายภาษีเงินได้ในงบกำไรขาดทุน", "ข. กำไรขาดทุนเบ็ดเสร็จอื่น พร้อมเปิดเผยตามย่อหน้า 4.17", "ค. ไม่รับรู้ เพราะทางภาษีใช้ราคาทุน", "ง. กำไรสะสมโดยตรงในวันตีราคา"], 1, "ภาษีตามรายการที่เกี่ยวข้อง ส่วนเกินทุนอยู่ในกำไรขาดทุนเบ็ดเสร็จอื่น ภาษีที่เกี่ยวข้องจึงอยู่ที่เดียวกัน ย่อหน้า 10.23 และ 4.17 กำหนดการรับรู้และเปิดเผย", "15.2.6"], ["LO 15.7", "ประเมินค่า", "ผู้บริหารเสนอให้ใช้ย่อหน้า 15.2 เฉพาะปีที่ทำให้กำไรสูงขึ้น และกลับไปใช้ 15.1 ในปีอื่น ข้อประเมินใดถูก", ["ก. ทำได้ เพราะมาตรฐานให้เลือก", "ข. ทำได้ ถ้าเปิดเผยในหมายเหตุ", "ค. ทำได้ ถ้าผลต่างไม่เป็นสาระสำคัญ", "ง. ทำไม่ได้ ย่อหน้า 15.2 ให้ถือปฏิบัติอย่างสม่ำเสมอ และการเปลี่ยนนโยบายต้องเข้าเงื่อนไขย่อหน้า 5.9"], 3, "ย่อหน้า 15.2 ให้ใช้สม่ำเสมอ ย่อหน้า 5.8 และ 5.10 ให้ใช้นโยบายเดียวกันทุกงวด และย่อหน้า 5.9 ให้เปลี่ยนได้เมื่อมาตรฐานกำหนด (5.9.1) หรือทำให้ข้อมูลน่าเชื่อถือและเกี่ยวข้องมากขึ้น (5.9.2) การสลับตามผลกำไรไม่เข้าเงื่อนไขใด", "15.3"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  const goS=()=>{const m=(location.hash||'').match(/^#(S15\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body>
+</html>
+</body></html>

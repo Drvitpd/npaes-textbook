@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แอป 22 · กระดาษทำการเกษตรกรรม</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+<style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head>
+<body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div>
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 22 เกษตรกรรม</div>
+      <h1>แอป 22 · กระดาษทำการเกษตรกรรม</h1>
+      <p class="lede">จำแนกสัตว์และพืชให้ถูกบท สะสมราคาทุนและคิดค่าเสื่อมราคา วัดมูลค่ายุติธรรมหักต้นทุนในการขายทั้งสองทางเลือกของรายจ่ายภายหลัง วัดผลิตผล ณ จุดเก็บเกี่ยว ทำรายการกระทบยอด เทียบผลทางภาษี และร่างหมายเหตุ</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 22 ย่อหน้า 22.1–22.18</b><br>ตำราบทที่ 22 · ฉบับ 20-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> จำแนกรายการ · เลือกวิธีราคาทุนหรือวิธีมูลค่ายุติธรรม · วัดผลิตผล ณ จุดเก็บเกี่ยว · กระทบยอด · ภาษี · ร่างหมายเหตุ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="cls"><span class="n">0</span>จำแนกรายการ</button>
+    <button role="tab" aria-selected="false" data-tab="cost"><span class="n">1</span>วิธีราคาทุน</button>
+    <button role="tab" aria-selected="false" data-tab="fv"><span class="n">2</span>วิธีมูลค่ายุติธรรม</button>
+    <button role="tab" aria-selected="false" data-tab="harv"><span class="n">3</span>ผลิตผล ณ จุดเก็บเกี่ยว</button>
+    <button role="tab" aria-selected="false" data-tab="rec"><span class="n">4</span>กระทบยอด</button>
+    <button role="tab" aria-selected="false" data-tab="tax"><span class="n">5</span>ภาษี</button>
+    <button role="tab" aria-selected="false" data-tab="note"><span class="n">6</span>ร่างหมายเหตุ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">7</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">8</span>เนื้อหาเสริม S22</button>
+  </nav>
+
+  <div class="grid" data-pane="cls" style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>จำแนกรายการ (ย่อหน้า 22.1–22.6)</h2>
+      <p class="hint">ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น ไม่ส่งออกจากเครื่อง เลือกประเภทของรายการแล้วตอบทุกข้อที่แสดง แอปไม่แสดงข้อสรุปจนกว่าจะตอบครบ</p>
+      <div class="fields"><label class="f">ประเภทของรายการ<select id="cKind"><option value="" selected>– เลือก –</option><option value="animal">สัตว์มีชีวิต</option><option value="plant">พืชมีชีวิต</option><option value="cut">ส่วนที่แยกออกจากสัตว์หรือพืชแล้ว (เก็บเกี่ยวแล้ว)</option></select></label><label class="f">ข้อ 1<select id="c1"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ข้อ 2<select id="c2"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ข้อ 3<select id="c3"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label></div>
+      <div id="cOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="cost" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>วิธีราคาทุน: ราคาทุนสะสมและค่าเสื่อมราคา (ย่อหน้า 22.11–22.13)</h2>
+      <p class="hint">ส่วน ก สะสมราคาทุนของสินทรัพย์ชีวภาพที่เลี้ยงเพื่อขาย ส่วน ข คิดค่าเสื่อมราคาของสัตว์ที่ให้ผลิตผลหลายรอบ ค่าเริ่มต้นคือตัวอย่างที่ 22.1 และ 22.2</p>
+      <div class="fields"><label class="f">ก: ราคาซื้อ (บาท)<input class="num" type="number" step="any" id="kBuy" value="310000"></label><label class="f">ก: ค่าแรงงานทางตรง<input class="num" type="number" step="any" id="kLab" value="45000"></label><label class="f">ก: ต้นทุนทางตรงอื่น (อาหาร ยา)<input class="num" type="number" step="any" id="kDir" value="250000"></label><label class="f">ก: ค่าใช้จ่ายหัวหน้างานต่อปี<input class="num" type="number" step="any" id="kSupY" value="1000000"></label><label class="f">ก: ร้อยละของเวลาที่ดูแลการเลี้ยง<input class="num" type="number" step="any" id="kSupP" value="20"></label><label class="f">ก: จำนวนวันที่เลี้ยง<input class="num" type="number" step="any" id="kDays" value="45"></label><label class="f">ก: ค่าเสื่อมราคาอุปกรณ์ที่ปันส่วน<input class="num" type="number" step="any" id="kDep" value="100000"></label><label class="f">ก: จำนวนที่รอด (ตัว)<input class="num" type="number" step="any" id="kLive" value="300000"></label><label class="f">ข: ราคาทุนสัตว์ที่ให้ผลิตผล<input class="num" type="number" step="any" id="dCost" value="480000"></label><label class="f">ข: มูลค่าคงเหลือรวม<input class="num" type="number" step="any" id="dRes" value="80000"></label><label class="f">ข: อายุการใช้ประโยชน์ (ปี)<input class="num" type="number" step="any" id="dLife" value="4"></label></div>
+      <div id="kOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="fv" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>วิธีมูลค่ายุติธรรม: มูลค่ายุติธรรมหักต้นทุนในการขาย (ย่อหน้า 22.14–22.16)</h2>
+      <p class="hint">ต้นทุนในการขายไม่รวมดอกเบี้ยและภาษีเงินได้ (22.8) เลือกวิธีบันทึกรายจ่ายภายหลังก่อน แอปจึงแสดงกำไรขาดทุน ค่าเริ่มต้นคือตัวอย่างที่ 22.3</p>
+      <div class="fields"><label class="f">จำนวน (ตัว)<input class="num" type="number" step="any" id="fN" value="100"></label><label class="f">ราคาตลาดต่อตัววันซื้อ<input class="num" type="number" step="any" id="fP0" value="20000"></label><label class="f">ราคาตลาดต่อตัววันสิ้นงวด<input class="num" type="number" step="any" id="fP1" value="23000"></label><label class="f">ค่าขนส่งไปตลาดต่อตัว<input class="num" type="number" step="any" id="fTr" value="200"></label><label class="f">ค่านายหน้า (ร้อยละของราคาขาย)<input class="num" type="number" step="any" id="fCom" value="3"></label><label class="f">ค่าขนส่งมาฟาร์ม (ค่าใช้จ่ายของงวด)<input class="num" type="number" step="any" id="fTrIn" value="20000"></label><label class="f">รายจ่ายภายหลังในงวด (อาหาร ยา)<input class="num" type="number" step="any" id="fFeed" value="50000"></label><label class="f">ดอกเบี้ยเงินกู้ที่เกี่ยวข้อง (ไม่ใช่ต้นทุนในการขาย)<input class="num" type="number" step="any" id="fInt" value="0"></label><label class="f">วิธีบันทึกรายจ่ายภายหลัง (ตัวอย่างประกอบความเข้าใจ หน้า 73)<select id="fPol"><option value="" selected>– เลือก –</option><option value="cap">รวมเป็นราคาทุนของสินทรัพย์</option><option value="exp">รับรู้เป็นค่าใช้จ่าย</option></select></label></div>
+      <div id="fOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="harv" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ผลิตผล ณ จุดเก็บเกี่ยว (ย่อหน้า 22.12 และ 22.15)</h2>
+      <p class="hint">เลือกวิธีที่กิจการใช้ แล้วกรอกข้อมูล ณ จุดเก็บเกี่ยว ค่าเริ่มต้นคือตัวอย่างที่ 22.4 หลังจุดเก็บเกี่ยวใช้บทที่ 8</p>
+      <div class="fields"><label class="f">วิธีของกิจการ<select id="hPol"><option value="" selected>– เลือก –</option><option value="fv">วิธีมูลค่ายุติธรรม</option><option value="cost">วิธีราคาทุน</option></select></label><label class="f">ปริมาณที่เก็บเกี่ยว<input class="num" type="number" step="any" id="hQty" value="500"></label><label class="f">ราคาตลาดต่อหน่วย<input class="num" type="number" step="any" id="hP" value="50"></label><label class="f">ค่าขนส่งไปตลาดต่อหน่วย<input class="num" type="number" step="any" id="hTr" value="0"></label><label class="f">ค่าใช้จ่ายในการขาย (ร้อยละ)<input class="num" type="number" step="any" id="hCom" value="1"></label><label class="f">มูลค่าตามบัญชีของสินทรัพย์ชีวภาพที่โอน<input class="num" type="number" step="any" id="hBV" value="24000"></label><label class="f">ราคาทุนสะสมถึงจุดเก็บเกี่ยว (วิธีราคาทุน)<input class="num" type="number" step="any" id="hCost" value="0"></label></div>
+      <div id="hOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="rec" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>รายการกระทบยอด (ย่อหน้า 22.17.4 หรือ 22.18.3)</h2>
+      <p class="hint">เลือกวิธีแล้วกรอกจำนวน แอปตรวจว่ายอดสิ้นงวดกระทบได้ ค่าเริ่มต้นคือตัวอย่างที่ 22.2</p>
+      <div class="fields"><label class="f">วิธี<select id="rPol"><option value="" selected>– เลือก –</option><option value="cost">วิธีราคาทุน (22.17.4)</option><option value="fv">วิธีมูลค่ายุติธรรม (22.18.3)</option></select></label><label class="f">ยอดต้นงวด<input class="num" type="number" step="any" id="rOpen" value="0"></label><label class="f">เพิ่มจากการซื้อ<input class="num" type="number" step="any" id="rBuy" value="480000"></label><label class="f">ลดลงจากการเก็บเกี่ยวหรือขาย<input class="num" type="number" step="any" id="rOut" value="38000"></label><label class="f">ค่าเสื่อมราคา (วิธีราคาทุน)<input class="num" type="number" step="any" id="rDep" value="100000"></label><label class="f">กำไร (ขาดทุน) จากมูลค่ายุติธรรม (วิธีมูลค่ายุติธรรม)<input class="num" type="number" step="any" id="rGain" value="0"></label><label class="f">การเปลี่ยนแปลงอื่น<input class="num" type="number" step="any" id="rOther" value="0"></label><label class="f">ยอดสิ้นงวดตามบัญชี<input class="num" type="number" step="any" id="rClose" value="342000"></label></div>
+      <div id="rOutp" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="tax" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ผลทางภาษี</h2>
+      <p class="hint">ค่าเสื่อมราคาสัตว์พ่อแม่พันธุ์หักได้ไม่เกินร้อยละ 20 ของราคาทุน (พ.ร.ฎ. 145 มาตรา 4 (5)) กำไรจากมูลค่ายุติธรรมที่ยังไม่ขายหักออกในการคำนวณกำไรสุทธิทางภาษี (ม.65 ทวิ (3) และ (6)) ข้อหารือ กค 0706/10178 (6 ธ.ค. 2548) วินิจฉัยว่ากำไรจากการตีราคาเพิ่มห้ามรวมคำนวณ ส่วนที่ตีราคาต่ำลงเป็นรายจ่ายต้องห้าม (ม.65 ตรี (17)) จนกว่าจะขาย ค่าเสื่อมราคาพ่อแม่พันธุ์เริ่มเมื่อให้ผลผลิตพร้อมขาย (กค 0706/3155) การจัดสัตว์ขุนเป็นสินค้าเป็นแนวการตีความ</p>
+      <div class="fields"><label class="f">ชื่อกิจการ<input type="text" id="xName" value="บริษัท ตัวอย่างฟาร์มสุกร จำกัด"></label><label class="f"><span><input type="checkbox" id="xAnon" checked> ปกปิดชื่อ</span></label><label class="f">ราคาทุนสัตว์พ่อแม่พันธุ์<input class="num" type="number" step="any" id="xCost" value="480000"></label><label class="f">ค่าเสื่อมราคาทางบัญชีของปี<input class="num" type="number" step="any" id="xDep" value="100000"></label><label class="f">จำนวนเดือนที่พร้อมให้ผลผลิตในปี<input class="num" type="number" step="any" id="xMon" value="12"></label><label class="f">กำไรจากมูลค่ายุติธรรมที่ยังไม่ขาย<input class="num" type="number" step="any" id="xGain" value="0"></label><label class="f">ขาดทุนจากมูลค่ายุติธรรมที่ยังไม่ขาย<input class="num" type="number" step="any" id="xLoss" value="0"></label></div>
+      <div id="xOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="note" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ร่างหมายเหตุนโยบายการบัญชี (ย่อหน้า 22.10, 22.17, 22.18)</h2>
+      <p class="hint">เลือกวิธีแล้วกรอกรายละเอียด ปุ่มคัดลอกคัดลอกเฉพาะข้อความในกรอบ</p>
+      <div class="fields"><label class="f">ชื่อกิจการ<input type="text" id="nName" value="บริษัท ตัวอย่างฟาร์มสุกร จำกัด"></label><label class="f"><span><input type="checkbox" id="nAnon" checked> ปกปิดชื่อ</span></label><label class="f">วิธีที่เลือก (22.10)<select id="nPol"><option value="" selected>– เลือก –</option><option value="cost">วิธีราคาทุน</option><option value="fv">วิธีมูลค่ายุติธรรม</option></select></label><label class="f">กลุ่มสินทรัพย์ชีวภาพ<input type="text" id="nGrp" value="แม่สุกรพันธุ์และสุกรขุน"></label><label class="f">อายุการใช้ประโยชน์ (ปี) วิธีราคาทุน<input class="num" type="number" step="any" id="nLife" value="4"></label><label class="f">รายจ่ายภายหลัง (วิธีมูลค่ายุติธรรม)<select id="nSub"><option value="cap">รวมเป็นราคาทุนของสินทรัพย์</option><option value="exp" selected>รับรู้เป็นค่าใช้จ่าย</option></select></label><label class="f">แหล่งราคา (วิธีมูลค่ายุติธรรม)<input type="text" id="nSrc" value="ราคาเสนอซื้อขายของตลาดที่คาดว่าจะนำไปขาย"></label><div class="row-actions"><button class="btn primary" id="nCopy">คัดลอกร่าง</button><span class="copied" id="nOk" hidden>คัดลอกแล้ว</span></div></div>
+      <div id="nOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อและผลราย LO</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+  <!-- 8 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S22</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 22 กดปุ่ม S22.1 ถึง S22.9 เพื่อเลื่อนไปยังหัวข้อนั้น</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S22.1">S22.1</a><a class="btn" href="#S22.2">S22.2</a><a class="btn" href="#S22.3">S22.3</a><a class="btn" href="#S22.4">S22.4</a><a class="btn" href="#S22.5">S22.5</a><a class="btn" href="#S22.6">S22.6</a><a class="btn" href="#S22.7">S22.7</a><a class="btn" href="#S22.8">S22.8</a><a class="btn" href="#S22.9">S22.9</a></div>
+<h3 id="S22.1">S22.1 ตารางจำแนกรายการและรายการตรวจขอบเขต</h3><p>ตอบตามลำดับ: (1) เป็นสัตว์หรือพืชที่มีชีวิตหรือไม่ (22.4) (2) ถ้าเป็นพืช เข้าเงื่อนไขพืชเพื่อการให้ผลิตผลครบสามข้อหรือไม่ (22.5) ถ้าครบ ใช้บทที่ 10 (3) ถ้าแยกออกจากสินทรัพย์ชีวภาพแล้ว เป็นผลิตผล ณ จุดเก็บเกี่ยว (22.3, 22.6) และหลังจากนั้นใช้บทที่ 8</p><div class="tbl"><table><thead><tr><th>รายการ</th><th>บท</th><th>เหตุผล</th></tr></thead><tbody><tr><td>แม่โคนม แม่สุกรพันธุ์ พ่อโคพันธุ์</td><td>บทที่ 22</td><td>สัตว์มีชีวิต ย่อหน้า 22.5 ใช้กับพืชเท่านั้น</td></tr><tr><td>โคขุน สุกรขุน ไก่เนื้อ เป็ดเนื้อ</td><td>บทที่ 22</td><td>สัตว์มีชีวิตที่เลี้ยงเพื่อขาย</td></tr><tr><td>กุ้งและปลาในบ่อ</td><td>บทที่ 22</td><td>สัตว์มีชีวิต</td></tr><tr><td>ต้นยางพารา ต้นปาล์มน้ำมัน ต้นทุเรียน ต้นมะม่วง เถาองุ่น</td><td>บทที่ 10</td><td>พืชเพื่อการให้ผลิตผล (22.5)</td></tr><tr><td>ผลทุเรียน ผลปาล์ม ผลองุ่นที่อยู่บนต้น</td><td>บทที่ 22</td><td>ผลิตผลที่เจริญเติบโตบนพืชเพื่อการให้ผลิตผลถือเป็นสินทรัพย์ชีวภาพ (ตัวอย่างประกอบความเข้าใจ หน้า 67)</td></tr><tr><td>ต้นอ้อย ข้าวในนา ต้นมันสำปะหลัง</td><td>บทที่ 22</td><td>พืชที่ขายเป็นผลิตผลหรือเก็บเกี่ยวครั้งเดียว ไม่เข้าเงื่อนไข 22.5</td></tr><tr><td>ต้นไม้ที่ปลูกเพื่อตัดขายเป็นไม้ซุง</td><td>บทที่ 22</td><td>ขายเป็นผลิตผล ไม่เข้าเงื่อนไขข้อ (3) ของ 22.5 (แนวการตีความ)</td></tr><tr><td>น้ำนมดิบ น้ำยางสด ทะลายปาล์มที่ตัดแล้ว ไข่</td><td>บทที่ 22 ณ จุดเก็บเกี่ยว แล้วบทที่ 8</td><td>ผลิตผลทางการเกษตร (22.3)</td></tr><tr><td>เนยแข็ง น้ำมันปาล์ม ยางแผ่นรมควัน น้ำตาล</td><td>บทที่ 8</td><td>ผลิตภัณฑ์หลังแปรรูป อยู่นอกบทที่ 22</td></tr><tr><td>ที่ดินที่ใช้ปลูกหรือเลี้ยง โรงเรือน</td><td>บทที่ 10</td><td>ไม่ใช่สินทรัพย์ชีวภาพ</td></tr><tr><td>สิทธิการใช้น้ำ ใบอนุญาต</td><td>บทที่ 11</td><td>สินทรัพย์ไม่มีตัวตนอยู่นอกบทที่ 22 (ตัวอย่างประกอบความเข้าใจ หน้า 67)</td></tr></tbody></table></div><p>เงื่อนไขพืชเพื่อการให้ผลิตผล (22.5) ต้องครบทั้งสามข้อ: ใช้ผลิตหรือจัดหาผลิตผล คาดว่าให้ผลิตผลมากกว่าหนึ่งรอบระยะเวลา และมีความเป็นไปได้ที่ยากยิ่งที่จะขายเป็นผลิตผล เว้นแต่ขายเศษซาก</p><h3 id="S22.2">S22.2 วิธีราคาทุน: รายการบันทึกครบวงจร</h3><h4>ก. ตัวอย่างที่ 22.1 ลูกไก่ (ตัวอย่างที่ 1–2 หน้า 70–72)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ลูกไก่ระหว่างเลี้ยง</td><td class="num">310,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (310,000 ตัว × 1 บาท)</td><td class="num"></td><td class="num">310,000</td></tr><tr><td>รวม</td><td class="num">310,000</td><td class="num">310,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ลูกไก่ระหว่างเลี้ยง</td><td class="num">45,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (ค่าแรงงาน 1,000 × 45 วัน)</td><td class="num"></td><td class="num">45,000</td></tr><tr><td>รวม</td><td class="num">45,000</td><td class="num">45,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ลูกไก่ระหว่างเลี้ยง</td><td class="num">250,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (ค่าอาหารและยา)</td><td class="num"></td><td class="num">250,000</td></tr><tr><td>รวม</td><td class="num">250,000</td><td class="num">250,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ลูกไก่ระหว่างเลี้ยง</td><td class="num">124,658</td><td class="num"></td></tr><tr><td>    เครดิต ค่าใช้จ่ายหัวหน้างาน (1,000,000 × 20% × 45/365)</td><td class="num"></td><td class="num">24,658</td></tr><tr><td>    เครดิต ค่าเสื่อมราคา อุปกรณ์</td><td class="num"></td><td class="num">100,000</td></tr><tr><td>รวม</td><td class="num">124,658</td><td class="num">124,658</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ผลิตผลทางการเกษตร ณ จุดเก็บเกี่ยว</td><td class="num">729,658</td><td class="num"></td></tr><tr><td>    เครดิต ลูกไก่ระหว่างเลี้ยง</td><td class="num"></td><td class="num">729,658</td></tr><tr><td>รวม</td><td class="num">729,658</td><td class="num">729,658</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต สินค้าคงเหลือ (เนื้อไก่ชำแหละแล้ว)</td><td class="num">829,658</td><td class="num"></td></tr><tr><td>    เครดิต ผลิตผลทางการเกษตร ณ จุดเก็บเกี่ยว</td><td class="num"></td><td class="num">729,658</td></tr><tr><td>    เครดิต เงินสด (ค่าชำแหละ)</td><td class="num"></td><td class="num">100,000</td></tr><tr><td>รวม</td><td class="num">829,658</td><td class="num">829,658</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต สินค้าคงเหลือ (ต้นทุนการจัดการและบรรจุ)</td><td class="num">200,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">200,000</td></tr><tr><td>รวม</td><td class="num">200,000</td><td class="num">200,000</td></tr></tbody></table></div><p>ต้นทุนสินค้าคงเหลือรวม 1,029,658 บาท ราคาขายที่คาดไว้หน่วยละ 7 บาท ณ วันสิ้นงวดสินค้าคงเหลือวัดด้วยราคาทุนหรือมูลค่าสุทธิที่จะได้รับแล้วแต่จำนวนใดจะต่ำกว่าตามบทที่ 8 ที่มา: ตัวอย่างประกอบความเข้าใจ TFRS for NPAEs (ปรับปรุง 2565) เผยแพร่วันที่ 20 กันยายน 2566 บทที่ 22 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p><h4>ข. ตัวอย่างที่ 22.2 แม่สุกรพันธุ์ (ข้อมูลสมมติ)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต แม่สุกรพันธุ์ (สินทรัพย์ชีวภาพไม่หมุนเวียน)</td><td class="num">480,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (40 × 12,000)</td><td class="num"></td><td class="num">480,000</td></tr><tr><td>รวม</td><td class="num">480,000</td><td class="num">480,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าเสื่อมราคา</td><td class="num">100,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าเสื่อมราคาสะสม แม่สุกรพันธุ์ (480,000 − 80,000) ÷ 4</td><td class="num"></td><td class="num">100,000</td></tr><tr><td>รวม</td><td class="num">100,000</td><td class="num">100,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">36,000</td><td class="num"></td></tr><tr><td>เดบิต ค่าเสื่อมราคาสะสม แม่สุกรพันธุ์ (4 ตัว × 2,500)</td><td class="num">10,000</td><td class="num"></td></tr><tr><td>เดบิต ขาดทุนจากการปลดระวาง</td><td class="num">2,000</td><td class="num"></td></tr><tr><td>    เครดิต แม่สุกรพันธุ์</td><td class="num"></td><td class="num">48,000</td></tr><tr><td>รวม</td><td class="num">48,000</td><td class="num">48,000</td></tr></tbody></table></div><p>ค่าใช้จ่ายเลี้ยงดูแม่สุกรหลังพร้อมให้ผลิตผลเป็นค่าใช้จ่ายของงวด ส่วนต้นทุนลูกสุกรที่เกิดใหม่สะสมเป็นสินทรัพย์ชีวภาพหมุนเวียนตามวิธีราคาทุน (แนวการตีความจากย่อหน้า 22.13) ถ้ามูลค่าที่คาดว่าจะได้รับต่ำกว่ามูลค่าตามบัญชี ตั้งค่าเผื่อการลดลงของมูลค่าตามย่อหน้า 22.11 และบทที่ 10</p><h3 id="S22.3">S22.3 วิธีมูลค่ายุติธรรม: รายการบันทึกสองทางเลือกและการกำหนดมูลค่ายุติธรรม</h3><h4>ก. ตัวอย่างที่ 3: รวมรายจ่ายภายหลังเป็นราคาทุน (หน้า 73–75)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต โคเนื้อ</td><td class="num">1,920,000</td><td class="num"></td></tr><tr><td>เดบิต ขาดทุนเมื่อรับรู้เริ่มแรก</td><td class="num">80,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>รวม</td><td class="num">2,000,000</td><td class="num">2,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าขนส่ง</td><td class="num">20,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (ตัวละ 200 บาทมาที่ฟาร์ม)</td><td class="num"></td><td class="num">20,000</td></tr><tr><td>รวม</td><td class="num">20,000</td><td class="num">20,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต โคเนื้อ</td><td class="num">50,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (ค่าอาหารและยา 500 × 100)</td><td class="num"></td><td class="num">50,000</td></tr><tr><td>รวม</td><td class="num">50,000</td><td class="num">50,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต โคเนื้อ</td><td class="num">241,000</td><td class="num"></td></tr><tr><td>    เครดิต กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรมหักต้นทุนในการขาย (2,211,000 − 1,970,000)</td><td class="num"></td><td class="num">241,000</td></tr><tr><td>รวม</td><td class="num">241,000</td><td class="num">241,000</td></tr></tbody></table></div><h4>ข. ตัวอย่างที่ 4: รับรู้รายจ่ายภายหลังเป็นค่าใช้จ่าย (หน้า 75–76)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต โคเนื้อ</td><td class="num">1,920,000</td><td class="num"></td></tr><tr><td>เดบิต ขาดทุนเมื่อรับรู้เริ่มแรก</td><td class="num">80,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>รวม</td><td class="num">2,000,000</td><td class="num">2,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าขนส่ง</td><td class="num">20,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">20,000</td></tr><tr><td>รวม</td><td class="num">20,000</td><td class="num">20,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าอาหารและยา</td><td class="num">50,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">50,000</td></tr><tr><td>รวม</td><td class="num">50,000</td><td class="num">50,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต โคเนื้อ</td><td class="num">291,000</td><td class="num"></td></tr><tr><td>    เครดิต กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรมหักต้นทุนในการขาย (2,211,000 − 1,920,000)</td><td class="num"></td><td class="num">291,000</td></tr><tr><td>รวม</td><td class="num">291,000</td><td class="num">291,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>ผลต่องบกำไรขาดทุนปี 25X1</th><th class="num">ตัวอย่างที่ 3</th><th class="num">ตัวอย่างที่ 4</th></tr></thead><tbody><tr><td>กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรม ณ วันสิ้นงวด</td><td class="num">241,000</td><td class="num">291,000</td></tr><tr><td>หักขาดทุนเมื่อรับรู้เริ่มแรก</td><td class="num">(80,000)</td><td class="num">(80,000)</td></tr><tr><td>รายการ 2 กำไรสุทธิจากการเปลี่ยนแปลงมูลค่ายุติธรรมหักต้นทุนในการขาย</td><td class="num">161,000</td><td class="num">211,000</td></tr><tr><td>รายการ 9 ค่าขนส่งมาฟาร์ม</td><td class="num">(20,000)</td><td class="num">(20,000)</td></tr><tr><td>รายการ 5 ค่าอาหารและยา</td><td class="num">–</td><td class="num">(50,000)</td></tr><tr><td>รวม</td><td class="num">141,000</td><td class="num">141,000</td></tr></tbody></table></div><p>คำชี้แจงแบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566) รายการ 2 และ 9 ให้แสดงยอดสุทธิเมื่อกำไรและขาดทุนเกิดจากรายการเดียวกัน ขาดทุนเมื่อรับรู้เริ่มแรกจึงหักกับกำไร ณ วันสิ้นงวดของโคฝูงเดียวกันในงวดเดียวกัน (การจัดเข้ารายการ 2 เป็นแนวการตีความ)</p><h4>ค. การกำหนดมูลค่ายุติธรรม (ตัวอย่างที่ 7 หน้า 80–81 และตัวอย่างที่ 8 หน้า 81–82)</h4><div class="tbl"><table><thead><tr><th>ตัวอย่างที่ 7 (22.16.1)</th><th>เมืองที่หนึ่ง</th><th>เมืองที่สอง</th><th class="num">รวม</th></tr></thead><tbody><tr><td>จำนวนที่คาดว่าจะขาย</td><td>400 ตัว (80%)</td><td>100 ตัว (20%)</td><td class="num">500 ตัว</td></tr><tr><td>ราคาตลาด</td><td>120,000 (400 × 300)</td><td>30,400 (100 × 304)</td><td class="num">150,400</td></tr><tr><td>ค่าขนส่ง (จำนวนรอบที่คาดว่าจะขนส่ง 10 ตัวต่อรอบ)</td><td>2,600 (65 × 40 รอบ)</td><td>1,500 (150 × 10 รอบ)</td><td class="num">4,100</td></tr><tr><td>มูลค่ายุติธรรมหักต้นทุนในการขาย</td><td>117,400</td><td>28,900</td><td class="num">146,300</td></tr></tbody></table></div><p>ตัวอย่างที่ 8 (22.16.2.1) ไม่มีตลาดที่มีสภาพคล่อง ใช้ราคาขายทอดตลาดล่าสุดวันที่ 15 ธันวาคม ตัวละ 298 บาท เพราะสถานการณ์ไม่เปลี่ยนอย่างมีนัยสำคัญถึงวันสิ้นงวด: 149,000 − ค่าขนส่ง 3,250 − ค่านายหน้าร้อยละ 5 7,450 = 138,300 บาท ที่มา: ตัวอย่างประกอบความเข้าใจ TFRS for NPAEs (ปรับปรุง 2565) เผยแพร่วันที่ 20 กันยายน 2566 บทที่ 22 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p><h3 id="S22.4">S22.4 ผลิตผล ณ จุดเก็บเกี่ยว: กรณีราคาเปลี่ยนก่อนเก็บเกี่ยว</h3><h4>ก. รายการบันทึกเงินสดของตัวอย่างที่ 22.4 (ตัวอย่างที่ 5 หน้า 76–78)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต มะเขือเทศเถาวัลย์</td><td class="num">5,500</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (ซื้อเถาวัลย์)</td><td class="num"></td><td class="num">5,500</td></tr><tr><td>รวม</td><td class="num">5,500</td><td class="num">5,500</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าใช้จ่ายในการเจริญเติบโต (ค่าปลูก ค่าน้ำ ค่าปุ๋ย)</td><td class="num">7,250</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">7,250</td></tr><tr><td>รวม</td><td class="num">7,250</td><td class="num">7,250</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าเก็บเกี่ยว</td><td class="num">1,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (3 มกราคม 25X2)</td><td class="num"></td><td class="num">1,000</td></tr><tr><td>รวม</td><td class="num">1,000</td><td class="num">1,000</td></tr></tbody></table></div><p>รายการวัดมูลค่าวันที่ 31 ธันวาคม 25X1 และวันที่ 3 มกราคม 25X2 อยู่ในรายการบันทึกที่ 22-3 ในเล่ม</p><h4>ข. ตัวอย่างที่ 6 (หน้า 78–80)</h4><p>ตัวอย่างที่ 6 ใช้ข้อมูลเดียวกับตัวอย่างที่ 22.4 แต่วันที่ 4 มกราคม 25X2 เกิดพายุฝนทำให้พืชผลของกิจการคู่แข่งเสียหาย ผลผลิตในตลาดขาดแคลน มูลค่ายุติธรรมหักต้นทุนในการขายของเถาวัลย์ของกิจการจึงเพิ่มเป็น 50,000 บาท (ราคาเสนอซื้อขาย 103.03 บาทต่อกิโลกรัม) ก่อนเก็บเกี่ยววันที่ 5 มกราคม 25X2 การเปลี่ยนแปลงมีสาระสำคัญจึงรับรู้ก่อนเก็บเกี่ยว</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต มะเขือเทศเถาวัลย์</td><td class="num">26,000</td><td class="num"></td></tr><tr><td>    เครดิต กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรมหักต้นทุนในการขาย (50,000 − 24,000)</td><td class="num"></td><td class="num">26,000</td></tr><tr><td>รวม</td><td class="num">26,000</td><td class="num">26,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต มะเขือเทศ ณ จุดเก็บเกี่ยว</td><td class="num">51,000</td><td class="num"></td></tr><tr><td>    เครดิต กำไรจากการวัดผลิตผล ณ จุดเก็บเกี่ยว</td><td class="num"></td><td class="num">1,000</td></tr><tr><td>    เครดิต มะเขือเทศเถาวัลย์</td><td class="num"></td><td class="num">50,000</td></tr><tr><td>รวม</td><td class="num">51,000</td><td class="num">51,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต สินค้าคงเหลือ (มะเขือเทศ)</td><td class="num">51,000</td><td class="num"></td></tr><tr><td>    เครดิต มะเขือเทศ ณ จุดเก็บเกี่ยว</td><td class="num"></td><td class="num">51,000</td></tr><tr><td>รวม</td><td class="num">51,000</td><td class="num">51,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>ประเด็น</th><th>วิธีราคาทุน (22.12)</th><th>วิธีมูลค่ายุติธรรม (22.15)</th></tr></thead><tbody><tr><td>ฐานการวัด ณ จุดเก็บเกี่ยว</td><td>ราคาทุนที่สะสมถึงจุดเก็บเกี่ยว</td><td>มูลค่ายุติธรรมหักต้นทุนในการขาย ณ จุดเก็บเกี่ยว</td></tr><tr><td>กำไรขาดทุน ณ จุดเก็บเกี่ยว</td><td>ไม่มี</td><td>ส่วนต่างจากมูลค่าตามบัญชีของสินทรัพย์ชีวภาพ</td></tr><tr><td>หลังจุดเก็บเกี่ยว</td><td>บทที่ 8 ราคาทุนหรือมูลค่าสุทธิที่จะได้รับ</td><td>บทที่ 8 ใช้มูลค่า ณ จุดเก็บเกี่ยวเป็นราคาทุน</td></tr><tr><td>ค่าเก็บเกี่ยว</td><td>ต้นทุนของผลิตผลหรือค่าใช้จ่ายตามนโยบาย (แนวการตีความ)</td><td>ค่าใช้จ่าย ไม่ใช่ต้นทุนในการขาย (หน้า 77)</td></tr></tbody></table></div><p>ที่มา: ตัวอย่างประกอบความเข้าใจ TFRS for NPAEs (ปรับปรุง 2565) เผยแพร่วันที่ 20 กันยายน 2566 บทที่ 22 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p><h3 id="S22.5">S22.5 ร่างหมายเหตุและรายการกระทบยอด</h3><h4>ก. ร่างนโยบายการบัญชี (แนวการตีความ)</h4><p>วิธีราคาทุน: บริษัทวัดสินทรัพย์ชีวภาพด้วยราคาทุนหักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่า ราคาทุนประกอบด้วยราคาซื้อ ค่าแรงงานทางตรง ต้นทุนทางตรงอื่น และค่าใช้จ่ายการผลิตที่ปันส่วน สัตว์ที่ให้ผลิตผลหลายรอบคิดค่าเสื่อมราคาวิธีเส้นตรงตามอายุการใช้ประโยชน์ ผลิตผลวัดด้วยราคาทุน ณ จุดเก็บเกี่ยว</p><p>วิธีมูลค่ายุติธรรม: บริษัทวัดสินทรัพย์ชีวภาพด้วยมูลค่ายุติธรรมหักต้นทุนในการขาย โดยใช้ราคาเสนอซื้อขายของตลาดที่คาดว่าจะนำไปขาย การเปลี่ยนแปลงรับรู้ในงบกำไรขาดทุน รายจ่ายภายหลังการรับรู้ (ค่าอาหาร ค่ายา ค่าแรงงาน) [รวมเป็นราคาทุนของสินทรัพย์ / รับรู้เป็นค่าใช้จ่ายเมื่อเกิดขึ้น] ผลิตผลวัดด้วยมูลค่ายุติธรรมหักต้นทุนในการขาย ณ จุดเก็บเกี่ยว</p><h4>ข. กระทบยอดตามย่อหน้า 22.17.4 (ตัวอย่างที่ 22.2)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">บาท</th></tr></thead><tbody><tr><td>ยอดต้นงวด</td><td class="num">0</td></tr><tr><td>เพิ่มจากการซื้อ (22.17.4.1)</td><td class="num">480,000</td></tr><tr><td>ลดลงจากการขาย (22.17.4.2)</td><td class="num">(38,000)</td></tr><tr><td>ค่าเสื่อมราคา (22.17.4.3)</td><td class="num">(100,000)</td></tr><tr><td>ยอดสิ้นงวด (ราคาทุน 432,000 หักค่าเสื่อมราคาสะสม 90,000)</td><td class="num">342,000</td></tr></tbody></table></div><h4>ค. กระทบยอดตามย่อหน้า 22.18.3 (ตัวอย่างที่ 22.3 ตัวอย่างที่ 3)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">บาท</th></tr></thead><tbody><tr><td>ยอดต้นงวด</td><td class="num">0</td></tr><tr><td>เพิ่มจากการซื้อ (22.18.3.2) ราคาซื้อ</td><td class="num">2,000,000</td></tr><tr><td>การเปลี่ยนแปลงอื่น (22.18.3.5) รายจ่ายภายหลังที่รวมเป็นราคาทุน (ค่าอาหารและยา)</td><td class="num">50,000</td></tr><tr><td>กำไรสุทธิจากการเปลี่ยนแปลงมูลค่ายุติธรรมหักต้นทุนในการขาย (22.18.3.1) 241,000 − ขาดทุนเมื่อรับรู้เริ่มแรก 80,000</td><td class="num">161,000</td></tr><tr><td>ยอดสิ้นงวด</td><td class="num">2,211,000</td></tr></tbody></table></div><p>ขาดทุนเมื่อรับรู้เริ่มแรกเกิดจากการวัดมูลค่ายุติธรรมหักต้นทุนในการขาย จึงอยู่ในบรรทัด 22.18.3.1 ร่วมกับกำไร ณ วันสิ้นงวด การจัดรายจ่ายที่รวมเป็นราคาทุนไว้ในบรรทัดการเปลี่ยนแปลงอื่นเป็นแนวการตีความ</p><p>รายการตรวจ: (1) แยกรายการ 1.8 กับ 2.13 ตามช่วงเวลาที่คาดว่าจะขายหรือใช้ประโยชน์ (2) ระบุวิธีที่เลือกและข้อสมมติที่มีนัยสำคัญ (22.18.2) (3) พืชเพื่อการให้ผลิตผลเปิดเผยตามบทที่ 10 ไม่ใช่บทที่ 22</p><h3 id="S22.6">S22.6 ผลทางภาษีและการกระทบยอดกำไร</h3><div class="tbl"><table><thead><tr><th>รายการ (ตัวอย่างที่ 22.2 และ 22.3)</th><th>ทางบัญชี</th><th>ทางภาษี</th><th>ปรับปรุง</th></tr></thead><tbody><tr><td>ค่าเสื่อมราคาแม่สุกรพันธุ์</td><td>100,000</td><td>96,000</td><td>บวกกลับ 4,000</td></tr><tr><td>กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรมของโคเนื้อที่ยังไม่ขาย (ตัวอย่างที่ 3)</td><td>241,000</td><td>0 จนกว่าจะขาย (แนวการตีความ)</td><td>หักออก 241,000</td></tr><tr><td>ขาดทุนเมื่อรับรู้เริ่มแรกของโคเนื้อ</td><td>80,000</td><td>0 ราคาทุนทางภาษีคือราคาซื้อ (แนวการตีความ)</td><td>บวกกลับ 80,000</td></tr><tr><td>ค่าขนส่งโคมาฟาร์ม</td><td>20,000</td><td>0 ในปีนี้ รวมเป็นราคาทุนของสินค้าทางภาษี หักเมื่อขาย (แนวการตีความ)</td><td>บวกกลับ 20,000</td></tr><tr><td>ขาดทุนจากการปลดระวางแม่สุกร 4 ตัว</td><td>2,000</td><td>2,400 (มูลค่าทางภาษี 48,000 − 9,600 = 38,400)</td><td>หักเพิ่ม 400</td></tr></tbody></table></div><p>ฐานกฎหมาย: ม.65 วรรคสอง เกณฑ์สิทธิ; ม.65 ทวิ (6) สินค้าคงเหลือวัดด้วยราคาทุนหรือราคาตลาดแล้วแต่อย่างใดจะน้อยกว่า; ม.65 ตรี (17) ค่าของทรัพย์สินนอกจากสินค้าที่ตีราคาต่ำลงเป็นรายจ่ายต้องห้าม; ม.65 ทวิ (3) ราคาทรัพย์สินอื่นนอกจากสินค้าให้ถือราคาที่ซื้อได้ตามปกติ และห้ามนำราคาที่ตีเพิ่มขึ้นมารวมคำนวณกำไรสุทธิหรือขาดทุนสุทธิ; พ.ร.ฎ. (ฉบับที่ 145) มาตรา 4 (5) ทรัพย์สินอื่นที่เสื่อมราคาได้นอกจากที่ดินและสินค้าหักได้ไม่เกินร้อยละ 20 ของมูลค่าต้นทุน ถ้าใช้วิธีทางบัญชีที่อัตราแต่ละปีไม่เท่ากัน อายุการใช้ต้องไม่น้อยกว่า 100 หารด้วยอัตรานั้น (5 ปี); ข้อหารือ กค 0706/3155 (29 มีนาคม 2547) ค่าเสื่อมราคาของพันธุ์สัตว์เริ่มหักเมื่อพร้อมให้ผลผลิต และค่าอาหารหลังจากนั้นเป็นรายจ่าย การจัดสินทรัพย์ชีวภาพแต่ละกลุ่มเป็นสินค้าหรือทรัพย์สินอื่น และการถือค่าขนส่งมาฟาร์มเป็นต้นทุนของสินค้าทางภาษี เป็นแนวการตีความของตำรา ผู้ปฏิบัติตรวจกับคำวินิจฉัยของกรมสรรพากรในกรณีของตน</p><p>ภาษีมูลค่าเพิ่ม: คำสั่ง ป.28/2535 (29 กรกฎาคม 2535) ข้อ 2 การขายพืชผลทางการเกษตรไม่ว่าลำต้น กิ่ง ใบ เปลือก หน่อ ราก เหง้า ดอก หัว ฝัก เมล็ด หรือส่วนอื่นของพืช ข้าว น้ำยาง และยางแผ่นดิบได้รับยกเว้นตาม ม.81 (1) (ก) ส่วนพืชผลที่แปรรูปเป็นอาหารหรือสินค้าอื่น หรือบรรจุภาชนะผนึกตามที่ข้อ 1 กำหนด ไม่อยู่ในข้อยกเว้น คำสั่ง ป.29/2535 (29 กรกฎาคม 2535) ข้อ 2 การขายสัตว์มีชีวิต หนังสัตว์ที่ยังไม่ฟอก เนื้อสัตว์ ไข่ น้ำนม และวัตถุพลอยได้ ได้รับยกเว้นตาม ม.81 (1) (ข) ส่วนข้อ 1 ไม่ยกเว้นอาหารที่ปรุงแต่งและบรรจุภาชนะผนึก น้ำนมที่ปรุงแต่ง และผลิตภัณฑ์ที่แปรรูปเป็นอาหารหรือสินค้าอื่น</p><p>ภาษีหัก ณ ที่จ่าย: คำสั่ง ท.ป.4/2528 ข้อ 3 ผู้จ่ายที่เป็นบริษัทหรือห้างหุ้นส่วนนิติบุคคลหรือนิติบุคคลอื่น (ไม่รวมกลุ่มเกษตรกร) หักร้อยละ 0.75 เมื่อจ่ายค่าซื้อยางแผ่นหรือยางอื่น มันสำปะหลัง ปอ ข้าวโพด อ้อย เมล็ดกาแฟ และผลปาล์มน้ำมัน ให้แก่ผู้รับที่เป็นนิติบุคคล ตามเงื่อนไขของผู้ซื้อในแต่ละรายการ เช่น ผู้ส่งออกหรือผู้ผลิต ถ้อยคำข้อ 3 ปัจจุบันตามคำสั่ง ท.ป.281/2560 (ราชกิจจานุเบกษา 20 กรกฎาคม 2560) มีพืชผล 7 รายการ ใช้กับการจ่ายตั้งแต่ 2 พฤษภาคม 2560</p><h3 id="S22.7">S22.7 แนวคำตอบกรณีศึกษา 22.1</h3><div class="tbl"><table><thead><tr><th>ข้อเสนอ</th><th class="num">ผู้บริหาร</th><th class="num">ที่ถูกต้อง</th><th>เหตุผล</th></tr></thead><tbody><tr><td>(ก) ลูกโค</td><td class="num">108,000</td><td class="num">108,000</td><td>22.9 และ 22.14</td></tr><tr><td>(ข) โคขุน</td><td class="num">115,000</td><td class="num">145,000</td><td>ดอกเบี้ยค้างจ่ายไม่ใช่ต้นทุนในการขาย (22.8) ต้นทุนในการขายมีเพียงค่าขนส่ง 25,000 และค่านายหน้า 30,000</td></tr><tr><td>(ค) น้ำนมดิบ</td><td class="num">2,800</td><td class="num">0</td><td>วัดครั้งเดียว ณ จุดเก็บเกี่ยว แล้วใช้บทที่ 8 (22.15)</td></tr><tr><td>(ง) ต้นทุเรียน</td><td class="num">400,000</td><td class="num">0</td><td>พืชเพื่อการให้ผลิตผลใช้บทที่ 10 (22.1, 22.5)</td></tr><tr><td>รวมกำไรจากสินทรัพย์ชีวภาพ</td><td class="num">625,800</td><td class="num">253,000</td><td>ข้อเสนอสูงไป 372,800</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ลูกโค (สินทรัพย์ชีวภาพ)</td><td class="num">108,000</td><td class="num"></td></tr><tr><td>    เครดิต กำไรจากการรับรู้ลูกโคเกิดใหม่</td><td class="num"></td><td class="num">108,000</td></tr><tr><td>รวม</td><td class="num">108,000</td><td class="num">108,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต โคขุน</td><td class="num">145,000</td><td class="num"></td></tr><tr><td>    เครดิต กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรมหักต้นทุนในการขาย (1,445,000 − 1,300,000)</td><td class="num"></td><td class="num">145,000</td></tr><tr><td>รวม</td><td class="num">145,000</td><td class="num">145,000</td></tr></tbody></table></div><p>ดอกเบี้ยค้างจ่าย 30,000 บาทเป็นต้นทุนทางการเงิน แสดงในรายการ 12 น้ำนมดิบแสดงในรายการ 1.6 สินค้าคงเหลือ 37,200 บาท ต้นทุเรียนวัดตามบทที่ 10 ถ้ากิจการเลือกวิธีราคาทุน (10.12) แสดงด้วยราคาทุนหักค่าเสื่อมราคาสะสม ถ้าเลือกวิธีตีราคาใหม่ ส่วนเพิ่ม 400,000 บาทเข้าส่วนเกินทุนจากการตีราคาสินทรัพย์ในส่วนของเจ้าของ (10.20) ไม่เข้างบกำไรขาดทุน กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรมของลูกโคและโคขุนแสดงในรายการ 2 (แนวการตีความ) ทางภาษีกำไรที่ยังไม่ขายปรับปรุงจนกว่าจะขาย (แนวการตีความ ดู S22.6)</p><h3 id="S22.8">S22.8 เฉลยแบบฝึกหัด</h3><p>ปรนัย: 1 ค · 2 ก · 3 ง · 4 ข · 5 ค · 6 ง · 7 ก · 8 ข (เหตุผลรายข้ออยู่ในแท็บแบบทดสอบ)</p><h4>อัตนัย</h4><div class="tbl"><table><thead><tr><th>ข้อ</th><th>แนวคำตอบ</th></tr></thead><tbody><tr><td>1</td><td>แม่สุกรพันธุ์ บทที่ 22 (สัตว์) · ต้นปาล์มน้ำมัน บทที่ 10 (22.1, 22.5) · ผลปาล์มบนต้น บทที่ 22 · ทะลายปาล์มที่ตัดแล้ว ผลิตผล ณ จุดเก็บเกี่ยว แล้วบทที่ 8 · น้ำมันปาล์มดิบ บทที่ 8 (หลังแปรรูป)</td></tr><tr><td>2</td><td>100,000 + 150,000 + 30,000 + 20,000 + 6,000 (240,000 × 10% × 3/12) = 306,000 บาท ค่าโฆษณาขายไม่รวม ตัวละ 306,000 ÷ 4,800 = 63.75 บาท</td></tr><tr><td>3</td><td>เริ่มแรก 800,000 − 20,000 − 16,000 = 764,000 ขาดทุน 36,000 · สิ้นงวด 1,040,000 − 20,000 − 20,800 = 999,200 · รวมค่าอาหารเป็นราคาทุน กำไร 115,200 · ค่าอาหารเป็นค่าใช้จ่าย กำไร 235,200 กำไรสุทธิเท่ากันทั้งสองทาง</td></tr><tr><td>4</td><td>ทางบัญชี 600,000 ÷ 3 = 200,000 · ทางภาษีไม่เกิน 20% = 120,000 · บวกกลับ 80,000 (พ.ร.ฎ. 145 มาตรา 4 (5))</td></tr><tr><td>5</td><td>3,000 × (60 − 2) − 1% × 180,000 = 174,000 − 1,800 = 172,200 บาท เป็นต้นทุนของสินค้าคงเหลือ หลังจากนั้นใช้บทที่ 8 ไม่วัดมูลค่ายุติธรรมใหม่ (22.15) เว้นแต่เลือกวัดด้วยมูลค่าสุทธิที่จะได้รับตามย่อหน้า 8.3.1</td></tr></tbody></table></div>
+      <h3 id="S22.9">S22.9 ผลวิจัยปี 2569: บทใหม่ การเปลี่ยนผ่าน ภาษี งานของผู้สอบบัญชี และการเปรียบเทียบ</h3>
+      <h4>ก. บทใหม่และการเปลี่ยนผ่าน</h4>
+      <p class="hint">ฉบับ 2554 ไม่มีเรื่องเกษตรกรรม บทที่ 22 เดิมคือวันถือปฏิบัติ (ย่อหน้า 391–392) ฉบับปรับปรุง 2565 เพิ่มเรื่องนี้ (1.3.1) แยกแสดงสินทรัพย์ชีวภาพ (4.9.6) ใช้กับรอบที่เริ่มในหรือหลัง 1 ม.ค. 2566 (28.1) และในวันที่นำมาปฏิบัติใช้ครั้งแรกรับรู้ผลกระทบสะสมกับกำไรสะสม (28.5.11, 28.16) สไลด์อบรม 85–95 และ 158 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <p class="hint">ตัวอย่างโคเนื้อ: สไลด์ 94 (9 ธ.ค. 2565) รวมค่าขนส่งมาฟาร์มในขาดทุนเริ่มแรก 100,000 บาท ตัวอย่างประกอบความเข้าใจ 20 ก.ย. 2566 ตัวอย่างที่ 3 แยกเป็นค่าใช้จ่าย 20,000 บาท และขาดทุนเริ่มแรก 80,000 บาท กำไรสุทธิเท่ากัน</p>
+      <h4>ข. หลังจุดเก็บเกี่ยว</h4>
+      <p class="hint">สินค้าคงเหลือวัดตามย่อหน้า 8.4 หรือกิจการเลือกวัดผลิตผลภายหลังการเก็บเกี่ยวด้วยมูลค่าสุทธิที่จะได้รับตามย่อหน้า 8.3.1 และรับรู้การเปลี่ยนแปลงในงบกำไรขาดทุน (บทที่ 8 ของตำราถือเป็นทางเลือก) <span class="pill warn">แนวการตีความ</span></p>
+      <h4>ค. ภาษีที่ยืนยันแล้ว</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>หลัก</th><th>ที่มา</th></tr></thead><tbody>
+      <tr><td>ค่าเสื่อมราคาพ่อแม่พันธุ์</td><td>ไม่เกินร้อยละ 20 เริ่มตั้งแต่วันที่ให้ผลผลิตพร้อมขาย รายจ่ายก่อนวันนั้นเป็นรายจ่ายลงทุน</td><td>พ.ร.ฎ. (ฉบับที่ 145) ม.4 (5) · กค 0706/3155 (29 มี.ค. 2547)</td></tr>
+      <tr><td>มูลค่ายุติธรรมของสินทรัพย์ชีวภาพ</td><td>ตีราคาเพิ่มห้ามรวมคำนวณ ตีราคาต่ำลงเป็นรายจ่ายต้องห้ามจนกว่าจะขาย ผลิตผลใช้ราคาทุนหรือราคาตลาดที่ต่ำกว่า</td><td>ม.65 ทวิ (3) (6) · ม.65 ตรี (17) · กค 0706/10178 (6 ธ.ค. 2548)</td></tr>
+      <tr><td>ภาษีมูลค่าเพิ่ม</td><td>พืชผลที่ยังไม่แปรรูปและสัตว์ได้รับยกเว้น ผลิตภัณฑ์ปรุงแต่งและผนึกในลักษณะมั่นคง หรือแปรรูปแล้ว ไม่ได้รับยกเว้น</td><td>ป.28/2535 · ป.29/2535 (29 ก.ค. 2535)</td></tr>
+      <tr><td>ภาษีหัก ณ ที่จ่ายร้อยละ 0.75</td><td>พืชผล 7 รายการ ผู้ซื้อตามเงื่อนไขรายพืช ผู้ขายเป็นนิติบุคคล</td><td>ท.ป.4/2528 ข้อ 3 แก้ไขโดย ท.ป.281/2560</td></tr>
+      <tr><td>เงินอุดหนุนเกษตรแปลงใหญ่</td><td>ยกเว้นภาษีเงินได้นิติบุคคล (เชื่อมบทที่ 23)</td><td>พ.ร.ฎ. (ฉบับที่ 796) พ.ศ. 2568</td></tr>
+      </tbody></table></div>
+      <p class="hint">แบบ 2 แบบจำแนกตามลักษณะ: รายการ 6 ค่าใช้จ่ายผลประโยชน์พนักงาน · รายการ 7 ค่าเสื่อมราคาและค่าตัดจำหน่าย</p>
+      <h4>ง. งานของผู้สอบบัญชี</h4>
+      <ul><li>มาตรฐานการสอบบัญชี รหัส 501 หลักฐานการสอบบัญชี – ข้อพิจารณาเพิ่มเติมเฉพาะรายการ: สังเกตการณ์การตรวจนับสัตว์และพืชโดยอนุโลม</li><li>รหัส 540 (ปรับปรุง): ข้อสมมติของมูลค่ายุติธรรมหักต้นทุนในการขาย</li><li>รหัส 620 การใช้ผลงานของผู้เชี่ยวชาญของผู้สอบบัญชี: สัตวแพทย์ ผู้ประเมิน</li><li>ประกาศสภาวิชาชีพบัญชี ที่ 32/2568 มาตรฐานทางเลือกสำหรับกิจการที่มีความซับซ้อนน้อย</li></ul>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการบัญชี ฉบับที่ 41 (ประกาศ 35/2565) ใช้มูลค่ายุติธรรมเป็นหลักโดยมีข้อสันนิษฐานว่าวัดได้อย่างน่าเชื่อถือ และพืชเพื่อการให้ผลิตผลใช้มาตรฐานการบัญชี ฉบับที่ 16 · มาตรฐานการรายงานทางการเงินระหว่างประเทศสำหรับกิจการขนาดกลางและขนาดย่อม ฉบับที่ 3 หมวด 34 ใช้มูลค่ายุติธรรมเมื่อหาได้โดยไม่มีต้นทุนหรือความพยายามที่มากเกินไป มิฉะนั้นใช้ราคาทุน (ใช้ 1 ม.ค. 2570)</p>
+    </section>
+  </div>
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 22 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์ ใช้งานแบบออฟไลน์ได้</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 22.1–22.4 และตารางที่ 22-2 ถึง 22-4 ในตำรา</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=0)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fp=x=>x<0?'('+fmt(-x)+')':fmt(x);
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function je(title,lines,ref){
+    const L=lines.filter(l=>Math.abs(l.amt)>=0.5);const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);
+    const rows=dr.concat(cr).map(l=>l.dr?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`:`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,t])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${t?esc(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const theory=items=>`<details class="theory"><summary>มาตรฐานและแหล่งอ้างอิง</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  const tbl=(h,rows,num)=>`<div class="tbl"><table><thead><tr>${h.map((x,i)=>`<th${num.includes(i)?' class="num"':''}>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td${num.includes(i)?' class="num"':''}>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  /* tabs */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];const names=tabs.map(b=>b.dataset.tab);
+  function show(name){tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);try{localStorage.setItem('npaes22tab',name)}catch(e){}}
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='cls';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes22tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{e.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+
+
+
+
+
+
+  const R0=x=>Math.round(x+1e-9);
+  const INT='<span class="pill warn">แนวการตีความ</span>';
+  const G={};window.__R=G;
+  const bad=m=>verdict('warn','ตรวจข้อมูลที่กรอก',m);
+  const wait=m=>`<p class="hint">${m}</p>`;
+  const on=(ids,f)=>ids.forEach(id=>{const e=$(id);e.addEventListener(e.tagName==='SELECT'||e.type==='checkbox'?'change':'input',f)});
+  const blank=ids=>ids.some(id=>String($(id).value).trim()==='');
+  const BL='กรอกให้ครบทุกช่อง ช่องที่ว่างไม่ถือเป็นศูนย์';
+  /* 0 cls */
+  const CL={animal:['สัตว์นั้นอยู่ภายใต้การควบคุมของกิจการ (22.9.1) เช่น ไม่ใช่สัตว์ที่รับจ้างเลี้ยงให้ผู้อื่น','สัตว์นั้นใช้ในกิจกรรมทางการเกษตร (22.2)',null],
+    plant:['พืชนั้นใช้ในการผลิตหรือจัดหาผลิตผลทางการเกษตร (22.5 (1))','คาดว่าให้ผลิตผลมากกว่าหนึ่งรอบระยะเวลา (22.5 (2))','มีความเป็นไปได้ที่ยากยิ่งที่จะขายพืชนั้นเป็นผลิตผล เว้นแต่ขายเศษซาก (22.5 (3))'],
+    cut:['ยังไม่ผ่านกระบวนการแปรรูปหลังเก็บเกี่ยว (ตัวอย่างประกอบความเข้าใจ หน้า 67)','อยู่ ณ วันที่เก็บเกี่ยว (วันแยกออกจากสินทรัพย์ชีวภาพ)',null]};
+  const QS=['c1','c2','c3'];
+  function cLabels(){const k=$('cKind').value;QS.forEach((id,i)=>{const lab=$(id).closest('label');const q=k?CL[k][i]:null;lab.firstChild.textContent=q||('ข้อ '+(i+1));
+    let vis=!!q;if(vis&&i>0){for(let j=0;j<i;j++){if($(QS[j]).value!=='yes'){vis=false}}}lab.hidden=!vis})}
+  function cCalc(){cLabels();const k=$('cKind').value;G.cRes='';
+    if(!k){$('cOut').innerHTML=wait('ยังไม่แสดงผล เลือกประเภทของรายการก่อน');return}
+    const a=QS.map(i=>$(i).value);
+    if(k==='animal'){
+      if(a[0]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 1');return}
+      if(a[0]==='no'){G.cRes='nocontrol';$('cOut').innerHTML=verdict('warn','ไม่รับรู้เป็นสินทรัพย์ของกิจการ (22.9.1)','กิจการไม่ได้ควบคุมสัตว์ ค่าจ้างเลี้ยงรับรู้เป็นรายได้ตามบทที่ 18 '+INT);return}
+      if(a[1]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 2');return}
+      if(a[1]==='no'){G.cRes='other';$('cOut').innerHTML=verdict('warn','ไม่ใช่กิจกรรมทางการเกษตร','ทบทวนบทที่เกี่ยวข้อง เช่น สัตว์ที่ใช้ในงานบริการหรือจัดแสดง '+INT);return}
+      G.cRes='ch22';$('cOut').innerHTML=verdict('ok','สินทรัพย์ชีวภาพ: บทที่ 22','สัตว์ที่ให้ผลิตผลหลายรอบก็อยู่ในบทที่ 22 เพราะย่อหน้า 22.5 ใช้กับพืชเท่านั้น เลือกวิธีราคาทุนหรือวิธีมูลค่ายุติธรรม (22.10) แท็บ 1 หรือ 2')+theory([['22.1','ขอบเขต'],['22.4','สินทรัพย์ชีวภาพ หมายถึง สัตว์หรือพืชที่มีชีวิต'],['22.9','เงื่อนไขการรับรู้']]);return}
+    if(k==='plant'){
+      for(let i=0;i<3;i++){if(a[i]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ '+(i+1));return}
+        if(a[i]==='no'){G.cRes='ch22';$('cOut').innerHTML=verdict('ok','สินทรัพย์ชีวภาพ: บทที่ 22',`ไม่เข้าเงื่อนไขพืชเพื่อการให้ผลิตผลข้อ ${i+1} ของย่อหน้า 22.5 จึงใช้บทที่ 22 เช่น ต้นอ้อยหรือไม้ที่ปลูกเพื่อตัดขาย`);return}}
+      G.cRes='ch10';$('cOut').innerHTML=verdict('ok','พืชเพื่อการให้ผลิตผล: บทที่ 10','ต้นพืชวัดตามบทที่ 10 (22.1) ผลที่อยู่บนต้นเป็นสินทรัพย์ชีวภาพตามบทที่ 22 (ตัวอย่างประกอบความเข้าใจ หน้า 67)')+theory([['22.1','พืชเพื่อการให้ผลิตผลถือปฏิบัติตามบทที่ 10'],['22.5','เงื่อนไขสามข้อ']]);return}
+    if(a[0]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 1');return}
+    if(a[0]==='no'){G.cRes='ch8p';$('cOut').innerHTML=verdict('ok','ผลิตภัณฑ์หลังแปรรูป: บทที่ 8','อยู่นอกบทที่ 22 วัดด้วยราคาทุนหรือมูลค่าสุทธิที่จะได้รับแล้วแต่จำนวนใดจะต่ำกว่า');return}
+    if(a[1]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 2');return}
+    if(a[1]==='yes'){G.cRes='harvest';$('cOut').innerHTML=verdict('ok','ผลิตผล ณ จุดเก็บเกี่ยว: บทที่ 22 แล้วบทที่ 8','วัด ณ จุดเก็บเกี่ยวตามวิธีที่เลือก (22.12 หรือ 22.15) แล้วถือเป็นต้นทุนของสินค้าคงเหลือ ใช้แท็บ 3');return}
+    G.cRes='ch8';$('cOut').innerHTML=verdict('ok','หลังจุดเก็บเกี่ยว: บทที่ 8','ไม่วัดมูลค่ายุติธรรมใหม่ ใช้มูลค่า ณ จุดเก็บเกี่ยวเป็นราคาทุน แล้ววัดตามย่อหน้า 8.4 หรือเลือกมูลค่าสุทธิที่จะได้รับตามย่อหน้า 8.3.1');}
+  $('cKind').addEventListener('change',()=>{QS.forEach(i=>{$(i).value=''})});
+  QS.forEach((id,i)=>$(id).addEventListener('change',()=>{for(let j=i+1;j<3;j++)$(QS[j]).value=''}));
+  on(['cKind','c1','c2','c3'],cCalc);cCalc();
+  /* 1 cost */
+  function kCalc(){G.kCost=null;G.kDep=null;const ids=['kBuy','kLab','kDir','kSupY','kSupP','kDays','kDep','kLive','dCost','dRes','dLife'];
+    if(blank(ids)){$('kOut').innerHTML=bad(BL);return}
+    const [b,l,d,sy,sp,dy,dp,lv,dc,dr,dl]=ids.map(i=>val($(i)));
+    if([b,l,d,sy,dp,dc,dr].some(x=>x<0)){$('kOut').innerHTML=bad('จำนวนเงินต้องไม่ติดลบ');return}
+    if(sp<0||sp>100){$('kOut').innerHTML=bad('ร้อยละของเวลาอยู่ระหว่าง 0 ถึง 100');return}
+    if(dy<=0||dy>366||lv<=0){$('kOut').innerHTML=bad('จำนวนวันอยู่ระหว่าง 1 ถึง 366 และจำนวนที่รอดต้องมากกว่าศูนย์');return}
+    if(dl<=0||dr>dc){$('kOut').innerHTML=bad('อายุการใช้ประโยชน์ต้องมากกว่าศูนย์ และมูลค่าคงเหลือต้องไม่เกินราคาทุน');return}
+    const sup=R0(sy*sp/100*dy/365),c=b+l+d+sup+dp,dep=R0((dc-dr)/dl);G.kCost=c;G.kSup=sup;G.kDep=dep;
+    $('kOut').innerHTML=tbl(['ก: ราคาทุนสะสม','บาท'],[['ราคาซื้อ',fmt(b)],['ค่าแรงงานทางตรง',fmt(l)],['ต้นทุนทางตรงอื่น',fmt(d)],['ค่าใช้จ่ายหัวหน้างานส่วนที่ดูแลการเลี้ยง',fmt(sup)],['ค่าเสื่อมราคาที่ปันส่วน',fmt(dp)],['<b>ราคาทุนสะสม</b>','<b>'+fmt(c)+'</b>']],[1])+
+      figs([['ราคาทุนต่อตัว',fmt(c/lv,2),1],['ข: ค่าเสื่อมราคาต่อปี',dep]])+
+      '<p class="hint">ค่าใช้จ่ายส่วนที่ใช้กับการขายและการบริหารไม่รวมในราคาทุน (22.13 และบทที่ 8) สัตว์ที่ตายตามอัตราที่คาดไว้ไม่แยกเป็นผลขาดทุน ราคาทุนรวมกระจายไปยังตัวที่รอด '+INT+'</p>'+
+      theory([['22.11','ราคาทุนหักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่า'],['22.13','กำหนดราคาทุนและค่าเสื่อมราคาตามบทที่ 8 และ 10'],['ตัวอย่างประกอบความเข้าใจ','ตัวอย่างที่ 1 หน้า 70–72 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)']])}
+  on(['kBuy','kLab','kDir','kSupY','kSupP','kDays','kDep','kLive','dCost','dRes','dLife'],kCalc);kCalc();
+  /* 2 fv */
+  function fCalc(){G.fFV0=null;G.fFV1=null;G.fGain=null;G.fPL=null;G.fNet=null;const ids=['fN','fP0','fP1','fTr','fCom','fTrIn','fFeed','fInt'];
+    if(blank(ids)){$('fOut').innerHTML=bad(BL);return}
+    const [N,p0,p1,tr,cm,ti,fd,it]=ids.map(i=>val($(i)));
+    if(N<=0||p0<=0||p1<=0){$('fOut').innerHTML=bad('จำนวนและราคาตลาดต้องมากกว่าศูนย์');return}
+    if(tr<0||ti<0||fd<0||it<0||cm<0||cm>100){$('fOut').innerHTML=bad('ต้นทุนต้องไม่ติดลบ และค่านายหน้าอยู่ระหว่าง 0 ถึง 100');return}
+    const pay=N*p0,fv0=pay-N*tr-R0(pay*cm/100),fv1=N*p1-N*tr-R0(N*p1*cm/100),l0=pay-fv0;G.fFV0=fv0;G.fFV1=fv1;G.fL0=l0;
+    if(fv0<=0||fv1<=0){$('fOut').innerHTML=bad('ต้นทุนในการขายสูงกว่าราคาตลาด ทบทวนข้อมูล');return}
+    let h=figs([['มูลค่ายุติธรรมหักต้นทุนในการขาย วันซื้อ',fv0],['ขาดทุนเมื่อรับรู้เริ่มแรก',fp(-l0),1],['มูลค่ายุติธรรมหักต้นทุนในการขาย วันสิ้นงวด',fv1]]);
+    if(it>0)h+=verdict('warn','ดอกเบี้ยไม่ใช่ต้นทุนในการขาย (22.8)',`ดอกเบี้ย ${fmt(it)} บาทเป็นต้นทุนทางการเงิน แสดงแยก ไม่หักจากมูลค่ายุติธรรม`);
+    const pol=$('fPol').value;
+    if(pol===''){$('fOut').innerHTML=h+wait('ยังไม่แสดงกำไรขาดทุน เลือกวิธีบันทึกรายจ่ายภายหลังก่อน');G.fGain='';return}
+    const g=pol==='cap'?fv1-(fv0+fd):fv1-fv0,net=g-l0,pl=net-ti-(pol==='exp'?fd:0);G.fGain=g;G.fNet=net;G.fPL=pl;
+    h+=figs([['กำไร (ขาดทุน) จากการเปลี่ยนแปลงมูลค่ายุติธรรม ณ วันสิ้นงวด',fp(g),1],[(net>=0?'รายการ 2':'รายการ 9')+' ยอดสุทธิหลังหักขาดทุนเมื่อรับรู้เริ่มแรก',fp(net),1],['ผลรวมต่อกำไรสุทธิของงวด',fp(pl),1]]);
+    h+=je('วันสิ้นงวด (22.14)',g>=0?[{acct:'สินทรัพย์ชีวภาพ',amt:g,dr:true},{acct:'กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรมหักต้นทุนในการขาย',amt:g,dr:false}]:[{acct:'ขาดทุนจากการเปลี่ยนแปลงมูลค่ายุติธรรมหักต้นทุนในการขาย',amt:-g,dr:true},{acct:'สินทรัพย์ชีวภาพ',amt:-g,dr:false}],'');
+    h+=`<p class="hint">${pol==='cap'?'รายจ่ายภายหลังรวมในราคาทุนของสินทรัพย์ก่อนวัดใหม่':'รายจ่ายภายหลังเป็นค่าใช้จ่ายของงวด (รายการ 5)'} กำไรสุทธิของงวดเท่ากันทั้งสองทาง ต่างกันที่การจัดประเภท เปิดเผยนโยบายที่เลือก คำชี้แจงแบบ 2 รายการ 2 และ 9 ให้แสดงยอดสุทธิของกำไรและขาดทุนที่เกิดจากรายการเดียวกัน ${INT}</p>`;
+    $('fOut').innerHTML=h+theory([['22.8','ต้นทุนในการขายไม่รวมต้นทุนทางการเงินและภาษีเงินได้'],['22.14','การเปลี่ยนแปลงรับรู้ในงบกำไรขาดทุน'],['22.16','ตลาดที่คาดว่าจะนำไปขาย'],['ตัวอย่างประกอบความเข้าใจ','หน้า 73 และตัวอย่างที่ 3–4 หน้า 73–76 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)']])}
+  on(['fN','fP0','fP1','fTr','fCom','fTrIn','fFeed','fInt','fPol'],fCalc);fCalc();
+  /* 3 harvest */
+  function hCalc(){G.hVal=null;G.hGain=null;const pol=$('hPol').value;
+    if(pol===''){$('hOut').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีของกิจการก่อน');G.hVal='';return}
+    const ids=['hQty','hP','hTr','hCom','hBV','hCost'];if(blank(ids)){$('hOut').innerHTML=bad(BL);return}
+    const [q,p,tr,cm,bv,cc]=ids.map(i=>val($(i)));
+    if(q<=0||p<0||tr<0||bv<0||cc<0||cm<0||cm>100){$('hOut').innerHTML=bad('ปริมาณต้องมากกว่าศูนย์ ค่าอื่นต้องไม่ติดลบ ร้อยละอยู่ระหว่าง 0 ถึง 100');return}
+    if(pol==='cost'){if(cc<=0){$('hOut').innerHTML=bad('กรอกราคาทุนสะสมถึงจุดเก็บเกี่ยว');return}
+      G.hVal=cc;G.hGain=0;$('hOut').innerHTML=figs([['ผลิตผล ณ จุดเก็บเกี่ยว (ราคาทุน)',cc]])+verdict('ok','วัดด้วยราคาทุน ณ จุดเก็บเกี่ยว (22.12)','ไม่รับรู้กำไร ณ จุดเก็บเกี่ยว ราคาทุนเป็นต้นทุนของสินค้าคงเหลือตามบทที่ 8');return}
+    const v=R0(q*(p-tr)-q*p*cm/100),g=v-bv;G.hVal=v;G.hGain=g;
+    $('hOut').innerHTML=figs([['ผลิตผล ณ จุดเก็บเกี่ยว',v],['กำไร (ขาดทุน) ณ จุดเก็บเกี่ยว',fp(g),1]])+
+      je('วันเก็บเกี่ยว (22.15)',[{acct:'ผลิตผล ณ จุดเก็บเกี่ยว',amt:v,dr:true}].concat(g<0?[{acct:'ขาดทุนจากการวัดผลิตผล ณ จุดเก็บเกี่ยว',amt:-g,dr:true}]:[]).concat([{acct:'สินทรัพย์ชีวภาพ',amt:bv,dr:false}]).concat(g>0?[{acct:'กำไรจากการวัดผลิตผล ณ จุดเก็บเกี่ยว',amt:g,dr:false}]:[]),'')+
+      verdict('ok','หลังจุดเก็บเกี่ยวใช้บทที่ 8','ไม่วัดมูลค่ายุติธรรมใหม่ (เว้นแต่เลือกย่อหน้า 8.3.1) ค่าเก็บเกี่ยวเป็นค่าใช้จ่าย ไม่ใช่ต้นทุนในการขาย (ตัวอย่างประกอบความเข้าใจ หน้า 77)')+theory([['22.15','มูลค่ายุติธรรมหักต้นทุนในการขาย ณ จุดเก็บเกี่ยวถือเป็นต้นทุนของสินค้าคงเหลือ']])}
+  $('hPol').addEventListener('change',()=>{});on(['hPol','hQty','hP','hTr','hCom','hBV','hCost'],hCalc);hCalc();
+  /* 4 rec */
+  function rCalc(){G.rCalc=null;G.rDiff=null;const pol=$('rPol').value;
+    if(pol===''){$('rOutp').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีก่อน');G.rCalc='';return}
+    const ids=['rOpen','rBuy','rOut','rDep','rGain','rOther','rClose'];if(blank(ids)){$('rOutp').innerHTML=bad(BL);return}
+    const [o,b,ou,d,g,ot,cl]=ids.map(i=>val($(i)));
+    if([o,b,ou,d,cl].some(x=>x<0)){$('rOutp').innerHTML=bad('ยอดต้นงวด ซื้อ ลดลง ค่าเสื่อมราคา และยอดสิ้นงวดต้องไม่ติดลบ');return}
+    if(pol==='cost'&&g!==0){$('rOutp').innerHTML=bad('วิธีราคาทุนไม่มีกำไรขาดทุนจากมูลค่ายุติธรรม ใส่ 0');return}
+    if(pol==='fv'&&d!==0){$('rOutp').innerHTML=bad('วิธีมูลค่ายุติธรรมไม่คิดค่าเสื่อมราคา ใส่ 0');return}
+    const c=o+b-ou-d+g+ot,df=cl-c;G.rCalc=c;G.rDiff=df;
+    const rows=[['ยอดต้นงวด',fmt(o)],['เพิ่มจากการซื้อ',fmt(b)],['ลดลงจากการเก็บเกี่ยวหรือขาย',fp(-ou)]].concat(pol==='cost'?[['ค่าเสื่อมราคา',fp(-d)]]:[['กำไร (ขาดทุน) จากมูลค่ายุติธรรม',fp(g)]]).concat([['การเปลี่ยนแปลงอื่น',fp(ot)],['<b>ยอดสิ้นงวดที่คำนวณ</b>','<b>'+fmt(c)+'</b>']]);
+    $('rOutp').innerHTML=tbl(['รายการ','บาท'],rows,[1])+(Math.abs(df)<0.5?verdict('ok','กระทบยอดได้',pol==='cost'?'ตามย่อหน้า 22.17.4':'ตามย่อหน้า 22.18.3'):verdict('warn','กระทบยอดไม่ได้',`ยอดตามบัญชีต่างจากที่คำนวณ ${fp(df)} บาท ทบทวนรายการ`))}
+  on(['rPol','rOpen','rBuy','rOut','rDep','rGain','rOther','rClose'],rCalc);rCalc();
+  /* 5 tax */
+  function xCalc(){const an=$('xAnon').checked;const nm=an?'บริษัท':esc($('xName').value.trim()||'บริษัท');G.xAnon=an;G.xAdj=null;
+    const ids=['xCost','xDep','xMon','xGain','xLoss'];if(blank(ids)){$('xOut').innerHTML=bad(BL);return}
+    const [c,d,m,g,l]=ids.map(i=>val($(i)));
+    if([c,d,g,l].some(x=>x<0)){$('xOut').innerHTML=bad('ตัวเลขต้องไม่ติดลบ');return}
+    if(m<0||m>12){$('xOut').innerHTML=bad('จำนวนเดือนอยู่ระหว่าง 0 ถึง 12');return}
+    const mx=R0(c*0.20*m/12),add=Math.max(d-mx,0),adj=add-g+l;G.xMax=mx;G.xAdd=add;G.xAdj=adj;
+    $('xOut').innerHTML=`<p>${nm} ปรับปรุงกำไรทางบัญชีเป็นกำไรสุทธิทางภาษี</p>`+tbl(['รายการ','บาท'],[['ค่าเสื่อมราคาทางภาษีสูงสุด (20% × '+fmt(m)+'/12)',fmt(mx)],['บวกกลับค่าเสื่อมราคาส่วนเกิน',fmt(add)],['หักกำไรจากมูลค่ายุติธรรมที่ยังไม่ขาย (ม.65 ทวิ (3) และ (6))',g?fp(-g):'0'],['บวกกลับขาดทุนจากมูลค่ายุติธรรมที่ยังไม่ขาย (ม.65 ตรี (17) และ ม.65 ทวิ (6))',fmt(l)],['<b>ปรับปรุงสุทธิ</b>','<b>'+(adj?fp(adj):'0')+'</b>']],[1])+`<p class="hint">การจัดสัตว์หรือพืชแต่ละกลุ่มเป็นสินค้าหรือทรัพย์สินอื่นเพื่อเลือกมาตราที่ใช้ ${INT}</p>`+
+      theory([['พ.ร.ฎ. 145 มาตรา 4 (5)','ทรัพย์สินอื่นที่เสื่อมราคาได้นอกจากที่ดินและสินค้าไม่เกินร้อยละ 20 ของราคาทุน ใช้กับพันธุ์สัตว์ (ข้อหารือ กค 0706/3155)'],['ม.65 ทวิ (3)','ห้ามนำราคาที่ตีเพิ่มขึ้นของทรัพย์สินนอกจากสินค้ามารวมคำนวณกำไรสุทธิ'],['ม.65 ตรี (17)','ค่าของทรัพย์สินนอกจากสินค้าที่ตีราคาต่ำลงเป็นรายจ่ายต้องห้าม'],['ม.65 ทวิ (6)','สินค้าคงเหลือวัดด้วยราคาทุนหรือราคาตลาดแล้วแต่อย่างใดจะน้อยกว่า'],['ม.81 (1) (ก)','ยกเว้นภาษีมูลค่าเพิ่มการขายพืชผลทางการเกษตร (คำสั่ง ป.28/2535)'],['ม.81 (1) (ข)','ยกเว้นภาษีมูลค่าเพิ่มการขายสัตว์มีชีวิต เนื้อสัตว์ ไข่ และน้ำนม (คำสั่ง ป.29/2535)'],['ท.ป.4/2528 ข้อ 3','หัก ณ ที่จ่ายร้อยละ 0.75 การซื้อพืชผลที่กำหนดระหว่างนิติบุคคล']])}
+  on(['xName','xAnon','xCost','xDep','xMon','xGain','xLoss'],xCalc);xCalc();
+  /* 6 note */
+  function nCalc(){const an=$('nAnon').checked;const nm=an?'บริษัท':esc($('nName').value.trim()||'บริษัท');G.nAnon=an;G.nTxt='';const pol=$('nPol').value;
+    if(pol===''){$('nOut').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีที่กิจการใช้ก่อน');return}
+    const grp=esc($('nGrp').value.trim()||'สินทรัพย์ชีวภาพ');
+    let t=`<h3>นโยบายการบัญชี: สินทรัพย์ชีวภาพและผลิตผลทางการเกษตร</h3>`;
+    if(pol==='cost'){if(String($('nLife').value).trim()===''||val($('nLife'))<=0){$('nOut').innerHTML=bad('อายุการใช้ประโยชน์ต้องมากกว่าศูนย์');return}
+      t+=`<p>${nm} วัด${grp}ด้วยราคาทุนหักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่า (ถ้ามี) ราคาทุนประกอบด้วยราคาซื้อ ค่าแรงงานทางตรง ต้นทุนทางตรงอื่น และค่าใช้จ่ายการผลิตที่ปันส่วน สัตว์ที่ให้ผลิตผลหลายรอบคิดค่าเสื่อมราคาวิธีเส้นตรงตามอายุการใช้ประโยชน์ ${fmt(val($('nLife')))} ปี ผลิตผลทางการเกษตรวัดด้วยราคาทุน ณ จุดเก็บเกี่ยว และถือเป็นต้นทุนของสินค้าคงเหลือ</p>`}
+    else{const src=esc($('nSrc').value.trim()||'ราคาตลาด');t+=`<p>${nm} วัด${grp}ด้วยมูลค่ายุติธรรมหักต้นทุนในการขาย โดยใช้${src} การเปลี่ยนแปลงรับรู้ในงบกำไรขาดทุน รายจ่ายภายหลังการรับรู้ เช่น ค่าอาหารและค่ายา ${$('nSub').value==='cap'?'รวมเป็นราคาทุนของสินทรัพย์':'รับรู้เป็นค่าใช้จ่ายเมื่อเกิดขึ้น'} ผลิตผลทางการเกษตรวัดด้วยมูลค่ายุติธรรมหักต้นทุนในการขาย ณ จุดเก็บเกี่ยว และถือเป็นต้นทุนของสินค้าคงเหลือ</p>`}
+    $('nOut').innerHTML=`<p class="hint">${INT} ร่างนี้เป็นแนวการตีความของตำรา ปุ่มคัดลอกคัดลอกเฉพาะข้อความในกรอบ</p><div id="nDraft">${t}</div>`;G.nTxt=$('nDraft').innerText}
+  on(['nName','nAnon','nPol','nGrp','nLife','nSub','nSrc'],nCalc);nCalc();
+  $('nCopy').addEventListener('click',()=>{const d=$('nDraft');if(d)copyText(d.innerText,'nOk')});
+  /* quiz */
+  const QZ=[["LO 22.1", "เข้าใจ", "รายการใดใช้บทที่ 10 ที่ดิน อาคารและอุปกรณ์ ไม่ใช่บทที่ 22", ["ก. แม่โคนมที่ให้น้ำนมมาแล้วหลายปี", "ข. ผลทุเรียนที่ยังอยู่บนต้น", "ค. ต้นยางพาราที่กรีดน้ำยางมาแล้วหลายปี", "ง. ลูกสุกรที่เลี้ยงไว้เพื่อขาย"], 2, "ต้นยางพาราเป็นพืชเพื่อการให้ผลิตผล ย่อหน้า 22.1 ให้ใช้บทที่ 10 แม่โคนมเป็นสัตว์ จึงยังอยู่ในบทที่ 22 ผลบนต้นเป็นสินทรัพย์ชีวภาพ (ตัวอย่างประกอบความเข้าใจ หน้า 67)", "22.1"], ["LO 22.1", "เข้าใจ", "ฟาร์มรับจ้างเลี้ยงไก่ของบริษัทผู้ว่าจ้าง ไม่มีสิทธิในประโยชน์จากการขายไก่และไม่รับความเสี่ยงด้านราคา ฟาร์มบันทึกไก่อย่างไร", ["ก. ไม่รับรู้ไก่เป็นสินทรัพย์ และรับรู้ค่าจ้างเลี้ยงเป็นรายได้", "ข. รับรู้ไก่เป็นสินทรัพย์ชีวภาพหมุนเวียนตามจำนวนที่เลี้ยง", "ค. รับรู้ไก่เป็นสินค้าคงเหลือตามบทที่ 8 ระหว่างเลี้ยง", "ง. รับรู้ไก่เป็นสินทรัพย์ชีวภาพไม่หมุนเวียนของฟาร์ม"], 0, "ย่อหน้า 22.9.1 กิจการรับรู้เมื่อควบคุมสินทรัพย์ ฟาร์มไม่ได้ควบคุมไก่จึงไม่รับรู้ ค่าจ้างเลี้ยงเป็นรายได้ตามบทที่ 18 (แนวการตีความ)", "22.2"], ["LO 22.2", "ประยุกต์ใช้", "ตัวอย่างที่ 22.1 หัวหน้างานมีค่าใช้จ่ายปีละ 1,000,000 บาท ใช้เวลาร้อยละ 20 ดูแลฟาร์ม ไก่เลี้ยง 45 วัน จำนวนใดรวมในราคาทุนของลูกไก่", ["ก. 1,000,000 บาท", "ข. 200,000 บาท", "ค. 123,288 บาท", "ง. 24,658 บาท"], 3, "1,000,000 × 20% × 45/365 = 24,658 บาท ส่วนร้อยละ 80 ที่ใช้กับการขายเป็นค่าใช้จ่ายในการขาย (22.13 และบทที่ 8)", "22.4"], ["LO 22.3", "ประยุกต์ใช้", "ตัวอย่างที่ 22.3 ซื้อโค 100 ตัว ตัวละ 20,000 บาท ค่าขนส่งไปตลาดตัวละ 200 บาท ค่านายหน้าร้อยละ 3 ขาดทุนเมื่อรับรู้เริ่มแรกเท่าใด", ["ก. 20,000 บาท", "ข. 80,000 บาท", "ค. ไม่มีขาดทุน", "ง. 60,000 บาท"], 1, "มูลค่ายุติธรรมหักต้นทุนในการขาย 2,000,000 − 20,000 − 60,000 = 1,920,000 บาท ต่ำกว่าราคาซื้อ 80,000 บาท รับรู้ในงบกำไรขาดทุน (22.14)", "22.5"], ["LO 22.4", "วิเคราะห์", "กิจการเลือกวิธีมูลค่ายุติธรรม ค่าอาหารและยาที่จ่ายหลังรับรู้โคเนื้อบันทึกอย่างไร", ["ก. รับรู้เป็นค่าใช้จ่ายของงวดเท่านั้น ไม่มีทางเลือกอื่น", "ข. รวมเป็นราคาทุนของโคเท่านั้น ไม่มีทางเลือกอื่น", "ค. เลือกรวมเป็นราคาทุนหรือรับรู้เป็นค่าใช้จ่าย และเปิดเผยนโยบาย", "ง. บันทึกในส่วนของเจ้าของไว้จนกว่าจะขายโค"], 2, "บทที่ 22 ไม่ได้กำหนดวิธีรับรู้รายจ่ายภายหลัง กิจการเลือกได้และเปิดเผยนโยบาย (ตัวอย่างประกอบความเข้าใจ หน้า 73 ตัวอย่างที่ 3–4 หน้า 73–76) กำไรสุทธิของปีเท่ากันทั้งสองทาง", "22.5"], ["LO 22.4", "วิเคราะห์", "ตัวอย่างที่ 22.4 มะเขือเทศที่เก็บเกี่ยวแล้ววัดที่ 24,750 บาท อีกสองวันราคาตลาดสูงขึ้น กิจการวัดสินค้าคงเหลือตามย่อหน้า 8.4 (ไม่ได้เลือกใช้ย่อหน้า 8.3.1) กิจการบันทึกอย่างไร", ["ก. วัดมูลค่ายุติธรรมใหม่และรับรู้กำไรในงบกำไรขาดทุน", "ข. โอนกลับเป็นสินทรัพย์ชีวภาพแล้ววัดมูลค่าใหม่", "ค. รับรู้ส่วนเพิ่มของราคาในส่วนของเจ้าของ", "ง. ไม่วัดใหม่ 24,750 บาทเป็นต้นทุนสินค้าคงเหลือ"], 3, "มูลค่า ณ จุดเก็บเกี่ยวถือเป็นต้นทุนของสินค้าคงเหลือ หลังจากนั้นใช้บทที่ 8 (22.15)", "22.6"], ["LO 22.5", "วิเคราะห์", "ตัวอย่างที่ 22.2 ค่าเสื่อมราคาแม่สุกรพันธุ์ทางบัญชี 100,000 บาท ราคาทุน 480,000 บาท จำนวนที่บวกกลับทางภาษีเท่าใด", ["ก. 4,000 บาท", "ข. 0 บาท", "ค. 100,000 บาท", "ง. 20,000 บาท"], 0, "พ.ร.ฎ. (ฉบับที่ 145) มาตรา 4 (5) และข้อหารือ กค 0706/3155 ให้หักได้ไม่เกินร้อยละ 20 ของราคาทุน คือ 96,000 บาท บวกกลับ 4,000 บาท", "22.7"], ["LO 22.6", "ประเมินค่า", "โคขุนมีมูลค่าตามบัญชี 900,000 บาท มูลค่ายุติธรรมหักต้นทุนในการขาย ณ วันสิ้นงวด 980,000 บาท ผู้บริหารเสนอให้หักดอกเบี้ยเงินกู้ซื้อโคที่ค้างจ่าย 20,000 บาทจากมูลค่านี้ จึงรับรู้กำไร 60,000 บาท ข้อประเมินใดถูกต้องที่สุด", ["ก. ยอมรับ กำไร 60,000 บาท เพราะดอกเบี้ยเกิดจากการถือโคไว้ขาย", "ข. ไม่ยอมรับ กำไร 80,000 บาท ดอกเบี้ย 20,000 บาทเป็นต้นทุนทางการเงิน", "ค. ยอมรับ กำไร 60,000 บาท เพราะดอกเบี้ยเป็นต้นทุนส่วนเพิ่มของการขาย", "ง. ไม่ยอมรับ กำไร 100,000 บาท โดยบวกดอกเบี้ยเข้ามูลค่าโค"], 1, "ย่อหน้า 22.8 นิยามต้นทุนในการขายเป็นต้นทุนส่วนเพิ่มโดยตรงของการจำหน่าย ไม่รวมต้นทุนทางการเงิน กำไรเท่ากับ 980,000 − 900,000 = 80,000 บาท และดอกเบี้ย 20,000 บาทแสดงเป็นต้นทุนทางการเงินในรายการ 12", "22.8"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  QZ.forEach((q,i)=>document.querySelectorAll(`input[name="zq${i}"]`).forEach(x=>x.addEventListener('change',()=>{$('zf'+i).innerHTML='';$('zOut').innerHTML=''})));
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'กลับไปอ่านหัวข้อที่ '+esc(lo[k].sec)+' ของตำรา'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div></div><div class="tbl"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  const goS=()=>{const m=(location.hash||'').match(/^#(S22\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}else{const h=(location.hash||'').slice(1);if(names.includes(h))show(h)}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body>
+</html>

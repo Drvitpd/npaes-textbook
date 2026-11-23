@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แอป 23 · กระดาษทำการเงินอุดหนุนจากรัฐบาล</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+<style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head>
+<body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div>
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 23 เงินอุดหนุนจากรัฐบาล</div>
+      <h1>แอป 23 · กระดาษทำการเงินอุดหนุนจากรัฐบาล</h1>
+      <p class="lede">จำแนกความช่วยเหลือจากรัฐ ทดสอบจังหวะการรับรู้ตามเงื่อนไข จัดตารางเงินอุดหนุนที่เกี่ยวข้องกับรายได้และสินทรัพย์ คำนวณผลของการจ่ายคืน เทียบผลทางภาษี และร่างหมายเหตุ</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 23 ย่อหน้า 23.1–23.15</b><br>ตำราบทที่ 23 · ฉบับ 21-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> จำแนกรายการ · ทดสอบการรับรู้ · จัดตารางเงินอุดหนุน · การจ่ายคืน · ภาษี · ร่างหมายเหตุ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="cls"><span class="n">0</span>จำแนกรายการ</button>
+    <button role="tab" aria-selected="false" data-tab="rec"><span class="n">1</span>ทดสอบการรับรู้</button>
+    <button role="tab" aria-selected="false" data-tab="inc"><span class="n">2</span>เงินอุดหนุนที่เกี่ยวข้องกับรายได้</button>
+    <button role="tab" aria-selected="false" data-tab="ast"><span class="n">3</span>เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์</button>
+    <button role="tab" aria-selected="false" data-tab="rep"><span class="n">4</span>การจ่ายคืน</button>
+    <button role="tab" aria-selected="false" data-tab="tax"><span class="n">5</span>ภาษี</button>
+    <button role="tab" aria-selected="false" data-tab="note"><span class="n">6</span>ร่างหมายเหตุ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">7</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">8</span>เนื้อหาเสริม S23</button>
+  </nav>
+
+  <div class="grid" data-pane="cls" style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>จำแนกรายการ (ย่อหน้า 23.2–23.5)</h2>
+      <p class="hint">ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น ไม่ส่งออกจากเครื่อง ตอบทีละข้อ ข้อถัดไปแสดงเมื่อตอบข้อก่อนแล้ว แอปไม่แสดงข้อสรุปจนกว่าจะตอบครบ</p>
+      <div class="fields"><label class="f">ข้อ 1 เป็นประโยชน์ทางภาษีเงินได้ เช่น ช่วงปลอดภาษี เครดิตภาษีเงินลงทุน ค่าเสื่อมราคาอัตราเร่ง หรือการลดอัตราภาษีเงินได้ (23.5)<select id="c1"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ข้อ 2 เป็นประโยชน์ทางอ้อมที่มีผลต่อสภาพการค้าโดยทั่วไป เช่น สาธารณูปโภคในพื้นที่พัฒนา (23.4)<select id="c2"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ข้อ 3 กำหนดมูลค่าได้อย่างสมเหตุสมผล และแยกจากรายการค้าตามปกติได้ (23.3)<select id="c3"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ข้อ 4 เป็นการโอนทรัพยากรให้กิจการเพื่อแลกกับการปฏิบัติตามเงื่อนไข (23.2)<select id="c4"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ข้อ 5 เงื่อนไขหลักคือซื้อ สร้าง หรือจัดหาสินทรัพย์ระยะยาว (23.10)<select id="c5"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label></div>
+      <div id="cOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="rec" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ทดสอบการรับรู้ (ย่อหน้า 23.6–23.8)</h2>
+      <p class="hint">ตอบคำถามความเชื่อมั่นและเงื่อนไขก่อน แอปจึงคำนวณรายได้และรายได้รอการรับรู้ ณ วันสิ้นงวด ค่าเริ่มต้นคือตัวอย่างที่ 23.1</p>
+      <div class="fields"><label class="f">เชื่อมั่นได้อย่างสมเหตุสมผลว่ากิจการจะปฏิบัติตามเงื่อนไข (23.6.1)<select id="rA"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">เชื่อมั่นได้อย่างสมเหตุสมผลว่ากิจการจะได้รับเงินอุดหนุน (23.6.2)<select id="rB"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">มีเงื่อนไขที่ต้องปฏิบัติในอนาคต (23.7.2)<select id="rF"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ถ้อยคำของเงื่อนไขในสัญญา<select id="rT"><option value="" selected>– เลือก –</option><option value="prop">สิทธิตามสัดส่วนของงานที่ทำแล้ว</option><option value="all">ต้องปฏิบัติครบ มิฉะนั้นไม่ได้รับหรือคืนทั้งจำนวน</option></select></label><label class="f">จำนวนเงินอุดหนุนตามสัญญา<input class="num" type="number" step="any" id="rG" value="5000000"></label><label class="f">จำนวนที่ได้รับแล้ว ณ วันสิ้นงวด<input class="num" type="number" step="any" id="rRcv" value="5000000"></label><label class="f">งานหรือค่าใช้จ่ายที่ต้องทำตามเงื่อนไข<input class="num" type="number" step="any" id="rReq" value="10000000"></label><label class="f">งานหรือค่าใช้จ่ายที่ทำแล้วสะสม<input class="num" type="number" step="any" id="rDone" value="6000000"></label></div>
+      <div id="rOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="inc" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เงินอุดหนุนที่เกี่ยวข้องกับรายได้ (ย่อหน้า 23.12–23.13)</h2>
+      <p class="hint">เลือกวิธีแสดงรายการก่อน แอปจึงแสดงจำนวนในงบกำไรขาดทุน ค่าเริ่มต้นคือตัวอย่างที่ 23.2</p>
+      <div class="fields"><label class="f">จำนวนลูกจ้างที่เข้าเงื่อนไข (คน)<input class="num" type="number" step="1" id="iEmp" value="50"></label><label class="f">เงินอุดหนุนต่อคนต่อเดือน<input class="num" type="number" step="any" id="iRate" value="3000"></label><label class="f">จำนวนเดือนของโครงการ<input class="num" type="number" step="1" id="iMon" value="3"></label><label class="f">จำนวนเดือนที่ปฏิบัติตามเงื่อนไขแล้ว<input class="num" type="number" step="1" id="iMet" value="3"></label><label class="f">ค่าจ้างต่อคนต่อเดือน<input class="num" type="number" step="any" id="iWage" value="15000"></label><label class="f">วิธีแสดงรายการ (23.13)<select id="iPres"><option value="" selected>– เลือก –</option><option value="gross">แสดงแยกหรือเป็นรายได้อื่น (รายการ 2)</option><option value="net">หักกับค่าใช้จ่ายที่เกี่ยวข้อง (รายการ 6)</option></select></label></div>
+      <div id="iOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="ast" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์ (ย่อหน้า 23.10–23.11)</h2>
+      <p class="hint">เลือกวิธีที่กิจการใช้ก่อน แอปจึงแสดงตัวเลขของปีที่เลือก ค่าเริ่มต้นคือตัวอย่างที่ 23.3</p>
+      <div class="fields"><label class="f">ราคาทุนของสินทรัพย์<input class="num" type="number" step="any" id="aC" value="10000000"></label><label class="f">เงินอุดหนุน<input class="num" type="number" step="any" id="aG" value="2000000"></label><label class="f">อายุการใช้ประโยชน์ (ปี)<input class="num" type="number" step="any" id="aL" value="5"></label><label class="f">ปีที่ต้องการดู (ปีที่)<input class="num" type="number" step="any" id="aY" value="1"></label><label class="f">วิธีที่กิจการเลือก<select id="aM"><option value="" selected>– เลือก –</option><option value="def">วิธีรายได้รอการรับรู้ (23.11.1)</option><option value="ded">วิธีหักจากมูลค่าสินทรัพย์ (23.11.2)</option></select></label></div>
+      <div id="aOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="rep" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>การจ่ายคืนเงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์ (ย่อหน้า 23.14.1)</h2>
+      <p class="hint">การจ่ายคืนเป็นการเปลี่ยนแปลงประมาณการ ไม่ปรับย้อนหลัง (23.14, 5.15) เลือกวิธีก่อน ค่าเริ่มต้นคือตัวอย่างที่ 23.4</p>
+      <div class="fields"><label class="f">ราคาทุนของสินทรัพย์<input class="num" type="number" step="any" id="pC" value="10000000"></label><label class="f">เงินอุดหนุนเดิม<input class="num" type="number" step="any" id="pG" value="2000000"></label><label class="f">อายุการใช้ประโยชน์ (ปี)<input class="num" type="number" step="any" id="pL" value="5"></label><label class="f">จำนวนปีที่ใช้ไปก่อนจ่ายคืน<input class="num" type="number" step="1" id="pK" value="2"></label><label class="f">จำนวนที่ต้องจ่ายคืน<input class="num" type="number" step="any" id="pR" value="2000000"></label><label class="f">วิธีที่กิจการเลือก<select id="pM"><option value="" selected>– เลือก –</option><option value="def">วิธีรายได้รอการรับรู้ (23.11.1)</option><option value="ded">วิธีหักจากมูลค่าสินทรัพย์ (23.11.2)</option></select></label></div>
+      <div id="pOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="tax" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ผลทางภาษี (ปีแรก)</h2>
+      <p class="hint">ข้อสมมติของแท็บนี้เป็นแนวการตีความ: เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์ที่ไม่มีกฎหมายยกเว้นถือเป็นรายได้ทั้งจำนวนในรอบที่มีสิทธิได้รับ (ม.65 วรรคหนึ่งและวรรคสอง ข้อหารือ กค 0706/2752 ลงวันที่ 31 มี.ค. 2549 ให้รวมเงินอุดหนุนแบบให้เปล่าจากหน่วยงานของรัฐเป็นรายได้) และค่าเสื่อมราคาทางภาษีคิดจากราคาทุนเต็ม (ม.65 ทวิ (2)) กรณีมีกฎหมายยกเว้นใช้แนวข้อหารือ กค 0702/6419 ส่วนล่างของแท็บคำนวณเงินอุดหนุนค่าจ้างตาม พ.ร.ฎ. (ฉบับที่ 747) พ.ศ. 2565</p>
+      <div class="fields"><label class="f">ชื่อกิจการ<input type="text" id="xName" value="บริษัท ตัวอย่างอุตสาหกรรม จำกัด"></label><label class="f"><span><input type="checkbox" id="xAnon" checked> ปกปิดชื่อ</span></label><label class="f">ราคาทุนของสินทรัพย์<input class="num" type="number" step="any" id="xC" value="10000000"></label><label class="f">เงินอุดหนุน<input class="num" type="number" step="any" id="xG" value="2000000"></label><label class="f">อายุการใช้ประโยชน์ทางบัญชี (ปี)<input class="num" type="number" step="any" id="xL" value="5"></label><label class="f">อัตราค่าเสื่อมราคาทางภาษี (ร้อยละต่อปี)<input class="num" type="number" step="any" id="xRate" value="20"></label><label class="f">วิธีทางบัญชี<select id="xM"><option value="" selected>– เลือก –</option><option value="def">วิธีรายได้รอการรับรู้ (23.11.1)</option><option value="ded">วิธีหักจากมูลค่าสินทรัพย์ (23.11.2)</option></select></label><label class="f">เงินอุดหนุนมีกฎหมายเฉพาะยกเว้นภาษีหรือไม่<select id="xEx"><option value="" selected>– เลือก –</option><option value="no">ไม่มี</option><option value="yes">มี</option></select></label><div style="flex-basis:100%;height:0"></div><h3 style="flex-basis:100%;margin:6px 0 0">เงินอุดหนุนค่าจ้างโครงการรักษาระดับการจ้างงานในธุรกิจ SMEs (วิสาหกิจขนาดกลางและขนาดย่อม)</h3><label class="f">เงินสนับสนุนที่ได้รับในรอบบัญชี<input class="num" type="number" step="any" id="wA" value="450000"></label><label class="f">วิธีแสดงทางบัญชี (23.13)<select id="wP"><option value="" selected>– เลือก –</option><option value="gross">แสดงเป็นรายได้อื่น</option><option value="net">หักกับค่าใช้จ่ายที่เกี่ยวข้อง</option></select></label></div>
+      <div id="xOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="note" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ร่างหมายเหตุ (ย่อหน้า 23.15)</h2>
+      <p class="hint">เลือกวิธีแล้วกรอกรายละเอียด ปุ่มคัดลอกคัดลอกเฉพาะข้อความในกรอบ</p>
+      <div class="fields"><label class="f">ชื่อกิจการ<input type="text" id="nName" value="บริษัท ตัวอย่างอุตสาหกรรม จำกัด"></label><label class="f"><span><input type="checkbox" id="nAnon" checked> ปกปิดชื่อ</span></label><label class="f">วิธีแสดงเงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์ (23.11)<select id="nM"><option value="" selected>– เลือก –</option><option value="def">วิธีรายได้รอการรับรู้ (23.11.1)</option><option value="ded">วิธีหักจากมูลค่าสินทรัพย์ (23.11.2)</option></select></label><label class="f">วิธีแสดงเงินอุดหนุนที่เกี่ยวข้องกับรายได้ (23.13)<select id="nI"><option value="" selected>– เลือก –</option><option value="gross">แสดงเป็นรายได้อื่น</option><option value="net">หักกับค่าใช้จ่ายที่เกี่ยวข้อง</option></select></label><label class="f">ลักษณะของเงินอุดหนุนที่รับรู้ (23.15.2)<input type="text" id="nNat" value="เงินสดจากหน่วยงานของรัฐเพื่อซื้อเครื่องจักร"></label><label class="f">จำนวนเงินอุดหนุนที่รับรู้ในงวด (บาท)<input class="num" type="number" step="any" id="nRec" value="400000"></label><label class="f">รายได้รอการรับรู้สิ้นงวด (บาท)<input class="num" type="number" step="any" id="nDef" value="1600000"></label><label class="f">เงื่อนไขที่ยังไม่ได้ปฏิบัติ (23.15.3)<input type="text" id="nCond" value="ถือเครื่องจักรไว้ในจังหวัดที่กำหนดจนครบ 5 ปี"></label><label class="f">ความช่วยเหลืออื่น (23.15.4)<input type="text" id="nOther" value="เงินกู้จากสถาบันการเงินของรัฐ อัตราดอกเบี้ยร้อยละ 1 ต่อปี"></label><div class="row-actions"><button class="btn primary" id="nCopy">คัดลอกร่าง</button><span class="copied" id="nOk" hidden>คัดลอกแล้ว</span></div></div>
+      <div id="nOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อและผลราย LO</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+  <!-- 8 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S23</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 23 กดปุ่ม S23.1 ถึง S23.9 เพื่อเลื่อนไปยังหัวข้อนั้น ตัวอย่างทั้งหมดใช้ข้อมูลสมมติ</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S23.1">S23.1</a><a class="btn" href="#S23.2">S23.2</a><a class="btn" href="#S23.3">S23.3</a><a class="btn" href="#S23.4">S23.4</a><a class="btn" href="#S23.5">S23.5</a><a class="btn" href="#S23.6">S23.6</a><a class="btn" href="#S23.7">S23.7</a><a class="btn" href="#S23.8">S23.8</a><a class="btn" href="#S23.9">S23.9</a></div>
+<h3 id="S23.1">S23.1 ตารางจำแนกความช่วยเหลือจากรัฐและรายการตรวจขอบเขต</h3><p>ตอบตามลำดับ: (1) เป็นประโยชน์ที่ใช้กำหนดกำไรหรือขาดทุนทางภาษีหรือหนี้สินภาษีเงินได้หรือไม่ ถ้าใช่ อยู่นอกบทที่ 23 และใช้บทที่ 15 (23.5) (2) เป็นประโยชน์ทางอ้อมที่มีผลต่อสภาพการค้าโดยทั่วไปหรือไม่ ถ้าใช่ ไม่ใช่ความช่วยเหลือตาม 23.4 (3) กำหนดมูลค่าได้อย่างสมเหตุสมผลและแยกจากรายการค้าตามปกติได้หรือไม่ ถ้าไม่ได้ เป็นความช่วยเหลือที่ไม่ถือเป็นเงินอุดหนุน เปิดเผยตาม 23.15.4 (23.3) (4) เป็นการโอนทรัพยากรเพื่อแลกกับการปฏิบัติตามเงื่อนไขหรือไม่ ถ้าใช่ เป็นเงินอุดหนุน (23.2)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th>จำแนก</th><th>เหตุผล</th></tr></thead><tbody><tr><td>เงินชดเชยค่าฝึกอบรมหรือค่าวิจัยจากกองทุนของรัฐตามเงื่อนไข</td><td>เงินอุดหนุนที่เกี่ยวข้องกับรายได้</td><td>โอนทรัพยากรเพื่อแลกกับเงื่อนไข (23.2, 23.12)</td></tr><tr><td>เงินอุดหนุนค่าจ้างเพื่อรักษาระดับการจ้างงาน</td><td>เงินอุดหนุนที่เกี่ยวข้องกับรายได้</td><td>เงื่อนไขคงการจ้างงานรายเดือน (23.7.2)</td></tr><tr><td>เงินหรือที่ดินเพื่อซื้อ สร้าง หรือจัดหาสินทรัพย์ระยะยาว</td><td>เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์</td><td>เงื่อนไขหลักตาม 23.10</td></tr><tr><td>การยกเว้นหรือลดภาษีเงินได้นิติบุคคล ค่าเสื่อมราคาอัตราเร่งทางภาษี</td><td>นอกบทที่ 23</td><td>ประโยชน์ทางภาษีเงินได้ (23.5) ใช้บทที่ 15</td></tr><tr><td>เงินกู้ดอกเบี้ยต่ำหรือปลอดดอกเบี้ยจากหน่วยงานหรือสถาบันการเงินของรัฐ</td><td>ความช่วยเหลือที่ไม่ถือเป็นเงินอุดหนุน</td><td>23.3.1 เปิดเผยตาม 23.15.4</td></tr><tr><td>การค้ำประกันสินเชื่อโดยหน่วยงานของรัฐ</td><td>ความช่วยเหลือที่ไม่ถือเป็นเงินอุดหนุน</td><td>23.3.1 เปิดเผยตาม 23.15.4</td></tr><tr><td>คำแนะนำทางเทคนิคหรือการตลาดโดยไม่คิดมูลค่า</td><td>ความช่วยเหลือที่ไม่ถือเป็นเงินอุดหนุน</td><td>23.3.1 เปิดเผยตาม 23.15.4 เมื่อกิจการได้รับประโยชน์โดยตรง</td></tr><tr><td>การยกเว้นอากรขาเข้าเครื่องจักร</td><td>ความช่วยเหลือรูปแบบอื่น เปิดเผยตาม 23.15.4</td><td>ไม่ใช่ประโยชน์ทางภาษีเงินได้ตาม 23.5 และไม่ใช่การโอนทรัพยากรตาม 23.2 (แนวการตีความ)</td></tr><tr><td>สัญญาขายสินค้าให้ส่วนราชการตามนโยบายจัดซื้อ</td><td>ไม่ใช่เงินอุดหนุน</td><td>รายการค้าที่แยกจากรายการค้าตามปกติไม่ได้ (23.3.2) ใช้บทที่ 18 เปิดเผยตาม 23.15.4 เมื่อกิจการได้รับประโยชน์โดยตรง</td></tr><tr><td>ถนน ไฟฟ้า หรือระบบน้ำในเขตอุตสาหกรรม</td><td>ไม่ใช่ความช่วยเหลือตาม 23.4</td><td>ประโยชน์ทางอ้อมต่อสภาพการค้าโดยทั่วไป</td></tr></tbody></table></div><h3 id="S23.2">S23.2 เงินอุดหนุนที่เกี่ยวข้องกับรายได้: รายการบันทึกครบ</h3><h4>ก. ตัวอย่างที่ 23.1 กรณี ก สิทธิตามสัดส่วนค่าใช้จ่าย</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">5,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num"></td><td class="num">5,000,000</td></tr><tr><td>รวม</td><td class="num">5,000,000</td><td class="num">5,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num">3,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากเงินอุดหนุน (25X1: 5,000,000 × 6/10)</td><td class="num"></td><td class="num">3,000,000</td></tr><tr><td>รวม</td><td class="num">3,000,000</td><td class="num">3,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num">2,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากเงินอุดหนุน (25X2: 5,000,000 × 4/10)</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>รวม</td><td class="num">2,000,000</td><td class="num">2,000,000</td></tr></tbody></table></div><h4>ข. ตัวอย่างที่ 23.1 กรณี ข ต้องใช้จ่ายครบมิฉะนั้นคืนทั้งจำนวน</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">5,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num"></td><td class="num">5,000,000</td></tr><tr><td>รวม</td><td class="num">5,000,000</td><td class="num">5,000,000</td></tr></tbody></table></div><p>31 ธ.ค. 25X1 ยังไม่ปฏิบัติครบ ไม่รับรู้รายได้ (23.7.2) รายได้รอการรับรู้ 5,000,000 บาท เปิดเผยเงื่อนไขที่ยังไม่ได้ปฏิบัติ (23.15.3)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num">5,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากเงินอุดหนุน (31 ธ.ค. 25X2 ปฏิบัติครบ)</td><td class="num"></td><td class="num">5,000,000</td></tr><tr><td>รวม</td><td class="num">5,000,000</td><td class="num">5,000,000</td></tr></tbody></table></div><p>การแยกกรณี ก และ ข ตามถ้อยคำในสัญญาเป็นแนวการตีความ ค่าใช้จ่ายวิจัยบันทึกตามบทที่ 11 แยกจากเงินอุดหนุน</p><h4>ค. ตัวอย่างที่ 23.2 เงินอุดหนุนค่าจ้าง (ต่อเดือน 50 × 3,000 = 150,000 บาท)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินอุดหนุนค้างรับ</td><td class="num">150,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากเงินอุดหนุน (ทางที่หนึ่ง รายการ 2)</td><td class="num"></td><td class="num">150,000</td></tr><tr><td>รวม</td><td class="num">150,000</td><td class="num">150,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินอุดหนุนค้างรับ</td><td class="num">150,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าใช้จ่ายผลประโยชน์พนักงาน (ทางที่สอง หักกับค่าใช้จ่าย รายการ 6)</td><td class="num"></td><td class="num">150,000</td></tr><tr><td>รวม</td><td class="num">150,000</td><td class="num">150,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">450,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินอุดหนุนค้างรับ (สามเดือน)</td><td class="num"></td><td class="num">450,000</td></tr><tr><td>รวม</td><td class="num">450,000</td><td class="num">450,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>ทางเลือก (23.13)</th><th class="num">รายการ 2 รายได้อื่น</th><th class="num">รายการ 6 ค่าใช้จ่ายผลประโยชน์พนักงาน</th></tr></thead><tbody><tr><td>แสดงแยกหรือเป็นรายได้อื่น</td><td class="num">450,000</td><td class="num">2,250,000</td></tr><tr><td>หักกับค่าใช้จ่ายที่เกี่ยวข้อง</td><td class="num">–</td><td class="num">1,800,000</td></tr></tbody></table></div><p>ถ้าเดือนที่ 3 คงการจ้างงานต่ำกว่าร้อยละ 95 ไม่มีสิทธิของเดือนนั้น รายได้รวม 300,000 บาท ไม่ต้องตั้งค้างรับเดือนที่ 3 เพราะยังไม่ได้ปฏิบัติตามเงื่อนไขของเดือนนั้น (23.7.2)</p><p>ทางภาษี เงินจากโครงการนี้ได้รับยกเว้นภาษีเงินได้นิติบุคคลตาม พ.ร.ฎ. (ฉบับที่ 747) พ.ศ. 2565 และรายจ่ายที่จ่ายจากเงินสนับสนุนนำมาหักเป็นรายจ่ายไม่ได้ การกระทบยอดอยู่ใน S23.6</p><h3 id="S23.3">S23.3 ตารางห้าปีของเงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์</h3><p>ตัวอย่างที่ 23.3: เครื่องจักร 10,000,000 บาท เงินอุดหนุน 2,000,000 บาท อายุ 5 ปี วิธีเส้นตรง ไม่มีมูลค่าคงเหลือ</p><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">วิธีที่ 1 รายได้จากเงินอุดหนุน</th><th class="num">วิธีที่ 1 รายได้รอการรับรู้ปลายปี</th><th class="num">วิธีที่ 1 ค่าเสื่อมราคา</th><th class="num">วิธีที่ 1 มูลค่าตามบัญชี</th><th class="num">วิธีที่ 2 ค่าเสื่อมราคา</th><th class="num">วิธีที่ 2 มูลค่าตามบัญชี</th></tr></thead><tbody><tr><td>25X1</td><td class="num">400,000</td><td class="num">1,600,000</td><td class="num">2,000,000</td><td class="num">8,000,000</td><td class="num">1,600,000</td><td class="num">6,400,000</td></tr><tr><td>25X2</td><td class="num">400,000</td><td class="num">1,200,000</td><td class="num">2,000,000</td><td class="num">6,000,000</td><td class="num">1,600,000</td><td class="num">4,800,000</td></tr><tr><td>25X3</td><td class="num">400,000</td><td class="num">800,000</td><td class="num">2,000,000</td><td class="num">4,000,000</td><td class="num">1,600,000</td><td class="num">3,200,000</td></tr><tr><td>25X4</td><td class="num">400,000</td><td class="num">400,000</td><td class="num">2,000,000</td><td class="num">2,000,000</td><td class="num">1,600,000</td><td class="num">1,600,000</td></tr><tr><td>25X5</td><td class="num">400,000</td><td class="num">0</td><td class="num">2,000,000</td><td class="num">0</td><td class="num">1,600,000</td><td class="num">0</td></tr></tbody></table></div><h4>ก. วิธีรายได้รอการรับรู้ (23.11.1)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เครื่องจักร</td><td class="num">10,000,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">10,000,000</td></tr><tr><td>รวม</td><td class="num">10,000,000</td><td class="num">10,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">2,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>รวม</td><td class="num">2,000,000</td><td class="num">2,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าเสื่อมราคา</td><td class="num">2,000,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าเสื่อมราคาสะสม เครื่องจักร</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>รวม</td><td class="num">2,000,000</td><td class="num">2,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num">400,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากเงินอุดหนุน</td><td class="num"></td><td class="num">400,000</td></tr><tr><td>รวม</td><td class="num">400,000</td><td class="num">400,000</td></tr></tbody></table></div><p>31 ธ.ค. 25X1 รายได้รอการรับรู้ 1,600,000 บาท ส่วนที่จะรับรู้ในปีถัดไป 400,000 บาทแสดงในรายการ 3.2 ส่วนที่เหลือ 1,200,000 บาทแสดงในรายการ 4.3</p><h4>ข. วิธีหักจากมูลค่าสินทรัพย์ (23.11.2)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เครื่องจักร</td><td class="num">10,000,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">10,000,000</td></tr><tr><td>รวม</td><td class="num">10,000,000</td><td class="num">10,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">2,000,000</td><td class="num"></td></tr><tr><td>    เครดิต เครื่องจักร</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>รวม</td><td class="num">2,000,000</td><td class="num">2,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าเสื่อมราคา</td><td class="num">1,600,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าเสื่อมราคาสะสม เครื่องจักร</td><td class="num"></td><td class="num">1,600,000</td></tr><tr><td>รวม</td><td class="num">1,600,000</td><td class="num">1,600,000</td></tr></tbody></table></div><h3 id="S23.4">S23.4 เงินอุดหนุนที่ไม่เป็นตัวเงิน: ที่ดินจากรัฐ</h3><p>วันที่ 1 มกราคม 25X1 รัฐโอนที่ดินมูลค่ายุติธรรม 50,000,000 บาทให้กิจการ เงื่อนไขคือจ้างแรงงานในพื้นที่ไม่น้อยกว่า 500 คนติดต่อกัน 10 ปี มิฉะนั้นต้องคืนที่ดิน กิจการวัดเงินอุดหนุนด้วยมูลค่ายุติธรรมของที่ดิน (23.9)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ที่ดิน</td><td class="num">50,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num"></td><td class="num">50,000,000</td></tr><tr><td>รวม</td><td class="num">50,000,000</td><td class="num">50,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num">5,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากเงินอุดหนุน (ปีที่ปฏิบัติตามเงื่อนไข)</td><td class="num"></td><td class="num">5,000,000</td></tr><tr><td>รวม</td><td class="num">5,000,000</td><td class="num">5,000,000</td></tr></tbody></table></div><p>ที่ดินไม่มีค่าเสื่อมราคาและไม่มีอายุการใช้ประโยชน์ วิธีหักจากมูลค่าสินทรัพย์ (23.11.2) จึงไม่ทำให้เงินอุดหนุนผ่านงบกำไรขาดทุน และวิธีรายได้รอการรับรู้ (23.11.1) ไม่มีอายุให้กระจาย แนวการตีความ: รับรู้ปีละหนึ่งในสิบเมื่อปฏิบัติตามเงื่อนไขของปีนั้น โดยอาศัย 23.7.2 และ 23.8 และเปิดเผยเงื่อนไขที่ยังไม่ได้ปฏิบัติ (23.15.3) ส่วนกิจการที่เลือกวิธีหักจากมูลค่าสินทรัพย์ (23.11.2) ไม่รับรู้เงินอุดหนุนเป็นรายได้ ซึ่ง 23.11.2 อนุญาต</p><h3 id="S23.5">S23.5 การจ่ายคืนเงินอุดหนุน: รายการบันทึกและการเปิดเผย</h3><h4>ก. วิธีรายได้รอการรับรู้ (ต้นปี 25X3)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num">1,200,000</td><td class="num"></td></tr><tr><td>เดบิต ค่าใช้จ่ายจากการจ่ายคืนเงินอุดหนุน (รายการ 9 ค่าใช้จ่ายอื่น)</td><td class="num">800,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>รวม</td><td class="num">2,000,000</td><td class="num">2,000,000</td></tr></tbody></table></div><p>ส่วนที่จ่ายคืนเกินยอดรายได้รอการรับรู้ 800,000 บาทเท่ากับรายได้ที่รับรู้ไปแล้วใน 25X1–25X2 แนวการตีความ: รับรู้เข้างบกำไรขาดทุนทันทีในรายการ 9 ค่าใช้จ่ายอื่น โดยเทียบเคียงหลักของ 23.14.2</p><h4>ข. วิธีหักจากมูลค่าสินทรัพย์ (ต้นปี 25X3)</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เครื่องจักร</td><td class="num">2,000,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>รวม</td><td class="num">2,000,000</td><td class="num">2,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าเสื่อมราคา</td><td class="num">800,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าเสื่อมราคาสะสม เครื่องจักร (ผลสะสมที่เพิ่มขึ้น 400,000 × 2)</td><td class="num"></td><td class="num">800,000</td></tr><tr><td>รวม</td><td class="num">800,000</td><td class="num">800,000</td></tr></tbody></table></div><p>หลังจ่ายคืน มูลค่าตามบัญชีเท่ากันทั้งสองวิธี 6,000,000 บาท ค่าเสื่อมราคาปี 25X3–25X5 ปีละ 2,000,000 บาท ไม่ปรับงบการเงินย้อนหลัง (23.14, 5.15)</p><h4>ค. เงินอุดหนุนที่เกี่ยวข้องกับรายได้ (23.14.2)</h4><p>จากตัวอย่างที่ 23.1 กรณี ก สิ้นปี 25X1 หน่วยงานตรวจพบว่าค่าใช้จ่าย 1,000,000 บาทที่กิจการนำมาใช้สิทธิไม่เข้าเงื่อนไขของโครงการ จึงเรียกคืนเงินอุดหนุน 2,500,000 บาท ประกอบด้วยส่วนที่ได้รับสิทธิไปแล้ว 500,000 บาท (5,000,000 × 1/10) และเงินที่ยังไม่ได้ใช้ 2,000,000 บาท ขณะที่รายได้รอการรับรู้คงเหลือ 2,000,000 บาท ให้หักรายได้รอการรับรู้ 2,000,000 บาท และรับรู้ส่วนที่เกิน 500,000 บาทเข้างบกำไรขาดทุนทันที (23.14.2)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num">2,000,000</td><td class="num"></td></tr><tr><td>เดบิต ค่าใช้จ่ายจากการจ่ายคืนเงินอุดหนุน</td><td class="num">500,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">2,500,000</td></tr><tr><td>รวม</td><td class="num">2,500,000</td><td class="num">2,500,000</td></tr></tbody></table></div><h4>ง. ร่างการเปิดเผยตามย่อหน้า 5.16</h4><p>กรณีใช้วิธีหักจากมูลค่าสินทรัพย์ (23.11.2): ในปี 25X3 บริษัทต้องจ่ายคืนเงินอุดหนุนเพื่อซื้อเครื่องจักรจำนวน 2,000,000 บาท เนื่องจากไม่ปฏิบัติตามเงื่อนไขเรื่องที่ตั้งของสินทรัพย์ บริษัทถือเป็นการเปลี่ยนแปลงประมาณการทางบัญชี รับรู้ค่าเสื่อมราคาสะสมที่เพิ่มขึ้น 800,000 บาทในงวดปัจจุบัน และค่าเสื่อมราคาของงวดอนาคตเพิ่มขึ้นปีละ 400,000 บาท</p><p>กรณีใช้วิธีรายได้รอการรับรู้ (23.11.1): ในปี 25X3 บริษัทต้องจ่ายคืนเงินอุดหนุนเพื่อซื้อเครื่องจักรจำนวน 2,000,000 บาท เนื่องจากไม่ปฏิบัติตามเงื่อนไขเรื่องที่ตั้งของสินทรัพย์ บริษัทถือเป็นการเปลี่ยนแปลงประมาณการทางบัญชี ลดรายได้รอการรับรู้ 1,200,000 บาท รับรู้ค่าใช้จ่าย 800,000 บาทในงวดปัจจุบัน และรายได้จากเงินอุดหนุนของงวดอนาคตลดลงปีละ 400,000 บาท</p><h3 id="S23.6">S23.6 ผลทางภาษีและการกระทบยอดกำไร</h3><h4>ก. ตัวอย่างที่ 23.3 เงินอุดหนุนที่ไม่มีกฎหมายยกเว้น</h4><p>ข้อสมมติของตัวอย่างนี้: เงินอุดหนุนไม่มีกฎหมายยกเว้นภาษี ถือเป็นรายได้จากกิจการหรือเนื่องจากกิจการ (ม.65 วรรคหนึ่ง) ทั้งจำนวนในรอบที่มีสิทธิได้รับตามเกณฑ์สิทธิ (ม.65 วรรคสอง) ค่าเสื่อมราคาทางภาษีคำนวณจากราคาทุนเต็ม 10,000,000 บาท (ม.65 ทวิ (2)) อัตราร้อยละ 20 (พ.ร.ฎ. 145 มาตรา 4 (5)) ข้อสมมติทั้งสองเป็นแนวการตีความ ผู้ใช้ตรวจข้อหารือหรือคำวินิจฉัยของกรมสรรพากรสำหรับเงินอุดหนุนของตนเอง</p><div class="tbl"><table><thead><tr><th>ปี 25X1</th><th class="num">วิธีรายได้รอการรับรู้</th><th class="num">วิธีหักจากมูลค่าสินทรัพย์</th></tr></thead><tbody><tr><td>รายได้จากเงินอุดหนุนทางบัญชี</td><td class="num">400,000</td><td class="num">0</td></tr><tr><td>ค่าเสื่อมราคาทางบัญชี</td><td class="num">2,000,000</td><td class="num">1,600,000</td></tr><tr><td>บวก: เงินอุดหนุนส่วนที่ยังไม่รับรู้ทางบัญชี</td><td class="num">1,600,000</td><td class="num">2,000,000</td></tr><tr><td>หัก: ค่าเสื่อมราคาทางภาษีส่วนที่เกินทางบัญชี</td><td class="num">0</td><td class="num">(400,000)</td></tr><tr><td>ปรับปรุงสุทธิ</td><td class="num">1,600,000</td><td class="num">1,600,000</td></tr></tbody></table></div><p>ทั้งสองวิธีให้ผลปรับปรุงสุทธิเท่ากัน 1,600,000 บาทในปีแรก และผลต่างทยอยกลับในปีต่อไป วิธีทางบัญชีที่เลือกตาม 23.11 ไม่เปลี่ยนฐานค่าเสื่อมราคาทางภาษี กิจการที่เลือกถือปฏิบัติตามย่อหน้า 15.2 พิจารณาภาษีเงินได้รอการตัดบัญชีของผลต่างนี้ตามบทที่ 15</p><h4>ข. ตัวอย่างที่ 23.2 เงินอุดหนุนค่าจ้างตาม พ.ร.ฎ. (ฉบับที่ 747) พ.ศ. 2565</h4><p>พ.ร.ฎ. (ฉบับที่ 747) พ.ศ. 2565 (ลงวันที่ 21 พฤษภาคม 2565 ประกาศในราชกิจจานุเบกษาวันที่ 24 พฤษภาคม 2565) ยกเว้นภาษีเงินได้นิติบุคคลสำหรับเงินที่ได้รับจากโครงการส่งเสริมและรักษาระดับการจ้างงานในธุรกิจ SMEs ในรอบระยะเวลาบัญชีที่ได้รับเงิน โดยกิจการต้องไม่นำรายจ่ายที่จ่ายจากเงินสนับสนุนนั้นมาถือเป็นรายจ่าย</p><div class="tbl"><table><thead><tr><th>ตัวอย่างที่ 23.2</th><th class="num">แสดงเป็นรายได้อื่น</th><th class="num">หักกับค่าใช้จ่าย</th></tr></thead><tbody><tr><td>รายได้จากเงินอุดหนุนในกำไรทางบัญชี</td><td class="num">450,000</td><td class="num">0</td></tr><tr><td>ค่าจ้างในกำไรทางบัญชี</td><td class="num">2,250,000</td><td class="num">1,800,000</td></tr><tr><td>หัก: รายได้ที่ได้รับยกเว้น</td><td class="num">(450,000)</td><td class="num">0</td></tr><tr><td>บวก: ค่าจ้างส่วนที่จ่ายจากเงินสนับสนุน (หักเป็นรายจ่ายไม่ได้)</td><td class="num">450,000</td><td class="num">0</td></tr><tr><td>ปรับปรุงสุทธิ</td><td class="num">0</td><td class="num">0</td></tr></tbody></table></div><h4>ค. ข้อหารือ กค 0702/6419 (8 กันยายน 2557)</h4><p>ข้อหารือนี้อ้าง พ.ร.ฎ. (ฉบับที่ 570) พ.ศ. 2556 เงินที่ได้รับจากรัฐเพื่อใช้ป้องกันอุทกภัยของนิคมอุตสาหกรรมได้รับยกเว้นภาษีเงินได้นิติบุคคล และต้นทุนเขื่อนส่วนที่จ่ายด้วยเงินดังกล่าว (230 ล้านบาท) ห้ามนำไปรวมเป็นต้นทุนเพื่อหักค่าสึกหรอและค่าเสื่อมราคาตาม ม.65 ทวิ (2) หักได้เฉพาะส่วนที่กิจการลงทุนเอง (250 ล้านบาท) ไม่เกินร้อยละ 5 ต่อปี ข้อหารือนี้ใช้กับเงินที่มีกฎหมายยกเว้นเท่านั้น</p><h3 id="S23.7">S23.7 ร่างหมายเหตุประกอบงบการเงิน</h3><h4>นโยบายการบัญชี (23.15.1)</h4><p>ย่อหน้าร่วม: บริษัทรับรู้เงินอุดหนุนจากรัฐบาลเมื่อเชื่อมั่นได้อย่างสมเหตุสมผลว่าจะปฏิบัติตามเงื่อนไขและจะได้รับเงินอุดหนุน เงินอุดหนุนที่มีเงื่อนไขที่ต้องปฏิบัติในอนาคตรับรู้เป็นรายได้เมื่อปฏิบัติตามเงื่อนไขแล้ว เงินที่ได้รับก่อนแสดงเป็นรายได้รอการรับรู้</p><p>เลือกหนึ่งย่อหน้าตามวิธีที่ใช้กับเงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์: (วิธี 23.11.1) เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์แสดงเป็นรายได้รอการรับรู้ และทยอยรับรู้เป็นรายได้อื่นตลอดอายุการใช้ประโยชน์ของสินทรัพย์ · (วิธี 23.11.2) เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์แสดงหักจากมูลค่าของสินทรัพย์ และรับรู้ในงบกำไรขาดทุนในรูปของค่าเสื่อมราคาที่ลดลงตลอดอายุการใช้ประโยชน์ของสินทรัพย์</p><p>เลือกหนึ่งย่อหน้าตามทางเลือกที่ใช้กับเงินอุดหนุนที่เกี่ยวข้องกับรายได้ (23.13): (แสดงแยก) เงินอุดหนุนที่เกี่ยวข้องกับรายได้แสดงเป็นรายได้อื่น · (หักกับค่าใช้จ่าย) เงินอุดหนุนที่เกี่ยวข้องกับรายได้แสดงหักกับค่าใช้จ่ายที่เกี่ยวข้อง และเปิดเผยจำนวนในหมายเหตุนี้</p><h4>จำนวนเงินอุดหนุนและเงื่อนไข (23.15.2–23.15.3)</h4><div class="tbl"><table><thead><tr><th>เงินอุดหนุน</th><th>ลักษณะ</th><th class="num">รับรู้ในงวด</th><th class="num">รายได้รอการรับรู้สิ้นงวด</th><th>เงื่อนไขที่ยังไม่ได้ปฏิบัติ</th></tr></thead><tbody><tr><td>ซื้อเครื่องจักร</td><td>เงินสดจากหน่วยงานของรัฐ</td><td class="num">400,000</td><td class="num">1,600,000</td><td>ถือเครื่องจักรในจังหวัดที่กำหนดถึง 25X5</td></tr><tr><td>โครงการวิจัย</td><td>เงินสดล่วงหน้า</td><td class="num">3,000,000</td><td class="num">2,000,000</td><td>ใช้จ่ายส่วนที่เหลือ 4,000,000 บาทภายใน 25X2</td></tr></tbody></table></div><h4>ความช่วยเหลืออื่น (23.15.4)</h4><p>บริษัทได้รับเงินกู้จากสถาบันการเงินของรัฐ 10,000,000 บาท อัตราดอกเบี้ยร้อยละ 1 ต่อปี ระยะเวลา 5 ปี และได้รับยกเว้นอากรขาเข้าเครื่องจักร บริษัทรับรู้เงินกู้ตามจำนวนเงินที่ได้รับจริง</p><h4>การจ่ายคืนเงินอุดหนุน (5.16)</h4><p>ใช้ร่างใน S23.5 ข้อ ง ตามวิธีที่บริษัทเลือก</p><h3 id="S23.8">S23.8 แนวคำตอบกรณีศึกษาและเฉลยแบบฝึกหัด</h3><h4>กรณีศึกษา 23.1</h4><div class="tbl"><table><thead><tr><th>ข้อ</th><th class="num">ข้อเสนอ</th><th class="num">ที่ถูกต้อง</th><th class="num">ผลต่าง</th><th>ย่อหน้า</th></tr></thead><tbody><tr><td>(ก) เงินอุดหนุนเครื่องจักร</td><td class="num">3,000,000</td><td class="num">150,000</td><td class="num">2,850,000</td><td>23.11.1</td></tr><tr><td>(ข) เงินอุดหนุนวิจัย</td><td class="num">750,000</td><td class="num">0</td><td class="num">750,000</td><td>23.7.2, 23.15.3</td></tr><tr><td>(ค) เงินกู้ดอกเบี้ยต่ำ</td><td class="num">400,000</td><td class="num">0</td><td class="num">400,000</td><td>23.3.1, 23.15.4</td></tr><tr><td>(ง) การยกเว้นภาษีเงินได้</td><td class="num">1,200,000</td><td class="num">0</td><td class="num">1,200,000</td><td>23.5</td></tr><tr><td>รวม</td><td class="num">5,350,000</td><td class="num">150,000</td><td class="num">5,200,000</td><td></td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">3,000,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num"></td><td class="num">3,000,000</td></tr><tr><td>รวม</td><td class="num">3,000,000</td><td class="num">3,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต รายได้รอการรับรู้ (เงินอุดหนุน)</td><td class="num">150,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากเงินอุดหนุน (3,000,000 ÷ 10 × 6/12)</td><td class="num"></td><td class="num">150,000</td></tr><tr><td>รวม</td><td class="num">150,000</td><td class="num">150,000</td></tr></tbody></table></div><p>31 ธ.ค. 25X1 รายได้รอการรับรู้ 2,850,000 บาท แสดงในรายการ 3.2 จำนวน 300,000 บาท (ส่วนที่รับรู้ในปี 25X2) และรายการ 4.3 จำนวน 2,550,000 บาท</p><h4>เฉลยปรนัย</h4><div class="tbl"><table><thead><tr><th>ข้อ</th><th>คำตอบ</th><th>เหตุผล</th></tr></thead><tbody><tr><td>1</td><td>ค</td><td>เงินอุดหนุนคือการโอนทรัพยากรเพื่อแลกกับการปฏิบัติตามเงื่อนไข (23.2) การยกเว้นภาษีเงินได้อยู่นอกบท (23.5) เงินกู้ดอกเบี้ยต่ำไม่ถือเป็นเงินอุดหนุน (23.3.1) และถนนเป็นประโยชน์ทางอ้อม (23.4)</td></tr><tr><td>2</td><td>ข</td><td>เงื่อนไขแบบทั้งหมดหรือไม่มีเลยยังไม่ได้ปฏิบัติครบ ย่อหน้า 23.7.2 ให้รับรู้รายได้เมื่อปฏิบัติตามเงื่อนไขแล้วเท่านั้น เงินที่ได้รับก่อนเข้าเกณฑ์เป็นรายได้รอการรับรู้</td></tr><tr><td>3</td><td>ง</td><td>มูลค่าตามบัญชีหลังหักเงินอุดหนุน 8,000,000 บาท หาร 5 ปี ได้ 1,600,000 บาท เงินอุดหนุนรับรู้ในรูปค่าเสื่อมราคาที่ลดลง</td></tr><tr><td>4</td><td>ก</td><td>คำชี้แจงแบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566) ยกรายได้รอรับรู้จากเงินอุดหนุนจากรัฐบาลเป็นตัวอย่างของเจ้าหนี้อื่น ส่วนที่จะรับรู้ภายใน 12 เดือนอยู่ในรายการ 3.2 ส่วนที่เกินอยู่ในรายการ 4.3</td></tr><tr><td>5</td><td>ค</td><td>ย่อหน้า 23.14.1 ให้เพิ่มมูลค่าตามบัญชี 2,000,000 บาท และรับรู้ค่าเสื่อมราคาสะสมที่เพิ่มขึ้นจนถึงวันจ่ายคืน 400,000 × 2 = 800,000 บาทเข้างบกำไรขาดทุนทันที การจ่ายคืนเป็นการเปลี่ยนแปลงประมาณการ ไม่ปรับย้อนหลัง (23.14, 5.15)</td></tr><tr><td>6</td><td>ข</td><td>ย่อหน้า 23.13 ให้แสดงเป็นรายการแยกหรือรายได้อื่น หรือหักกับค่าใช้จ่ายที่เกี่ยวข้อง เมื่อเลือกหักกับค่าใช้จ่าย จึงแสดงยอดสุทธิในรายการ 6 และเปิดเผยจำนวนตาม 23.15.2</td></tr><tr><td>7</td><td>ง</td><td>ย่อหน้า 23.15.1–23.15.4 ไม่กำหนดให้เปิดเผยผลต่ออัตราส่วนทางการเงิน</td></tr><tr><td>8</td><td>ก</td><td>ย่อหน้า 23.3.1 ระบุการให้กู้ยืมโดยไม่คิดดอกเบี้ยหรือคิดดอกเบี้ยต่ำเป็นความช่วยเหลือที่ไม่ถือเป็นเงินอุดหนุน กิจการรับรู้เงินกู้ตามจำนวนที่ได้รับ และเปิดเผยลักษณะ ขอบเขต และระยะเวลาตาม 23.15.4</td></tr></tbody></table></div><h4>แนวคำตอบอัตนัย</h4><p>ข้อ 1: เงินชดเชยค่าฝึกอบรมเป็นเงินอุดหนุนที่เกี่ยวข้องกับรายได้ (23.2, 23.12) การลดอัตราภาษีเงินได้อยู่นอกบท (23.5) เงินกู้ปลอดดอกเบี้ยเป็นความช่วยเหลือที่ไม่ถือเป็นเงินอุดหนุน (23.3.1) ที่ดินพร้อมเงื่อนไขจ้างงานเป็นเงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์ที่ไม่เป็นตัวเงิน (23.9, 23.10) และสัญญาขายสินค้าให้ส่วนราชการไม่ใช่เงินอุดหนุน (23.3.2)</p><p>ข้อ 2: วิธีที่หนึ่ง ค่าเสื่อมราคา 1,500,000 รายได้จากเงินอุดหนุน 375,000 มูลค่าตามบัญชี 4,500,000 รายได้รอการรับรู้ 1,125,000 แยกรายการ 3.2 375,000 และรายการ 4.3 750,000 · วิธีที่สอง ค่าเสื่อมราคา 1,125,000 มูลค่าตามบัญชี 3,375,000 · ผลสุทธิต่อกำไรเท่ากัน 1,125,000 บาท</p><p>ข้อ 3: รับรู้ค่าเสื่อมราคาสะสมที่เพิ่มขึ้น 750,000 บาทเข้างบกำไรขาดทุนทันที (23.14.1) ไม่ปรับย้อนหลัง (5.15) รายการบันทึกข้อ 3 จ่ายคืนต้นปีที่ 3:</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เครื่องจักร</td><td class="num">1,500,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด (จ่ายคืนเงินอุดหนุน)</td><td class="num"></td><td class="num">1,500,000</td></tr><tr><td>รวม</td><td class="num">1,500,000</td><td class="num">1,500,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าเสื่อมราคา</td><td class="num">750,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าเสื่อมราคาสะสม เครื่องจักร (375,000 × 2)</td><td class="num"></td><td class="num">750,000</td></tr><tr><td>รวม</td><td class="num">750,000</td><td class="num">750,000</td></tr></tbody></table></div><p>ข้อ 4: 40 × 3,000 × 2 เดือน = 240,000 บาท เดือนที่ 3 ไม่มีสิทธิ (23.7.2) แสดงในรายการ 2 รายได้อื่น หรือหักกับรายการ 6 ค่าใช้จ่ายผลประโยชน์พนักงาน และเปิดเผยจำนวนตาม 23.15.2</p>
+      <h3 id="S23.9">S23.9 ผลวิจัยปี 2569: บทใหม่ ความช่วยเหลือรูปแบบอื่น ภาษี งานของผู้สอบบัญชี และการเปรียบเทียบ</h3>
+      <h4>ก. บทใหม่และการเปลี่ยนผ่าน</h4>
+      <p class="hint">ฉบับ 2554 มี 22 บทและไม่มีเรื่องเงินอุดหนุน ก่อนปี 2566 กิจการเลือกนโยบายตามย่อหน้า 52.3 ฉบับ 2554 จึงใช้มาตรฐานการบัญชี ฉบับที่ 20 เป็นแนวทาง ฉบับปรับปรุง 2565 ใช้กับรอบที่เริ่มในหรือหลัง 1 ม.ค. 2566 (28.1) และรับรู้ผลกระทบสะสมกับกำไรสะสม ณ วันที่นำมาปฏิบัติใช้ครั้งแรก (28.17) สภาวิชาชีพบัญชีอ้างอิงคู่มืออธิบายมาตรฐานการบัญชี ฉบับที่ 20 (4 ก.พ. 2562) แทนการทำตัวอย่างใหม่ (สไลด์อบรม 96–107, 149, 152, 158 ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <h4>ข. ความช่วยเหลือรูปแบบอื่นและเงินอุดหนุนที่ไม่เป็นตัวเงิน</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>บทที่ 23</th><th>มาตรฐานการบัญชี ฉบับที่ 20 (เปรียบเทียบเพื่อการศึกษา)</th></tr></thead><tbody>
+      <tr><td>เงินกู้ดอกเบี้ยต่ำหรือปลอดดอกเบี้ย</td><td>ไม่ถือเป็นเงินอุดหนุน เปิดเผยตาม 23.15.4 (23.3.1)</td><td>ประโยชน์จากดอกเบี้ยต่ำกว่าตลาดถือเป็นเงินอุดหนุน (ย่อหน้า 10ก)</td></tr>
+      <tr><td>เงินกู้ที่รัฐยกหนี้ให้เมื่อปฏิบัติตามเงื่อนไข</td><td>ไม่ได้กำหนดเฉพาะ บันทึกเป็นเงินกู้จนเชื่อมั่นว่าจะยกหนี้ แล้วรับรู้ตาม 23.6–23.8 <span class="pill warn">แนวการตีความ</span></td><td>ถือเป็นเงินอุดหนุนเมื่อเชื่อมั่นว่าจะได้ยกหนี้ (ย่อหน้า 10)</td></tr>
+      <tr><td>เงินชดเชยค่าใช้จ่ายที่เกิดแล้วหรือช่วยเหลือทันที</td><td>ไม่มีเงื่อนไขในอนาคต รับรู้เมื่อมีสิทธิ (23.7.1)</td><td>รับรู้ในงวดที่มีสิทธิ (ย่อหน้า 20)</td></tr>
+      <tr><td>เงินอุดหนุนที่ไม่เป็นตัวเงิน</td><td>มูลค่ายุติธรรมเท่านั้น (23.9)</td><td>มูลค่ายุติธรรม หรือเลือกมูลค่าที่กำหนด (ย่อหน้า 23)</td></tr>
+      <tr><td>บัตรส่งเสริมการลงทุน</td><td>ยกเว้นภาษีเงินได้ (พ.ร.บ.ส่งเสริมการลงทุน ม.31) อยู่นอกบท (23.5) · ยกเว้นอากรขาเข้า (ม.28) เปิดเผยตาม 23.15.4 <span class="pill warn">แนวการตีความ</span></td><td>ประโยชน์ทางภาษีเงินได้อยู่นอกขอบเขต</td></tr>
+      </tbody></table></div>
+      <h4>ค. ภาษีที่ยืนยันแล้ว</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>หลัก</th><th>ที่มา</th></tr></thead><tbody>
+      <tr><td>เงินอุดหนุนที่ไม่มีกฎหมายยกเว้น</td><td>รวมเป็นรายได้ตาม ม.65 จังหวะทางภาษีที่ต่างจากทางบัญชียังไม่พบข้อหารือ</td><td>กค 0706/2752 (31 มี.ค. 2549)</td></tr>
+      <tr><td>เงินอุดหนุนที่มีพระราชกฤษฎีกายกเว้น</td><td>ยกเว้นในรอบที่ได้รับเงิน รายจ่ายหรือต้นทุนส่วนที่จ่ายจากเงินยกเว้นหักไม่ได้</td><td>พ.ร.ฎ. ฉบับที่ 570 (2556) · 747 (2565) · 773 (2566) · 791 และ 796 (2568) · กค 0702/6419 (8 ก.ย. 2557)</td></tr>
+      <tr><td>ภาษีมูลค่าเพิ่ม</td><td>เงินอุดหนุนแบบให้เปล่าไม่ใช่มูลค่าของฐานภาษี ถ้าเป็นค่าตอบแทนสินค้าหรือบริการที่ส่งมอบให้รัฐเป็นฐานภาษี <span class="pill warn">แนวการตีความ</span></td><td>ม.79 · กค 0706/2752 · กค 0811/05396 (8 มิ.ย. 2542 ไม่นำเงินอุดหนุนมารวมในการเฉลี่ยภาษีซื้อ)</td></tr>
+      <tr><td>วิธีหักจากมูลค่าสินทรัพย์ (23.11.2)</td><td>ฐานค่าเสื่อมราคาทางภาษียังเป็นราคาทุนเต็มเมื่อเงินอุดหนุนต้องเสียภาษี จึงปรับปรุงกำไรสุทธิทุกปี <span class="pill warn">แนวการตีความ</span></td><td>ม.65 ทวิ (2)</td></tr>
+      </tbody></table></div>
+      <p class="hint">ตัวอย่างที่ 23.2 อิงโครงการส่งเสริมและรักษาระดับการจ้างงานในธุรกิจ SMEs ของกรมการจัดหางาน (คณะรัฐมนตรีอนุมัติ 19 ต.ค. 2564 ปรับปรุง 23 พ.ย. 2564 รอตรวจต้นฉบับมติ): 3,000 บาทต่อลูกจ้างสัญชาติไทยต่อเดือน ไม่เกิน 200 คน รักษาระดับการจ้างงานไม่ต่ำกว่าร้อยละ 95 ของฐาน ถ้าต่ำกว่าไม่ได้เงินเดือนนั้น รอบที่ 1 จ่าย 3 เดือน รอบที่ 2 จ่าย 2 เดือน</p>
+      <h4>ง. งานของผู้สอบบัญชี</h4>
+      <ul><li>มาตรฐานการสอบบัญชี รหัส 250 (ปรับปรุง) การพิจารณากฎหมายและข้อบังคับในการตรวจสอบงบการเงิน: การปฏิบัติตามเงื่อนไขของเงินอุดหนุน</li><li>รหัส 505 การขอคำยืนยันจากบุคคลภายนอก: ยืนยันจำนวนเงินและเงื่อนไขกับหน่วยงานของรัฐ</li><li>รหัส 540 (ปรับปรุง) การตรวจสอบประมาณการทางบัญชีและการเปิดเผยข้อมูลที่เกี่ยวข้อง: ระยะเวลาการรับรู้และโอกาสที่ต้องจ่ายคืน</li><li>ประกาศสภาวิชาชีพบัญชี ที่ 32/2568 มาตรฐานทางเลือกสำหรับกิจการที่มีความซับซ้อนน้อย</li></ul>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: การแบ่งตามเงื่อนไขใน 23.7.1–23.7.2 คล้ายมาตรฐานการรายงานทางการเงินระหว่างประเทศสำหรับกิจการขนาดกลางและขนาดย่อม หมวด 24 ย่อหน้า 24.4 ส่วน 23.8, 23.11, 23.13 และ 23.14 มาจากมาตรฐานการบัญชี ฉบับที่ 20 ย่อหน้า 12, 24–27, 29 และ 32 เอกสารประกอบการศึกษาหมวด 24 ของมูลนิธิมาตรฐานการรายงานทางการเงินระหว่างประเทศ (IFRS Foundation) ระบุว่าการหักเงินอุดหนุนจากมูลค่าสินทรัพย์ไม่สอดคล้องกับข้อกำหนดในหมวดอื่น และฉบับที่ 3 (ใช้ 1 ม.ค. 2570) แก้หมวด 24 เพียงถ้อยคำ</p>
+    </section>
+  </div>
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 23 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์ ใช้งานแบบออฟไลน์ได้</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 23.1–23.4 และตารางที่ 23-1 ถึง 23-3 ในตำรา</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=0)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fp=x=>x<0?'('+fmt(-x)+')':fmt(x);
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function je(title,lines,ref){
+    const L=lines.filter(l=>Math.abs(l.amt)>=0.5);const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);
+    const rows=dr.concat(cr).map(l=>l.dr?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`:`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,t])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${t?esc(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const theory=items=>`<details class="theory"><summary>มาตรฐานและแหล่งอ้างอิง</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  const tbl=(h,rows,num)=>`<div class="tbl"><table><thead><tr>${h.map((x,i)=>`<th${num.includes(i)?' class="num"':''}>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td${num.includes(i)?' class="num"':''}>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  /* tabs */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];const names=tabs.map(b=>b.dataset.tab);
+  function show(name){tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);try{localStorage.setItem('npaes23tab',name)}catch(e){}}
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='cls';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes23tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{e.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+
+
+
+
+
+
+
+  const R0=x=>Math.round(x+1e-9);
+  const INT='<span class="pill warn">แนวการตีความ</span>';
+  const G={};window.__R=G;
+  const bad=m=>verdict('warn','ตรวจข้อมูลที่กรอก',m);
+  const wait=m=>`<p class="hint">${m}</p>`;
+  const on=(ids,f)=>ids.forEach(id=>{const e=$(id);e.addEventListener(e.tagName==='SELECT'||e.type==='checkbox'?'change':'input',f)});
+  const blank=ids=>ids.some(id=>String($(id).value).trim()==='');
+  const BL='กรอกให้ครบทุกช่อง ช่องที่ว่างไม่ถือเป็นศูนย์';
+  /* 0 cls */
+  const CQ=['c1','c2','c3','c4','c5'];
+  function cVis(){let open=true;CQ.forEach((id,i)=>{const lab=$(id).closest('label');lab.hidden=!open;if(!open)return;const v=$(id).value;
+      if(v==='')open=false;else if((i===0&&v==='yes')||(i===1&&v==='yes')||(i===2&&v==='no')||(i===3&&v==='no'))open=false})}
+  function cCalc(){cVis();G.cRes='';const a=CQ.map(i=>$(i).value);
+    if(a[0]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 1');return}
+    if(a[0]==='yes'){G.cRes='tax';$('cOut').innerHTML=verdict('warn','อยู่นอกบทที่ 23 (23.5)','ประโยชน์ทางภาษีเงินได้ใช้บทที่ 15 ไม่บันทึกเป็นเงินอุดหนุน')+theory([['23.5','บทนี้ไม่ครอบคลุมประโยชน์ที่ใช้กำหนดกำไรขาดทุนทางภาษีหรือหนี้สินภาษีเงินได้']]);return}
+    if(a[1]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 2');return}
+    if(a[1]==='yes'){G.cRes='indirect';$('cOut').innerHTML=verdict('warn','ไม่ใช่ความช่วยเหลือจากรัฐบาลตาม 23.4','ประโยชน์ทางอ้อมต่อสภาพการค้าโดยทั่วไป ไม่บันทึกและไม่ต้องเปิดเผย');return}
+    if(a[2]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 3');return}
+    if(a[2]==='no'){G.cRes='assist';$('cOut').innerHTML=verdict('ok','ความช่วยเหลือที่ไม่ถือเป็นเงินอุดหนุน (23.3)','เช่น เงินกู้ดอกเบี้ยต่ำ การค้ำประกัน หรือคำแนะนำทางเทคนิค รับรู้รายการตามสาระของรายการ เช่น เงินกู้ตามจำนวนที่ได้รับ และเปิดเผยลักษณะ ขอบเขต และระยะเวลาตาม 23.15.4')+theory([['23.3.1','ความช่วยเหลือที่กำหนดมูลค่าไม่ได้อย่างสมเหตุสมผล'],['23.3.2','รายการค้ากับรัฐที่แยกจากรายการค้าตามปกติไม่ได้'],['23.15.4','การเปิดเผยความช่วยเหลือรูปแบบอื่น']]);return}
+    if(a[3]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 4');return}
+    if(a[3]==='no'){G.cRes='notgrant';$('cOut').innerHTML=verdict('warn','ไม่ใช่เงินอุดหนุนตาม 23.2','รายการนี้ไม่ใช่การโอนทรัพยากรเพื่อแลกกับเงื่อนไข ถ้าเป็นประโยชน์เฉพาะเจาะจงแก่กิจการ เปิดเผยตาม 23.15.4 '+INT);return}
+    if(a[4]===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 5');return}
+    if(a[4]==='yes'){G.cRes='asset';$('cOut').innerHTML=verdict('ok','เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์ (23.10)','ทดสอบการรับรู้ในแท็บ 1 แล้วเลือกวิธีตาม 23.11 ในแท็บ 3 วัดด้วยมูลค่ายุติธรรมของสินทรัพย์ที่ได้รับ (23.9)');return}
+    G.cRes='income';$('cOut').innerHTML=verdict('ok','เงินอุดหนุนที่เกี่ยวข้องกับรายได้ (23.12)','ทดสอบการรับรู้ในแท็บ 1 แล้วเลือกวิธีแสดงตาม 23.13 ในแท็บ 2')}
+  CQ.forEach((id,i)=>$(id).addEventListener('change',()=>{for(let j=i+1;j<CQ.length;j++)$(CQ[j]).value=''}));
+  on(CQ,cCalc);cCalc();
+  /* 1 rec */
+  function rCalc(){G.rInc=null;G.rDef=null;$('rT').closest('label').hidden=$('rF').value!=='yes';
+    const A=$('rA').value,B=$('rB').value,F=$('rF').value,T=$('rT').value;
+    if(A===''||B===''){$('rOut').innerHTML=wait('ยังไม่แสดงผล ตอบคำถามความเชื่อมั่นทั้งสองข้อ');G.rInc='';return}
+    const ids=['rG','rRcv','rReq','rDone'];if(blank(ids)){$('rOut').innerHTML=bad(BL);return}
+    const [g,rc,rq,dn]=ids.map(i=>val($(i)));
+    if([g,rc,rq,dn].some(x=>x<0)){$('rOut').innerHTML=bad('ตัวเลขต้องไม่ติดลบ');return}
+    if(rc>g){$('rOut').innerHTML=bad('จำนวนที่ได้รับต้องไม่เกินจำนวนตามสัญญา');return}
+    if(A==='no'||B==='no'){G.rInc=0;G.rDef=0;$('rOut').innerHTML=verdict('warn','ยังไม่รับรู้เงินอุดหนุน (23.6)',`เงินที่ได้รับแล้ว ${fmt(rc)} บาท แสดงเป็นหนี้สินจนกว่าจะเชื่อมั่นได้ ${INT}`);return}
+    if(F===''){$('rOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อเงื่อนไขในอนาคต');G.rInc='';return}
+    let inc;
+    if(F==='no'){inc=g}
+    else{if(T===''){$('rOut').innerHTML=wait('ยังไม่แสดงผล เลือกถ้อยคำของเงื่อนไข');G.rInc='';return}
+      if(rq<=0){$('rOut').innerHTML=bad('งานที่ต้องทำตามเงื่อนไขต้องมากกว่าศูนย์');return}
+      inc=T==='prop'?R0(g*Math.min(dn/rq,1)):(dn>=rq?g:0)}
+    const df=Math.max(rc-inc,0),ar=Math.max(inc-rc,0);G.rInc=inc;G.rDef=df;G.rAR=ar;
+    $('rOut').innerHTML=figs([['รายได้จากเงินอุดหนุนสะสม',inc],['รายได้รอการรับรู้',df],['เงินอุดหนุนค้างรับ',ar]])+
+      verdict('ok',F==='no'?'ไม่มีเงื่อนไขในอนาคต: รับรู้เมื่อมีสิทธิ (23.7.1)':(T==='prop'?'สิทธิตามสัดส่วนงานที่ทำ':'ต้องปฏิบัติครบก่อนรับรู้'),F==='no'?'รับรู้เป็นรายได้ทั้งจำนวนเมื่อมีสิทธิได้รับ':`รับรู้เมื่อปฏิบัติตามเงื่อนไขแล้ว (23.7.2) และกระจายตามต้นทุนที่ชดเชย (23.8) การแยกตามถ้อยคำในสัญญา ${INT}`)+
+      theory([['23.6','ความเชื่อมั่นอย่างสมเหตุสมผล'],['23.7','จังหวะการรับรู้และรายได้รอการรับรู้'],['23.8','รับรู้อย่างเป็นระบบตามต้นทุนที่ชดเชย']])}
+  $('rF').addEventListener('change',()=>{$('rT').value=''});
+  on(['rA','rB','rF','rT','rG','rRcv','rReq','rDone'],rCalc);rCalc();
+  /* 2 inc */
+  function iCalc(){G.iInc=null;G.iL6=null;const ids=['iEmp','iRate','iMon','iMet','iWage'];
+    if(blank(ids)){$('iOut').innerHTML=bad(BL);return}
+    const [e,r,m,mt,w]=ids.map(i=>val($(i)));
+    if([e,r,m,mt,w].some(x=>x<0)){$('iOut').innerHTML=bad('ตัวเลขต้องไม่ติดลบ');return}
+    if(![e,m,mt].every(Number.isInteger)){$('iOut').innerHTML=bad('จำนวนลูกจ้างและจำนวนเดือนต้องเป็นจำนวนเต็ม');return}
+    if(mt>m){$('iOut').innerHTML=bad('เดือนที่ปฏิบัติตามเงื่อนไขต้องไม่เกินจำนวนเดือนของโครงการ');return}
+    const pr=$('iPres').value;if(pr===''){$('iOut').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีแสดงรายการก่อน');G.iInc='';return}
+    const inc=e*r*mt,wg=e*w*m;G.iInc=inc;G.iL2=pr==='gross'?inc:0;G.iL6=pr==='gross'?wg:wg-inc;
+    $('iOut').innerHTML=tbl(['รายการในแบบ 2','บาท'],[['รายการ 2 รายได้อื่น (เงินอุดหนุน)',pr==='gross'?fmt(inc):'–'],['รายการ 6 ค่าใช้จ่ายผลประโยชน์พนักงาน',fmt(G.iL6)]],[1])+
+      verdict('ok','รายได้จากเงินอุดหนุนของงวด '+fmt(inc)+' บาท',`รับรู้เฉพาะเดือนที่ปฏิบัติตามเงื่อนไขแล้ว (23.7.2) ${pr==='net'?'เปิดเผยจำนวนเงินอุดหนุนในหมายเหตุ (23.15.2)':''}`)+theory([['23.12','เงินอุดหนุนที่เกี่ยวข้องกับรายได้'],['23.13','แสดงแยก รายได้อื่น หรือหักกับค่าใช้จ่ายที่เกี่ยวข้อง']])}
+  on(['iEmp','iRate','iMon','iMet','iWage','iPres'],iCalc);iCalc();
+  /* 3 ast */
+  function aCalc(){G.aDep=null;G.aNBV=null;const ids=['aC','aG','aL','aY'];
+    if(blank(ids)){$('aOut').innerHTML=bad(BL);return}
+    const [c,g,l,y]=ids.map(i=>val($(i)));
+    if(c<=0||g<0||l<=0){$('aOut').innerHTML=bad('ราคาทุนและอายุต้องมากกว่าศูนย์ เงินอุดหนุนต้องไม่ติดลบ');return}
+    if(g>c){$('aOut').innerHTML=bad('เงินอุดหนุนต้องไม่เกินราคาทุนของสินทรัพย์');return}
+    if(!Number.isInteger(l)||!Number.isInteger(y)||y<1||y>l){$('aOut').innerHTML=bad('อายุและปีที่ดูต้องเป็นจำนวนเต็ม และปีที่ดูอยู่ระหว่าง 1 ถึงอายุ');return}
+    const m=$('aM').value;if(m===''){$('aOut').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีที่กิจการใช้ก่อน');G.aDep='';return}
+    let dep,inc,nbv,df,dc,dn;
+    if(m==='def'){dep=R0(c/l);inc=R0(g/l);nbv=R0(c-c/l*y);df=R0(g-g/l*y);dc=y<l?inc:0;dn=df-dc}
+    else{dep=R0((c-g)/l);inc=0;nbv=R0((c-g)-(c-g)/l*y);df=0;dc=0;dn=0}
+    G.aDep=dep;G.aInc=inc;G.aNBV=nbv;G.aDef=df;G.aDefC=dc;G.aDefNC=dn;G.aPL=inc-dep;
+    $('aOut').innerHTML=tbl(['ปีที่ '+fmt(y),'บาท'],[['ค่าเสื่อมราคา (รายการ 7)',fmt(dep)],['รายได้จากเงินอุดหนุน (รายการ 2)',m==='def'?fmt(inc):'–'],['ผลสุทธิต่อกำไรของปี',fp(inc-dep)],['มูลค่าตามบัญชีปลายปี (รายการ 2.10)',fmt(nbv)],['รายได้รอการรับรู้ส่วนหมุนเวียน (รายการ 3.2)',m==='def'?fmt(dc):'–'],['รายได้รอการรับรู้ส่วนไม่หมุนเวียน (รายการ 4.3)',m==='def'?fmt(dn):'–']],[1])+
+      verdict('ok',m==='def'?'วิธีรายได้รอการรับรู้ (23.11.1)':'วิธีหักจากมูลค่าสินทรัพย์ (23.11.2)','ผลสุทธิต่อกำไรของทุกปีเท่ากันทั้งสองวิธี ต่างกันที่ยอดสินทรัพย์และหนี้สิน เปิดเผยวิธีที่เลือก (23.15.1)')}
+  on(['aC','aG','aL','aY','aM'],aCalc);aCalc();
+  /* 4 rep */
+  function pCalc(){G.pPL=null;G.pNBV=null;const ids=['pC','pG','pL','pK','pR'];
+    if(blank(ids)){$('pOut').innerHTML=bad(BL);return}
+    const [c,g,l,k,rp]=ids.map(i=>val($(i)));
+    if(c<=0||l<=0||g<0||rp<0){$('pOut').innerHTML=bad('ราคาทุนและอายุต้องมากกว่าศูนย์ จำนวนเงินต้องไม่ติดลบ');return}
+    if(g>c||rp>g){$('pOut').innerHTML=bad('เงินอุดหนุนต้องไม่เกินราคาทุน และจำนวนที่จ่ายคืนต้องไม่เกินเงินอุดหนุนเดิม');return}
+    if(!Number.isInteger(k)||!Number.isInteger(l)){$('pOut').innerHTML=bad('อายุและจำนวนปีที่ใช้ไปต้องเป็นจำนวนเต็ม');return}
+    if(k<0||k>=l){$('pOut').innerHTML=bad('จำนวนปีที่ใช้ไปต้องอยู่ระหว่าง 0 ถึงน้อยกว่าอายุ');return}
+    const m=$('pM').value;if(m===''){$('pOut').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีที่กิจการใช้ก่อน');G.pPL='';return}
+    let pl,nbv,rows;
+    if(m==='def'){const bal=R0(g-g/l*k);const red=Math.min(rp,bal);pl=Math.max(rp-bal,0);nbv=R0(c-c/l*k);
+      rows=[['รายได้รอการรับรู้ก่อนจ่ายคืน',fmt(bal)],['ลดรายได้รอการรับรู้',fmt(red)],['ส่วนที่เกินเข้างบกำไรขาดทุนทันที',fmt(pl)]];G.pDefAfter=bal-red}
+    else{pl=R0(rp/l*k);nbv=R0((c-g)-(c-g)/l*k+rp-pl);rows=[['เพิ่มมูลค่าตามบัญชีของสินทรัพย์',fmt(rp)],['ผลสะสมของค่าเสื่อมราคาที่เพิ่มขึ้นเข้างบกำไรขาดทุนทันที',fmt(pl)]]}
+    G.pPL=pl;G.pNBV=nbv;G.pDep=R0(nbv/(l-k));
+    $('pOut').innerHTML=tbl(['รายการ','บาท'],rows.concat([['มูลค่าตามบัญชีของสินทรัพย์หลังจ่ายคืน',fmt(nbv)],['ค่าเสื่อมราคาต่อปีของอายุที่เหลือ',fmt(G.pDep)]]),[1])+
+      verdict('ok','รับรู้ในงวดปัจจุบันและงวดอนาคต ไม่ปรับย้อนหลัง','การจ่ายคืนเป็นการเปลี่ยนแปลงประมาณการ (23.14, 5.15) เปิดเผยตาม 5.16'+(m==='def'?' การรับรู้ส่วนที่เกินยอดรายได้รอการรับรู้เข้างบกำไรขาดทุน '+INT:''))+theory([['23.14.1','เพิ่มมูลค่าตามบัญชีหรือลดรายได้รอการรับรู้ และรับรู้ผลสะสมของค่าเสื่อมราคาที่เพิ่มขึ้นทันที'],['5.15','รับรู้ผลของการเปลี่ยนแปลงประมาณการในงวดปัจจุบันและอนาคต']])}
+  on(['pC','pG','pL','pK','pR','pM'],pCalc);pCalc();
+  /* 5 tax */
+  function wPart(){G.wAdj=null;const p=$('wP').value;if(String($('wA').value).trim()===''){return bad(BL)}const a=val($('wA'));if(a<0)return bad('เงินสนับสนุนต้องไม่ติดลบ');
+    if(p===''){G.wAdj='';return wait('ส่วนเงินอุดหนุนค่าจ้าง: ยังไม่แสดงผล เลือกวิธีแสดงทางบัญชีก่อน')}
+    G.wAdj=0;return '<h3>เงินอุดหนุนค่าจ้าง (พ.ร.ฎ. ฉบับที่ 747)</h3>'+tbl(['รายการ','บาท'],p==='gross'?[['หัก: รายได้ที่ได้รับยกเว้นภาษีเงินได้นิติบุคคล',fp(-a)],['บวก: ค่าจ้างส่วนที่จ่ายจากเงินสนับสนุน (หักเป็นรายจ่ายไม่ได้)',fmt(a)],['<b>ปรับปรุงสุทธิ</b>','<b>0</b>']]:[['ไม่มีรายได้จากเงินสนับสนุนในกำไรทางบัญชี และค่าจ้างแสดงสุทธิแล้ว','0'],['<b>ปรับปรุงสุทธิ</b>','<b>0</b>']],[1])+
+      theory([['พ.ร.ฎ. (ฉบับที่ 747) พ.ศ. 2565','ยกเว้นภาษีเงินได้นิติบุคคลสำหรับเงินจากโครงการรักษาระดับการจ้างงานในธุรกิจ SMEs ในรอบที่ได้รับเงิน และห้ามนำรายจ่ายที่จ่ายจากเงินนั้นมาหักเป็นรายจ่าย']])}
+  function xCalc(){const an=$('xAnon').checked;const nm=an?'บริษัท':esc($('xName').value.trim()||'บริษัท');G.xAnon=an;G.xAdj=null;const W=wPart();
+    const ids=['xC','xG','xL','xRate'];if(blank(ids)){$('xOut').innerHTML=bad(BL)+W;return}
+    const [c,g,l,rt]=ids.map(i=>val($(i)));
+    if(c<=0||l<=0||g<0||g>c){$('xOut').innerHTML=bad('ราคาทุนและอายุต้องมากกว่าศูนย์ และเงินอุดหนุนอยู่ระหว่างศูนย์ถึงราคาทุน')+W;return}
+    if(rt<=0||rt>100){$('xOut').innerHTML=bad('อัตราค่าเสื่อมราคาทางภาษีอยู่ระหว่างมากกว่า 0 ถึง 100')+W;return}
+    const m=$('xM').value,ex=$('xEx').value;if(m===''||ex===''){$('xOut').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีทางบัญชีและสถานะการยกเว้นภาษีก่อน')+W;G.xAdj='';return}
+    const bInc=m==='def'?R0(g/l):0,bDep=m==='def'?R0(c/l):R0((c-g)/l);
+    const tInc=ex==='yes'?0:g,tDep=R0((ex==='yes'?c-g:c)*rt/100);
+    const adj=(tInc-bInc)-(tDep-bDep);G.xAdj=adj;G.xTI=tInc;G.xTD=tDep;
+    $('xOut').innerHTML=`<p>${nm} ปรับปรุงกำไรทางบัญชีปีแรกเป็นกำไรสุทธิทางภาษี</p>`+tbl(['รายการ','ทางบัญชี','ทางภาษี'],[['รายได้จากเงินอุดหนุน',fmt(bInc),fmt(tInc)],['ค่าเสื่อมราคา',fmt(bDep),fmt(tDep)],['<b>ปรับปรุงสุทธิ (บวก/หัก)</b>','',`<b>${adj?fp(adj):'0'}</b>`]],[1,2])+
+      `<p class="hint">ข้อสมมติเรื่องจังหวะรายได้และฐานค่าเสื่อมราคาทางภาษี ${INT} วิธีทางบัญชีที่เลือกไม่เปลี่ยนฐานทางภาษี ตรวจข้อหารือของกรมสรรพากรสำหรับเงินอุดหนุนของกิจการ</p>`+
+      theory([['ม.65 วรรคหนึ่ง','กำไรสุทธิคำนวณจากรายได้จากกิจการหรือเนื่องจากกิจการ'],['ม.65 วรรคสอง','คำนวณรายได้และรายจ่ายตามเกณฑ์สิทธิ'],['ม.65 ทวิ (2)','ค่าสึกหรอและค่าเสื่อมราคาคำนวณจากมูลค่าต้นทุน'],['กค 0702/6419 (8 ก.ย. 2557)','เงินจากรัฐที่กฎหมายยกเว้นไม่เป็นรายได้ และต้นทุนส่วนที่จ่ายด้วยเงินดังกล่าวไม่นำไปคิดค่าเสื่อมราคา'],['พ.ร.ฎ. 145 มาตรา 4 (5)','ทรัพย์สินอื่นหักค่าเสื่อมราคาได้ไม่เกินร้อยละ 20 ต่อปี'],['23.5','ประโยชน์ทางภาษีเงินได้อยู่นอกบทที่ 23']])+W}
+  on(['xName','xAnon','xC','xG','xL','xRate','xM','xEx','wA','wP'],xCalc);xCalc();
+  /* 6 note */
+  function nCalc(){const an=$('nAnon').checked;const nm=an?'บริษัท':esc($('nName').value.trim()||'บริษัท');G.nAnon=an;G.nTxt='';const m=$('nM').value;
+    if(m===''||$('nI').value===''){$('nOut').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีแสดงเงินอุดหนุนทั้งสองประเภทก่อน');return}
+    if(blank(['nRec','nDef'])){$('nOut').innerHTML=bad(BL);return}
+    const rec=val($('nRec')),dfe=val($('nDef'));if(rec<0||dfe<0){$('nOut').innerHTML=bad('จำนวนเงินต้องไม่ติดลบ');return}
+    const nat=esc($('nNat').value.trim()||'–');
+    const cond=esc($('nCond').value.trim()||'–'),oth=esc($('nOther').value.trim()||'–');
+    let t='<h3>เงินอุดหนุนจากรัฐบาล</h3>';
+    t+=`<p>${nm} รับรู้เงินอุดหนุนจากรัฐบาลเมื่อเชื่อมั่นได้อย่างสมเหตุสมผลว่าจะปฏิบัติตามเงื่อนไขและจะได้รับเงินอุดหนุน เงินอุดหนุนที่มีเงื่อนไขที่ต้องปฏิบัติในอนาคตรับรู้เป็นรายได้เมื่อปฏิบัติตามเงื่อนไขแล้ว เงินที่ได้รับก่อนแสดงเป็นรายได้รอการรับรู้</p>`;
+    t+=m==='def'?`<p>เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์แสดงเป็นรายได้รอการรับรู้ และทยอยรับรู้เป็นรายได้อื่นตลอดอายุการใช้ประโยชน์ของสินทรัพย์</p>`:`<p>เงินอุดหนุนที่เกี่ยวข้องกับสินทรัพย์แสดงหักจากมูลค่าของสินทรัพย์ และรับรู้ในงบกำไรขาดทุนในรูปของค่าเสื่อมราคาที่ลดลง</p>`;
+    t+=$('nI').value==='gross'?'<p>เงินอุดหนุนที่เกี่ยวข้องกับรายได้แสดงเป็นรายได้อื่น</p>':'<p>เงินอุดหนุนที่เกี่ยวข้องกับรายได้แสดงหักกับค่าใช้จ่ายที่เกี่ยวข้อง และเปิดเผยจำนวนในหมายเหตุนี้</p>';
+    t+=`<p>ลักษณะและจำนวนเงินอุดหนุนที่รับรู้: ${nat} รับรู้ในงวด ${fmt(rec)} บาท`+(m==='def'?` รายได้รอการรับรู้สิ้นงวด ${fmt(dfe)} บาท`:'')+'</p>';
+    t+=`<p>เงื่อนไขที่ยังไม่ได้ปฏิบัติ: ${cond}</p><p>ความช่วยเหลืออื่นจากรัฐบาลที่ได้รับประโยชน์โดยตรง: ${oth}</p>`;
+    $('nOut').innerHTML=`<p class="hint">${INT} ร่างนี้เป็นแนวการตีความของตำราตามย่อหน้า 23.15.1–23.15.4 ปุ่มคัดลอกคัดลอกเฉพาะข้อความในกรอบ</p><div id="nDraft">${t}</div>`;G.nTxt=$('nDraft').innerText}
+  on(['nName','nAnon','nM','nI','nNat','nRec','nDef','nCond','nOther'],nCalc);nCalc();
+  $('nCopy').addEventListener('click',()=>{const d=$('nDraft');if(d)copyText(d.innerText,'nOk')});
+  /* quiz */
+  const QZ=[["LO 23.1", "เข้าใจ", "รายการใดเป็นเงินอุดหนุนจากรัฐบาลตามบทที่ 23", ["ก. การยกเว้นภาษีเงินได้นิติบุคคลตามบัตรส่งเสริมการลงทุน", "ข. เงินกู้จากสถาบันการเงินของรัฐที่คิดดอกเบี้ยร้อยละ 1 ต่อปี", "ค. เงินสดจากหน่วยงานรัฐเพื่อชดเชยค่าฝึกอบรมพนักงานตามเงื่อนไข", "ง. การที่รัฐสร้างถนนเข้าเขตอุตสาหกรรม"], 2, "เงินอุดหนุนคือการโอนทรัพยากรเพื่อแลกกับการปฏิบัติตามเงื่อนไข (23.2) การยกเว้นภาษีเงินได้อยู่นอกบท (23.5) เงินกู้ดอกเบี้ยต่ำไม่ถือเป็นเงินอุดหนุน (23.3.1) และถนนเป็นประโยชน์ทางอ้อม (23.4)", "23.1"], ["LO 23.2", "ประยุกต์ใช้", "ได้รับเงินอุดหนุน 1,000,000 บาทล่วงหน้า เงื่อนไขต้องจ้างพนักงานในพื้นที่ครบ 100 คนภายในสิ้นปีหน้า มิฉะนั้นคืนทั้งจำนวน ณ วันสิ้นงวดปีนี้จ้างได้ 60 คน บันทึกอย่างไร", ["ก. รายได้ 600,000 บาท ตามสัดส่วนพนักงานที่จ้างแล้ว", "ข. รายได้รอการรับรู้ 1,000,000 บาท", "ค. รายได้ 1,000,000 บาท เพราะได้รับเงินแล้ว", "ง. ส่วนของเจ้าของ 1,000,000 บาท"], 1, "เงื่อนไขแบบทั้งหมดหรือไม่มีเลยยังไม่ได้ปฏิบัติครบ ย่อหน้า 23.7.2 ให้รับรู้รายได้เมื่อปฏิบัติตามเงื่อนไขแล้วเท่านั้น เงินที่ได้รับก่อนเข้าเกณฑ์เป็นรายได้รอการรับรู้", "23.2"], ["LO 23.3", "ประยุกต์ใช้", "ได้รับเงินอุดหนุน 2,000,000 บาทซื้อเครื่องจักร 10,000,000 บาท อายุ 5 ปี ใช้วิธีหักจากมูลค่าสินทรัพย์ (23.11.2) ค่าเสื่อมราคาปีแรกเท่าใด", ["ก. 2,000,000 บาท", "ข. 2,400,000 บาท", "ค. 400,000 บาท", "ง. 1,600,000 บาท"], 3, "มูลค่าตามบัญชีหลังหักเงินอุดหนุน 8,000,000 บาท หาร 5 ปี ได้ 1,600,000 บาท เงินอุดหนุนรับรู้ในรูปค่าเสื่อมราคาที่ลดลง", "23.4"], ["LO 23.3", "ประยุกต์ใช้", "จากข้อ 3 หากใช้วิธีรายได้รอการรับรู้ (23.11.1) ยอดรายได้รอการรับรู้ ณ สิ้นปีแรกแสดงในแบบ 2 อย่างไร", ["ก. 400,000 บาทในรายการ 3.2 และ 1,200,000 บาทในรายการ 4.3", "ข. 1,600,000 บาทในส่วนของเจ้าของ", "ค. 2,000,000 บาทในรายการ 4.3", "ง. 1,600,000 บาทหักจากเครื่องจักรในรายการ 2.10"], 0, "คำชี้แจงแบบ 2 ยกรายได้รอรับรู้จากเงินอุดหนุนจากรัฐบาลเป็นตัวอย่างของเจ้าหนี้อื่น ส่วนที่จะรับรู้ภายใน 12 เดือนอยู่ในรายการ 3.2 ส่วนที่เกินอยู่ในรายการ 4.3", "23.6"], ["LO 23.4", "วิเคราะห์", "ใช้วิธีหักจากมูลค่าสินทรัพย์กับเงินอุดหนุน 2,000,000 บาท เครื่องจักรอายุ 5 ปี ต้องจ่ายคืนทั้งจำนวนต้นปีที่ 3 จำนวนที่รับรู้เข้างบกำไรขาดทุนทันทีคือเท่าใด", ["ก. 2,000,000 บาท", "ข. 1,200,000 บาท", "ค. 800,000 บาท", "ง. 0 บาท ปรับกำไรสะสมย้อนหลัง"], 2, "ย่อหน้า 23.14.1 ให้เพิ่มมูลค่าตามบัญชี 2,000,000 บาท และรับรู้ค่าเสื่อมราคาสะสมที่เพิ่มขึ้นจนถึงวันจ่ายคืน 400,000 × 2 = 800,000 บาทเข้างบกำไรขาดทุนทันที การจ่ายคืนเป็นการเปลี่ยนแปลงประมาณการ ไม่ปรับย้อนหลัง (23.14, 5.15)", "23.5"], ["LO 23.5", "วิเคราะห์", "เงินอุดหนุนค่าจ้าง 450,000 บาท กิจการเลือกแสดงหักจากค่าใช้จ่ายที่เกี่ยวข้อง (23.13) ในงบกำไรขาดทุนแบบจำแนกค่าใช้จ่ายตามธรรมชาติ แสดงอย่างไร", ["ก. รายการ 1 รายได้จากการขายหรือการให้บริการ", "ข. รายการ 6 ค่าใช้จ่ายผลประโยชน์พนักงาน ยอดสุทธิหลังหักเงินอุดหนุน", "ค. รายการ 2 รายได้อื่น และเปิดเผยเฉพาะในหมายเหตุ", "ง. รายการ 16 กำไรขาดทุนเบ็ดเสร็จอื่น"], 1, "ย่อหน้า 23.13 ให้แสดงเป็นรายการแยกหรือรายได้อื่น หรือหักกับค่าใช้จ่ายที่เกี่ยวข้อง เมื่อเลือกหักกับค่าใช้จ่าย จึงแสดงยอดสุทธิในรายการ 6 และเปิดเผยจำนวนตาม 23.15.2", "23.6"], ["LO 23.5", "วิเคราะห์", "ข้อใดไม่อยู่ในรายการที่ย่อหน้า 23.15 กำหนดให้เปิดเผย", ["ก. นโยบายการบัญชีและวิธีแสดงรายการที่เลือก", "ข. เงื่อนไขที่ยังไม่ได้ปฏิบัติและเหตุการณ์ที่อาจเกิดขึ้น", "ค. ลักษณะ ขอบเขต และระยะเวลาของความช่วยเหลืออื่นที่ได้รับประโยชน์โดยตรง", "ง. ผลกระทบต่ออัตราส่วนทางการเงินหากไม่ได้รับเงินอุดหนุน"], 3, "ย่อหน้า 23.15.1–23.15.4 ไม่กำหนดให้เปิดเผยผลต่ออัตราส่วนทางการเงิน", "23.6"], ["LO 23.6", "ประเมินค่า", "ผู้บริหารเสนอให้บันทึกดอกเบี้ยที่ประหยัดได้จากเงินกู้ดอกเบี้ยต่ำของรัฐ 400,000 บาทเป็นรายได้จากเงินอุดหนุน ข้อประเมินใดถูกต้องที่สุด", ["ก. ไม่ยอมรับ เงินกู้ดอกเบี้ยต่ำไม่ถือเป็นเงินอุดหนุน ให้เปิดเผยตาม 23.15.4", "ข. ยอมรับ เพราะเป็นประโยชน์เชิงเศรษฐกิจจากรัฐ", "ค. ยอมรับ แต่แสดงในกำไรขาดทุนเบ็ดเสร็จอื่น", "ง. ไม่ยอมรับ ให้หักจากเงินกู้และรับรู้ในส่วนของเจ้าของ"], 0, "ย่อหน้า 23.3.1 ระบุการให้กู้ยืมโดยไม่คิดดอกเบี้ยหรือคิดดอกเบี้ยต่ำเป็นความช่วยเหลือที่ไม่ถือเป็นเงินอุดหนุน กิจการรับรู้เงินกู้ตามจำนวนที่ได้รับ และเปิดเผยลักษณะ ขอบเขต และระยะเวลาตาม 23.15.4", "23.7"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  QZ.forEach((q,i)=>document.querySelectorAll(`input[name="zq${i}"]`).forEach(x=>x.addEventListener('change',()=>{$('zf'+i).innerHTML='';$('zOut').innerHTML=''})));
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'กลับไปอ่านหัวข้อที่ '+esc(lo[k].sec)+' ของตำรา'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div></div><div class="tbl"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  const goS=()=>{const m=(location.hash||'').match(/^#(S23\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}else{const h=(location.hash||'').slice(1);if(names.includes(h))show(h)}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body>
+</html>
+

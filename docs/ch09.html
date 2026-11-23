@@ -1,0 +1,756 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 09 · จัดประเภทและวัดมูลค่าเงินลงทุน</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun","Thonburi","Leelawadee UI","Noto Sans Thai",system-ui,sans-serif;
+  --body:"Sarabun","Thonburi","Leelawadee UI","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:36px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:32px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="tl"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD"></span>
+    <span class="byline">ชุดเครื่องมือประกอบตำรา การบัญชีตาม TFRS for NPAEs: หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565</span>
+  </div>
+  <style>
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  </style>
+  <style>
+  .tag{display:inline-block;font:600 12.5px var(--display);border-radius:6px;padding:1px 8px;white-space:nowrap}
+  .tag.t{background:var(--bad-soft);color:var(--bad)} .tag.a{background:var(--theory-soft);color:var(--theory)}
+  .tag.h{background:var(--ok-soft);color:var(--ok)} .tag.c{background:var(--heat1);color:var(--ink)} .tag.g{background:var(--warn-soft);color:var(--warn)}
+  #pBody input.num{min-width:7.5em} #pBody td{white-space:nowrap} #pBody td.dsc{white-space:normal;min-width:10em}
+  #pBody select{min-width:12em}
+  .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+  @media (max-width:700px){.two{grid-template-columns:1fr}}
+  .nw{white-space:nowrap}
+  .foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+  </style>
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 9 เงินลงทุน</div>
+      <h1>แอป 09 · จัดประเภทและวัดมูลค่าเงินลงทุน</h1>
+      <p class="lede">จัดประเภทเงินลงทุนตามย่อหน้า 9.2–9.7 วัดมูลค่าทั้งพอร์ต ณ วันสิ้นงวด แยกผลต่องบกำไรขาดทุนและส่วนของเจ้าของ จัดเข้าบรรทัดตามรายการย่อแบบ 2 ของกรมพัฒนาธุรกิจการค้า ร่างหมายเหตุตามย่อหน้า 9.20 และคำนวณการปรับปรุงกำไรสุทธิทางภาษี พร้อมตารางราคาทุนตัดจำหน่าย การจำหน่ายบางส่วน และการโอนเปลี่ยนประเภท ชื่อกิจการและคำอธิบายรายการซ่อนเป็นค่าเริ่มต้น ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>ย่อหน้า 9.1–9.20 · 4.8 · 4.9 · 18.24</b><br>ตำราบทที่ 9 หัวข้อ 9.1–9.6</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> จัดประเภทเมื่อได้มา → ทำตารางราคาทุนตัดจำหน่ายของตราสารหนี้ → วัดมูลค่าทั้งพอร์ต ณ วันสิ้นงวด → บันทึกการจำหน่ายหรือการโอนเปลี่ยน → ทดสอบตนเอง</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="port"><span class="n">0</span>จัดประเภทและวัดมูลค่า</button>
+    <button role="tab" aria-selected="false" data-tab="amc"><span class="n">1</span>ราคาทุนตัดจำหน่าย</button>
+    <button role="tab" aria-selected="false" data-tab="dsp"><span class="n">2</span>จำหน่ายและโอนเปลี่ยน</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">3</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">4</span>เนื้อหาเสริม S9</button>
+  </nav>
+
+  <!-- 0 PORTFOLIO -->
+  <div data-pane="port">
+    <div class="grid">
+      <section class="panel">
+        <h2>ตัวช่วยจัดประเภท (เมื่อได้มา)</h2>
+        <p class="hint">ตอบคำถามตามลำดับ แอปเสนอประเภทพร้อมเหตุผลและเลขย่อหน้า แล้วเพิ่มเป็นรายการในพอร์ตได้</p>
+        <div class="fields">
+          <label class="f">ชนิดของตราสาร<select id="wIns"><option value="eq">ตราสารทุน (หุ้น หน่วยลงทุน)</option><option value="dt">ตราสารหนี้ (หุ้นกู้ พันธบัตร ตั๋วเงิน เงินฝากประจำ)</option></select></label>
+          <label class="f">ซื้อขายในตลาดตามย่อหน้า 9.2.1 หรือไม่<select id="wMkt"><option value="y">ใช่ ซื้อขายตลอดเวลาทำการ เปิดเผยราคาต่อสาธารณชน</option><option value="n">ไม่ใช่</option></select></label>
+          <label class="f" id="wPctL">สิทธิออกเสียงที่ถือ (ร้อยละ)<input type="text" class="num" id="wPct" value="0" inputmode="decimal"></label>
+          <label class="f" id="wEvL">หลักฐานที่หักล้างข้อสันนิษฐาน<select id="wEv"><option value="none">ไม่มี</option><option value="ctl">มีหลักฐานชัดเจนว่าควบคุมได้ แม้ถือไม่เกินกึ่งหนึ่ง</option><option value="noctl">มีหลักฐานชัดเจนว่าควบคุมไม่ได้ แม้ถือเกินกึ่งหนึ่ง</option><option value="noinf">มีหลักฐานชัดเจนว่าไม่มีอิทธิพลอย่างมีนัยสำคัญ</option><option value="joint">มีข้อตกลงควบคุมร่วมและสิทธิในสินทรัพย์สุทธิ</option></select></label>
+          <label class="f">วัตถุประสงค์ของการถือ<select id="wInt"><option value="trade">ขายในอนาคตอันใกล้เพื่อหากำไรจากราคา</option><option value="htm">ถือจนครบกำหนด (ตราสารหนี้)</option><option value="other">ถือไว้โดยไม่ได้ตั้งใจค้า</option><option value="none">ยังไม่มีวัตถุประสงค์ชัดเจน</option></select></label>
+        </div>
+        <ol class="steps" id="wSteps"></ol>
+        <div id="wOut" style="margin-top:10px"></div>
+        <div class="row-actions"><button class="btn primary" id="wAdd">เพิ่มเป็นรายการในพอร์ต</button><span class="hint" id="wMsg" style="margin:0"></span></div>
+      </section>
+      <section class="panel">
+        <h2>สรุปพอร์ต ณ วันสิ้นงวด</h2>
+        <div class="figs" id="pFigs"></div>
+        <h3>บรรทัดตามรายการย่อแบบ 2</h3>
+        <div class="tbl"><table><thead><tr><th>บรรทัด</th><th class="num">บาท</th></tr></thead><tbody id="pLines"></tbody></table></div>
+        <div id="pAlerts" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
+      </section>
+    </div>
+    <section class="panel" style="margin-top:18px">
+      <h2>พอร์ตเงินลงทุน</h2>
+      <p class="hint">ฐานการวัด: ราคาทุนสำหรับตราสารทุน ราคาทุนตัดจำหน่าย ณ วันสิ้นงวดสำหรับตราสารหนี้ (จากแท็บ 1) ผลต่างสะสมยกมา: ค่าเผื่อการปรับมูลค่ายกมาของหลักทรัพย์เพื่อค้าหรือเผื่อขาย (ว่างไว้ถ้าได้มาในงวดนี้) ราคาขายหักต้นทุนในการขาย: กรอกเฉพาะเมื่อมีข้อบ่งชี้ว่ามูลค่าลดลงอย่างถาวร (9.15)</p>
+      <span class="sample" id="pTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 9.1</span>
+      <div class="fields" style="margin-bottom:10px">
+        <label class="f">ชื่อกิจการ (ไม่บังคับ)<input type="text" id="pEnt" autocomplete="off"></label>
+        <label class="f">วันสิ้นรอบระยะเวลารายงาน<input type="text" id="pDate" value="31 ธันวาคม 2568" autocomplete="off"></label>
+        <label class="f">ส่วนของเจ้าของหรือกำไรขาดทุนเบ็ดเสร็จอื่น<select id="pOci"><option value="eq">จัดทำงบกำไรขาดทุน (ส่วนของเจ้าของ)</option><option value="oci">เลือกจัดทำงบกำไรขาดทุนเบ็ดเสร็จ (4.14)</option></select></label>
+      </div>
+      <label class="checks" style="display:flex;flex-direction:row;gap:8px;align-items:center;margin:2px 0 10px"><input type="checkbox" id="pHide" checked>ซ่อนชื่อกิจการและคำอธิบายรายการในผลลัพธ์ (ค่าเริ่มต้น)</label>
+      <div class="tbl"><table>
+        <thead><tr><th>#</th><th>คำอธิบาย</th><th>ประเภท</th><th class="num">ฐานการวัด (บาท)</th><th class="num">มูลค่ายุติธรรมปลายงวด</th><th class="num">ผลต่างสะสมยกมา</th><th class="num">ราคาขายหักต้นทุนในการขาย</th><th class="num">ค่าเผื่อการลดมูลค่ายกมา</th><th>ระยะเวลาที่ตั้งใจถือ</th><th></th></tr></thead>
+        <tbody id="pBody"></tbody>
+      </table></div>
+      <div class="row-actions">
+        <button class="btn" id="pAddRow">เพิ่มรายการ</button>
+        <button class="btn" id="pEx">โหลดตัวอย่างที่ 9.1</button>
+        <button class="btn" id="pCase">โหลดกรณีศึกษา 9.1</button>
+        <button class="btn" id="pClr">ล้างทั้งหมด</button>
+      </div>
+      <details style="margin-top:10px"><summary class="hint" style="cursor:pointer;margin:0">วางข้อมูลจาก Excel (คำอธิบาย · ประเภท · ฐานการวัด · มูลค่ายุติธรรม · ผลต่างสะสมยกมา · ราคาขายหักต้นทุน · ค่าเผื่อยกมา · ระยะเวลา)</summary>
+        <p class="hint" style="margin-top:6px">คั่นด้วยแท็บ หนึ่งรายการต่อบรรทัด ประเภทใช้คำว่า เพื่อค้า · เผื่อขายทุน · เผื่อขายหนี้ · ถือจนครบกำหนด · หนี้นอกตลาด · ทุนนอกตลาด · บริษัทย่อย · บริษัทร่วม · การร่วมค้า ระยะเวลาใช้ ไม่เกิน12 หรือ เกิน12 ตัวเลขในวงเล็บถือเป็นค่าติดลบ</p>
+        <textarea id="pPaste" aria-label="วางข้อมูลพอร์ต"></textarea>
+        <div class="row-actions"><button class="btn" id="pImp">นำเข้า</button><span class="hint" id="pImpMsg" style="margin:0"></span></div>
+      </details>
+      <h3>ผลการวัดมูลค่ารายรายการ</h3>
+      <div class="tbl"><table><thead><tr><th>#</th><th>ประเภท</th><th>เกณฑ์ (ย่อหน้า)</th><th class="num">มูลค่าตามบัญชี</th><th class="num">กำไรขาดทุน</th><th class="num">ส่วนของเจ้าของ</th><th class="num">ปรับภาษี</th><th>บรรทัด</th></tr></thead><tbody id="pRes"></tbody><tfoot id="pTot"></tfoot></table></div>
+      <div class="two" style="margin-top:14px">
+        <div class="je"><div class="cap"><span>รายการบันทึกบัญชี ณ วันสิ้นงวด</span></div><div class="tbl"><table><tbody id="pJE"></tbody></table></div></div>
+        <div class="note"><div class="cap">ร่างหมายเหตุเงินลงทุน (9.20)</div><pre class="memo" id="pNote"></pre><div class="row-actions"><button class="btn" id="pCopy">คัดลอกหมายเหตุ</button><span class="hint" id="pCopyMsg" style="margin:0"></span></div></div>
+      </div>
+      <div class="tax" style="margin-top:14px" id="pTax"></div>
+      <details class="theory" style="margin-top:12px"><summary>หลักการที่ใช้คำนวณ</summary><dl>
+        <dt>9.11, 9.14</dt><dd>หลักทรัพย์ในความต้องการของตลาดวัดด้วยมูลค่ายุติธรรม (ราคาเสนอซื้อปัจจุบัน) ผลต่างของงวด = ผลต่างสะสมปลายงวด − ผลต่างสะสมยกมา เพื่อค้าเข้างบกำไรขาดทุน เผื่อขายเข้าส่วนของเจ้าของ</dd>
+        <dt>9.12, 9.13</dt><dd>ตราสารทุนนอกตลาดและเงินลงทุนในบริษัทย่อย บริษัทร่วม การร่วมค้า วัดด้วยราคาทุนหักค่าเผื่อ ตราสารหนี้ที่ถือจนครบกำหนดและตราสารหนี้นอกตลาดวัดด้วยราคาทุนตัดจำหน่ายหักค่าเผื่อ</dd>
+        <dt>9.15</dt><dd>มีข้อบ่งชี้ (กรอกราคาขายหักต้นทุนในการขาย): ค่าเผื่อปลายงวด = ฐาน − ราคาขายหักต้นทุน (ไม่ต่ำกว่าศูนย์) ไม่มีข้อบ่งชี้: กลับรายการค่าเผื่อยกมา หลักทรัพย์เผื่อขายที่มีข้อบ่งชี้ โอนผลขาดทุนสะสมเข้างบกำไรขาดทุน (แนวการตีความ)</dd>
+        <dt>มาตรา 65 ทวิ (3), 65 ตรี (1)(17)</dt><dd>ทางภาษีใช้ราคาทุน หักกำไรที่ยังไม่เกิดขึ้นในงบกำไรขาดทุน บวกกลับขาดทุนที่ยังไม่เกิดขึ้นและผลขาดทุนจากการลดมูลค่า หักการกลับรายการ</dd>
+      </dl></details>
+    </section>
+  </div>
+
+  <!-- 1 AMORTISED COST -->
+  <div class="grid" data-pane="amc" hidden>
+    <section class="panel">
+      <h2>ตราสารหนี้: อัตราดอกเบี้ยที่แท้จริงและราคาทุนตัดจำหน่าย</h2>
+      <p class="hint">กรอกราคาซื้อรวมต้นทุนการทำรายการ (ไม่รวมดอกเบี้ยค้างรับ 9.10) แอปหาอัตราดอกเบี้ยที่แท้จริง ถ้าไม่ทราบราคา ให้ว่างช่องราคาและกรอกอัตราผลตอบแทน แอปคำนวณราคาให้</p>
+      <span class="sample" id="aTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 9.4</span>
+      <div class="fields">
+        <label class="f">มูลค่าที่ตราไว้ (บาท)<input type="text" class="num" id="aFace" inputmode="decimal"></label>
+        <label class="f">อัตราดอกเบี้ยตามสัญญา (% ต่อปี)<input type="text" class="num" id="aCpn" inputmode="decimal"></label>
+        <label class="f">จ่ายดอกเบี้ย<select id="aFreq"><option value="1">ปีละครั้ง</option><option value="2">ปีละสองครั้ง</option></select></label>
+        <label class="f">อายุคงเหลือ (ปี)<input type="text" class="num" id="aYrs" inputmode="decimal"></label>
+        <label class="f">ราคาซื้อรวมต้นทุนการทำรายการ<input type="text" class="num" id="aPrice" inputmode="decimal"></label>
+        <label class="f">หรืออัตราผลตอบแทน (% ต่อปี)<input type="text" class="num" id="aYld" inputmode="decimal"></label>
+        <label class="f">ปีแรกของตาราง (พ.ศ.)<input type="text" class="num" id="aY0" value="2568" inputmode="numeric"></label>
+        <label class="f">มูลค่ายุติธรรมปลายปีแรก (ถ้าเป็นหลักทรัพย์เผื่อขาย)<input type="text" class="num" id="aFV" inputmode="decimal"></label>
+      </div>
+      <div class="row-actions"><button class="btn" id="aEx">ตัวอย่างที่ 9.4</button><button class="btn" id="aEx2">โจทย์ข้อ 1 (ข)</button><button class="btn" id="aEx3">ซื้อสูงกว่ามูลค่าที่ตราไว้</button></div>
+    </section>
+    <section class="panel voucher">
+      <div class="figs" id="aFigs"></div>
+      <div class="tbl"><table><thead><tr><th>งวด</th><th class="num">ต้นงวด</th><th class="num">รายได้ดอกเบี้ย</th><th class="num">ดอกเบี้ยรับ</th><th class="num">ตัดจำหน่าย</th><th class="num">ปลายงวด</th></tr></thead><tbody id="aRows"></tbody><tfoot id="aTot"></tfoot></table></div>
+      <div class="je"><div class="cap"><span>บันทึกงวดแรก</span></div><div class="tbl"><table><tbody id="aJE"></tbody></table></div></div>
+      <div class="why" id="aWhy"></div>
+      <div class="row-actions"><button class="btn" id="aCopy">คัดลอกตาราง</button><span class="hint" id="aCopyMsg" style="margin:0"></span></div>
+    </section>
+  </div>
+
+  <!-- 2 DISPOSAL & TRANSFER -->
+  <div data-pane="dsp" hidden>
+    <div class="grid">
+      <section class="panel">
+        <h2>จำหน่ายบางส่วน (9.16–9.17)</h2>
+        <p class="hint">ใส่รายการได้มาของเงินลงทุนชนิดเดียวกันตามลำดับวันที่ แอปคำนวณทั้งวิธีถัวเฉลี่ยถ่วงน้ำหนักและวิธีเข้าก่อน-ออกก่อน</p>
+        <span class="sample" id="dTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 9.6</span>
+        <div class="tbl"><table><thead><tr><th>#</th><th class="num">จำนวนหน่วย</th><th class="num">ราคาทุนรวม (บาท)</th><th></th></tr></thead><tbody id="dLots"></tbody></table></div>
+        <div class="row-actions"><button class="btn" id="dAddLot">เพิ่มรายการได้มา</button><button class="btn" id="dEx">ตัวอย่างที่ 9.6</button></div>
+        <div class="fields" style="margin-top:10px">
+          <label class="f">ประเภท<select id="dCat"><option value="afs">หลักทรัพย์เผื่อขาย</option><option value="trade">หลักทรัพย์เพื่อค้า</option><option value="cost">วัดด้วยราคาทุน (ตราสารทุนนอกตลาด บริษัทย่อย บริษัทร่วม)</option></select></label>
+          <label class="f" id="dCvL">มูลค่าตามบัญชีต่อหน่วยล่าสุด (มูลค่ายุติธรรม)<input type="text" class="num" id="dCv" inputmode="decimal"></label>
+          <label class="f">จำนวนหน่วยที่ขาย<input type="text" class="num" id="dQty" inputmode="decimal"></label>
+          <label class="f">สิ่งตอบแทนสุทธิที่ได้รับ<input type="text" class="num" id="dProc" inputmode="decimal"></label>
+          <label class="f">วิธีที่กิจการใช้<select id="dMeth"><option value="wa">ถัวเฉลี่ยถ่วงน้ำหนัก</option><option value="fifo">เข้าก่อน-ออกก่อน</option></select></label>
+        </div>
+      </section>
+      <section class="panel voucher">
+        <div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">ถัวเฉลี่ยถ่วงน้ำหนัก</th><th class="num">เข้าก่อน-ออกก่อน</th></tr></thead><tbody id="dCmp"></tbody></table></div>
+        <div class="je"><div class="cap"><span>รายการบันทึกบัญชี (วิธีที่เลือก)</span></div><div class="tbl"><table><tbody id="dJE"></tbody></table></div></div>
+        <div class="why" id="dWhy"></div>
+      </section>
+    </div>
+    <div class="grid" style="margin-top:18px">
+      <section class="panel">
+        <h2>โอนเปลี่ยนประเภท (9.18–9.19)</h2>
+        <p class="hint">การโอนเปลี่ยนต้องมีหลักฐานสนับสนุนว่าสถานการณ์เปลี่ยนไป ทุกกรณีบันทึกด้วยมูลค่ายุติธรรม ณ วันที่โอน</p>
+        <div class="fields">
+          <label class="f">กรณี<select id="tCase">
+            <option value="1">9.19.1 หลักทรัพย์เพื่อค้า → ประเภทอื่น</option>
+            <option value="2">9.19.2 ประเภทอื่น → หลักทรัพย์เพื่อค้า</option>
+            <option value="3">9.19.3 ตราสารหนี้เผื่อขาย → ถือจนครบกำหนด</option>
+            <option value="4">9.19.4 ตราสารหนี้ที่ถือจนครบกำหนด → เผื่อขาย</option>
+            <option value="5">9.19.5 ตราสารทุนเผื่อขาย → นอกตลาด บริษัทย่อย บริษัทร่วม การร่วมค้า</option>
+            <option value="6">9.19.6 นอกตลาด บริษัทย่อย บริษัทร่วม การร่วมค้า → เผื่อขาย</option></select></label>
+          <label class="f">มูลค่าตามบัญชี ณ วันที่โอน<input type="text" class="num" id="tCv" inputmode="decimal" value="520,000"></label>
+          <label class="f">มูลค่ายุติธรรม ณ วันที่โอน<input type="text" class="num" id="tFv" inputmode="decimal" value="505,000"></label>
+          <label class="f" id="tResL">ผลต่างสะสมในส่วนของเจ้าของ (กำไรเป็นบวก)<input type="text" class="num" id="tRes" inputmode="decimal" value="0"></label>
+          <label class="f">ราคาทุนทางภาษี<input type="text" class="num" id="tCost" inputmode="decimal" value="481,200"></label>
+        </div>
+        <label class="checks" style="display:flex;flex-direction:row;gap:8px;align-items:center;margin:10px 0 0"><input type="checkbox" id="tEv" checked>มีหลักฐานสนับสนุนอย่างเพียงพอว่าสถานการณ์เปลี่ยนไป (9.18)</label>
+      </section>
+      <section class="panel voucher">
+        <div id="tVerdict"></div>
+        <div class="je"><div class="cap"><span>รายการบันทึกบัญชี ณ วันที่โอน</span></div><div class="tbl"><table><tbody id="tJE"></tbody></table></div></div>
+        <div class="why" id="tWhy"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 3 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="qBox"></div>
+      <div class="row-actions"><button class="btn primary" id="qChk">ตรวจคำตอบ</button><button class="btn" id="qClr">ล้างคำตอบ</button></div>
+      <div id="qOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 4 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S9</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 9 ลิงก์ #S9.1 ถึง #S9.7 เปิดหัวข้อนั้นได้โดยตรง</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S9.1">S9.1</a><a class="btn" href="#S9.2">S9.2</a><a class="btn" href="#S9.3">S9.3</a><a class="btn" href="#S9.4">S9.4</a><a class="btn" href="#S9.5">S9.5</a><a class="btn" href="#S9.6">S9.6</a><a class="btn" href="#S9.7">S9.7</a></div>
+
+      <h3 id="S9.1">S9.1 ตารางการจัดประเภทฉบับเต็ม</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>ตราสาร</th><th>ประเภทที่เป็นไปได้</th><th>เกณฑ์การวัด</th><th>บรรทัดตามแบบ 2</th><th>ย่อหน้า</th></tr></thead>
+        <tbody>
+          <tr><td>หุ้นสามัญจดทะเบียนในตลาดหลักทรัพย์แห่งประเทศไทย (SET) หรือตลาดหลักทรัพย์ เอ็ม เอ ไอ (mai)</td><td>เพื่อค้า หรือเผื่อขาย ตามวัตถุประสงค์ ไม่มีวัตถุประสงค์ชัดเจน = เผื่อขาย ถ้าได้อำนาจควบคุม อิทธิพล หรือการควบคุมร่วม = บริษัทย่อย บริษัทร่วม การร่วมค้า</td><td>มูลค่ายุติธรรมตามราคารับซื้อคืน หรือราคาทุนหักค่าเผื่อสำหรับบริษัทย่อย ร่วม การร่วมค้า</td><td>1.2 / 2.5 / 2.2–2.4</td><td class="nw">9.2.1, 9.4, 9.11, 9.12, 9.18</td></tr>
+          <tr><td>หุ้นบุริมสิทธิจดทะเบียน</td><td>ตราสารทุนในความต้องการของตลาด เพื่อค้าหรือเผื่อขาย</td><td>มูลค่ายุติธรรม</td><td>1.2 / 2.5</td><td class="nw">9.2.1, 9.11</td></tr>
+          <tr><td>ใบสำคัญแสดงสิทธิที่ซื้อขายในตลาดหลักทรัพย์</td><td>มีลักษณะอนุพันธ์ พิจารณาบทที่ 24 ก่อน (แนวการตีความ)</td><td>ตามทางเลือกในบทที่ 24</td><td>ตามบทที่ 24</td><td class="nw">24.1, 24.3</td></tr>
+          <tr><td>หุ้นบริษัทจำกัดที่ไม่ได้จดทะเบียน ถือน้อยกว่าร้อยละ 20</td><td>ตราสารทุนที่ไม่ใช่หลักทรัพย์ที่อยู่ในความต้องการของตลาด เว้นแต่มีหลักฐานว่ามีอิทธิพล</td><td>ราคาทุนเดิมหักค่าเผื่อการลดลงของมูลค่า</td><td>2.5 (หรือ 1.2 ถ้าตั้งใจขายภายใน 12 เดือน)</td><td class="nw">9.2.2, 9.6, 9.12</td></tr>
+          <tr><td>หุ้นบริษัทจำกัด ถือร้อยละ 20–50</td><td>บริษัทร่วม เว้นแต่มีหลักฐานชัดเจนว่าไม่มีอิทธิพล หรือเป็นบริษัทย่อยเมื่อมีหลักฐานว่าควบคุมได้</td><td>ราคาทุนหักค่าเผื่อ</td><td>2.4 / 2.2</td><td class="nw">9.5, 9.6, 9.12</td></tr>
+          <tr><td>หุ้นบริษัทจำกัด ถือเกินร้อยละ 50</td><td>บริษัทย่อย เว้นแต่มีหลักฐานชัดเจนว่าควบคุมไม่ได้</td><td>ราคาทุนหักค่าเผื่อ</td><td>2.2</td><td class="nw">9.5, 9.12</td></tr>
+          <tr><td>ส่วนได้เสียในห้างหุ้นส่วน</td><td>นิยามบริษัทย่อย บริษัทร่วม การร่วมค้ารวมกิจการที่ไม่ได้ก่อตั้งในรูปบริษัท</td><td>ราคาทุนหักค่าเผื่อ</td><td>2.2–2.4 หรือ 2.5</td><td class="nw">9.5–9.7</td></tr>
+          <tr><td>กิจการร่วมค้าที่มีข้อตกลงควบคุมร่วม</td><td>การร่วมค้า เมื่อผู้ร่วมค้ามีสิทธิในสินทรัพย์สุทธิ</td><td>ราคาทุนหักค่าเผื่อ</td><td>2.3</td><td class="nw">9.7, 9.12</td></tr>
+          <tr><td>หน่วยลงทุนกองทุนอีทีเอฟที่จดทะเบียนในตลาดหลักทรัพย์</td><td>หลักทรัพย์ในความต้องการของตลาด เพื่อค้าหรือเผื่อขาย</td><td>มูลค่ายุติธรรม</td><td>1.2 / 2.5</td><td class="nw">9.2.1, 9.11</td></tr>
+          <tr><td>หน่วยลงทุนกองทุนรวมเปิด ประกาศมูลค่าหน่วยลงทุนทุกวันทำการ</td><td>แนวการตีความตามลำดับในย่อหน้า 5.5 (ใช้นิยามใน 9.2.1 ซึ่งเป็นเรื่องที่คล้ายคลึงกันก่อน): หลักทรัพย์ในความต้องการของตลาดเมื่อซื้อขายได้ทุกวันทำการด้วยราคาที่เปิดเผย มิฉะนั้นเป็นเงินลงทุนนอกตลาด เปิดเผยนโยบาย</td><td>มูลค่ายุติธรรม หรือราคาทุนหักค่าเผื่อ</td><td>1.2 / 2.5</td><td class="nw">5.5.1, 9.2, 4.19.2, 5.8</td></tr>
+          <tr><td>กองทุนรวมตลาดเงินที่ถือเพื่อบริหารสภาพคล่อง</td><td>อาจเป็นรายการเทียบเท่าเงินสดตามเงื่อนไขในบทที่ 6</td><td>ตามบทที่ 6</td><td>1.1</td><td class="nw">6.2</td></tr>
+          <tr><td>พันธบัตรรัฐบาลหรือหุ้นกู้ที่ซื้อขายในตลาดตราสารหนี้ (BEX)</td><td>เพื่อค้า เผื่อขาย หรือถือจนครบกำหนด</td><td>มูลค่ายุติธรรม หรือราคาทุนตัดจำหน่าย</td><td>1.2 / 2.5</td><td class="nw">9.3, 9.13, 9.14</td></tr>
+          <tr><td>หุ้นกู้ที่เสนอขายในวงจำกัด ไม่มีตลาดซื้อขาย</td><td>ตราสารหนี้ที่ไม่ใช่หลักทรัพย์ที่อยู่ในความต้องการของตลาด</td><td>ราคาทุนตัดจำหน่ายหักค่าเผื่อ</td><td>1.2 / 2.5</td><td class="nw">9.2.2, 9.13</td></tr>
+          <tr><td>เงินฝากประจำเกิน 3 เดือนนับจากวันที่ได้มา ไม่มีภาระค้ำประกัน</td><td>เงินลงทุนในลักษณะหนึ่งตามคำถาม-คำตอบของสภาวิชาชีพบัญชี ข้อ 1</td><td>ราคาทุนตัดจำหน่าย (เงินต้น) ดอกเบี้ยค้างรับแยกแสดง</td><td>1.2 / 2.5</td><td class="nw">9.1, 9.13, 4.8.1</td></tr>
+          <tr><td>หุ้นกู้แปลงสภาพ</td><td>ตราสารหนี้ที่มีอนุพันธ์แฝง พิจารณาบทที่ 24 ร่วมด้วย (แนวการตีความ)</td><td>ตามประเภทและทางเลือกในบทที่ 24</td><td>1.2 / 2.5</td><td class="nw">9.3, 24</td></tr>
+                  <tr><td>เงินฝากประจำที่นำไปค้ำประกันหรือมีข้อจำกัดในการเบิกถอน</td><td>สินทรัพย์อื่น ไม่ใช่เงินลงทุน จัดตามวันที่ข้อจำกัดสิ้นสุด</td><td>เงินต้นบวกดอกเบี้ยค้างรับ</td><td>1.9 / 2.1</td><td class="nw">6.4</td></tr>
+          <tr><td>หุ้นบริษัทย่อยหรือบริษัทร่วมที่จดทะเบียนในตลาดหลักทรัพย์</td><td>บริษัทย่อยหรือบริษัทร่วม ไม่ใช่หลักทรัพย์เพื่อค้าหรือเผื่อขาย แม้มีราคาตลาด</td><td>ราคาทุนหักค่าเผื่อ</td><td>2.2 / 2.4</td><td class="nw">9.4, 9.12</td></tr>
+          <tr><td>ทองคำและคริปโทเคอร์เรนซี</td><td>ไม่ใช่ตราสารหนี้หรือตราสารทุน ไม่เข้านิยาม 9.1 คริปโทเคอร์เรนซีที่ถือเพื่อขายตามปกติธุรกิจเป็นสินค้าคงเหลือ (คำถาม-คำตอบ 12 เมษายน 2565 ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</td><td>ราคาทุน หรือราคาทุนหรือมูลค่าสุทธิที่จะได้รับที่ต่ำกว่า</td><td>ตามลักษณะ</td><td class="nw">9.1, 8.4</td></tr>
+        </tbody></table></div>
+      <p class="hint">บรรทัดตามคำชี้แจงประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566 แบบ 2 ข้อ 1.2 (อ. 2-1) และ 2.2–2.5 (อ. 2-3 ถึง อ. 2-4) หลักทรัพย์เพื่อค้าเป็นสินทรัพย์หมุนเวียนเสมอ (4.8.1.3)</p>
+
+      <h3 id="S9.2">S9.2 ตารางราคาทุนตัดจำหน่ายฉบับเต็มและวิธีหาอัตราดอกเบี้ยที่แท้จริง</h3>
+      <p class="hint" style="margin:10px 0 4px"><b>ก. ตัวอย่างที่ 9.4 ซื้อต่ำกว่ามูลค่าที่ตราไว้ จ่ายดอกเบี้ยปีละครั้ง อัตราดอกเบี้ยที่แท้จริงร้อยละ 4.00</b></p><div class="tbl"><table><thead><tr><th>งวด</th><th class="num">ต้นงวด</th><th class="num">รายได้ดอกเบี้ย</th><th class="num">ดอกเบี้ยรับ</th><th class="num">ตัดจำหน่าย</th><th class="num">ปลายงวด</th></tr></thead><tbody><tr><td>2568</td><td class="num">972,249</td><td class="num">38,890</td><td class="num">30,000</td><td class="num">8,890</td><td class="num">981,139</td></tr><tr><td>2569</td><td class="num">981,139</td><td class="num">39,246</td><td class="num">30,000</td><td class="num">9,246</td><td class="num">990,385</td></tr><tr><td>2570</td><td class="num">990,385</td><td class="num">39,615</td><td class="num">30,000</td><td class="num">9,615</td><td class="num">1,000,000</td></tr></tbody><tfoot><tr><td>รวม</td><td></td><td class="num">117,751</td><td class="num">90,000</td><td class="num">27,751</td><td></td></tr></tfoot></table></div><p class="hint" style="margin:10px 0 4px"><b>ข. ซื้อสูงกว่ามูลค่าที่ตราไว้ หุ้นกู้ 1,000,000 บาท ดอกเบี้ยร้อยละ 5 ราคาซื้อ 1,027,751 บาท อัตราดอกเบี้ยที่แท้จริงร้อยละ 4.00</b></p><div class="tbl"><table><thead><tr><th>งวด</th><th class="num">ต้นงวด</th><th class="num">รายได้ดอกเบี้ย</th><th class="num">ดอกเบี้ยรับ</th><th class="num">ตัดจำหน่าย</th><th class="num">ปลายงวด</th></tr></thead><tbody><tr><td>2568</td><td class="num">1,027,751</td><td class="num">41,110</td><td class="num">50,000</td><td class="num">-8,890</td><td class="num">1,018,861</td></tr><tr><td>2569</td><td class="num">1,018,861</td><td class="num">40,754</td><td class="num">50,000</td><td class="num">-9,246</td><td class="num">1,009,615</td></tr><tr><td>2570</td><td class="num">1,009,615</td><td class="num">40,385</td><td class="num">50,000</td><td class="num">-9,615</td><td class="num">1,000,000</td></tr></tbody><tfoot><tr><td>รวม</td><td></td><td class="num">122,249</td><td class="num">150,000</td><td class="num">-27,751</td><td></td></tr></tfoot></table></div><p class="hint" style="margin:10px 0 4px"><b>ค. ข้อมูลตัวอย่างที่ 9.4 แต่จ่ายดอกเบี้ยปีละสองครั้ง (งวดละ 15,000 บาท) อัตราดอกเบี้ยที่แท้จริงงวดละร้อยละ 1.9953 หรือร้อยละ 3.9907 ต่อปี ปัดราคาทุนตัดจำหน่ายแต่ละงวดเป็นบาทก่อนคำนวณงวดถัดไป งวดสุดท้ายปรับเศษ</b></p><div class="tbl"><table><thead><tr><th>งวด</th><th class="num">ต้นงวด</th><th class="num">รายได้ดอกเบี้ย</th><th class="num">ดอกเบี้ยรับ</th><th class="num">ตัดจำหน่าย</th><th class="num">ปลายงวด</th></tr></thead><tbody><tr><td>30 มิ.ย. 2568</td><td class="num">972,249</td><td class="num">19,400</td><td class="num">15,000</td><td class="num">4,400</td><td class="num">976,649</td></tr><tr><td>31 ธ.ค. 2568</td><td class="num">976,649</td><td class="num">19,488</td><td class="num">15,000</td><td class="num">4,488</td><td class="num">981,137</td></tr><tr><td>30 มิ.ย. 2569</td><td class="num">981,137</td><td class="num">19,577</td><td class="num">15,000</td><td class="num">4,577</td><td class="num">985,714</td></tr><tr><td>31 ธ.ค. 2569</td><td class="num">985,714</td><td class="num">19,668</td><td class="num">15,000</td><td class="num">4,668</td><td class="num">990,382</td></tr><tr><td>30 มิ.ย. 2570</td><td class="num">990,382</td><td class="num">19,762</td><td class="num">15,000</td><td class="num">4,762</td><td class="num">995,144</td></tr><tr><td>31 ธ.ค. 2570</td><td class="num">995,144</td><td class="num">19,856</td><td class="num">15,000</td><td class="num">4,856</td><td class="num">1,000,000</td></tr></tbody><tfoot><tr><td>รวม</td><td></td><td class="num">117,751</td><td class="num">90,000</td><td class="num">27,751</td><td></td></tr></tfoot></table></div>
+      <p class="hint" style="margin-top:8px">วิธีหาอัตราดอกเบี้ยที่แท้จริงด้วย Excel: ใช้ฟังก์ชัน =RATE(จำนวนงวด, ดอกเบี้ยรับต่องวด, −ราคาซื้อ, มูลค่าที่ตราไว้) ได้อัตราต่องวด คูณจำนวนงวดต่อปีเป็นอัตราต่อปี ตัวอย่างที่ 9.4: =RATE(3, 30000, −972249, 1000000) = 4.00% แท็บ 1 ของแอปใช้วิธีแบ่งครึ่งช่วงแบบเดียวกันและปรับเศษงวดสุดท้ายให้เท่ามูลค่าที่ตราไว้</p>
+
+      <h3 id="S9.3">S9.3 แม่แบบหมายเหตุเงินลงทุน</h3>
+      <pre class="memo">นโยบายการบัญชี – เงินลงทุน
+เงินลงทุนในหลักทรัพย์เพื่อค้าและหลักทรัพย์เผื่อขายแสดงด้วยมูลค่ายุติธรรม โดยใช้ราคาเสนอซื้อปัจจุบัน ณ วันสิ้นรอบระยะเวลารายงาน กำไรหรือขาดทุนที่ยังไม่เกิดขึ้นของหลักทรัพย์เพื่อค้ารับรู้ในงบกำไรขาดทุน ของหลักทรัพย์เผื่อขายรับรู้ในส่วนของเจ้าของ [หรือกำไรขาดทุนเบ็ดเสร็จอื่น] เมื่อจำหน่าย กิจการโอนผลสะสมในส่วนของเจ้าของของส่วนที่จำหน่ายเข้างบกำไรขาดทุน
+ตราสารหนี้ที่จะถือจนครบกำหนดและตราสารหนี้ที่ไม่ใช่หลักทรัพย์ในความต้องการของตลาดแสดงด้วยราคาทุนตัดจำหน่ายตามวิธีอัตราดอกเบี้ยที่แท้จริงหักค่าเผื่อการลดลงของมูลค่า (ถ้ามี)
+เงินลงทุนในตราสารทุนที่ไม่ใช่หลักทรัพย์ในความต้องการของตลาด และเงินลงทุนในบริษัทย่อย บริษัทร่วม และการร่วมค้า แสดงด้วยราคาทุนหักค่าเผื่อการลดลงของมูลค่า (ถ้ามี)
+กิจการรับรู้ผลขาดทุนจากการลดมูลค่าเมื่อมีข้อบ่งชี้ว่าเงินลงทุนมีมูลค่าลดลงอย่างถาวร ราคาทุนของเงินลงทุนที่จำหน่ายคำนวณด้วยวิธี[ถัวเฉลี่ยถ่วงน้ำหนัก/เข้าก่อน-ออกก่อน]
+[หน่วยลงทุนในกองทุนรวมเปิด: ระบุนโยบายที่กิจการเลือกตามแนวการตีความและเหตุผล]
+
+หมายเหตุ X เงินลงทุน (หน่วย: บาท)
+ก. ตราสารทุนในความต้องการของตลาด (9.20.4): ราคาทุน · กำไร (ขาดทุน) ที่ยังไม่เกิดขึ้น · มูลค่ายุติธรรม แยกเพื่อค้าและเผื่อขาย
+ข. ตราสารหนี้ในความต้องการของตลาดที่ไม่ได้ตั้งใจถือจนครบกำหนด (9.20.2): มูลค่ายุติธรรม · ราคาทุนตัดจำหน่าย · จำนวนเงินตามสัญญา · กำไร (ขาดทุน) ที่ยังไม่เกิดขึ้น · ระยะเวลาครบกำหนด
+ค. ตราสารหนี้ที่ถือจนครบกำหนดและตราสารหนี้นอกตลาด (9.20.1): ราคาทุนตัดจำหน่าย · จำนวนเงินตามสัญญา · ระยะเวลาครบกำหนด (ภายใน 1 ปี / 1–5 ปี / เกิน 5 ปี)
+ง. ตราสารทุนที่ไม่ใช่หลักทรัพย์ในความต้องการของตลาด (9.20.3): ราคาทุน · ขาดทุนจากการปรับมูลค่า
+จ. เงินลงทุนในบริษัทย่อย บริษัทร่วม และการร่วมค้า: ชื่อกิจการ · สัดส่วนการถือหุ้น · ราคาทุน · ค่าเผื่อการลดลงของมูลค่า · เงินปันผลรับ
+ฉ. ข้อจำกัดในการขาย (9.20.5): เงินลงทุน [ระบุ] จำนวน [ ] บาท ใช้เป็นหลักประกัน [วงเงิน/เงินกู้] กับ [ธนาคาร] จนถึง [วันที่/เงื่อนไข]</pre>
+
+      <h3 id="S9.4">S9.4 เฉลยแบบฝึกหัดท้ายบท</h3>
+      <div class="tbl"><table><thead><tr><th>ข้อ</th><th>คำตอบ</th><th>เหตุผล</th></tr></thead><tbody id="sKey"></tbody></table></div>
+      <p class="hint" style="margin:10px 0 4px"><b>แนวคำตอบโจทย์ปฏิบัติงาน</b></p>
+      <ol style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px;font-size:15px">
+        <li>(ก) หุ้น 750,000 + ค่านายหน้า 1,500 + ค่าธรรมเนียมการโอน 800 = 752,300 บาท ค่าที่ปรึกษาจัดทำแผนการลงทุนก่อนตัดสินใจ 12,000 บาทเป็นค่าใช้จ่าย (9.9) หุ้นกู้ราคาทุน 201,500 − ดอกเบี้ยค้างรับ 1,500 = 200,000 บาท (9.10) บันทึกวันซื้อ เดบิต เงินลงทุนในหุ้น 752,300 เงินลงทุนในหุ้นกู้ 200,000 ดอกเบี้ยค้างรับ 1,500 ค่าที่ปรึกษา 12,000 เครดิต เงินฝากธนาคาร 965,800 วันที่ 30 มิถุนายน 2568 เดบิต เงินฝากธนาคาร 3,000 เครดิต ดอกเบี้ยค้างรับ 1,500 รายได้ดอกเบี้ย 1,500 (18.25) (ข) ราคาซื้อ = 100,000 × 2.67301 + 2,000,000 × 0.83962 = 1,946,540 บาท ปี 2568 รายได้ดอกเบี้ย 116,792 ตัดจำหน่าย 16,792 ปลายปี 1,963,332 ปี 2569 รายได้ดอกเบี้ย 117,800 ปลายปี 1,981,132 ปี 2570 รายได้ดอกเบี้ย 118,868 ปลายปี 2,000,000 บันทึกปี 2568 เดบิต เงินฝากธนาคาร 100,000 เงินลงทุนในหุ้นกู้ 16,792 เครดิต รายได้ดอกเบี้ย 116,792</li>
+        <li>(1) หลักทรัพย์เพื่อค้า 380,000 ขาดทุนที่ยังไม่เกิดขึ้น 20,000 ในงบกำไรขาดทุน (9.2.1.1, 9.11) (2) แนวการตีความ: หลักทรัพย์เผื่อขาย วัดด้วยราคารับซื้อคืน 512,000 กำไร 12,000 ในส่วนของเจ้าของ (9.2.1.2, 9.11) ถือเกิน 12 เดือน (3) เงินลงทุนในลักษณะหนึ่ง ราคาทุนตัดจำหน่าย 300,000 (คำถาม-คำตอบ ข้อ 1) (4) สินทรัพย์อื่น 200,000 ไม่ใช่เงินลงทุน (6.4) (5) บริษัทย่อย ราคาทุน 5,000,000 แม้ราคาตลาด 7,200,000 (9.4, 9.12) งบฐานะการเงิน: 1.2 เงินลงทุนชั่วคราว 680,000 · 1.9 สินทรัพย์หมุนเวียนอื่น 200,000 · 2.2 เงินลงทุนในบริษัทย่อย 5,000,000 · 2.5 เงินลงทุนระยะยาวอื่น 512,000 · 5.6 องค์ประกอบอื่นของส่วนของผู้ถือหุ้น 12,000 หมายเหตุ: นโยบายการบัญชีรวมนโยบายหน่วยลงทุนที่เลือก ตารางตราสารทุนในความต้องการของตลาด (9.20.4) ราคาทุน 400,000 และ 500,000 กำไร (ขาดทุน) ที่ยังไม่เกิดขึ้น (20,000) และ 12,000 และรายชื่อบริษัทย่อย สัดส่วน ราคาทุน และเงินฝากที่ติดภาระค้ำประกัน</li>
+        <li>ปี 2569 งบกำไรขาดทุน: ผลขาดทุนจากการลดมูลค่า (ก) 350,000 และ (ข) 400,000 ซึ่งรวมขาดทุนสะสม 80,000 ที่โอนออกจากส่วนของเจ้าของ รายได้จากกองทุนรวม 40,000 กำไรที่ยังไม่เกิดขึ้น 30,000 หุ้นปันผลไม่รับรู้รายได้ ราคาทุนต่อหุ้นลดลง บันทึก (ข): เดบิต ผลขาดทุนจากการลดมูลค่าของเงินลงทุน 400,000 ค่าเผื่อการปรับมูลค่าเงินลงทุน 80,000 เครดิต ขาดทุนที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ) 80,000 ค่าเผื่อการลดลงของมูลค่าเงินลงทุน 400,000 กระดาษทำการภาษีปี 2569: บวกกลับ 350,000 และ 400,000 (มาตรา 65 ตรี (17)) บวกหุ้นปันผล 10,000 × (50,000,000 ÷ 5,000,000) = 100,000 รวมคำนวณกึ่งหนึ่ง 50,000 (กค 0702/9238 มาตรา 65 ทวิ (10)) หักกึ่งหนึ่งของส่วนแบ่งกำไรกองทุนรวม 20,000 (กค 0811/2802) หักกำไรที่ยังไม่เกิดขึ้น 30,000 (มาตรา 65 ทวิ (3)) สุทธิบวกกลับ 750,000 ปี 2570 กลับรายการ (ก) 350,000 ทางบัญชี หักออก 350,000</li>
+        <li>(ก) ไม่ควรโอนเปลี่ยน ไม่มีแผนขายจึงไม่เข้านิยามหลักทรัพย์เพื่อค้า และไม่มีหลักฐานว่าสถานการณ์เปลี่ยน (9.18) การโอนเพื่อให้ผ่านเงื่อนไขสัญญาเงินกู้ทำให้งบการเงินไม่เป็นกลาง ขัดหลักความซื่อสัตย์และความเที่ยงธรรมในจรรยาบรรณ ทางออกคือเปิดเผยกำไรที่ยังไม่เกิดขึ้นในหมายเหตุ เจรจากับผู้ให้กู้ หรือขายจริงถ้ามีเหตุผลทางธุรกิจ (ข) ไม่ยอมรับ เมื่อตัวบทไม่ได้กำหนด ย่อหน้า 5.5.1 ให้ใช้ข้อกำหนดในเรื่องที่คล้ายคลึงกัน คือ 4.16.2 และ 9.19.2 ซึ่งให้กลับบัญชีทุกบัญชีที่เกี่ยวข้องเข้างบกำไรขาดทุน การคงขาดทุน 80,000 ไว้ในส่วนของเจ้าของทำให้กำไรสูงเกินและส่วนของเจ้าของแสดงผลขาดทุนที่ไม่มีโอกาสฟื้น ผู้ใช้งบการเงินจึงประเมินผลการดำเนินงานผิด</li>
+      </ol>
+
+      <h3 id="S9.5">S9.5 แนวคำตอบกรณีศึกษา 9.1 (สำหรับผู้สอน)</h3>
+      <div class="tbl"><table><thead><tr><th>ข้อ</th><th>ประเภท (ย่อหน้า)</th><th class="num">มูลค่าตามบัญชี</th><th>ผลต่องบ</th><th>บรรทัดแบบ 2</th><th>ภาษี</th></tr></thead><tbody>
+        <tr><td>(1)</td><td>หลักทรัพย์เพื่อค้า (9.2.1.1, 9.11)</td><td class="num">1,180,000</td><td>ขาดทุนที่ยังไม่เกิดขึ้น 70,000 ในงบกำไรขาดทุน</td><td>1.2</td><td>บวกกลับ 70,000 (65 ตรี (17)) ถ้าถือว่าหุ้นมีสภาพเป็นสินค้า (กค 0811/02504) ไม่บวกกลับ</td></tr>
+        <tr><td>(2)</td><td>บริษัทร่วม ร้อยละ 22 ไม่มีหลักฐานหักล้าง (9.6, 9.12)</td><td class="num">3,000,000</td><td>–</td><td>2.4</td><td>–</td></tr>
+        <tr><td>(3)</td><td>ตราสารหนี้ที่จะถือจนครบกำหนด (9.3, 9.13)</td><td class="num">2,000,000</td><td>ไม่ปรับมูลค่ายุติธรรม เปิดเผยราคาทุนตัดจำหน่าย จำนวนเงินตามสัญญา ครบกำหนด และหลักประกัน (9.20.1, 9.20.5)</td><td>2.5</td><td>–</td></tr>
+        <tr><td>(4)</td><td>แนวการตีความ: หลักทรัพย์เผื่อขาย เพราะซื้อขายได้ทุกวันทำการด้วยราคาที่เปิดเผย ไม่ได้ซื้อเพื่อค้า และไม่มีวันครบกำหนด (9.2.1.2) เปิดเผยนโยบาย ถ้าเลือกนโยบายเป็นเงินลงทุนนอกตลาด = ราคาทุน 800,000</td><td class="num">812,000</td><td>กำไรที่ยังไม่เกิดขึ้น 12,000 ในส่วนของเจ้าของ</td><td>1.2 · 5.6</td><td>ไม่ปรับ (ไม่ผ่านกำไรทางบัญชี)</td></tr>
+        <tr><td>(5)</td><td>ตราสารทุนนอกตลาด มีข้อบ่งชี้ลดลงอย่างถาวร (9.12, 9.15)</td><td class="num">150,000</td><td>ผลขาดทุนจากการลดมูลค่า 450,000 ในงบกำไรขาดทุน</td><td>2.5</td><td>บวกกลับ 450,000 (65 ตรี (1)(17))</td></tr>
+      </tbody><tfoot><tr><td></td><td>รวมปรับภาษีปี 2568</td><td></td><td></td><td></td><td>บวกกลับ 520,000</td></tr></tfoot></table></div>
+      <p class="hint">ข้อ (6): ปฏิเสธ หุ้นยังซื้อขายเพื่อหากำไรระยะสั้น ไม่มีหลักฐานว่าสถานการณ์เปลี่ยน (9.18) และถึงจะโอนได้ ย่อหน้า 9.19.1 ยังให้บันทึกด้วยมูลค่ายุติธรรม ณ วันที่โอนและรับรู้ผลต่างในงบกำไรขาดทุนทันที ข้อเสนอจึงไม่ลดผลขาดทุนในงบและขัดหลักความเที่ยงธรรม คำตอบคะแนนสูงต้องอ้างทั้งสองย่อหน้าและอธิบายผลทางจรรยาบรรณ</p>
+
+      <h3 id="S9.6">S9.6 ผลต่างทางภาษีและเงินปันผลรับ</h3>
+      <div class="tbl"><table><thead><tr><th>ปี</th><th>รายการ (ตัวอย่างในบทที่ 9)</th><th class="num">กำไรทางบัญชี</th><th>การปรับ</th><th class="num">ผลต่อกำไรสุทธิทางภาษี</th></tr></thead><tbody>
+        <tr><td>2568</td><td>กำไรที่ยังไม่เกิดขึ้น หลักทรัพย์เพื่อค้า (ตัวอย่างที่ 9.3)</td><td class="num">38,800</td><td>หักออก มาตรา 65 ทวิ (3)</td><td class="num">(38,800)</td></tr>
+        <tr><td>2568</td><td>ขาดทุนและกำไรที่ยังไม่เกิดขึ้น หลักทรัพย์เผื่อขาย (ข. และ ง.)</td><td class="num">–</td><td>ไม่ปรับ อยู่ในส่วนของเจ้าของ</td><td class="num">–</td></tr>
+        <tr><td>2569</td><td>ขาดทุนจากการขายหลักทรัพย์เผื่อขาย 5,000 หุ้น (ตัวอย่างที่ 9.6)</td><td class="num">(3,000)</td><td>ราคาทุนทางภาษี 150,000 เท่าทางบัญชี</td><td class="num">–</td></tr>
+        <tr><td>2569</td><td>ขาดทุนจากการโอนเปลี่ยนหลักทรัพย์เพื่อค้าเป็นเผื่อขาย</td><td class="num">(15,000)</td><td>บวกกลับ มาตรา 65 ตรี (17) ยังไม่ได้ขาย</td><td class="num">15,000</td></tr>
+        <tr><td>2569</td><td>ผลขาดทุนจากการลดมูลค่า เงินลงทุนรายการ จ. (ตัวอย่างที่ 9.5)</td><td class="num">(280,000)</td><td>บวกกลับ มาตรา 65 ตรี (1)(17)</td><td class="num">280,000</td></tr>
+        <tr><td>2570</td><td>กลับรายการผลขาดทุนจากการลดมูลค่า</td><td class="num">280,000</td><td>หักออก ไม่เคยหักเป็นรายจ่าย</td><td class="num">(280,000)</td></tr>
+              <tr><td>2569</td><td>ผลขาดทุนจากการลดมูลค่า หลักทรัพย์เผื่อขาย (หัวข้อ 9.5) รวมขาดทุนสะสม 60,000 ที่โอนออกจากส่วนของเจ้าของ</td><td class="num">(250,000)</td><td>บวกกลับ มาตรา 65 ตรี (17)</td><td class="num">250,000</td></tr>
+        <tr><td>ปีที่ได้รับ</td><td>หุ้นปันผล (ทางบัญชีไม่รับรู้รายได้)</td><td class="num">–</td><td>บวกมูลค่าตามข้อหารือ กค 0702/9238 แล้วหักส่วนที่ยกเว้นตามมาตรา 65 ทวิ (10)</td><td class="num">ตามกรณี</td></tr>
+      </tbody></table></div>
+      <p class="hint" style="margin:10px 0 4px"><b>รายการตรวจเงินปันผลรับ (มาตรา 65 ทวิ (10))</b></p>
+      <ul style="margin:0;padding-left:20px;font-size:15px;display:flex;flex-direction:column;gap:4px">
+        <li>วรรคหนึ่ง: ผู้จ่ายเป็นบริษัทจำกัดที่ตั้งขึ้นตามกฎหมายไทย หรือสถาบันการเงินตามกฎหมายเฉพาะ หรือเป็นเงินส่วนแบ่งกำไรจากกิจการร่วมค้า: นำมารวมคำนวณกึ่งหนึ่งเป็นหลัก</li>
+        <li>วรรคหนึ่ง (ก)(ข): ไม่ต้องนำมารวมคำนวณเมื่อผู้รับเป็นบริษัทจดทะเบียน หรือถือหุ้นผู้จ่ายไม่น้อยกว่าร้อยละ 25 ของหุ้นที่มีสิทธิออกเสียง และผู้จ่ายไม่ได้ถือหุ้นผู้รับทั้งทางตรงและทางอ้อม</li>
+        <li>วรรคสอง: ไม่ได้สิทธิทั้งกรณีกึ่งหนึ่งและกรณีไม่ต้องรวมคำนวณ ถ้าถือหุ้นไม่ถึงสามเดือนนับแต่วันที่ได้หุ้นมาถึงวันมีเงินได้ หรือโอนหุ้นไปก่อนสามเดือนนับแต่วันมีเงินได้ (ตามที่แก้ไขโดยพระราชบัญญัติแก้ไขเพิ่มเติมประมวลรัษฎากร ฉบับที่ 52 พ.ศ. 2562)</li>
+        <li>เงินปันผลที่จ่ายจากกำไรส่วนที่เกิดจากการตีราคาทรัพย์สินเพิ่ม ซึ่งไม่เคยเสียภาษี ไม่ได้รับยกเว้น (ข้อหารือ กค 0702/1683)</li>
+        <li>หุ้นปันผล: มูลค่าเท่ากับกำไรสะสมที่ผู้จ่ายโอนเป็นทุนหารด้วยจำนวนหุ้นปันผล แล้วใช้สิทธิตามมาตรา 65 ทวิ (10) (ข้อหารือ กค 0702/9238)</li>
+        <li>เงินส่วนแบ่งกำไรจากกองทุนรวม: รวมคำนวณกึ่งหนึ่งเมื่อถือหน่วยลงทุนไม่น้อยกว่าสามเดือนก่อนและหลังวันที่มีเงินได้ (ข้อหารือ กค 0811/2802)</li>
+        <li>ส่วนแบ่งกำไรจากห้างหุ้นส่วนนิติบุคคล: ไม่อยู่ในรายชื่อผู้จ่ายตามมาตรา 65 ทวิ (10) ตรวจสอบกับกรมสรรพากรก่อนใช้สิทธิ</li>
+      </ul>
+      <p class="hint">แหล่งอ้างอิง: <a href="https://www.rd.go.th/5939.html" target="_blank" rel="noopener">ประมวลรัษฎากร มาตรา 65–76</a> · <a href="https://www.rd.go.th/31478.html" target="_blank" rel="noopener">ข้อหารือ กค 0706/3794</a> · <a href="https://www.rd.go.th/64956.html" target="_blank" rel="noopener">ข้อหารือ กค 0702/1683</a> · <a href="https://www.rd.go.th/23471.html" target="_blank" rel="noopener">ข้อหารือ กค 0811/02504</a> · <a href="https://www.rd.go.th/28078.html" target="_blank" rel="noopener">ข้อหารือ กค 0702/9238</a> · <a href="https://www.rd.go.th/25459.html" target="_blank" rel="noopener">ข้อหารือ กค 0811/2802</a> ข้อมูลภาษีเป็นไปตามบทบัญญัติที่เผยแพร่ ณ ตุลาคม 2569 ควรตรวจสอบการแก้ไขก่อนใช้กับงานจริง</p>
+      <h3 id="S9.7">S9.7 ผลวิจัยปี 2569: ฉบับ 2554 งานของผู้สอบบัญชี และโทเคนดิจิทัลของรัฐบาล</h3>
+      <h4>ก. ฉบับ 2554 เทียบฉบับปรับปรุง 2565</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>ฉบับ 2554 (ประกาศ 20/2554)</th><th>ฉบับปรับปรุง 2565 (ประกาศ 48/2565)</th></tr></thead><tbody>
+        <tr><td>บริษัทย่อย</td><td>ย่อหน้า 108: ถือว่าควบคุมเมื่อออกเสียงเกินกึ่งหนึ่ง</td><td>ย่อหน้า 9.5: เพิ่มข้อสันนิษฐานว่าไม่ควบคุมเมื่อน้อยกว่ากึ่งหนึ่ง ทั้งสองข้อหักล้างได้ด้วยหลักฐานชัดเจน</td></tr>
+        <tr><td>การร่วมค้า</td><td>ย่อหน้า 110: "กิจการร่วมค้า" ภายใต้การควบคุมร่วม</td><td>ย่อหน้า 9.7: "การร่วมค้า" และผู้ร่วมค้ามีสิทธิในสินทรัพย์สุทธิ</td></tr>
+        <tr><td>ต้นทุนการทำรายการ</td><td>ย่อหน้า 111: "ค่าใช้จ่ายในการทำรายการ" ไม่มีนิยาม</td><td>ย่อหน้า 9.9: นิยามใหม่ ไม่รวมส่วนเกินหรือส่วนลด ต้นทุนจัดหาเงิน ค่าใช้จ่ายบริหารภายใน และต้นทุนการถือครอง</td></tr>
+        <tr><td>หลักทรัพย์เผื่อขาย</td><td>ย่อหน้า 113 116: ผลต่างเข้าส่วนของเจ้าของ</td><td>ย่อหน้า 9.11 9.14: หรือกำไรขาดทุนเบ็ดเสร็จอื่นเมื่อเลือกจัดทำงบกำไรขาดทุนเบ็ดเสร็จ</td></tr>
+        <tr><td>การลดมูลค่า จำหน่าย โอนเปลี่ยน เปิดเผย</td><td>ย่อหน้า 117–122</td><td>ย่อหน้า 9.15–9.20 สาระคงเดิม</td></tr>
+      </tbody></table></div>
+      <p>เอกสารประกอบการอบรมของสภาวิชาชีพบัญชี วันที่ 9 ธันวาคม 2565 สไลด์ที่ 28–29 และ 42 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <h4>ข. งานของผู้สอบบัญชี</h4>
+      <ul>
+        <li>มาตรฐานการสอบบัญชี รหัส 505: ขอคำยืนยันยอดจากบริษัทหลักทรัพย์ ผู้รับฝากทรัพย์สิน ธนาคาร (เงินฝากประจำ) และนายทะเบียนหุ้น ย่อหน้า 7 ผู้สอบบัญชีควบคุมกระบวนการเอง ย่อหน้า 10–11 และ 16 ความน่าเชื่อถือของคำตอบและการประเมินหลักฐาน</li>
+        <li>มาตรฐานการสอบบัญชี รหัส 540 (ปรับปรุง): มูลค่ายุติธรรมของเงินลงทุนที่ไม่มีราคาตลาดและการลดมูลค่าตามย่อหน้า 9.15</li>
+        <li>การจัดประเภทและการโอนเปลี่ยน (9.18): ขอหลักฐานวัตถุประสงค์ของการถือ เช่น มติคณะกรรมการ นโยบายการลงทุน</li>
+        <li>มาตรฐานการสอบบัญชี รหัส 501 ฉบับปัจจุบันไม่มีส่วนเรื่องเงินลงทุน</li>
+        <li>มาตรฐานการสอบบัญชีสำหรับงบการเงินของกิจการที่มีความซับซ้อนน้อย (ประกาศ 32/2568) เป็นมาตรฐานทางเลือก ใช้กับรอบที่เริ่มตั้งแต่ 15 ธันวาคม 2568</li>
+      </ul>
+      <h4>ค. โทเคนดิจิทัลของรัฐบาล (G-Token)</h4>
+      <div class="tbl"><table><thead><tr><th>ประเด็น</th><th>สาระ</th><th>สถานะหลักฐาน</th></tr></thead><tbody>
+        <tr><td>ฐานกฎหมาย</td><td>คณะรัฐมนตรีอนุมัติ 13 พ.ค. 2568 ให้กู้เงินโดยออกโทเคนดิจิทัลตามมาตรา 10 วรรคหนึ่ง พระราชบัญญัติการบริหารหนี้สาธารณะ พ.ศ. 2548</td><td>ยืนยัน (กรมประชาสัมพันธ์ 14 พ.ค. 2568)</td></tr>
+        <tr><td>เกณฑ์กำกับดูแล</td><td>โทเคนดิจิทัลตามพระราชกำหนดการประกอบธุรกิจสินทรัพย์ดิจิทัล พ.ศ. 2561 ให้สิทธิรับคืนเงินต้นและผลตอบแทน มีผล 21 ก.ค. 2568</td><td>ยืนยันวันมีผล รายละเอียดจากข่าว</td></tr>
+        <tr><td>ผลการเสนอขายจริง อัตรา ผู้ลงทุนนิติบุคคล</td><td>ยังไม่พบหลักฐานทางการ</td><td>ยังไม่ยืนยัน</td></tr>
+        <tr><td>แนวการตีความทางบัญชี</td><td>สิทธิตามสัญญาที่จะรับเงินสด เข้านิยามตราสารหนี้ตามย่อหน้า 9.1 ศูนย์ซื้อขายสินทรัพย์ดิจิทัลไม่ใช่ตลาดตามตัวอย่างใน 9.2.1 ต้องดูลักษณะการซื้อขายจริง มิฉะนั้นวัดด้วยราคาทุนตัดจำหน่าย (9.13) ต่างจากคริปโทเคอร์เรนซี</td><td>แนวการตีความของตำรา ยังไม่มีแนวทางของสภาวิชาชีพบัญชี</td></tr>
+      </tbody></table></div>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการรายงานทางการเงินระหว่างประเทศ (International Financial Reporting Standards: IFRS) สำหรับกิจการขนาดกลางและขนาดย่อม (Small and Medium-sized Entities: SMEs) ฉบับที่ 3 (27 ก.พ. 2568 ใช้ 1 ม.ค. 2570) ปรับนิยามการควบคุม (หมวด 9) รวมเครื่องมือทางการเงินในหมวด 11 เพิ่มหมวด 12 การวัดมูลค่ายุติธรรม และยังไม่ใช้ผลขาดทุนด้านเครดิตที่คาดว่าจะเกิดขึ้น</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ใช้ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 9 ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพ ข้อมูลที่กรอกไม่ถูกส่งออกจากเครื่อง</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 9.1–9.6 · กรณีศึกษา 9.1 · แบบฝึกหัดส่วนที่ 1</span>
+  </footer>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmt=(n,d=0)=>{if(!isFinite(n))return '–';if(Math.abs(n)<0.005)n=0;return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d})};
+  const acc=n=>!isFinite(n)?'–':(Math.abs(n)<0.5?'0':(n<0?'('+fmt(-n)+')':fmt(n)));
+  function num(s){s=String(s==null?'':s).trim().replace(/[,฿\s%]/g,'');if(s===''||s==='-'||s==='–')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  const n0=v=>isFinite(v)?v:0;
+  function copyText(t,msgEl){
+    const done=()=>{if(msgEl){msgEl.textContent='คัดลอกแล้ว';setTimeout(()=>msgEl.textContent='',1800)}};
+    try{navigator.clipboard.writeText(t).then(done,()=>fallback())}catch(e){fallback()}
+    function fallback(){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();done()}
+  }
+  function jeRows(rows){return rows.filter(r=>Math.abs(r[1])>=0.5).map(([a,v,side])=>side==='d'?`<tr><td>เดบิต ${esc(a)}</td><td class="num dr-amt">${fmt(v)}</td><td></td></tr>`:`<tr><td class="cr">เครดิต ${esc(a)}</td><td></td><td class="num cr-amt">${fmt(v)}</td></tr>`).join('')||'<tr><td class="hint">ไม่มีรายการ</td></tr>'}
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes09tab',name)}catch(e){}
+  }
+  window.__show=show;
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='port';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes09tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+
+  /* =========================================================
+     TAB 0  PORTFOLIO
+     ========================================================= */
+  const TYPES=[['trade','หลักทรัพย์เพื่อค้า'],['afse','หลักทรัพย์เผื่อขาย – ตราสารทุน'],['afsd','หลักทรัพย์เผื่อขาย – ตราสารหนี้'],['htm','ตราสารหนี้ที่จะถือจนครบกำหนด'],['dnm','ตราสารหนี้นอกตลาด / เงินฝากประจำ'],['enm','ตราสารทุนนอกตลาด'],['sub','เงินลงทุนในบริษัทย่อย'],['ass','เงินลงทุนในบริษัทร่วม'],['jv','เงินลงทุนในการร่วมค้า']];
+  const TL=Object.fromEntries(TYPES);
+  const TMAP={'เพื่อค้า':'trade','เผื่อขายทุน':'afse','เผื่อขายหนี้':'afsd','เผื่อขาย':'afse','ถือจนครบกำหนด':'htm','หนี้นอกตลาด':'dnm','เงินฝากประจำ':'dnm','ฝากประจำ':'dnm','ทุนนอกตลาด':'enm','บริษัทย่อย':'sub','บริษัทร่วม':'ass','การร่วมค้า':'jv','ร่วมค้า':'jv'};
+  const HOLD=[['le12','ไม่เกิน 12 เดือน'],['gt12','เกิน 12 เดือน']];
+  const opt=(arr,v)=>arr.map(([k,t])=>`<option value="${k}"${k===v?' selected':''}>${t}</option>`).join('');
+  // [desc,type,base,fv,openAdj,recov,openAllow,hold]
+  const EX91=[
+    ['ก. หุ้นจดทะเบียน SET 10,000 หุ้น ซื้อเพื่อขายในไม่กี่สัปดาห์','trade','481,200','520,000','','','','le12'],
+    ['ข. หุ้นจดทะเบียน mai 10,000 หุ้น ถือไว้โดยไม่มีกำหนดขาย','afse','300,000','276,000','','','','gt12'],
+    ['ค. หุ้นกู้ BEX ครบกำหนดปี 2570 ถือจนครบกำหนด (ราคาทุนตัดจำหน่าย)','htm','981,139','990,000','','','','gt12'],
+    ['ง. พันธบัตรรัฐบาล BEX ตั้งใจขายในปี 2569','afsd','500,000','503,500','','','','le12'],
+    ['จ. หุ้นบริษัทจำกัดไม่จดทะเบียน ร้อยละ 10','enm','900,000','','','','','gt12'],
+    ['ฉ. บริษัท ข จำกัด ร้อยละ 48 ควบคุมได้','sub','4,800,000','','','','','gt12'],
+    ['ช. บริษัท ค จำกัด ร้อยละ 25','ass','2,500,000','','','','','gt12'],
+    ['ซ. เงินฝากประจำ 9 เดือน ฝาก 1 ก.ย. 2568','dnm','1,000,000','','','','','le12'],
+    ['ฌ. หุ้นกู้เสนอขายในวงจำกัด ครบกำหนดปี 2571','dnm','600,000','','','','','gt12']];
+  const CASE=[
+    ['(1) หุ้นจดทะเบียน 3 ตัว ซื้อขายบ่อยเพื่อหากำไรระยะสั้น','trade','1,250,000','1,180,000','','','','le12'],
+    ['(2) บริษัท ง จำกัด ร้อยละ 22','ass','3,000,000','','','','','gt12'],
+    ['(3) หุ้นกู้ BEX ถือจนครบกำหนดปี 2572 ใช้เป็นหลักประกัน','htm','2,000,000','1,970,000','','','','gt12'],
+    ['(4) หน่วยลงทุนกองทุนรวมตราสารหนี้ระยะสั้นแบบเปิด (แนวการตีความ)','afse','800,000','812,000','','','','le12'],
+    ['(5) หุ้นบริษัทจำกัดไม่จดทะเบียน ร้อยละ 5 มีข้อบ่งชี้','enm','600,000','','','150,000','','gt12']];
+  function pRow(d){
+    d=d||['','trade','','','','','','le12'];
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="num ix"></td><td class="dsc"><input type="text" value="${esc(d[0])}" autocomplete="off"></td><td><select>${opt(TYPES,d[1])}</select></td>`+
+      [2,3,4,5,6].map(k=>`<td><input type="text" class="num" inputmode="decimal" value="${esc(d[k])}"></td>`).join('')+
+      `<td><select>${opt(HOLD,d[7])}</select></td><td><button class="del" title="ลบรายการ" aria-label="ลบรายการ">×</button></td>`;
+    tr.querySelectorAll('input,select').forEach(x=>x.addEventListener('input',pCalc));
+    tr.querySelector('.del').addEventListener('click',()=>{tr.remove();pCalc()});
+    $('pBody').appendChild(tr);
+  }
+  function pLoad(rows,tag){$('pBody').innerHTML='';rows.forEach(pRow);$('pTag').textContent=tag;pCalc()}
+  window.__pLoad=()=>pLoad(EX91,'ข้อมูลตัวอย่าง: ตัวอย่างที่ 9.1');
+  window.__pCase=()=>pLoad(CASE,'ข้อมูลตัวอย่าง: กรณีศึกษา 9.1');
+  $('pEx').addEventListener('click',window.__pLoad);$('pCase').addEventListener('click',window.__pCase);
+  $('pAddRow').addEventListener('click',()=>{pRow();$('pTag').textContent='ข้อมูลของผู้ใช้';pCalc()});
+  $('pClr').addEventListener('click',()=>{$('pBody').innerHTML='';$('pEnt').value='';$('pTag').textContent='ข้อมูลของผู้ใช้';pRow();pCalc()});
+  ['pEnt','pDate','pHide','pOci'].forEach(id=>{$(id).addEventListener('input',pCalc);$(id).addEventListener('change',pCalc)});
+  $('pImp').addEventListener('click',()=>{
+    const lines=$('pPaste').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    const rows=lines.map(l=>{const c=l.split('\t').map(x=>x.trim());const t=TMAP[(c[1]||'').replace(/\s/g,'')]||'trade';const h=/เกิน\s*12|gt12/.test(c[7]||'')&&!/ไม่เกิน/.test(c[7]||'')?'gt12':'le12';
+      const f=k=>{const v=num(c[k]);return isFinite(v)?fmt(v):''};return [c[0]||'',t,f(2),f(3),f(4),f(5),f(6),h]});
+    if(rows.length){pLoad(rows,'ข้อมูลของผู้ใช้');$('pImpMsg').textContent='นำเข้า '+rows.length+' รายการ';setTimeout(()=>$('pImpMsg').textContent='',2200)}
+  });
+  const LINE={l12:'1.2 เงินลงทุนชั่วคราว (4.9.2)',l22:'2.2 เงินลงทุนในบริษัทย่อย (4.9.8)',l23:'2.3 เงินลงทุนในการร่วมค้า (4.9.8)',l24:'2.4 เงินลงทุนในบริษัทร่วม (4.9.8)',l25:'2.5 เงินลงทุนระยะยาวอื่น (4.9.9)'};
+  const BASIS={trade:['มูลค่ายุติธรรม ผลต่างเข้างบกำไรขาดทุน','9.11, 9.14','t'],afse:['มูลค่ายุติธรรม ผลต่างเข้าส่วนของเจ้าของ','9.11','a'],afsd:['มูลค่ายุติธรรม ผลต่างจากราคาทุนตัดจำหน่ายเข้าส่วนของเจ้าของ','9.14','a'],htm:['ราคาทุนตัดจำหน่ายหักค่าเผื่อ','9.13','h'],dnm:['ราคาทุนตัดจำหน่ายหักค่าเผื่อ','9.13','h'],enm:['ราคาทุนหักค่าเผื่อ','9.12','c'],sub:['ราคาทุนหักค่าเผื่อ','9.5, 9.12','g'],ass:['ราคาทุนหักค่าเผื่อ','9.6, 9.12','g'],jv:['ราคาทุนหักค่าเผื่อ','9.7, 9.12','g']};
+  let pNoteTxt='';
+  function pCalc(){
+    const hide=$('pHide').checked;const ent=hide||!$('pEnt').value.trim()?'กิจการ A':$('pEnt').value.trim();const oci=$('pOci').value==='oci';
+    const rows=[...$('pBody').querySelectorAll('tr')];rows.forEach((tr,i)=>tr.querySelector('.ix').textContent=i+1);
+    const L={l12:0,l22:0,l23:0,l24:0,l25:0};let PL=0,EQ=0,TAX=0;const out=[],je=[],alerts=[];const grp={mkE:[],mkD:[],am:[],enm:[],rel:[]};
+    rows.forEach((tr,i)=>{
+      const ins=tr.querySelectorAll('input'),sel=tr.querySelectorAll('select');
+      const desc=ins[0].value.trim(),t=sel[0].value,hold=sel[1].value;
+      const base=num(ins[1].value),fv=num(ins[2].value),oadj=n0(num(ins[3].value)),rec=num(ins[4].value),oall=n0(num(ins[5].value));
+      const nm=hide?('รายการ '+(i+1)):(desc||('รายการ '+(i+1)));
+      if(!isFinite(base)){out.push(`<tr><td class="num">${i+1}</td><td colspan="7" class="hint">กรอกฐานการวัด</td></tr>`);return}
+      let cv=base,pl=0,eq=0,tax=0,why='';const mk=(t==='trade'||t==='afse'||t==='afsd');
+      if(mk){
+        if(!isFinite(fv)){alerts.push(['bad',`รายการ ${i+1}: หลักทรัพย์ในความต้องการของตลาดต้องวัดด้วยมูลค่ายุติธรรม (9.11, 9.14) กรอกราคาเสนอซื้อปัจจุบัน`]);return}
+        cv=fv;const adj=fv-base;
+        if(t==='trade'){pl=adj-oadj;tax=-pl;if(Math.abs(pl)>=0.5)je.push([pl>0?'ค่าเผื่อการปรับมูลค่าเงินลงทุน':'ขาดทุนที่ยังไม่เกิดขึ้นจากเงินลงทุน (งบกำไรขาดทุน)',Math.abs(pl),'d'],[pl>0?'กำไรที่ยังไม่เกิดขึ้นจากเงินลงทุน (งบกำไรขาดทุน)':'ค่าเผื่อการปรับมูลค่าเงินลงทุน',Math.abs(pl),'c']);
+          if(hold==='gt12')alerts.push(['warn',`รายการ ${i+1}: หลักทรัพย์เพื่อค้าเป็นสินทรัพย์หมุนเวียนเสมอ (4.8.1.3) แอปจัดเข้าบรรทัด 1.2`]);}
+        else if(isFinite(rec)&&adj<0){pl=adj;eq=-oadj;tax=-pl;why='มีข้อบ่งชี้ว่ามูลค่าลดลงอย่างถาวร ผลขาดทุนสะสมรับรู้ในงบกำไรขาดทุน และกลับผลต่างสะสมในส่วนของเจ้าของ (9.15 แนวการตีความ)';
+          je.push(['ผลขาดทุนจากการลดมูลค่าของเงินลงทุน',-adj,'d']);if(oadj>0)je.push(['กำไรที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)',oadj,'d']);
+          if(oadj<0)je.push(['ขาดทุนที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)',-oadj,'c']);je.push(['ค่าเผื่อการปรับมูลค่าเงินลงทุน',oadj-adj,'c']);}
+        else{eq=adj-oadj;if(Math.abs(eq)>=0.5)je.push([eq>0?'ค่าเผื่อการปรับมูลค่าเงินลงทุน':(oci?'ขาดทุนที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (กำไรขาดทุนเบ็ดเสร็จอื่น)':'ขาดทุนที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)'),Math.abs(eq),'d'],[eq>0?(oci?'กำไรที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (กำไรขาดทุนเบ็ดเสร็จอื่น)':'กำไรที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)'):'ค่าเผื่อการปรับมูลค่าเงินลงทุน',Math.abs(eq),'c']);}
+        (t==='afsd'?grp.mkD:grp.mkE).push([nm,base,fv,fv-base,t]);
+      }else{
+        if(isFinite(fv)&&(t==='enm'||t==='sub'||t==='ass'||t==='jv'))alerts.push(['warn',`รายการ ${i+1}: ${TL[t]} วัดด้วยราคาทุนหักค่าเผื่อ (9.12) แอปไม่ใช้มูลค่ายุติธรรมที่กรอกในการวัดมูลค่า`]);
+        const aEnd=isFinite(rec)?Math.max(0,base-rec):0;const ch=aEnd-oall;pl=-ch;tax=ch;cv=base-aEnd;
+        if(isFinite(rec))why=aEnd>0?'มีข้อบ่งชี้ ค่าเผื่อ = ฐาน − ราคาขายหักต้นทุนในการขาย (9.15)':'มีข้อบ่งชี้ แต่ราคาขายหักต้นทุนไม่ต่ำกว่าฐาน';else if(oall>0)why='ไม่มีข้อบ่งชี้อีกต่อไป กลับรายการค่าเผื่อยกมา (9.15)';
+        if(ch>=0.5)je.push(['ผลขาดทุนจากการลดมูลค่าของเงินลงทุน',ch,'d'],['ค่าเผื่อการลดลงของมูลค่าเงินลงทุน',ch,'c']);
+        if(ch<=-0.5)je.push(['ค่าเผื่อการลดลงของมูลค่าเงินลงทุน',-ch,'d'],['กลับรายการผลขาดทุนจากการลดมูลค่าของเงินลงทุน',-ch,'c']);
+        if(t==='htm'||t==='dnm')grp.am.push([nm,base,aEnd,fv]);else if(t==='enm')grp.enm.push([nm,base,aEnd]);else grp.rel.push([nm,base,aEnd,TL[t]]);
+      }
+      const ln=t==='sub'?'l22':t==='jv'?'l23':t==='ass'?'l24':(t==='trade'||hold==='le12')?'l12':'l25';
+      L[ln]+=cv;PL+=pl;EQ+=eq;TAX+=tax;
+      const b=BASIS[t];
+      out.push(`<tr><td class="num">${i+1}</td><td><span class="tag ${b[2]}">${esc(TL[t])}</span>${why?`<div class="hint" style="margin:2px 0 0">${esc(why)}</div>`:''}</td><td>${esc(b[0])} <span class="hint">(${b[1]})</span></td><td class="num">${fmt(cv)}</td><td class="num">${acc(pl)}</td><td class="num">${acc(eq)}</td><td class="num">${acc(tax)}</td><td>${esc(LINE[ln].split(' (')[0])}</td></tr>`);
+    });
+    $('pRes').innerHTML=out.join('');
+    $('pTot').innerHTML=`<tr><td></td><td colspan="2">รวม</td><td class="num">${fmt(L.l12+L.l22+L.l23+L.l24+L.l25)}</td><td class="num">${acc(PL)}</td><td class="num">${acc(EQ)}</td><td class="num">${acc(TAX)}</td><td></td></tr>`;
+    $('pLines').innerHTML=Object.keys(L).filter(k=>Math.abs(L[k])>=0.5).map(k=>`<tr><td>${LINE[k]}</td><td class="num">${fmt(L[k])}</td></tr>`).join('')||'<tr><td class="hint" colspan="2">ยังไม่มีรายการ</td></tr>';
+    $('pFigs').innerHTML=`<div class="fig"><div class="k">ผลต่องบกำไรขาดทุน</div><div class="v" id="pPL">${acc(PL)}</div></div><div class="fig"><div class="k">${oci?'กำไรขาดทุนเบ็ดเสร็จอื่น':'ส่วนของเจ้าของ'}</div><div class="v" id="pEQ">${acc(EQ)}</div></div><div class="fig"><div class="k">ปรับกำไรสุทธิทางภาษี</div><div class="v" id="pTX">${acc(TAX)}</div></div>`;
+    $('pJE').innerHTML=jeRows(je);
+    $('pAlerts').innerHTML=alerts.map(([c,t])=>`<div class="alert ${c}">${esc(t)}</div>`).join('');
+    $('pTax').innerHTML=`<b>ภาษีเงินได้นิติบุคคล:</b> ทางภาษีใช้ราคาทุน (มาตรา 65 ทวิ (3)) กำไรที่ยังไม่เกิดขึ้นในงบกำไรขาดทุนหักออก ขาดทุนที่ยังไม่เกิดขึ้นและผลขาดทุนจากการลดมูลค่าบวกกลับ (มาตรา 65 ตรี (1)(17)) การกลับรายการหักออก ผลรวมการปรับของงวดนี้ ${acc(TAX)} บาท (บวก = บวกกลับ วงเล็บ = หักออก) ผลต่างของหลักทรัพย์เผื่อขายในส่วนของเจ้าของไม่ต้องปรับ กิจการที่เลือกตามย่อหน้า 15.2 รับรู้ภาษีเงินได้รอการตัดบัญชีตามบทที่ 15 แอปคำนวณขาดทุนของหลักทรัพย์เพื่อค้าตามกรณีที่ถือเป็นทรัพย์สินที่ลงทุน ถ้าหลักทรัพย์มีสภาพเป็นสินค้าตามข้อหารือ กค 0811/02504 ส่วนที่ราคาตลาดต่ำกว่าราคาทุนหักได้ (มาตรา 65 ทวิ (6))`;
+    // note
+    const ln=[];ln.push(`${ent} · หมายเหตุเงินลงทุน ณ ${$('pDate').value} (หน่วย: บาท)`);
+    if(grp.mkE.length){ln.push('','ตราสารทุนในความต้องการของตลาด (9.20.4)');grp.mkE.forEach(r=>ln.push(`  ${r[0]} (${r[4]==='trade'?'เพื่อค้า':'เผื่อขาย'}): ราคาทุน ${fmt(r[1])} · กำไร (ขาดทุน) ที่ยังไม่เกิดขึ้น ${acc(r[3])} · มูลค่ายุติธรรม ${fmt(r[2])}`))}
+    if(grp.mkD.length){ln.push('','ตราสารหนี้ในความต้องการของตลาดที่ไม่ได้ตั้งใจถือจนครบกำหนด (9.20.2)');grp.mkD.forEach(r=>ln.push(`  ${r[0]}: มูลค่ายุติธรรม ${fmt(r[2])} · ราคาทุนตัดจำหน่าย ${fmt(r[1])} · กำไร (ขาดทุน) ที่ยังไม่เกิดขึ้น ${acc(r[3])} · จำนวนเงินตามสัญญา [ ] · ครบกำหนด [ ]`))}
+    if(grp.am.length){ln.push('','ตราสารหนี้ที่ถือจนครบกำหนดและตราสารหนี้นอกตลาด (9.20.1)');grp.am.forEach(r=>ln.push(`  ${r[0]}: ราคาทุนตัดจำหน่าย ${fmt(r[1])}${r[2]?` · ค่าเผื่อการลดลงของมูลค่า (${fmt(r[2])})`:''} · จำนวนเงินตามสัญญา [ ] · ครบกำหนด [ ]`))}
+    if(grp.enm.length){ln.push('','ตราสารทุนที่ไม่ใช่หลักทรัพย์ในความต้องการของตลาด (9.20.3)');grp.enm.forEach(r=>ln.push(`  ${r[0]}: ราคาทุน ${fmt(r[1])} · ขาดทุนจากการปรับมูลค่า ${r[2]?'('+fmt(r[2])+')':'–'}`))}
+    if(grp.rel.length){ln.push('','เงินลงทุนในบริษัทย่อย บริษัทร่วม และการร่วมค้า (ราคาทุน 9.12)');grp.rel.forEach(r=>ln.push(`  ${r[0]} (${r[3]}): สัดส่วนการถือหุ้น [ ]% · ราคาทุน ${fmt(r[1])}${r[2]?` · ค่าเผื่อ (${fmt(r[2])})`:''}`))}
+    ln.push('','ข้อจำกัดในการขาย (9.20.5): [ระบุเงินลงทุนที่ใช้เป็นหลักประกัน ถ้ามี]');
+    pNoteTxt=ln.join('\n');$('pNote').textContent=pNoteTxt;
+  }
+  $('pCopy').addEventListener('click',()=>copyText(pNoteTxt,$('pCopyMsg')));
+
+  /* ---------- classification wizard ---------- */
+  let wRes=null;
+  function wCalc(){
+    const ins=$('wIns').value,mkt=$('wMkt').value,pct=n0(num($('wPct').value)),ev=$('wEv').value,int=$('wInt').value;
+    $('wPctL').hidden=ins!=='eq';$('wEvL').hidden=ins!=='eq';
+    const steps=[];let res=null;
+    if(ins==='eq'){
+      const ctl=(pct>50&&ev!=='noctl')||(pct<=50&&ev==='ctl');
+      steps.push([ctl,`อำนาจควบคุม: ถือร้อยละ ${fmt(pct,2)} ${pct>50?'เกินกึ่งหนึ่ง':'ไม่เกินกึ่งหนึ่ง'}${ev==='ctl'||ev==='noctl'?' มีหลักฐานหักล้าง':''} (9.5)`]);
+      if(ctl)res=['sub','บริษัทย่อย','วัดด้วยราคาทุนหักค่าเผื่อ (9.12)'];
+      if(!res){const j=ev==='joint';steps.push([j,'การควบคุมร่วมและสิทธิในสินทรัพย์สุทธิ (9.7)']);if(j)res=['jv','การร่วมค้า','วัดด้วยราคาทุนหักค่าเผื่อ (9.12)']}
+      if(!res){const inf=pct>=20&&ev!=='noinf';steps.push([inf,`อิทธิพลอย่างมีนัยสำคัญ: ${pct>=20?'ถืออย่างน้อยร้อยละ 20':'ถือน้อยกว่าร้อยละ 20'}${ev==='noinf'?' มีหลักฐานว่าไม่มีอิทธิพล':''} (9.6)`]);if(inf)res=['ass','บริษัทร่วม','วัดด้วยราคาทุนหักค่าเผื่อ (9.12)']}
+    }
+    if(!res){
+      steps.push([mkt==='y',`ตลาดตามย่อหน้า 9.2.1: ${mkt==='y'?'ซื้อขายตลอดเวลาทำการและเปิดเผยราคา':'ไม่มีตลาดตามนิยาม'}`]);
+      if(mkt==='n')res=ins==='eq'?['enm','ตราสารทุนที่ไม่ใช่หลักทรัพย์ที่อยู่ในความต้องการของตลาด','วัดด้วยราคาทุนเดิมหักค่าเผื่อ (9.2.2, 9.12)']:['dnm','ตราสารหนี้ที่ไม่ใช่หลักทรัพย์ที่อยู่ในความต้องการของตลาด','วัดด้วยราคาทุนตัดจำหน่ายหักค่าเผื่อ (9.2.2, 9.13)'];
+    }
+    if(!res){
+      steps.push([int==='trade','วัตถุประสงค์: ขายในอนาคตอันใกล้เพื่อหากำไรจากราคา (9.2.1.1)']);
+      if(int==='trade')res=['trade','หลักทรัพย์เพื่อค้า','มูลค่ายุติธรรม ผลต่างเข้างบกำไรขาดทุน (9.11, 9.14)'];
+    }
+    if(!res&&ins==='dt'){steps.push([int==='htm','วัตถุประสงค์: ถือจนครบกำหนด (9.3)']);if(int==='htm')res=['htm','ตราสารหนี้ที่จะถือจนครบกำหนด','ราคาทุนตัดจำหน่ายหักค่าเผื่อ (9.13)']}
+    if(!res){steps.push([true,int==='none'?'ไม่มีวัตถุประสงค์ชัดเจน ต้องจัดเป็นหลักทรัพย์เผื่อขายทันที (9.18)':(ins==='eq'&&int==='htm'?'ตราสารทุนไม่มีวันครบกำหนด จัดเป็นหลักทรัพย์เผื่อขาย (9.2.1.2)':'ไม่ใช่เพื่อค้าและไม่ใช่ถือจนครบกำหนด (9.2.1.2)')]);
+      res=[ins==='eq'?'afse':'afsd','หลักทรัพย์เผื่อขาย','มูลค่ายุติธรรม ผลต่างเข้าส่วนของเจ้าของ (9.11, 9.14)']}
+    wRes=res;
+    $('wSteps').innerHTML=steps.map((s,i)=>`<li class="${s[0]?'hit':'skip'}"><span class="no">${i+1}</span><div>${esc(s[1])}<div class="r">${s[0]?'ใช่':'ไม่ใช่ ไปข้อถัดไป'}</div></div></li>`).join('');
+    $('wOut').innerHTML=`<div class="verdict ok"><h4 id="wCat">${esc(res[1])}</h4><div>${esc(res[2])}</div></div>`;
+  }
+  ['wIns','wMkt','wPct','wEv','wInt'].forEach(id=>{$(id).addEventListener('input',wCalc);$(id).addEventListener('change',wCalc)});
+  $('wAdd').addEventListener('click',()=>{if(!wRes)return;pRow(['',wRes[0],'','','','','',wRes[0]==='trade'?'le12':'gt12']);$('pTag').textContent='ข้อมูลของผู้ใช้';pCalc();$('wMsg').textContent='เพิ่มแล้ว กรอกจำนวนเงินในตารางพอร์ต';setTimeout(()=>$('wMsg').textContent='',2200)});
+  window.__wCalc=wCalc;
+
+  /* =========================================================
+     TAB 1  AMORTISED COST
+     ========================================================= */
+  function price(face,c,r,n){let p=0;for(let t=1;t<=n;t++)p+=face*c/Math.pow(1+r,t);return p+face/Math.pow(1+r,n)}
+  function solve(face,c,P,n){let lo=-0.9,hi=2;for(let k=0;k<300;k++){const m=(lo+hi)/2;if(price(face,c,m,n)>P)lo=m;else hi=m}return (lo+hi)/2}
+  let aTxt='';
+  function aSet(v){$('aFace').value=v[0];$('aCpn').value=v[1];$('aFreq').value=v[2];$('aYrs').value=v[3];$('aPrice').value=v[4];$('aYld').value=v[5];$('aFV').value=v[6]||'';$('aTag').textContent=v[7];aCalc()}
+  window.__aEx=()=>aSet(['1,000,000','3','1','3','972,249','','990,000','ข้อมูลตัวอย่าง: ตัวอย่างที่ 9.4']);
+  $('aEx').addEventListener('click',window.__aEx);
+  $('aEx2').addEventListener('click',()=>aSet(['2,000,000','5','1','3','','6','','ข้อมูลตัวอย่าง: โจทย์ข้อ 1 (ข)']));
+  $('aEx3').addEventListener('click',()=>aSet(['1,000,000','5','1','3','','4','','ข้อมูลตัวอย่าง: ซื้อสูงกว่ามูลค่าที่ตราไว้ (S9.2)']));
+  ['aFace','aCpn','aFreq','aYrs','aPrice','aYld','aY0','aFV'].forEach(id=>{$(id).addEventListener('input',()=>{$('aTag').textContent='ข้อมูลของผู้ใช้';aCalc()});$(id).addEventListener('change',aCalc)});
+  function aCalc(){
+    const face=num($('aFace').value),cpn=num($('aCpn').value)/100,f=+$('aFreq').value,yrs=num($('aYrs').value),y0=n0(num($('aY0').value))||2568;let P=num($('aPrice').value);const yl=num($('aYld').value)/100;
+    if(!(face>0)||!isFinite(cpn)||!(yrs>0)){$('aRows').innerHTML='<tr><td colspan="6" class="hint">กรอกมูลค่าที่ตราไว้ อัตราดอกเบี้ย และอายุ</td></tr>';return}
+    const n=Math.round(yrs*f),c=cpn/f;let r;
+    if(isFinite(P)&&P>0)r=solve(face,c,P,n);else if(isFinite(yl)){r=yl/f;P=Math.round(price(face,c,r,n))}else{$('aRows').innerHTML='<tr><td colspan="6" class="hint">กรอกราคาซื้อหรืออัตราผลตอบแทน</td></tr>';return}
+    let bv=Math.round(P);const rows=[];let ti=0,tc=0,ta=0;
+    for(let t=1;t<=n;t++){const cash=Math.round(face*c);let i=Math.round(bv*r);let am=i-cash;if(t===n){am=face-bv;i=cash+am}
+      const lab=f===1?String(y0+t-1):`${t%2?'30 มิ.ย.':'31 ธ.ค.'} ${y0+Math.floor((t-1)/2)}`;
+      rows.push([lab,bv,i,cash,am,bv+am]);bv+=am;ti+=i;tc+=cash;ta+=am}
+    $('aRows').innerHTML=rows.map(x=>`<tr><td>${x[0]}</td>${x.slice(1).map(v=>`<td class="num">${fmt(v)}</td>`).join('')}</tr>`).join('');
+    $('aTot').innerHTML=`<tr><td>รวม</td><td></td><td class="num">${fmt(ti)}</td><td class="num">${fmt(tc)}</td><td class="num">${fmt(ta)}</td><td></td></tr>`;
+    const r1=rows[0];
+    $('aFigs').innerHTML=`<div class="fig"><div class="k">ราคาซื้อ (ราคาทุน)</div><div class="v" id="aP">${fmt(P)}</div></div><div class="fig"><div class="k">อัตราดอกเบี้ยที่แท้จริงต่อปี</div><div class="v" id="aR">${fmt(r*f*100,4)}%</div></div><div class="fig"><div class="k">${f===1?'ราคาทุนตัดจำหน่ายปลายปีแรก':'ปลายงวดที่ 2 (สิ้นปีแรก)'}</div><div class="v" id="aE1">${fmt(f===1?r1[5]:(rows[1]||r1)[5])}</div></div>`;
+    $('aJE').innerHTML=jeRows([['เงินฝากธนาคาร',r1[3],'d'],[r1[4]>=0?'เงินลงทุน – ตราสารหนี้ (ตัดจำหน่ายส่วนลด)':'',r1[4],'d'],['รายได้ดอกเบี้ย',r1[2],'c'],[r1[4]<0?'เงินลงทุน – ตราสารหนี้ (ตัดจำหน่ายส่วนเกิน)':'',-r1[4],'c']].filter(x=>x[0]&&x[1]>=0.5).map(x=>[x[0],x[1],x[2]]));
+    const fv=num($('aFV').value);const end1=f===1?r1[5]:(rows[1]||r1)[5];
+    $('aWhy').innerHTML=`รายได้ดอกเบี้ย = ราคาทุนตัดจำหน่ายต้นงวด × อัตราต่องวด ${fmt(r*100,4)}% (9.13, 18.24.1) ${P<face?'ซื้อต่ำกว่ามูลค่าที่ตราไว้ ส่วนลดตัดจำหน่ายเพิ่มรายได้ดอกเบี้ย':'ซื้อสูงกว่ามูลค่าที่ตราไว้ ส่วนเกินตัดจำหน่ายลดรายได้ดอกเบี้ย'} ปัดราคาทุนตัดจำหน่ายแต่ละงวดเป็นบาทก่อนคำนวณงวดถัดไป งวดสุดท้ายปรับเศษให้เท่ามูลค่าที่ตราไว้`+(isFinite(fv)?` · ถ้าเป็นหลักทรัพย์เผื่อขาย: มูลค่ายุติธรรม ${fmt(fv)} − ราคาทุนตัดจำหน่าย ${fmt(end1)} = <b id="aAfs">${acc(fv-end1)}</b> รับรู้ในส่วนของเจ้าของ (9.14) ถ้าถือจนครบกำหนด ไม่ปรับมูลค่ายุติธรรม`:'');
+    aTxt=['งวด\tต้นงวด\tรายได้ดอกเบี้ย\tดอกเบี้ยรับ\tตัดจำหน่าย\tปลายงวด'].concat(rows.map(x=>[x[0]].concat(x.slice(1).map(v=>Math.round(v))).join('\t'))).join('\n');
+  }
+  $('aCopy').addEventListener('click',()=>copyText(aTxt,$('aCopyMsg')));
+
+  /* =========================================================
+     TAB 2  DISPOSAL & TRANSFER
+     ========================================================= */
+  function dLot(d){d=d||['',''];const tr=document.createElement('tr');tr.innerHTML=`<td class="num ix"></td><td><input type="text" class="num" inputmode="decimal" value="${esc(d[0])}"></td><td><input type="text" class="num" inputmode="decimal" value="${esc(d[1])}"></td><td><button class="del" aria-label="ลบ">×</button></td>`;
+    tr.querySelectorAll('input').forEach(x=>x.addEventListener('input',dCalc));tr.querySelector('.del').addEventListener('click',()=>{tr.remove();dCalc()});$('dLots').appendChild(tr)}
+  window.__dEx=()=>{$('dLots').innerHTML='';dLot(['6,000','192,000']);dLot(['4,000','108,000']);$('dCat').value='afs';$('dCv').value='27.60';$('dQty').value='5,000';$('dProc').value='147,000';$('dMeth').value='wa';$('dTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 9.6';dCalc()};
+  $('dEx').addEventListener('click',window.__dEx);$('dAddLot').addEventListener('click',()=>{dLot();dCalc()});
+  ['dCat','dCv','dQty','dProc','dMeth'].forEach(id=>{$(id).addEventListener('input',dCalc);$(id).addEventListener('change',dCalc)});
+  function dCalc(){
+    const lots=[...$('dLots').querySelectorAll('tr')].map((tr,i)=>{tr.querySelector('.ix').textContent=i+1;const x=tr.querySelectorAll('input');return [num(x[0].value),num(x[1].value)]}).filter(l=>l[0]>0&&isFinite(l[1]));
+    const cat=$('dCat').value,cvu=num($('dCv').value),q=num($('dQty').value),pr=num($('dProc').value),meth=$('dMeth').value;
+    $('dCvL').hidden=cat==='cost';
+    const U=lots.reduce((s,l)=>s+l[0],0),C=lots.reduce((s,l)=>s+l[1],0);
+    if(!lots.length||!(q>0)||!isFinite(pr)){$('dCmp').innerHTML='<tr><td colspan="3" class="hint">กรอกรายการได้มา จำนวนที่ขาย และสิ่งตอบแทน</td></tr>';$('dJE').innerHTML='';$('dWhy').textContent='';return}
+    if(q>U+1e-9){$('dCmp').innerHTML='<tr><td colspan="3"><span class="pill bad">จำนวนที่ขายเกินจำนวนที่ถืออยู่</span></td></tr>';return}
+    const wa=C/U*q;let left=q,fifo=0;for(const l of lots){const take=Math.min(left,l[0]);fifo+=l[1]/l[0]*take;left-=take;if(left<=0)break}
+    const calc=cost=>{const cv=cat==='cost'?cost:cvu*q;const g=pr-cv;const res=cat==='afs'?cv-cost:0;return {cost,cv,g,res,net:cat==='afs'?g+res:g,tax:pr-cost}};
+    const A=calc(wa),F=calc(fifo),S=meth==='wa'?A:F;
+    const row=(k,a,b)=>`<tr><td>${k}</td><td class="num">${a}</td><td class="num">${b}</td></tr>`;
+    $('dCmp').innerHTML=row('ราคาทุนของหน่วยที่ขาย',fmt(A.cost),fmt(F.cost))+row('มูลค่าตามบัญชีของหน่วยที่ขาย',fmt(A.cv),fmt(F.cv))+row('กำไร (ขาดทุน) เทียบมูลค่าตามบัญชี (9.16)',acc(A.g),acc(F.g))+(cat==='afs'?row('ผลต่างสะสมในส่วนของเจ้าของที่โอนเข้างบกำไรขาดทุน',acc(A.res),acc(F.res)):'')+
+      `<tr><td><b>ผลสุทธิในงบกำไรขาดทุน</b></td><td class="num"><b id="dNetWA">${acc(A.net)}</b></td><td class="num"><b id="dNetF">${acc(F.net)}</b></td></tr>`+row('กำไร (ขาดทุน) ทางภาษี (สิ่งตอบแทน − ราคาทุน)',acc(A.tax),acc(F.tax))+row('คงเหลือ: หน่วย / ราคาทุน',`${fmt(U-q)} / ${fmt(C-A.cost)}`,`${fmt(U-q)} / ${fmt(C-F.cost)}`);
+    const je=[['เงินฝากธนาคาร',pr,'d']];
+    if(cat==='cost'){je.push(S.g>=0?['เงินลงทุน (ราคาทุน)',S.cost,'c']:['ขาดทุนจากการขายเงินลงทุน',-S.g,'d']);if(S.g<0)je.push(['เงินลงทุน (ราคาทุน)',S.cost,'c']);else je.push(['กำไรจากการขายเงินลงทุน',S.g,'c'])}
+    else{const adj=S.cv-S.cost;if(adj<0)je.push(['ค่าเผื่อการปรับมูลค่าเงินลงทุน',-adj,'d']);if(S.net<0)je.push(['ขาดทุนจากการขายเงินลงทุน',-S.net,'d']);
+      je.push([cat==='afs'?'เงินลงทุน – หลักทรัพย์เผื่อขาย (ราคาทุน)':'เงินลงทุน – หลักทรัพย์เพื่อค้า (ราคาทุน)',S.cost,'c']);if(adj>0)je.push(['ค่าเผื่อการปรับมูลค่าเงินลงทุน',adj,'c']);
+      if(cat==='afs'&&Math.abs(S.res)>=0.5)je.push([S.res<0?'ขาดทุนที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)':'กำไรที่ยังไม่เกิดขึ้นจากเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)',Math.abs(S.res),S.res<0?'c':'d']);
+      if(S.net>=0.5)je.push([cat==='afs'?'กำไรจากการขายเงินลงทุน':'กำไรจากการขายเงินลงทุน',S.net,'c'])}
+    // order debits first
+    $('dJE').innerHTML=jeRows(je.filter(x=>x[2]==='d').concat(je.filter(x=>x[2]==='c')));
+    $('dWhy').innerHTML=cat==='afs'?'หลักทรัพย์เผื่อขาย: กำไรขาดทุนเทียบมูลค่าตามบัญชีตาม 9.16 และโอนผลต่างสะสมในส่วนของเจ้าของของส่วนที่ขายเข้างบกำไรขาดทุน เป็นแนวการตีความ เพราะ 9.16–9.17 ไม่ได้กำหนดเรื่องนี้ อาศัยย่อหน้า 4.16 ซึ่งยกเว้นการจัดประเภทใหม่เฉพาะรายการตาม 4.14.1 และ 4.14.2 และสอดคล้องกับ 9.19.2 ผลสุทธิจึงเท่ากับสิ่งตอบแทนหักราคาทุน วิธีที่เลือกต้องใช้สม่ำเสมอ (9.17, 5.8)':cat==='trade'?'หลักทรัพย์เพื่อค้า: ผลต่างจากมูลค่ายุติธรรมเคยผ่านงบกำไรขาดทุนแล้ว กำไรขาดทุนจากการขายจึงเทียบกับมูลค่าตามบัญชีล่าสุด (9.16) ทางภาษีใช้ราคาทุน':'เงินลงทุนที่วัดด้วยราคาทุน: กำไรขาดทุนเทียบราคาทุนตามวิธีที่เลือก (9.16–9.17) ถ้ามีค่าเผื่อการลดมูลค่า ให้ตัดค่าเผื่อของส่วนที่ขายออกด้วย';
+  }
+  function tCalc(){
+    const k=$('tCase').value,cv=num($('tCv').value),fv=num($('tFv').value),res=n0(num($('tRes').value)),cost=num($('tCost').value),ev=$('tEv').checked;
+    $('tResL').hidden=!(k==='2'||k==='3'||k==='5');
+    if(!isFinite(cv)||!isFinite(fv)){$('tJE').innerHTML='';return}
+    const d=fv-cv;const je=[];let why='',pl=0,eq=0;
+    const inv=d>=0?['เงินลงทุน (ประเภทใหม่)',fv,'d']:['เงินลงทุน (ประเภทใหม่)',fv,'d'];
+    if(k==='1'){pl=d;why='9.19.1 บันทึกด้วยมูลค่ายุติธรรม ณ วันที่โอน และรับรู้ผลต่างในงบกำไรขาดทุนทันที การเปลี่ยนแปลงหลังวันที่โอนเป็นไปตามประเภทใหม่'}
+    else if(k==='2'){pl=d+res;eq=-res;why='9.19.2 บันทึกด้วยมูลค่ายุติธรรม และกลับบัญชีทุกบัญชีที่เกี่ยวข้อง (รวมผลต่างสะสมในส่วนของเจ้าของ) เข้างบกำไรขาดทุนทันที'}
+    else if(k==='3'){eq=d;why='9.19.3 บันทึกด้วยมูลค่ายุติธรรม ปรับส่วนเกินทุนหรือส่วนต่ำกว่าทุนด้วยผลต่าง ณ วันที่โอน ยอดในส่วนของเจ้าของคงแสดงแยก และตัดจำหน่ายตลอดอายุที่เหลือด้วยวิธีอัตราดอกเบี้ยที่แท้จริง'}
+    else if(k==='4'){eq=d;why='9.19.4 บันทึกด้วยมูลค่ายุติธรรม และรับรู้ผลต่างเป็นรายการแยกต่างหากในส่วนของเจ้าของ'}
+    else if(k==='5'){eq=-res;why='9.19.5 บันทึกด้วยมูลค่ายุติธรรม ณ วันที่โอน กลับบัญชีทุกบัญชีที่เกี่ยวกับหลักทรัพย์เผื่อขาย และปฏิบัติตามบทที่ 5 เมื่อเปลี่ยนนโยบายการบัญชี มาตรฐานไม่ได้ระบุปลายทางของผลต่างสะสม ตรวจตามบทที่ 5 ก่อนบันทึก'}
+    else{eq=d;why='9.19.6 บันทึกด้วยมูลค่ายุติธรรม และรับรู้ผลต่างระหว่างราคาตามบัญชีกับมูลค่ายุติธรรมเป็นรายการแยกต่างหากในส่วนของเจ้าของ'}
+    je.push(['เงินลงทุน (ประเภทใหม่) ด้วยมูลค่ายุติธรรม',fv,'d']);
+    if(k==='2'&&res>0)je.push(['ผลต่างสะสมของเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)',res,'d']);
+    if(k==='5'&&res>0)je.push(['ผลต่างสะสมของเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)',res,'d']);
+    const plAmt=k==='1'?d:(k==='2'?d+res:0);
+    if(plAmt<0)je.push(['ขาดทุนจากการโอนเปลี่ยนประเภทเงินลงทุน (งบกำไรขาดทุน)',-plAmt,'d']);
+    if((k==='3'||k==='4'||k==='6')&&d<0)je.push(['ผลต่างจากการโอนเปลี่ยนประเภท (ส่วนของเจ้าของ)',-d,'d']);
+    if((k==='2'||k==='5')&&res<0)je.push(['ผลต่างสะสมของเงินลงทุนเผื่อขาย (ส่วนของเจ้าของ)',-res,'c']);
+    je.push(['เงินลงทุน (ประเภทเดิม) ด้วยมูลค่าตามบัญชี',cv,'c']);
+    if(plAmt>0)je.push(['กำไรจากการโอนเปลี่ยนประเภทเงินลงทุน (งบกำไรขาดทุน)',plAmt,'c']);
+    if((k==='3'||k==='4'||k==='6')&&d>0)je.push(['ผลต่างจากการโอนเปลี่ยนประเภท (ส่วนของเจ้าของ)',d,'c']);
+    if(k==='5'){const diff=fv-cv;if(diff>0)je.push(['ผลต่างจากการโอนเปลี่ยน (ตรวจตามบทที่ 5)',diff,'c']);if(diff<0)je.push(['ผลต่างจากการโอนเปลี่ยน (ตรวจตามบทที่ 5)',-diff,'d'])}
+    $('tJE').innerHTML=jeRows(je.filter(x=>x[2]==='d').concat(je.filter(x=>x[2]==='c')));
+    $('tVerdict').innerHTML=ev?`<div class="verdict ok"><h4 id="tPL">ผลต่องบกำไรขาดทุน ${acc(plAmt)} บาท</h4><div>มูลค่าตามบัญชีใหม่ ${fmt(fv)} บาท${isFinite(cost)&&plAmt?` · ทางภาษียังไม่ได้ขาย ${plAmt<0?'บวกกลับ':'หักออก'} ${fmt(Math.abs(plAmt))} บาท (ราคาทุนทางภาษี ${fmt(cost)})`:''}</div></div>`:`<div class="verdict bad"><h4>ยังโอนเปลี่ยนไม่ได้</h4><div>ย่อหน้า 9.18 กำหนดให้การโอนเปลี่ยนต้องมีหลักฐานสนับสนุนอย่างเพียงพอว่าสถานการณ์เปลี่ยนไป การโอนเพื่อย้ายผลขาดทุนออกจากงบกำไรขาดทุนไม่เข้าเงื่อนไข และ 9.19.1 ยังให้รับรู้ผลต่างในงบกำไรขาดทุนอยู่ดี</div></div>`;
+    $('tWhy').textContent=why;
+  }
+  ['tCase','tCv','tFv','tRes','tCost','tEv'].forEach(id=>{$(id).addEventListener('input',tCalc);$(id).addEventListener('change',tCalc)});
+  window.__tCalc=tCalc;
+
+  /* =========================================================
+     TAB 3  QUIZ
+     ========================================================= */
+  const QZ=[["LO 9.1", "เข้าใจ", "ณ 31 ธันวาคม 2568 กิจการมีเงินฝากประจำ 6 เดือน ฝากวันที่ 1 ตุลาคม 2568 ไม่มีภาระค้ำประกัน เงินฝากนี้แสดงในบรรทัดใดของงบฐานะการเงินตามแบบ 2", ["ก. เงินสดและรายการเทียบเท่าเงินสด", "ข. เงินลงทุนชั่วคราว", "ค. สินทรัพย์หมุนเวียนอื่น", "ง. เงินลงทุนระยะยาวอื่น"], 1, "เงินฝากมีอายุ 6 เดือนนับจากวันที่ได้มา จึงไม่ใช่รายการเทียบเท่าเงินสด (6.2) และไม่มีข้อจำกัดในการเบิกถอน จึงไม่ใช่สินทรัพย์อื่นตามย่อหน้า 6.4 คำถาม-คำตอบ ข้อ 1 ของสภาวิชาชีพบัญชี (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน) ถือเป็นเงินลงทุนในลักษณะหนึ่ง และครบกำหนดภายใน 12 เดือน จึงแสดงในบรรทัด 1.2 เงินลงทุนชั่วคราว", "9.1"], ["LO 9.1", "เข้าใจ", "กิจการซื้อหุ้นสามัญที่จดทะเบียนในตลาดหลักทรัพย์แห่งประเทศไทย โดยไม่มีวัตถุประสงค์ที่ชัดเจนในการถือ ณ วันที่ซื้อ กิจการต้องจัดประเภทเงินลงทุนนี้อย่างไร", ["ก. หลักทรัพย์เพื่อค้า", "ข. หลักทรัพย์เผื่อขาย", "ค. เงินลงทุนในตราสารทุนที่ไม่ใช่หลักทรัพย์ที่อยู่ในความต้องการของตลาด", "ง. ตราสารหนี้ที่จะถือจนครบกำหนด"], 1, "ย่อหน้า 9.18 กำหนดว่าถ้ากิจการไม่มีวัตถุประสงค์ที่ชัดเจน ต้องจัดประเภทเงินลงทุนนั้นเป็นหลักทรัพย์เผื่อขายทันที", "9.1"], ["LO 9.1", "ประยุกต์ใช้", "บริษัท ก ถือหุ้นที่มีสิทธิออกเสียงในบริษัท ข ร้อยละ 48 ผู้ถือหุ้นที่เหลือเป็นรายย่อยจำนวนมาก ไม่มีรายใดถือเกินร้อยละ 1 และบริษัท ก แต่งตั้งกรรมการผู้มีอำนาจได้ 2 ใน 3 คน บริษัท ก ควรจัดประเภทเงินลงทุนนี้อย่างไร", ["ก. บริษัทร่วม เพราะสิทธิออกเสียงไม่ถึงกึ่งหนึ่ง", "ข. บริษัทย่อย เพราะมีหลักฐานชัดเจนว่าควบคุมได้", "ค. หลักทรัพย์เผื่อขาย เพราะไม่มีวัตถุประสงค์ชัด", "ง. เงินลงทุนทั่วไป เพราะหุ้นไม่มีตลาดซื้อขาย"], 1, "ย่อหน้า 9.5 ให้ถือว่าไม่มีอำนาจควบคุมเมื่อสิทธิออกเสียงน้อยกว่ากึ่งหนึ่ง เว้นแต่มีหลักฐานที่แสดงให้เห็นอย่างชัดเจนว่าควบคุมได้ การกระจายตัวของผู้ถือหุ้นอื่นและอำนาจแต่งตั้งกรรมการส่วนใหญ่เป็นหลักฐานดังกล่าว", "9.1"], ["LO 9.2", "ประยุกต์ใช้", "จากตัวอย่างที่ 9.2 ราคาทุนเมื่อเริ่มแรกของเงินลงทุนในหุ้นเป็นเท่าใด", ["ก. 1,040,000 บาท", "ข. 1,044,100 บาท", "ค. 1,074,100 บาท", "ง. 1,082,100 บาท"], 1, "ราคาทุน = ราคาซื้อ 1,040,000 + ค่านายหน้า 2,600 + ค่าธรรมเนียมการโอนและอากร 1,500 = 1,044,100 บาท ค่าที่ปรึกษาศึกษาความเป็นไปได้และค่าใช้จ่ายพนักงานที่ปันส่วนไม่ใช่ต้นทุนการทำรายการ (9.8–9.9)", "9.2"], ["LO 9.3", "เข้าใจ", "ผลต่างระหว่างมูลค่าตามบัญชีกับมูลค่ายุติธรรม ณ วันสิ้นรอบระยะเวลารายงานของหลักทรัพย์เผื่อขาย ต้องรับรู้ที่ใด", ["ก. งบกำไรขาดทุนของงวดที่วัดมูลค่า", "ข. ส่วนของเจ้าของ หรือกำไรขาดทุนเบ็ดเสร็จอื่นถ้าเลือกจัดทำ", "ค. ไม่รับรู้จนกว่าจะขายเงินลงทุนนั้น", "ง. ปรับกำไรสะสมต้นงวด"], 1, "ย่อหน้า 9.11 (ตราสารทุน) และ 9.14 (ตราสารหนี้) ให้รับรู้กำไรขาดทุนที่ยังไม่เกิดขึ้นของหลักทรัพย์เผื่อขายในส่วนของเจ้าของ หรือในกำไรขาดทุนเบ็ดเสร็จอื่นถ้ากิจการเลือกจัดทำงบกำไรขาดทุนเบ็ดเสร็จ", "9.3"], ["LO 9.4", "ประยุกต์ใช้", "จากตัวอย่างที่ 9.4 รายได้ดอกเบี้ยปี 2568 ตามวิธีอัตราดอกเบี้ยที่แท้จริงเป็นเท่าใด", ["ก. 30,000 บาท", "ข. 8,890 บาท", "ค. 38,890 บาท", "ง. 40,000 บาท"], 2, "รายได้ดอกเบี้ย = ราคาทุนต้นงวด 972,249 × 4% = 38,890 บาท ประกอบด้วยดอกเบี้ยรับเป็นเงินสด 30,000 บาท และส่วนลดที่ตัดจำหน่าย 8,890 บาท (9.13, 18.24.1)", "9.4"], ["LO 9.5", "วิเคราะห์", "กิจการโอนเปลี่ยนหลักทรัพย์เพื่อค้าซึ่งมีมูลค่าตามบัญชี 520,000 บาท เป็นหลักทรัพย์เผื่อขาย ในวันที่มูลค่ายุติธรรมเท่ากับ 505,000 บาท โดยมีหลักฐานสนับสนุนว่าสถานการณ์เปลี่ยนไป ผลต่าง 15,000 บาท ต้องรับรู้อย่างไร", ["ก. ขาดทุนในงบกำไรขาดทุนทันที", "ข. ลดส่วนของเจ้าของ", "ค. ไม่รับรู้ บันทึกด้วยมูลค่าตามบัญชีเดิม", "ง. ปรับกำไรสะสมต้นงวด"], 0, "ย่อหน้า 9.19.1 ให้ใช้มูลค่ายุติธรรม ณ วันที่โอน และรับรู้ผลต่างระหว่างมูลค่าตามบัญชีกับมูลค่ายุติธรรมในงบกำไรขาดทุนทันที", "9.5"], ["LO 9.6", "ประเมินค่า", "ปี 2568 กิจการรับรู้กำไรที่ยังไม่เกิดขึ้นจากการปรับมูลค่าหลักทรัพย์เพื่อค้า 38,800 บาทในงบกำไรขาดทุน ผู้จัดการเสนอให้ไม่ปรับรายการนี้ในการคำนวณกำไรสุทธิทางภาษี เพราะเป็นรายได้ตามบัญชีแล้ว ข้อใดประเมินข้อเสนอนี้ได้ถูกต้อง", ["ก. เห็นด้วย เพราะกำไรนี้รับรู้ในงบกำไรขาดทุนแล้ว", "ข. ไม่เห็นด้วย ต้องหักออก เพราะห้ามนำราคาที่ตีเพิ่มมารวมคำนวณ", "ค. ไม่เห็นด้วย ต้องบวกกลับ เพราะเป็นรายจ่ายต้องห้าม", "ง. เห็นด้วยบางส่วน นำมารวมคำนวณเป็นรายได้เพียงกึ่งหนึ่ง"], 1, "ทางภาษีใช้ราคาทุน มาตรา 65 ทวิ (3) ห้ามนำราคาที่ตีราคาเพิ่มขึ้นมารวมคำนวณกำไรสุทธิ จึงหักกำไรที่ยังไม่เกิดขึ้นออก และนำผลต่างกลับมาเมื่อขายเงินลงทุนจริง", "9.6"]];
+  window.__QZ=QZ;
+  $('qBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="qf${i}"></div></div>`).join('');
+  $('sKey').innerHTML=QZ.map((q,i)=>`<tr><td class="num">${i+1}</td><td>${esc(q[3][q[4]])}</td><td>${esc(q[5])}</td></tr>`).join('');
+  $('qChk').addEventListener('click',qCheck);
+  $('qClr').addEventListener('click',()=>{document.querySelectorAll('#qBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('qf'+i).innerHTML='');$('qOut').innerHTML=''});
+  function qCheck(){
+    let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="q${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;
+      lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('qf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort().map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('qOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div><div class="fig"><div class="k">LO ที่บรรลุ</div><div class="v">${Object.values(lo).filter(x=>x.ok===x.n).length}/${Object.keys(lo).length}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+})();
+</script>
+<script>
+(function(){
+  window.__pLoad();window.__aEx();window.__dEx();window.__wCalc();window.__tCalc();
+  const goS=()=>{const m=(location.hash||'').match(/^#(S9\.\d)$/);if(m){window.__show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body></html>

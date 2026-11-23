@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แอป 18 · กระดาษทำการรายได้</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+<style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head>
+<body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div>
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 18 รายได้</div>
+      <h1>แอป 18 · กระดาษทำการรายได้</h1>
+      <p class="lede">จัดประเภทรายได้ ตรวจเงื่อนไขการรับรู้ คำนวณรายได้จากการให้บริการ ดอกเบี้ยตามวิธีอัตราดอกเบี้ยที่แท้จริง คะแนนสะสมสองวิธี ประเมินฐานะตัวการหรือตัวแทน หาจุดความรับผิดภาษีมูลค่าเพิ่ม และร่างหมายเหตุนโยบายการบัญชี</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 18 ย่อหน้า 18.1–18.33</b><br>ตำราบทที่ 18 · ฉบับ 19-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> ประเภทรายได้ · เงื่อนไขการรับรู้ · คำนวณ · ตัวการหรือตัวแทน · ภาษี · ร่างหมายเหตุ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="type"><span class="n">0</span>ประเภทรายได้</button>
+    <button role="tab" aria-selected="false" data-tab="goods"><span class="n">1</span>ขายสินค้าและการรับคืน</button>
+    <button role="tab" aria-selected="false" data-tab="svc"><span class="n">2</span>ขั้นความสำเร็จ</button>
+    <button role="tab" aria-selected="false" data-tab="int"><span class="n">3</span>ดอกเบี้ย ค่าสิทธิ เงินปันผล</button>
+    <button role="tab" aria-selected="false" data-tab="loy"><span class="n">4</span>คะแนนสะสม</button>
+    <button role="tab" aria-selected="false" data-tab="agt"><span class="n">5</span>ตัวการหรือตัวแทน</button>
+    <button role="tab" aria-selected="false" data-tab="tax"><span class="n">6</span>จังหวะภาษี</button>
+    <button role="tab" aria-selected="false" data-tab="note"><span class="n">7</span>ร่างหมายเหตุ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">8</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">9</span>เนื้อหาเสริม S18</button>
+  </nav>
+
+  <!-- 0 TYPE -->
+  <div class="grid" data-pane="type" style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ประเภทรายได้และจำนวนที่เป็นรายได้ (18.1–18.2, 18.12–18.13)</h2>
+      <p class="hint">ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น ไม่ส่งออกจากเครื่อง เลือกแหล่งของกระแสรับ แอปบอกย่อหน้าและแท็บที่ใช้ต่อ และแยกภาษีมูลค่าเพิ่มหรือเงินที่เก็บแทนผู้อื่นออกจากรายได้</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ขายสินค้า 107,000 บาท รวมภาษีมูลค่าเพิ่ม</span>
+      <div class="fields">
+        <label class="f">แหล่งของกระแสรับ<select id="tSrc"><option value="goods">ขายสินค้า</option><option value="svc">ให้บริการ</option><option value="int">ดอกเบี้ย</option><option value="roy">ค่าสิทธิ</option><option value="div">เงินปันผล</option><option value="loy">ขายพร้อมให้คะแนนสะสม</option><option value="agt">ขายหรือให้บริการแทนผู้อื่น</option><option value="re">ขายอสังหาริมทรัพย์</option><option value="con">สัญญาก่อสร้าง</option><option value="own">เงินลงทุนจากผู้ถือหุ้น</option></select></label>
+        <label class="f">จำนวนที่เรียกเก็บ (บาท)<input class="num" type="number" id="tAmt" value="107000"></label>
+        <label class="f">รวมภาษีมูลค่าเพิ่มร้อยละ 7<select id="tVat"><option value="yes">รวม</option><option value="no">ไม่รวม</option></select></label>
+      </div>
+      <div id="tOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 1 GOODS -->
+  <div class="grid" data-pane="goods" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เงื่อนไขห้าข้อของการขายสินค้า (18.6–18.11)</h2>
+      <p class="hint">ตอบตามหลักฐานของรายการ แอปแสดงผลเมื่อตอบครบทั้งห้าข้อ แอปไม่ตัดสินแทนผู้ใช้</p>
+      <div class="fields"><label class="f">1. โอนความเสี่ยงและผลตอบแทนที่มีนัยสำคัญแล้ว (18.6.1)<select id="g1"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">2. ไม่เกี่ยวข้องในการบริหารหรือควบคุมสินค้าที่ขาย (18.6.2)<select id="g2"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">3. วัดจำนวนรายได้ได้อย่างน่าเชื่อถือ (18.6.3)<select id="g3"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">4. เป็นไปได้ค่อนข้างแน่ที่จะได้รับประโยชน์ (18.6.4)<select id="g4"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">5. วัดต้นทุนที่เกิดและจะเกิดได้อย่างน่าเชื่อถือ (18.6.5)<select id="g5"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label>
+        <label class="f">ความเสี่ยงที่ยังคงอยู่<select id="gRisk"><option value="none">ไม่มี</option><option value="perf">ภาระต่อผลงานเกินการรับประกันปกติ (18.8.1)</option><option value="resale">ขึ้นกับการขายต่อของผู้ซื้อ (18.8.2)</option><option value="inst">การติดตั้งสำคัญยังไม่เสร็จ (18.8.3)</option><option value="cancel">สิทธิบอกเลิกที่ประมาณไม่ได้ (18.8.4)</option><option value="title">คงกรรมสิทธิ์เพื่อประกันการชำระ (18.9)</option><option value="refund">คืนเงินเมื่อไม่พอใจ ประมาณได้ (18.9)</option></select></label>
+      </div>
+      <h3>ประมาณการรับคืนสินค้า (ตัวอย่างที่ 18.2)</h3>
+      <div class="fields">
+        <label class="f">ยอดขาย (บาท)<input class="num" type="number" id="gSales" value="500000"></label>
+        <label class="f">อัตราการคืนที่คาด (ร้อยละ)<input class="num" type="number" id="gPct" value="4"></label>
+      </div>
+      <div id="gOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 2 SERVICE -->
+  <div class="grid" data-pane="svc" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>รายได้จากการให้บริการตามขั้นความสำเร็จ (18.14–18.22)</h2>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 18.3 บริการที่ปรึกษาระบบบัญชี</span>
+      <div class="fields">
+        <label class="f">ราคาในสัญญา (บาท ไม่รวมภาษีมูลค่าเพิ่ม)<input class="num" type="number" id="sPrice" value="1200000"></label>
+        <label class="f">ประมาณการต้นทุนทั้งสิ้น<input class="num" type="number" id="sEst" value="800000"></label>
+        <label class="f">ต้นทุนของบริการที่ให้แล้ว<input class="num" type="number" id="sTo" value="200000"></label>
+        <label class="f">วิธีวัด (18.18)<select id="sMeth"><option value="cost">สัดส่วนต้นทุน</option><option value="pct">สำรวจงาน หรืออัตราส่วนบริการ (กรอกร้อยละ)</option></select></label>
+        <label class="f">ร้อยละงานที่เสร็จ (กรณีสำรวจ)<input class="num" type="number" id="sPct" value="25"></label>
+        <label class="f">ประมาณผลได้อย่างน่าเชื่อถือ<select id="sRel"><option value="yes">ได้</option><option value="no">ไม่ได้</option></select></label>
+        <label class="f">คาดว่าได้ต้นทุนคืน (กรณีประมาณไม่ได้)<select id="sRec"><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label>
+        <label class="f">เงินรับล่วงหน้าสะสม (ไม่รวมภาษี)<input class="num" type="number" id="sAdv" value="400000"></label>
+      </div>
+      <div id="sOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 3 INTEREST -->
+  <div class="grid" data-pane="int" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ดอกเบี้ยตามวิธีอัตราดอกเบี้ยที่แท้จริง ดอกเบี้ยก่อนซื้อ และค่าสิทธิ (18.24–18.26)</h2>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 18.4 และ 18.5</span>
+      <div class="fields">
+        <label class="f">มูลค่าตามหน้าตั๋ว<input class="num" type="number" id="bFace" value="1000000"></label>
+        <label class="f">ดอกเบี้ยตามหน้าตั๋ว (ร้อยละต่อปี)<input class="num" type="number" id="bCpn" value="5"></label>
+        <label class="f">ราคาซื้อ<input class="num" type="number" id="bPrice" value="950000"></label>
+        <label class="f">อายุ (ปี ไม่เกิน 30)<input class="num" type="number" id="bN" value="3"></label>
+      </div>
+      <div id="bOut"></div>
+      <h3>ดอกเบี้ยค้างรับก่อนวันซื้อ (18.25)</h3>
+      <div class="fields">
+        <label class="f">มูลค่าตามหน้าตั๋ว<input class="num" type="number" id="pFace" value="5000000"></label>
+        <label class="f">อัตราดอกเบี้ย (ร้อยละต่อปี จ่ายปีละครั้ง)<input class="num" type="number" id="pRate" value="6"></label>
+        <label class="f">จำนวนเดือนก่อนวันซื้อ<input class="num" type="number" id="pMon" value="3"></label>
+      </div>
+      <div id="pOut"></div>
+      <h3>ค่าสิทธิ (18.24.2, 18.26)</h3>
+      <div class="fields">
+        <label class="f">ยอดขายของผู้รับสิทธิในงวด<input class="num" type="number" id="ySales" value="300000"></label>
+        <label class="f">อัตราค่าสิทธิ (ร้อยละ)<input class="num" type="number" id="yPct" value="5"></label>
+      </div>
+      <div id="yOut"></div>
+      <h3>เงินปันผล (18.24.3)</h3>
+      <div class="fields">
+        <label class="f">ประเภท<select id="dKind"><option value="agm">เงินปันผลประจำปี (ที่ประชุมผู้ถือหุ้นประกาศจ่าย)</option><option value="int">เงินปันผลระหว่างกาล (คณะกรรมการมีมติจ่าย)</option></select></label>
+        <label class="f">วันที่ประกาศจ่ายหรือวันที่มีมติ<input type="date" id="dDecl" value="2026-04-20"></label>
+        <label class="f">วันสิ้นรอบระยะเวลาบัญชีของผู้ถือหุ้น<input type="date" id="dYe" value="2025-12-31"></label>
+        <label class="f">จำนวนเงินปันผล (บาท)<input class="num" type="number" id="dAmt" value="120000"></label>
+      </div>
+      <div id="dOut"></div>
+    </section>
+  </div>
+
+  <!-- 4 LOYALTY -->
+  <div class="grid" data-pane="loy" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>คะแนนสะสมสองวิธี (18.31)</h2>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 18.6 จากตัวอย่างประกอบความเข้าใจของสภาฯ ตัวอย่างที่ 2</span>
+      <div class="fields">
+        <label class="f">ยอดขายที่ให้คะแนน (บาท)<input class="num" type="number" id="lSales" value="1000000"></label>
+        <label class="f">คะแนนที่ออก<input class="num" type="number" id="lPts" value="50000"></label>
+        <label class="f">มูลค่าต่อคะแนนเมื่อใช้สิทธิ (บาท)<input class="num" type="number" id="lVal" value="1"></label>
+        <label class="f">คะแนนที่คาดว่าจะใช้สิทธิ<input class="num" type="number" id="lExp" value="45000"></label>
+        <label class="f">คะแนนที่ใช้แล้วถึงวันสิ้นรอบ<input class="num" type="number" id="lRed" value="20000"></label>
+        <label class="f">มูลค่าสินค้าที่ลูกค้าซื้อพร้อมใช้คะแนน<input class="num" type="number" id="lGoods" value="80000"></label>
+      </div>
+      <div id="lOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 5 AGENT -->
+  <div class="grid" data-pane="agt" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ข้อบ่งชี้ตัวการหรือตัวแทน (18.32)</h2>
+      <p class="hint">ตอบข้อบ่งชี้ตามข้อเท็จจริง แอปสรุปจำนวนข้อบ่งชี้แต่ละฝั่ง ผู้ใช้เลือกข้อสรุปเอง แอปแสดงการแสดงรายได้ตามข้อสรุปที่เลือก</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวกลางในตัวอย่างที่ 18.7 (ตัวอย่างประกอบความเข้าใจของสภาฯ ตัวอย่างที่ 3)</span>
+      <div class="fields"><label class="f">รับผิดชอบหลักต่อการจัดหาสินค้าหรือบริการ<select id="a1"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">รับความเสี่ยงสินค้าก่อนและหลังคำสั่งซื้อ หรือการรับคืน<select id="a2"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">มีอิสระกำหนดราคา<select id="a3"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">รับความเสี่ยงด้านสินเชื่อของลูกค้า<select id="a4"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">รายได้กำหนดล่วงหน้าเป็นค่าธรรมเนียมคงที่หรือร้อยละ<select id="a5"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label>
+        <label class="f">ยอดที่เรียกเก็บจากลูกค้า<input class="num" type="number" id="aGross" value="180000"></label>
+        <label class="f">ค่าธรรมเนียมหรือค่านายหน้าที่กิจการได้<input class="num" type="number" id="aFee" value="18000"></label>
+        <label class="f">ข้อสรุปของผู้ใช้<select id="aConc"><option value="">– ยังไม่สรุป –</option><option value="p">ตัวการ</option><option value="a">ตัวแทน</option></select></label>
+      </div>
+      <div id="aOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 6 TAX -->
+  <div class="grid" data-pane="tax" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>จุดความรับผิดภาษีมูลค่าเพิ่มและกำหนดยื่นแบบ</h2>
+      <p class="hint">ความรับผิดเกิดในวันแรกที่เกิดเหตุการณ์ตามมาตรา ช่องที่ไม่มีเหตุการณ์ให้เว้นว่าง ผลเป็นเครื่องมือช่วยคิด ข้อมูลกฎหมาย ณ วันที่จัดทำตำรา</p>
+      <div class="fields">
+        <label class="f">ประเภท<select id="vType"><option value="svc">ให้บริการ (ม.78/1 (1))</option><option value="goods">ขายสินค้า (ม.78 (1))</option><option value="inst">ขายผ่อนชำระหรือเช่าซื้อ กรรมสิทธิ์ยังไม่โอน (ม.78 (2))</option></select></label>
+        <label class="f">วันส่งมอบสินค้าหรือวันโอนกรรมสิทธิ์<input type="date" id="vDel" value=""></label>
+        <label class="f">วันถึงกำหนดชำระงวด (ขายผ่อนชำระ)<input type="date" id="vDueI" value=""></label>
+        <label class="f">วันได้ใช้บริการ (ให้บริการ)<input type="date" id="vUse" value=""></label>
+        <label class="f">วันได้รับชำระ<input type="date" id="vPay" value="2025-12-20"></label>
+        <label class="f">วันออกใบกำกับภาษี<input type="date" id="vInv" value=""></label>
+        <label class="f">วันสิ้นรอบระยะเวลาบัญชี<input type="date" id="vYe" value="2025-12-31"></label>
+      </div>
+      <div id="vOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 7 NOTE -->
+  <div class="grid" data-pane="note" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ร่างหมายเหตุนโยบายการบัญชีและรายได้ (18.33)</h2>
+      <p class="hint">ชื่อกิจการถูกแปลงก่อนแสดงผลโดยค่าเริ่มต้น เพื่อไม่ให้ข้อมูลที่เป็นความลับของกิจการปรากฏในร่าง กดคัดลอกแล้ววางใน Word</p>
+      <div class="fields">
+        <label class="f">ชื่อกิจการ<input type="text" id="nName" value="บริษัท ตัวอย่างค้าปลีก จำกัด"></label>
+        <label class="f"><span><input type="checkbox" id="nAnon" checked> ปกปิดชื่อกิจการ</span></label>
+        <label class="f">วิธีคะแนนสะสม<select id="nLoy"><option value="2">ปันส่วนมูลค่ายุติธรรม (18.31.2)</option><option value="1">ประมาณการหนี้สิน (18.31.1)</option><option value="0">ไม่มีโปรแกรม</option></select></label>
+        <label class="f">รายได้จากการขายสินค้า<input class="num" type="number" id="nG" value="480000"></label>
+        <label class="f">รายได้จากการให้บริการ<input class="num" type="number" id="nS" value="300000"></label>
+        <label class="f">ดอกเบี้ยรับ<input class="num" type="number" id="nI" value="290568"></label>
+        <label class="f">ค่าสิทธิ<input class="num" type="number" id="nR" value="15000"></label>
+        <label class="f">เงินปันผลรับ<input class="num" type="number" id="nD" value="0"></label>
+        <label class="f">รายได้จากการแลกเปลี่ยนสินค้า (รวมอยู่ในรายได้จากการขาย)<input class="num" type="number" id="nXg" value="0"></label>
+        <label class="f">รายได้จากการแลกเปลี่ยนบริการ (รวมอยู่ในรายได้จากการให้บริการ)<input class="num" type="number" id="nXs" value="0"></label>
+      </div>
+      <div class="row-actions"><button class="btn primary" id="nCopy">คัดลอกร่าง</button><span id="nOk" class="pill ok" hidden>คัดลอกแล้ว</span></div>
+      <div id="nOut" class="note" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 8 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 9 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S18</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 18 ลิงก์ #S18.1 ถึง #S18.9 เปิดหัวข้อนั้นได้โดยตรง ตัวเลขตรงกับตัวอย่างในตำรา</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S18.1">S18.1</a><a class="btn" href="#S18.2">S18.2</a><a class="btn" href="#S18.3">S18.3</a><a class="btn" href="#S18.4">S18.4</a><a class="btn" href="#S18.5">S18.5</a><a class="btn" href="#S18.6">S18.6</a><a class="btn" href="#S18.7">S18.7</a><a class="btn" href="#S18.8">S18.8</a><a class="btn" href="#S18.9">S18.9</a></div>
+<h3 id="S18.1">S18.1 ตารางคิดลดห้าปีและผลทางภาษีของการขายผ่อนชำระ</h3><p>ตัวอย่างที่ 18.1: มูลค่าปัจจุบันของค่างวด 5 งวด งวดละ 1,000,000 บาท อัตราร้อยละ 5 = 4,329,477 บาท ดอกเบี้ยรอการรับรู้ 670,523 บาท (แนวการตีความ)</p><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">ลูกหนี้สุทธิต้นปี</th><th class="num">ดอกเบี้ยรับ</th><th class="num">รับชำระ</th><th class="num">ลูกหนี้สุทธิสิ้นปี</th></tr></thead><tbody><tr><td>2568</td><td class="num">4,329,477</td><td class="num">216,474</td><td class="num">1,000,000</td><td class="num">3,545,951</td></tr><tr><td>2569</td><td class="num">3,545,951</td><td class="num">177,298</td><td class="num">1,000,000</td><td class="num">2,723,249</td></tr><tr><td>2570</td><td class="num">2,723,249</td><td class="num">136,162</td><td class="num">1,000,000</td><td class="num">1,859,411</td></tr><tr><td>2571</td><td class="num">1,859,411</td><td class="num">92,971</td><td class="num">1,000,000</td><td class="num">952,382</td></tr><tr><td>2572</td><td class="num">952,382</td><td class="num">47,618</td><td class="num">1,000,000</td><td class="num">0</td></tr></tbody></table></div><p>ปี 2572 ดอกเบี้ยรับ 47,618 บาท ปรับเศษหนึ่งบาทให้ลูกหนี้สุทธิสิ้นปีเป็นศูนย์ ตามกติกาบรรทัดสุดท้ายปรับเศษ ณ 31 ธันวาคม 2568 ลูกหนี้สุทธิ 3,545,951 บาท ส่วนที่ถึงกำหนดภายในหนึ่งปีคือค่างวดปี 2569 หักดอกเบี้ยของปีนั้น 822,702 บาท แสดงเป็นหมุนเวียน ส่วนที่เหลือ 2,723,249 บาท เป็นไม่หมุนเวียน (แนวการตีความ)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">1,000,000</td><td class="num"></td></tr><tr><td>    เครดิต ลูกหนี้การค้า</td><td class="num"></td><td class="num">1,000,000</td></tr><tr><td>เดบิต ดอกเบี้ยรอการรับรู้</td><td class="num">177,298</td><td class="num"></td></tr><tr><td>    เครดิต ดอกเบี้ยรับ</td><td class="num"></td><td class="num">177,298</td></tr></tbody></table></div><p>ภาษีเงินได้: ม.65 วรรคสองใช้เกณฑ์สิทธิ คำสั่งกรมสรรพากรที่ ท.ป.1/2528 ข้อ 3.5 (แก้ไขเพิ่มเติมโดยคำสั่งที่ ท.ป.155/2549) ใช้กับการให้เช่าซื้อหรือขายผ่อนชำระที่กรรมสิทธิ์ยังไม่โอนและสัญญามีอายุเกินหนึ่งรอบระยะเวลาบัญชี ให้นำกำไรจากการขาย คือผลต่างระหว่างราคาขายเงินสดกับต้นทุน มารวมคำนวณทั้งจำนวนในรอบที่ขาย และนำดอกผลมารวมคำนวณเป็นรายได้แต่ละงวดตามวิธีการทางบัญชี การขายที่กรรมสิทธิ์โอนไปยังผู้ซื้อทันทีไม่อยู่ในข้อ 3.5 รายได้จากการขายเกิดในรอบที่ขายตามเกณฑ์สิทธิ (แนวการตีความ)</p><p>ตัวอย่างที่ 18.1 โอนกรรมสิทธิ์เมื่อส่งมอบ จึงไม่อยู่ในข้อ 3.5 คำสั่งไม่ได้แยกดอกเบี้ยที่แฝงในราคาขายที่ไม่คิดดอกเบี้ย และยังไม่พบข้อหารือปี 2555–2569 ในเรื่องนี้ (แนวการตีความ): กิจการที่แยกดอกเบี้ยทางบัญชี 670,523 บาท พิจารณาว่ารายได้จากการขายทางภาษีของรอบที่ขายเท่ากับราคาตามสัญญาหรือมูลค่าปัจจุบัน บันทึกเหตุผล และกระทบยอดผลต่าง (ถ้ามี) จนครบสัญญา ตำราไม่แสดงตัวเลขผลต่างเพราะขึ้นกับข้อสรุปนี้</p><p>ภาษีมูลค่าเพิ่ม: กรรมสิทธิ์โอนเมื่อส่งมอบ ความรับผิดเกิดเมื่อส่งมอบ (ม.78 (1)) ถ้ากรรมสิทธิ์ยังไม่โอน ความรับผิดเกิดเมื่อถึงกำหนดชำระราคาแต่ละงวด เว้นแต่ได้รับชำระหรือออกใบกำกับภาษีก่อน (ม.78 (2) และคำสั่งกรมสรรพากรที่ ป.36/2536)</p><h3 id="S18.2">S18.2 กรณีขายสินค้าตามย่อหน้า 18.8–18.10 พร้อมรายการบันทึก</h3><div class="tbl"><table><thead><tr><th>กรณี</th><th>ผล</th><th>ย่อหน้า</th><th>รายการบันทึกหลัก</th></tr></thead><tbody><tr><td>ส่งเครื่องจักร 800,000 บาท การติดตั้งเป็นส่วนสำคัญ ติดตั้งเสร็จเดือนถัดไป</td><td>ยังไม่รับรู้รายได้ เงินที่รับเป็นหนี้สิน</td><td>18.8.3</td><td>เดบิต เงินสด เครดิต เงินรับล่วงหน้าจากลูกค้า</td></tr><tr><td>ขายให้ผู้จัดจำหน่ายที่จ่ายเงินเมื่อขายต่อได้</td><td>ยังไม่รับรู้จนผู้จัดจำหน่ายขายต่อ</td><td>18.8.2</td><td>บันทึกความจำ สินค้ายังเป็นของผู้ขาย</td></tr><tr><td>สินค้าใหม่ ผู้ซื้อบอกเลิกได้ 60 วัน ไม่มีสถิติการคืน</td><td>ยังไม่รับรู้จนพ้น 60 วัน</td><td>18.8.4</td><td>เดบิต ลูกหนี้ เครดิต เงินรับล่วงหน้า (เมื่อออกใบแจ้งหนี้)</td></tr><tr><td>คงกรรมสิทธิ์เพื่อประกันการชำระ ส่งมอบและโอนความเสี่ยงแล้ว</td><td>รับรู้รายได้</td><td>18.9</td><td>เดบิต ลูกหนี้ เครดิต รายได้จากการขาย</td></tr><tr><td>ส่งออก รอรัฐบาลผู้ซื้ออนุมัติการโอนเงินออก</td><td>รับรู้เมื่ออนุมัติ</td><td>18.10</td><td>ก่อนอนุมัติไม่บันทึกรายได้</td></tr><tr><td>รับประกันสินค้า 3 ปี ต้นทุนเฉลี่ยร้อยละ 2 ยอดขาย 800,000 บาท</td><td>รับรู้รายได้ และประมาณการหนี้สิน 16,000 บาท</td><td>18.11, 16.6</td><td>เดบิต ค่าใช้จ่ายรับประกัน เครดิต ประมาณการหนี้สิน (แบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566) รายการ 3.9 หรือ 4.7)</td></tr></tbody></table></div><p>ตัวอย่างที่ 18.2 ต่อ: ถ้าปีถัดมาลูกค้าคืนสินค้าจริง 18,000 บาท เดบิต ประมาณการหนี้สินจากการรับคืนสินค้า 18,000 บาท เครดิต ลูกหนี้หรือเงินสด 18,000 บาท ส่วนที่เหลือ 2,000 บาทกลับรายการเป็นการเปลี่ยนแปลงประมาณการ (5.15) แนวเดียวกับตัวอย่างประกอบความเข้าใจของสภาฯ ตัวอย่างที่ 3 ซึ่งไม่ได้บันทึกสินค้าที่คาดว่าจะรับคืน กิจการที่มูลค่าสินค้าที่คาดว่าจะรับคืนมีสาระสำคัญอาจบันทึกสินค้ารอรับคืนด้วยราคาทุน (แนวการตีความ)</p><h3 id="S18.3">S18.3 การวัดขั้นความสำเร็จสามวิธีและกรณีตามย่อหน้า 18.19–18.22</h3><div class="tbl"><table><thead><tr><th>วิธี (18.18)</th><th>ข้อมูล</th><th>ขั้นความสำเร็จ</th><th class="num">รายได้</th></tr></thead><tbody><tr><td>สัดส่วนต้นทุน</td><td>200,000 ÷ 800,000</td><td>ร้อยละ 25</td><td class="num">300,000</td></tr><tr><td>อัตราส่วนบริการที่ให้</td><td>ส่งมอบรายงาน 3 จาก 12 ฉบับ</td><td>ร้อยละ 25</td><td class="num">300,000</td></tr><tr><td>สำรวจงาน</td><td>ผู้ประเมินอิสระสรุปงานเสร็จร้อยละ 30</td><td>ร้อยละ 30</td><td class="num">360,000</td></tr></tbody></table></div><p>ถ้าวิธีต่างกันให้ผลต่าง กิจการเลือกวิธีที่วัดบริการที่เสร็จแล้วได้น่าเชื่อถือตามลักษณะงาน และใช้สม่ำเสมอ (18.18, 5.8)</p><p>บริการบำรุงรักษาลิฟต์รายปี 120,000 บาท ตรวจรายเดือนและซ่อมตามเรียก แยกบริการไม่ได้ รับรู้เดือนละ 10,000 บาทตามวิธีเส้นตรง (18.19) แต่สัญญาที่บริการหลักคือการติดตั้งระบบซึ่งสำคัญกว่าการอบรม รับรู้รายได้เมื่อติดตั้งเสร็จ (18.19)</p><p>กรณี ข ต่อ: ปีถัดมาความไม่แน่นอนหมดไป ประมาณผลได้ กิจการรับรู้รายได้สะสมตามขั้นความสำเร็จ หักรายได้ที่รับรู้แล้ว 200,000 บาท (18.22) ผลต่างเป็นการเปลี่ยนแปลงประมาณการ ไม่ปรับย้อนหลัง (5.15)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">428,000</td><td class="num"></td></tr><tr><td>    เครดิต ภาษีขาย</td><td class="num"></td><td class="num">28,000</td></tr><tr><td>    เครดิต เงินรับล่วงหน้าจากลูกค้า</td><td class="num"></td><td class="num">400,000</td></tr><tr><td>เดบิต เงินรับล่วงหน้าจากลูกค้า</td><td class="num">300,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากการให้บริการ</td><td class="num"></td><td class="num">300,000</td></tr></tbody></table></div><p>ราคาในสัญญาไม่รวมภาษีมูลค่าเพิ่ม ลูกค้าจ่าย 428,000 บาท ณ วันสิ้นรอบเงินรับล่วงหน้าคงเหลือ 100,000 บาท (แบบ 2 รายการ 3.3) (แนวการตีความ) สำหรับการเลือกบรรทัด</p><h3 id="S18.4">S18.4 ตารางดอกเบี้ยที่แท้จริงและดอกเบี้ยก่อนซื้อ</h3><p>หาอัตราที่ทำให้ 50,000/(1+r) + 50,000/(1+r)² + 1,050,000/(1+r)³ = 950,000 คำนวณซ้ำจนได้ r = ร้อยละ 6.9018 (ใช้ฟังก์ชัน RATE ใน Excel: RATE(3,50000,-950000,1000000))</p><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">ยอดต้นปี</th><th class="num">ดอกเบี้ยรับ</th><th class="num">คูปอง</th><th class="num">ตัดส่วนลด</th><th class="num">ยอดสิ้นปี</th></tr></thead><tbody><tr><td>2568</td><td class="num">950,000</td><td class="num">65,568</td><td class="num">50,000</td><td class="num">15,568</td><td class="num">965,568</td></tr><tr><td>2569</td><td class="num">965,568</td><td class="num">66,642</td><td class="num">50,000</td><td class="num">16,642</td><td class="num">982,210</td></tr><tr><td>2570</td><td class="num">982,210</td><td class="num">67,790</td><td class="num">50,000</td><td class="num">17,790</td><td class="num">1,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">วิธีอัตราดอกเบี้ยที่แท้จริง</th><th class="num">วิธีเส้นตรง</th><th class="num">ผลต่าง</th></tr></thead><tbody><tr><td>2568</td><td class="num">65,568</td><td class="num">66,667</td><td class="num">-1,099</td></tr><tr><td>2569</td><td class="num">66,642</td><td class="num">66,667</td><td class="num">-25</td></tr><tr><td>2570</td><td class="num">67,790</td><td class="num">66,667</td><td class="num">1,123</td></tr></tbody></table></div><p>ผลต่างต่อปีประมาณร้อยละ 1.7 ของดอกเบี้ยรับ (ปี 2568: 1,099 ÷ 65,568) ย่อหน้า 18.24.1 ให้ใช้วิธีอื่นได้เมื่อให้ผลไม่แตกต่างอย่างมีสาระสำคัญจากวิธีอัตราดอกเบี้ยที่แท้จริง การตัดสินว่าผลต่างมีสาระสำคัญหรือไม่เป็นดุลยพินิจของกิจการตามบริบทของงบการเงินทั้งชุด (5.7) ตำราไม่กำหนดเกณฑ์เป็นร้อยละ (แนวการตีความ)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">50,000</td><td class="num"></td></tr><tr><td>เดบิต เงินลงทุนในหุ้นกู้</td><td class="num">16,642</td><td class="num"></td></tr><tr><td>    เครดิต ดอกเบี้ยรับ</td><td class="num"></td><td class="num">66,642</td></tr></tbody></table></div><p>ตัวอย่างที่ 18.5 ต่อ: ถ้าขายหุ้นกู้ 1 ตุลาคม 2568 ในราคารวมดอกเบี้ยค้างรับ 9 เดือน ดอกเบี้ยของช่วงที่ถือ (เมษายน–กันยายน) 150,000 บาทเป็นดอกเบี้ยรับ ส่วนที่เหลือเป็นการรับคืนดอกเบี้ยค้างรับ</p><h3 id="S18.5">S18.5 ตัวอย่างประกอบความเข้าใจของสภาฯ เรื่องคะแนนสะสม ตัวอย่างที่ 1–2</h3><p>ที่มา: ตัวอย่างประกอบความเข้าใจ TFRS for NPAEs (ปรับปรุง 2565) บทที่ 18 สภาวิชาชีพบัญชี เผยแพร่ 20 กันยายน 2566 หน้า 55–59 ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน</p><p>ตัวอย่างที่ 1: ขายสินค้า A ชิ้นละ 100 บาท 500 ชิ้น ผู้ซื้อมีสิทธิซื้อสินค้า B ในราคา 10 บาท (ราคาปกติ 18 บาท) คาดว่าใช้สิทธิร้อยละ 40 ราคาปกติของ A หลังส่วนลดตามปกติ 95 บาท ใช้สิทธิจริง 300 สิทธิ</p><div class="tbl"><table><thead><tr><th>วิธี</th><th>รายการ</th><th class="num">จำนวน</th></tr></thead><tbody><tr><td>18.31.1</td><td>ขาย A: รายได้</td><td class="num">50,000</td></tr><tr><td>18.31.1</td><td>สิ้นปี: ค่าใช้จ่าย/ประมาณการหนี้สิน ร้อยละ 40 × (18 − 10) × 500</td><td class="num">1,600</td></tr><tr><td>18.31.1</td><td>ใช้สิทธิ: เงินสด 3,000 ประมาณการหนี้สิน 1,600 ค่าใช้จ่ายเพิ่ม 800 รายได้ B</td><td class="num">5,400</td></tr><tr><td>18.31.2</td><td>มูลค่ายุติธรรมของสิทธิ ร้อยละ 40 × 8</td><td class="num">3.20 ต่อชิ้น</td></tr><tr><td>18.31.2</td><td>ปันส่วน 100 × 95 ÷ 98.20 และ 100 × 3.20 ÷ 98.20</td><td class="num">96.74 / 3.26</td></tr><tr><td>18.31.2</td><td>ขาย A: รายได้ 48,370 เงินรับล่วงหน้า</td><td class="num">1,630</td></tr><tr><td>18.31.2</td><td>ใช้สิทธิ: เงินสด 3,000 เงินรับล่วงหน้า 1,630 รายได้</td><td class="num">4,630</td></tr></tbody></table></div><p>ผู้ใช้สิทธิจริง (ร้อยละ 60) มากกว่าที่คาด (ร้อยละ 40) วิธี 18.31.1 รับรู้ค่าใช้จ่ายเพิ่มเมื่อลูกค้าใช้สิทธิ วิธี 18.31.2 รับรู้รายได้ส่วนที่เหลือทั้งหมดเพราะไม่มีสิทธิคงเหลือ</p><p>ตัวอย่างที่ 2 ฉบับเต็มตรงกับตัวอย่างที่ 18.6 ในเล่ม: ปันส่วน 956,938 และ 43,062 บาท รายได้จากคะแนน 19,138 บาท (ตัวเลขตามตัวอย่างของสภาฯ ปัดเศษตามกติกาของตำราได้ 19,139 บาท) เงินรับล่วงหน้าคงเหลือ 23,924 บาท สำหรับ 25,000 คะแนนที่คาดว่าจะใช้ต่อ</p><h3 id="S18.6">S18.6 ตัวอย่างประกอบความเข้าใจของสภาฯ เรื่องตัวการหรือตัวแทน ตัวอย่างที่ 3–4</h3><p>ที่มา: ตัวอย่างประกอบความเข้าใจ TFRS for NPAEs (ปรับปรุง 2565) บทที่ 18 สภาวิชาชีพบัญชี เผยแพร่ 20 กันยายน 2566 หน้า 60–65 ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน</p><p>ตัวอย่างที่ 3 ผู้ผลิต (ตัวการ): วันส่งของฝากขายบันทึกความจำเท่านั้น</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ลูกหนี้ – ตัวกลาง</td><td class="num">180,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากการขาย</td><td class="num"></td><td class="num">180,000</td></tr><tr><td>เดบิต ต้นทุนขาย</td><td class="num">108,000</td><td class="num"></td></tr><tr><td>    เครดิต สินค้าคงเหลือ</td><td class="num"></td><td class="num">108,000</td></tr><tr><td>เดบิต ค่านายหน้า (ค่าใช้จ่ายในการขาย)</td><td class="num">18,000</td><td class="num"></td></tr><tr><td>    เครดิต เจ้าหนี้ – ตัวกลาง</td><td class="num"></td><td class="num">18,000</td></tr><tr><td>เดบิต รับคืนสินค้า</td><td class="num">9,000</td><td class="num"></td></tr><tr><td>    เครดิต ประมาณการหนี้สินจากการรับคืนสินค้า</td><td class="num"></td><td class="num">9,000</td></tr></tbody></table></div><p>ตัวอย่างที่ 3 ตัวกลาง (ตัวแทน):</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">180,000</td><td class="num"></td></tr><tr><td>    เครดิต เจ้าหนี้ – ผู้ผลิต</td><td class="num"></td><td class="num">180,000</td></tr><tr><td>เดบิต ลูกหนี้ – ผู้ผลิต</td><td class="num">18,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้ค่านายหน้า</td><td class="num"></td><td class="num">18,000</td></tr></tbody></table></div><p>ตัวอย่างที่ 4: ตัวกลางซื้อขาดชิ้นละ 90 บาท ขายต่อ 100 บาท รับความเสี่ยงสินค้าเอง ผู้ผลิตรับรู้รายได้เมื่อส่งมอบ 180,000 บาท ต้นทุนขาย 120,000 บาท ประมาณการรับคืน 9,000 บาท กำไรขั้นต้น 51,000 บาท ตัวกลางเป็นตัวการ รายได้ 180,000 บาท ต้นทุนขาย 162,000 บาท กำไรขั้นต้น 18,000 บาท</p><div class="tbl"><table><thead><tr><th></th><th class="num">ตัวอย่างที่ 3</th><th class="num">ตัวอย่างที่ 4</th></tr></thead><tbody><tr><td>ฐานะของตัวกลาง</td><td class="num">ตัวแทน</td><td class="num">ตัวการ</td></tr><tr><td>รายได้ของตัวกลาง</td><td class="num">18,000</td><td class="num">180,000</td></tr><tr><td>กำไรขั้นต้นของผู้ผลิต</td><td class="num">63,000</td><td class="num">51,000</td></tr></tbody></table></div><h3 id="S18.7">S18.7 การกระทบยอดรายได้ทางบัญชีกับภาษีเงินได้และภาษีมูลค่าเพิ่ม</h3><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">บัญชี</th><th class="num">ภาษีเงินได้</th><th class="num">ผลต่าง</th></tr></thead><tbody><tr><td>ขายเครื่องจักรผ่อนชำระ (รายได้ขาย + ดอกเบี้ยปี 2568)</td><td class="num">4,545,951</td><td class="num">ตาม ม.65 วรรคสอง (S18.1)</td><td class="num">ขึ้นกับข้อสรุปเรื่องดอกเบี้ยแฝง</td></tr><tr><td>ประมาณการรับคืนสินค้า (ตัวอย่างที่ 18.2)</td><td class="num">(20,000)</td><td class="num">0</td><td class="num">20,000</td></tr><tr><td>คะแนนสะสม 18.31.1 ค่าใช้จ่ายที่ยังไม่ใช้สิทธิ</td><td class="num">(25,000)</td><td class="num">0</td><td class="num">25,000</td></tr></tbody></table></div><p>ผลต่างของประมาณการรับคืนและคะแนนสะสมเป็นแนวการตีความของตำรา ประมาณการรับคืนและคะแนนสะสมที่ยังไม่เกิดจริงเป็นเงินสำรองตาม ม.65 ตรี (1) ส่วนวิธี 18.31.2 ที่บันทึกเงินรับล่วงหน้า กิจการพิจารณาเกณฑ์สิทธิของรายได้นั้นเป็นรายกรณี ยังไม่พบข้อหารือที่วินิจฉัยตรง</p><p>ภาษีมูลค่าเพิ่ม: ขายสินค้า ความรับผิดเกิดเมื่อส่งมอบ เว้นแต่โอนกรรมสิทธิ์ ได้รับชำระ หรือออกใบกำกับภาษีก่อน (ม.78 (1); กค 0811(กม.05)/พ.105 ลงวันที่ 26 มิถุนายน 2543) ขายผ่อนชำระหรือเช่าซื้อที่กรรมสิทธิ์ยังไม่โอน ความรับผิดเกิดเมื่อถึงกำหนดชำระราคาแต่ละงวด เว้นแต่ได้รับชำระหรือออกใบกำกับภาษีก่อน (ม.78 (2)) ให้บริการ ความรับผิดเกิดเมื่อได้รับชำระราคาค่าบริการ เว้นแต่ออกใบกำกับภาษีหรือใช้บริการก่อน (ม.78/1 (1)) ยื่น ภ.พ.30 ภายในวันที่ 15 ของเดือนถัดไป (ม.83) ถ้ายื่นทางอินเทอร์เน็ตขยายเป็นวันที่ 23 ของเดือนถัดไป สำหรับแบบที่ครบกำหนดระหว่าง 1 ก.พ. 2567 ถึง 31 ม.ค. 2570 (ประกาศกระทรวงการคลัง ฉบับที่ 7 แก้ไขโดยฉบับที่ 8) กิจการกระทบยอดรายงานภาษีขายกับรายได้ทุกเดือน ผลต่างที่พบบ่อยคือเงินรับล่วงหน้าค่าบริการ สินค้าที่ส่งมอบแล้วแต่ยังไม่ออกใบกำกับภาษี และรายได้ดอกเบี้ยหรือเงินปันผลที่ไม่อยู่ในบังคับภาษีมูลค่าเพิ่ม</p><h3 id="S18.8">S18.8 เฉลยแบบฝึกหัดและแนวคำตอบกรณีศึกษา 18.1</h3><p>ปรนัย: 1 ก · 2 ค · 3 ข · 4 ค · 5 ก · 6 ง · 7 ข · 8 ง (เหตุผลรายข้ออยู่ในแท็บแบบทดสอบตนเอง)</p><ol><li>อัตนัยข้อ 1: มูลค่าปัจจุบัน 1,000,000 ÷ 1.06 + 1,000,000 ÷ 1.06² = 1,833,393 บาท เป็นรายได้จากการขาย ดอกเบี้ยรับปีที่ 1 = 1,833,393 × ร้อยละ 6 = 110,004 บาท เป็นแนวการตีความเพราะบทที่ 18 ไม่ได้กำหนดการคิดลด อาศัยย่อหน้า 18.3 และลำดับของย่อหน้า 5.5 (มาตรฐานการรายงานทางการเงิน ฉบับที่ 15 เรื่อง รายได้จากสัญญาที่ทำกับลูกค้า (TFRS 15) ผ่านย่อหน้า 5.5.3)</li><li>อัตนัยข้อ 2: ขั้นความสำเร็จ 180,000 ÷ 450,000 = ร้อยละ 40 รายได้ 240,000 บาท กำไร 60,000 บาท ถ้าประมาณผลไม่ได้ รับรู้รายได้ 180,000 บาท ไม่มีกำไร (18.20)</li><li>อัตนัยข้อ 3: ปี 2569 เดบิต เงินสด 50,000 เดบิต เงินลงทุนในหุ้นกู้ 16,642 เครดิต ดอกเบี้ยรับ 66,642 บาท ดอกเบี้ยรับสูงกว่าคูปองเพราะรวมส่วนลด 50,000 บาทที่ทยอยรับรู้ตลอดอายุ</li><li>อัตนัยข้อ 4: วิธี 18.31.1 รายได้ 2,000,000 บาท ค่าใช้จ่ายและประมาณการหนี้สิน 30,000 บาท ใช้แล้ว 12,000 คงเหลือ 18,000 บาท วิธี 18.31.2 ปันส่วนให้คะแนน 2,000,000 × 30,000 ÷ 2,030,000 = 29,557 บาท รายได้จากคะแนน 29,557 × 12,000 ÷ 30,000 = 11,823 บาท (ปัดเศษเป็นบาท ตอบ 11,822 บาทถือว่าถูก) เงินรับล่วงหน้าคงเหลือ 17,734 บาท</li><li>อัตนัยข้อ 5: กรณีแรกเป็นตัวแทน เพราะโรงแรมกำหนดราคา ตัวแทนไม่รับความเสี่ยงห้องว่าง และรายได้เป็นร้อยละคงที่ แสดงรายได้ค่าธรรมเนียมร้อยละ 12 กรณีซื้อห้องล่วงหน้าโดยไม่มีสิทธิคืนและกำหนดราคาขายต่อเอง ตัวแทนรับความเสี่ยงห้องว่างและมีอิสระกำหนดราคา จึงเป็นตัวการ แสดงรายได้ขั้นต้น (18.32)</li></ol><p>กรณีศึกษา 18.1: รายได้ 600,000 + 1,500,000 + 800,000 = 2,900,000 บาท กำไรก่อนค่าใช้จ่ายอื่น 1,210,000 บาท ยอดสั่งซื้อ 10,000,000 บาทเปิดเผยเป็นข้อมูลการดำเนินงานได้ แต่ไม่แสดงเป็นรายได้</p>
+      <h3 id="S18.9">S18.9 ผลวิจัยปี 2569: ฉบับ 2554 ภาษี งานของผู้สอบบัญชี และการเปรียบเทียบ</h3>
+      <p class="hint">เลขย่อหน้าใน S18.9 เป็นเลขของ TFRS for NPAEs ฉบับปรับปรุง 2565 · เอกสารอบรม 9 ธ.ค. 2565 สไลด์ 69–77 และ 157 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <h4>ก. ฉบับ 2554 เทียบฉบับปรับปรุง 2565</h4>
+      <div class="tbl"><table><thead><tr><th>ฉบับ 2554</th><th>ฉบับปรับปรุง 2565</th><th>ความต่าง</th></tr></thead><tbody><tr><td>321–347</td><td>18.1–18.27</td><td>เลขใหม่เท่ากับเลขเดิมลบ 320 ถ้อยคำเหมือนเดิม ยกเว้น 18.15 ใช้ "รอบระยะเวลารายงาน" และ 18.24.1 ใช้ "วิธีอัตราดอกเบี้ยที่แท้จริง"</td></tr><tr><td>–</td><td>18.28–18.31</td><td>เพิ่มใหม่: โปรแกรมสิทธิพิเศษแก่ลูกค้า เลือกได้สองวิธี</td></tr><tr><td>–</td><td>18.32</td><td>เพิ่มใหม่: ตัวการหรือตัวแทน (ข้อบ่งชี้ของตัวแทนพิมพ์เลข 18.32.1 ซ้ำในตัวมาตรฐาน)</td></tr><tr><td>348</td><td>18.33</td><td>เพิ่มการเปิดเผยวิธีคะแนนสะสมใน 18.33.1 และเพิ่ม 18.33.4</td></tr></tbody></table></div>
+      <h4>ข. ภาษีที่ยืนยันแล้ว</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>หลัก</th><th>ที่มา</th></tr></thead><tbody><tr><td>เงินปันผลรับ</td><td>ม.65 ทวิ (10) แก้ไขโดยพระราชบัญญัติแก้ไขเพิ่มเติมประมวลรัษฎากร (ฉบับที่ 52) พ.ศ. 2562: บริษัทจำกัดรวมเป็นรายได้กึ่งหนึ่ง ยกเว้นทั้งจำนวนถ้าเป็นบริษัทจดทะเบียน หรือถือหุ้นผู้จ่ายไม่น้อยกว่าร้อยละ 25 ของหุ้นที่มีสิทธิออกเสียงและผู้จ่ายไม่ถือหุ้นผู้รับ ต้องถือหุ้นไม่น้อยกว่าสามเดือนก่อนวันมีเงินได้และไม่โอนก่อนสามเดือนหลังวันนั้น ไม่ใช้กับห้างหุ้นส่วนนิติบุคคล</td><td>ตัวบท rd.go.th/5939 · คำอธิบายใบแนบ ภ.ง.ด.50</td></tr><tr><td>ขายผ่อนชำระ</td><td>ท.ป.1/2528 ข้อ 3.5 แก้ไขโดย ท.ป.155/2549 ใช้กับกรณีกรรมสิทธิ์ยังไม่โอนและสัญญาเกินหนึ่งรอบ ยังไม่พบข้อหารือเรื่องดอกเบี้ยแฝง</td><td>ท.ป.155/2549</td></tr><tr><td>คะแนนสะสม (ภาษีมูลค่าเพิ่ม)</td><td>ความรับผิดเกิดเมื่อลูกค้าใช้คะแนนซื้อสินค้า ฐานภาษีเป็นมูลค่าทั้งหมดตาม ม.79 การโอนคะแนนระหว่างผู้ออกคะแนนไม่เป็นการขายหรือให้บริการ</td><td>กค 0702/7655 (28 ก.ย. 2561)</td></tr><tr><td>คะแนนสะสม (ภาษีเงินได้)</td><td>ยังไม่พบข้อหารือ ตำราถือประมาณการหนี้สินตาม 18.31.1 เป็นเงินสำรองต้องห้าม ม.65 ตรี (1) (แนวการตีความ)</td><td>รอยืนยัน</td></tr><tr><td>ฝากขาย</td><td>ส่งสินค้าให้ตัวแทนเป็นการขายตาม ม.77/1 (8) (ข) ความรับผิดตาม ม.78 (1) ถ้าแต่งตั้งเป็นตัวแทนตามประกาศอธิบดีกรมสรรพากร (ฉบับที่ 8) ความรับผิดเกิดเมื่อตัวแทนส่งมอบตาม ม.78 (3)</td><td>กค 0702/7981 (27 ต.ค. 2557)</td></tr><tr><td>ตัวแทนและแพลตฟอร์ม</td><td>ตัวแทนช่วงธุรกิจท่องเที่ยวเสียภาษีจากค่าบำเหน็จ ถ้าขายในนามตนเองใช้ยอดเต็ม ยังไม่พบข้อหารือเฉพาะแพลตฟอร์มสั่งอาหาร</td><td>กค 0811/11473 (12 ธ.ค. 2544) · กค 0702/พ./5402 (10 ก.ค. 2552)</td></tr><tr><td>อัตราภาษีมูลค่าเพิ่ม</td><td>ร้อยละ 7 (รวมภาษีท้องถิ่น) ใช้ถึง 30 ก.ย. 2570</td><td>พระราชกฤษฎีกา (ฉบับที่ 807) พ.ศ. 2569</td></tr><tr><td>ยื่นแบบทางอินเทอร์เน็ต</td><td>ภ.พ.30 ภายในวันที่ 23 ของเดือนถัดไป ภ.ง.ด.50 ภายใน 158 วัน สำหรับแบบที่ครบกำหนดระหว่าง 1 ก.พ. 2567 ถึง 31 ม.ค. 2570</td><td>ประกาศกระทรวงการคลัง ฉบับที่ 7 แก้ไขโดยฉบับที่ 8</td></tr></tbody></table></div>
+      <p class="hint">ข้อหารือแต่ละฉบับผูกกับข้อเท็จจริงของผู้หารือ ข้อที่ยังไม่พบข้อหารือติดป้ายแนวการตีความ</p>
+      <h4>ค. งานของผู้สอบบัญชี</h4>
+      <ul><li>มาตรฐานการสอบบัญชี รหัส 240: สันนิษฐานว่าการรับรู้รายได้มีความเสี่ยงจากการทุจริต เว้นแต่มีเหตุผลหักล้าง ตรวจการตัดยอดขาย สินค้าฝากขาย การรับคืนหลังวันสิ้นรอบ และประมาณการต้นทุนของงานบริการ</li><li>รหัส 505: ขอยืนยันยอดลูกหนี้หรือเงื่อนไขสัญญา</li><li>ประกาศสภาวิชาชีพบัญชี ที่ 32/2568 (11 ธ.ค. 2568): มาตรฐานการสอบบัญชีสำหรับกิจการที่มีความซับซ้อนน้อย มาตรฐานทางเลือก ใช้กับรอบบัญชีที่เริ่มในหรือหลัง 15 ธ.ค. 2568</li></ul>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการรายงานทางการเงินระหว่างประเทศ (International Financial Reporting Standards: IFRS) สำหรับกิจการขนาดกลางและขนาดย่อม (Small and Medium-sized Entities: SMEs) ฉบับที่ 3 (27 ก.พ. 2568 ใช้ 1 ม.ค. 2570) เขียนหมวด 23 ใหม่ตามแนวห้าขั้นของมาตรฐานการรายงานทางการเงินระหว่างประเทศ ฉบับที่ 15 รับรู้รายได้เมื่อลูกค้าได้การควบคุม ส่วนบทที่ 18 ยังใช้การโอนความเสี่ยงและผลตอบแทน</p>
+    </section>
+  </div>
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 18 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์ ใช้งานออฟไลน์ได้</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 18.1–18.7 และตารางที่ 18-3 ถึง 18-9 ในตำรา</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=0)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fp=x=>x<0?'('+fmt(-x)+')':fmt(x);
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function je(title,lines,ref){
+    const L=lines.filter(l=>Math.abs(l.amt)>=0.5);const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);
+    const rows=dr.concat(cr).map(l=>l.dr?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`:`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,t])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${t?esc(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const theory=items=>`<details class="theory"><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  const tbl=(h,rows,num)=>`<div class="tbl"><table><thead><tr>${h.map((x,i)=>`<th${num.includes(i)?' class="num"':''}>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td${num.includes(i)?' class="num"':''}>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  /* tabs */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];const names=tabs.map(b=>b.dataset.tab);
+  function show(name){tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);try{localStorage.setItem('npaes18tab',name)}catch(e){}}
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='type';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes18tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  function parseCSV(text){const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true;else if(ch===delim){row.push(f);f=''}else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''}else if(ch!=='\r')f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''))}
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{e.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+
+
+  const R0=x=>Math.round(x+1e-9);
+  const TM=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const pd=s=>{const m=String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null};
+  const thd=d=>d?`${d.getUTCDate()} ${TM[d.getUTCMonth()]} ${d.getUTCFullYear()+543}`:'–';
+  const INT='<span class="pill warn">แนวการตีความ</span>';
+  const G={};window.__R=G;
+  const bad=m=>verdict('warn','ตรวจข้อมูลที่กรอก',m);
+  const on=(ids,f)=>ids.forEach(id=>{const e=$(id);e.addEventListener(e.tagName==='SELECT'||e.type==='checkbox'||e.type==='date'?'change':'input',f)});
+  /* 0 type */
+  const TY={goods:['18.6–18.11','1 ขายสินค้าและการรับคืน'],svc:['18.14–18.22','2 ขั้นความสำเร็จ'],int:['18.23–18.25, 18.27','3 ดอกเบี้ย'],roy:['18.24.2, 18.26','3 ค่าสิทธิ'],div:['18.24.3','3 เงินปันผล'],loy:['18.28–18.31','4 คะแนนสะสม'],agt:['18.2, 18.32','5 ตัวการหรือตัวแทน'],re:['18.12 ใช้บทที่ 19',''],con:['18.13 ใช้บทที่ 20',''],own:['18.1 ไม่ใช่รายได้','']};
+  function tCalc(){const src=$('tSrc').value,amt=val($('tAmt')),vat=$('tVat').value==='yes'&&!['int','div','own'].includes(src);
+    if(amt<0){$('tOut').innerHTML=bad('จำนวนที่เรียกเก็บต้องไม่ติดลบ');G.tRev=null;G.tVat=null;G.tSrc=src;return}
+    const rev=src==='own'?0:(vat?R0(amt/1.07):amt);const v=vat?amt-rev:0;const t=TY[src];
+    let msg=src==='own'?'เงินทุนจากผู้มีส่วนร่วมในส่วนของเจ้าของไม่เป็นรายได้ (18.1)':(src==='re'||src==='con')?`รายได้ประเภทนี้รับรู้ตามบทอื่น (${t[0]})`:`ใช้ย่อหน้า ${t[0]} ต่อที่แท็บ ${t[1]}`;
+    if(src==='agt')msg+=' ถ้าเป็นตัวแทน รายได้คือค่าธรรมเนียมหรือค่านายหน้าเท่านั้น (18.2)';
+    if(src==='agt'){$('tOut').innerHTML=figs([['ภาษีมูลค่าเพิ่มที่เก็บแทน (ไม่ใช่รายได้)',v]])+verdict('warn','ยังไม่สรุปจำนวนที่เป็นรายได้','ประเมินฐานะตัวการหรือตัวแทนที่แท็บ 5 ก่อน ถ้าเป็นตัวแทน รายได้คือค่าธรรมเนียมหรือค่านายหน้าเท่านั้น (18.2, 18.32)');G.tRev=null;G.tVat=v;G.tSrc=src;return}
+    $('tOut').innerHTML=figs([['จำนวนที่เป็นรายได้',rev],['ภาษีมูลค่าเพิ่มที่เก็บแทน (ไม่ใช่รายได้)',v]])+verdict('ok','ย่อหน้าที่ใช้',esc(msg));
+    G.tRev=rev;G.tVat=v;G.tSrc=src}
+  on(['tSrc','tAmt','tVat'],tCalc);tCalc();
+  /* 1 goods */
+  function gCalc(){const a=['g1','g2','g3','g4','g5'].map(id=>$(id).value);const risk=$('gRisk').value;
+    const sales=val($('gSales')),pct=val($('gPct'));const prov=R0(sales*pct/100);let cls='',h='',why='';
+    G.gProv=prov;G.gNet=sales-prov;
+    if(sales<0||pct<0||pct>100){$('gOut').innerHTML=bad('ยอดขายต้องไม่ติดลบ และอัตราการคืนต้องอยู่ระหว่างร้อยละ 0 ถึง 100');G.gCls='input';return}
+    if(a.some(x=>x==='')){cls='';h='ยังไม่แสดงผล';why='ตอบเงื่อนไขให้ครบทั้งห้าข้อก่อน'}
+    else if(['perf','resale','inst','cancel'].includes(risk)){cls='ยังไม่รับรู้รายได้';why='ยังคงความเสี่ยงที่มีนัยสำคัญของความเป็นเจ้าของ รายการนี้ยังไม่ถือเป็นการขาย (18.8)'}
+    else if(a.every(x=>x==='yes')){cls='รับรู้รายได้';why=risk==='title'?'คงกรรมสิทธิ์ไว้เพียงเพื่อประกันการชำระเงิน เป็นความเสี่ยงที่ไม่มีนัยสำคัญ (18.9)':risk==='refund'?'รับรู้รายได้พร้อมหนี้สินจากการรับคืนตามประมาณการ (18.9)':'เงื่อนไขครบทุกข้อ (18.6)'}
+    else if(a[4]==='no'){cls='ยังไม่รับรู้รายได้';why='วัดค่าใช้จ่ายไม่ได้อย่างน่าเชื่อถือ บันทึกสิ่งตอบแทนที่ได้รับเป็นหนี้สิน (18.11)'}
+    else if(a[3]==='no'){cls='ยังไม่รับรู้รายได้';why='รับรู้เมื่อความไม่แน่นอนเรื่องการได้รับประโยชน์หมดไป (18.10)'}
+    else{cls='ยังไม่รับรู้รายได้';why='เงื่อนไขยังไม่ครบทุกข้อ (18.6)'}
+    h=h||cls;
+    $('gOut').innerHTML=verdict(cls==='รับรู้รายได้'?'ok':'warn',h,esc(why))+(cls==='รับรู้รายได้'?figs([['ประมาณการรับคืน',prov],['รายได้จากการขายสุทธิ',sales-prov]])+
+      je('ประมาณการรับคืน ณ วันสิ้นรอบ',[{acct:'รับคืนสินค้า (หักจากรายได้)',amt:prov,dr:true},{acct:'ประมาณการหนี้สินจากการรับคืนสินค้า (แบบ 2 รายการ 3.9)',amt:prov,dr:false}],'18.9'):
+      cls?'<p class="hint">ยังไม่มีรายได้จากการขาย จึงยังไม่คำนวณรายได้สุทธิและยังไม่ตั้งประมาณการรับคืน สิ่งตอบแทนที่ได้รับแล้วแสดงเป็นหนี้สิน</p>':'<p class="hint">ตัวเลขรายได้และประมาณการรับคืนแสดงเมื่อตอบครบและผลคือรับรู้รายได้</p>');
+    G.gCls=cls}
+  on(['g1','g2','g3','g4','g5','gRisk','gSales','gPct'],gCalc);gCalc();
+  /* 2 service */
+  function sCalc(){const P=val($('sPrice')),E=val($('sEst')),C=val($('sTo')),adv=val($('sAdv'));const rel=$('sRel').value==='yes',rec=$('sRec').value==='yes';
+    const meth=$('sMeth').value,sp=val($('sPct'));
+    if(P<0||E<0||C<0||adv<0){$('sOut').innerHTML=bad('ราคา ต้นทุน และเงินรับล่วงหน้าต้องไม่ติดลบ');G.sRev=null;return}
+    if(meth!=='cost'&&(sp<0||sp>100)){$('sOut').innerHTML=bad('ร้อยละงานที่เสร็จต้องอยู่ระหว่าง 0 ถึง 100');G.sRev=null;return}
+    if(meth==='cost'&&rel&&E<=0){$('sOut').innerHTML=bad('ประมาณการต้นทุนทั้งสิ้นต้องมากกว่า 0 ถ้าวัดต้นทุนทั้งสิ้นไม่ได้ เลือก "ประมาณผลได้อย่างน่าเชื่อถือ" เป็นไม่ใช่ (18.20–18.22)');G.sRev=null;return}
+    const over=meth==='cost'&&E>0&&C>E;
+    const pct=meth==='cost'?(E>0?Math.min(C/E,1):0):sp/100;let rev,h,why;
+    if(rel){rev=R0(P*Math.min(pct,1));h='ประมาณผลได้: รับรู้ตามขั้นความสำเร็จ';why=`ขั้นความสำเร็จร้อยละ ${fmt(pct*100,2)} (18.14, 18.18)`}
+    else if(rec){rev=C;h='ประมาณผลไม่ได้: รายได้ไม่เกินต้นทุนที่คาดว่าได้คืน';why='ไม่รับรู้กำไร (18.20–18.21)'}
+    else{rev=0;h='ประมาณผลไม่ได้และไม่น่าได้ต้นทุนคืน';why='รับรู้ต้นทุนเป็นค่าใช้จ่ายโดยไม่รับรู้รายได้ (18.22)'}
+    const gp=rev-C,exc=Math.max(adv-rev,0),acc=Math.max(rev-adv,0),vat=R0(adv*0.07);
+    $('sOut').innerHTML=(over?bad('ต้นทุนที่เกิดขึ้นแล้วเกินประมาณการต้นทุนทั้งสิ้น ขั้นความสำเร็จจำกัดไว้ที่ร้อยละ 100 ทบทวนประมาณการตามย่อหน้า 18.17 และพิจารณาผลขาดทุนที่คาดว่าจะเกิดขึ้น'):'')+verdict(rel?'ok':'warn',h,esc(why))+figs([['รายได้',rev],['ต้นทุนที่รับรู้',C],['กำไร (ขาดทุน)',gp],['เงินรับล่วงหน้าส่วนที่เกินงานที่เสร็จ (รายการ 3.3)',exc],['รายได้ค้างรับ (รายการ 1.3)',acc],['ภาษีขายเมื่อรับเงินล่วงหน้า (ม.78/1 (1))',vat]])+
+      `<p class="hint">ทางภาษีมูลค่าเพิ่ม ความรับผิดของบริการเกิดเมื่อได้รับชำระ ไม่ขึ้นกับขั้นความสำเร็จ ดูแท็บ 6 การเลือกบรรทัดแบบ 2 ${INT}</p>`;
+    G.sRev=rev;G.sGP=gp;G.sExc=exc;G.sVat=vat;G.sPct=pct}
+  on(['sPrice','sEst','sTo','sMeth','sPct','sRel','sRec','sAdv'],sCalc);sCalc();
+  /* 3 interest */
+  function bCalc(){const F=val($('bFace')),c=val($('bCpn'))/100,Pr=val($('bPrice')),Nin=val($('bN'));
+    if(F<=0||Pr<=0||c<0||Nin<1||Nin>30||Math.round(Nin)!==Nin){$('bOut').innerHTML=bad('มูลค่าตามหน้าตั๋วและราคาซื้อต้องมากกว่า 0 อัตราดอกเบี้ยต้องไม่ติดลบ และอายุเป็นจำนวนเต็ม 1 ถึง 30 ปี');G.eir=null;G.bTot=null;return}
+    const N=Nin;const cp=R0(F*c);
+    const pv=r=>{let s=0;for(let t=1;t<=N;t++)s+=cp/Math.pow(1+r,t);return s+F/Math.pow(1+r,N)};
+    let lo=-0.99,hi=1;for(let k=0;k<200;k++){const m=(lo+hi)/2;if(pv(m)>Pr)lo=m;else hi=m}const eir=(lo+hi)/2;
+    let b=Pr;const rows=[];let tot=0;for(let y=1;y<=N;y++){const i=y<N?R0(b*eir):F+cp-b;const e=b+i-cp;rows.push([y,fmt(b),fmt(i),fmt(cp),fmt(i-cp),fmt(e)]);tot+=i;if(y===1)G.bInt1=i;b=e}
+    $('bOut').innerHTML=figs([['อัตราดอกเบี้ยที่แท้จริง (ร้อยละ)',fmt(eir*100,4),1],['ดอกเบี้ยรับรวมตลอดอายุ',tot]])+tbl(['ปี','ยอดต้นปี','ดอกเบี้ยรับ','คูปอง','ตัดส่วนลด (ส่วนเกิน)','ยอดสิ้นปี'],rows,[1,2,3,4,5]);
+    G.eir=Math.round(eir*1e6)/1e4;G.bTot=tot}
+  function pCalc(){const F=val($('pFace')),r=val($('pRate'))/100,m=val($('pMon'));
+    if(F<0||r<0||m<0||m>12){$('pOut').innerHTML=bad('มูลค่าและอัตราต้องไม่ติดลบ และจำนวนเดือนก่อนวันซื้ออยู่ระหว่าง 0 ถึง 12 เดือนของงวดดอกเบี้ยปีละครั้ง');G.pPre=null;G.pInc=null;return}
+    const pre=R0(F*r*m/12),cp=R0(F*r);
+    $('pOut').innerHTML=figs([['ดอกเบี้ยค้างรับ ณ วันซื้อ',pre],['ดอกเบี้ยที่ได้รับทั้งงวด',cp],['ดอกเบี้ยรับของกิจการ',cp-pre]])+`<p class="hint">บันทึกส่วนก่อนซื้อเป็นดอกเบี้ยค้างรับ ณ วันซื้อ ${INT} ย่อหน้า 18.25 ให้รับรู้รายได้เฉพาะส่วนหลังการซื้อ</p>`;G.pPre=pre;G.pInc=cp-pre}
+  function yCalc(){const a=val($('ySales')),b=val($('yPct'));if(a<0||b<0||b>100){$('yOut').innerHTML=bad('ยอดขายต้องไม่ติดลบ และอัตราค่าสิทธิอยู่ระหว่างร้อยละ 0 ถึง 100');G.roy=null;return}
+    const v=R0(a*b/100);$('yOut').innerHTML=figs([['ค่าสิทธิค้างรับของงวด (เกณฑ์คงค้าง)',v]]);G.roy=v}
+  function dCalc(){const k=$('dKind').value,dd=pd($('dDecl').value),ye=pd($('dYe').value),amt=val($('dAmt'));
+    if(amt<0){$('dOut').innerHTML=bad('จำนวนเงินปันผลต้องไม่ติดลบ');G.dIn=null;return}
+    if(!dd||!ye){$('dOut').innerHTML='<p class="hint">กรอกวันที่ประกาศจ่ายหรือวันที่มีมติ และวันสิ้นรอบ</p>';G.dIn=null;return}
+    const inP=dd.getTime()<=ye.getTime();
+    $('dOut').innerHTML=verdict(inP?'ok':'warn',inP?'รับรู้เป็นรายได้ในงวดนี้':'ยังไม่รับรู้ในงวดนี้',(inP?`ผู้ถือหุ้นมีสิทธิได้รับตั้งแต่ ${thd(dd)} ซึ่งไม่เกินวันสิ้นรอบ รับรู้เงินปันผลค้างรับ ${fmt(amt)} บาท`:`สิทธิเกิดวันที่ ${thd(dd)} หลังวันสิ้นรอบ รับรู้ในงวดถัดไป`)+` (18.24.3) ${k==='agm'?'เงินปันผลประจำปีมีสิทธิเมื่อที่ประชุมผู้ถือหุ้นประกาศจ่าย':'เงินปันผลระหว่างกาลมีสิทธิเมื่อคณะกรรมการมีมติจ่าย'} (ป.พ.พ. ม.1201) ${INT} แสดงเป็นรายได้อื่น (แบบ 2 รายการ 2) เว้นแต่เป็นธุรกิจหลัก`);G.dIn=inP}
+  on(['bFace','bCpn','bPrice','bN'],bCalc);on(['pFace','pRate','pMon'],pCalc);on(['ySales','yPct'],yCalc);on(['dKind','dDecl','dYe','dAmt'],dCalc);bCalc();pCalc();yCalc();dCalc();
+  /* 4 loyalty */
+  function lCalc(){const S=val($('lSales')),P=val($('lPts')),V=val($('lVal')),X=val($('lExp')),U=val($('lRed')),Gd=val($('lGoods'));
+    if([S,P,V,X,U,Gd].some(x=>x<0)){$('lOut').innerHTML=bad('ข้อมูลทุกช่องต้องไม่ติดลบ');G.l2Rev=null;return}
+    if(Gd<U*V){$('lOut').innerHTML=bad('มูลค่าสินค้าที่ลูกค้าซื้อพร้อมใช้คะแนนต้องไม่น้อยกว่ามูลค่าของคะแนนที่ใช้ เงินสดที่รับจึงไม่ติดลบ');G.l2Rev=null;return}
+    const warn=(X>P?'<p class="hint">คะแนนที่คาดว่าจะใช้มากกว่าคะแนนที่ออก ตรวจข้อมูล</p>':'')+(U>X?bad('คะแนนที่ใช้แล้วเกินคะแนนที่คาดว่าจะใช้สิทธิ ทบทวนประมาณการ ณ วันสิ้นรอบ (18.31) ก่อนใช้ผล ตารางด้านล่างจำกัดประมาณการคงเหลือไม่ให้ติดลบ'):'');
+    const used=U*V,prov=R0(X*V),provEnd=Math.max(prov-used,0),fv=R0(X*V),sa=R0(S*S/(S+fv)),pa=S-sa,prev=X>0?Math.round(pa*Math.min(U,X)/X):0,def=pa-prev,cash=Gd-used;
+    const r1=S+Gd,r2=sa+prev+cash;
+    $('lOut').innerHTML=warn+tbl(['รายการ','วิธี 18.31.1','วิธี 18.31.2'],[
+      ['รายได้จากการขายเริ่มแรก',fmt(S),fmt(sa)],['ส่วนที่ปันให้คะแนน','–',fmt(pa)],['รายได้เมื่อลูกค้าใช้คะแนน',fmt(Gd)+' (เงินสด '+fmt(cash)+' + ประมาณการ '+fmt(used)+')',fmt(cash)+' + รายได้จากคะแนน '+fmt(prev)],
+      ['รายได้รวม',fmt(r1),fmt(r2)],['ค่าใช้จ่ายจากคะแนนสะสม',fmt(prov),'–'],['หนี้สินคงเหลือ',fmt(provEnd)+' ประมาณการหนี้สิน (รายการ 3.9)',fmt(def)+' เงินรับล่วงหน้า (รายการ 3.2)']],[])+
+      `<p class="hint">วิธี 18.31.2 คำนวณรายได้จากคะแนนที่ใช้แล้วเทียบกับคะแนนที่คาดว่าจะใช้สิทธิ ปัดเศษเป็นบาท ตัวอย่างของสภาฯ หน้า 59 แสดง 19,138 บาท ต่างจากผลปัดเศษหนึ่งบาท คำตอบที่ต่างไม่เกินหนึ่งบาทถือว่าถูก ประมาณการหนี้สินวิธี 18.31.1 ใช้มูลค่าของคะแนนที่คาดว่าจะใช้สิทธิตามตัวอย่างของสภาฯ ณ วันสิ้นรอบ บรรทัดแบบ 2 ${INT}</p>`;
+    G.l1Rev=r1;G.l1Prov=prov;G.l1End=provEnd;G.l2Sale=sa;G.l2Alloc=pa;G.l2Rev=prev;G.l2Def=def;G.l2Tot=r2}
+  on(['lSales','lPts','lVal','lExp','lRed','lGoods'],lCalc);lCalc();
+  /* 5 agent */
+  function aCalc(){const v=['a1','a2','a3','a4','a5'].map(id=>$(id).value);const pr=v.slice(0,4).filter(x=>x==='yes').length,ag=v.slice(0,4).filter(x=>x==='no').length+(v[4]==='yes'?1:0);
+    const ans=v.filter(x=>x!=='').length;const c=$('aConc').value,gr=val($('aGross')),fee=val($('aFee'));let out='';
+    out+=figs([['ข้อบ่งชี้ที่ตอบแล้ว',ans+'/5',1],['ข้อบ่งชี้ฝั่งตัวการ',pr],['ข้อบ่งชี้ฝั่งตัวแทน',ag]]);
+    if(ans<5)out+='<p class="hint">ตอบข้อบ่งชี้ให้ครบ แล้วเลือกข้อสรุปของผู้ใช้ ข้อบ่งชี้ข้อเดียวไม่ใช่ข้อสรุป</p>';
+    let rev=null;
+    if(c&&ans<5)out+=verdict('warn','ยังไม่แสดงการแสดงรายได้','ตอบข้อบ่งชี้ให้ครบทั้งห้าข้อก่อน แล้วแอปจึงแสดงรายได้ตามข้อสรุปของผู้ใช้');
+    else if(gr<0||fee<0||fee>gr)out+=bad('ยอดที่เรียกเก็บและค่าธรรมเนียมต้องไม่ติดลบ และค่าธรรมเนียมต้องไม่เกินยอดที่เรียกเก็บ');
+    else if(c==='p'){rev=gr;out+=verdict('ok','ข้อสรุปของผู้ใช้: ตัวการ',`แสดงรายได้ขั้นต้น ${fmt(gr)} บาท ค่าตอบแทนที่จ่ายให้ผู้อื่นเป็นต้นทุนหรือค่าใช้จ่าย (18.32)`)}
+    else if(c==='a'){rev=fee;out+=verdict('ok','ข้อสรุปของผู้ใช้: ตัวแทน',`แสดงรายได้ค่าธรรมเนียมหรือค่านายหน้า ${fmt(fee)} บาท เงินที่เก็บแทนตัวการเป็นหนี้สินจนกว่าจะส่งต่อ (18.2, 18.32)`)}
+    if(c&&ans===5&&((c==='p'&&ag>pr)||(c==='a'&&pr>ag)))out+='<p class="hint">ข้อสรุปที่เลือกต่างจากข้อบ่งชี้ส่วนใหญ่ บันทึกเหตุผลและหลักฐานประกอบ</p>';
+    $('aOut').innerHTML=out;G.aPr=pr;G.aAg=ag;G.aRev=rev;G.aAns=ans}
+  on(['a1','a2','a3','a4','a5','aConc','aGross','aFee'],aCalc);aCalc();
+  /* 6 tax */
+  function vCalc(){const t=$('vType').value;const ds=(t==='goods'?['vDel','vPay','vInv']:t==='inst'?['vDueI','vPay','vInv']:['vPay','vInv','vUse']).map(id=>pd($(id).value)).filter(Boolean);
+    const ye=pd($('vYe').value);let out='',pt=null,due=null;
+    if(ds.length){pt=new Date(Math.min(...ds.map(d=>d.getTime())));due=new Date(Date.UTC(pt.getUTCFullYear(),pt.getUTCMonth()+1,15));
+      out+=figs([['จุดความรับผิดภาษีมูลค่าเพิ่ม',thd(pt),1],['ยื่น ภ.พ.30 ภายใน (ม.83)',thd(due),1]])+'<p class="hint">กำหนดวันที่ 15 ตาม ม.83 เป็นการยื่นแบบกระดาษ ถ้ายื่นทางอินเทอร์เน็ตขยายเป็นวันที่ 23 ของเดือนถัดไป สำหรับแบบที่ครบกำหนดระหว่าง 1 ก.พ. 2567 ถึง 31 ม.ค. 2570 (ประกาศกระทรวงการคลัง ฉบับที่ 7 แก้ไขโดยฉบับที่ 8)</p>'}
+    else out+='<p class="hint">กรอกวันที่อย่างน้อยหนึ่งช่อง</p>';
+    const pnd=ye?new Date(ye.getTime()+150*86400000):null;
+    out+=figs([['ยื่น ภ.ง.ด.50 ภายใน (ม.69)',thd(pnd),1]])+`<p class="hint">${t==='goods'?'ขายสินค้า: วันส่งมอบ หรือก่อนนั้นถ้าโอนกรรมสิทธิ์ ได้รับชำระ หรือออกใบกำกับภาษี (ม.78 (1))':t==='inst'?'ขายผ่อนชำระหรือเช่าซื้อที่กรรมสิทธิ์ยังไม่โอน: วันถึงกำหนดชำระราคาแต่ละงวด หรือก่อนนั้นถ้าได้รับชำระหรือออกใบกำกับภาษี (ม.78 (2)) กรอกทีละงวด':'ให้บริการ: วันได้รับชำระ หรือก่อนนั้นถ้าออกใบกำกับภาษีหรือได้ใช้บริการ (ม.78/1 (1))'} รายได้ทางบัญชีรับรู้ตามบทที่ 18 ไม่ขึ้นกับวันนี้ ผลต่างกระทบยอดตามตารางที่ 18-9</p>`;
+    $('vOut').innerHTML=out;G.vPoint=thd(pt);G.vDue=thd(due);G.pnd=thd(pnd)}
+  on(['vType','vDel','vDueI','vUse','vPay','vInv','vYe'],vCalc);vCalc();
+  /* 7 note */
+  function nCalc(){const an=$('nAnon').checked;const nm=an?'บริษัท':esc($('nName').value.trim()||'บริษัท')+' ';const loy=$('nLoy').value;
+    const it=[['รายได้จากการขายสินค้า','nG'],['รายได้จากการให้บริการ','nS'],['ดอกเบี้ยรับ','nI'],['ค่าสิทธิ','nR'],['เงินปันผลรับ','nD']].map(([k,id])=>[k,val($(id))]).filter(x=>x[1]);
+    const xg=val($('nXg')),xs=val($('nXs'));
+    let t=`<h3>นโยบายการบัญชี: การรับรู้รายได้</h3><p>${nm}รับรู้รายได้จากการขายสินค้าเมื่อโอนความเสี่ยงและผลตอบแทนที่มีนัยสำคัญให้ผู้ซื้อแล้ว แสดงสุทธิจากภาษีมูลค่าเพิ่ม ส่วนลดการค้า ส่วนลดตามปริมาณ และประมาณการรับคืนสินค้า รายได้จากการให้บริการรับรู้ตามขั้นความสำเร็จของงาน วัดจากสัดส่วนต้นทุนของบริการที่ให้แล้วต่อประมาณการต้นทุนทั้งสิ้น ดอกเบี้ยรับรับรู้ตามวิธีอัตราดอกเบี้ยที่แท้จริง ค่าสิทธิรับรู้ตามเกณฑ์คงค้างตามเนื้อหาของข้อตกลง เงินปันผลรับรับรู้เมื่อมีสิทธิได้รับ</p>`;
+    if(loy==='2')t+=`<p>คะแนนสะสมที่ให้ลูกค้ารับรู้เป็นหนี้สินแยกต่างหาก โดยปันส่วนสิ่งตอบแทนจากการขายตามมูลค่ายุติธรรมของคะแนน และรับรู้เป็นรายได้เมื่อลูกค้าใช้สิทธิ ตามสัดส่วนคะแนนที่ใช้สิทธิต่อคะแนนที่คาดว่าจะใช้สิทธิ</p>`;
+    if(loy==='1')t+=`<p>คะแนนสะสมที่ให้ลูกค้ารับรู้เป็นประมาณการหนี้สินพร้อมค่าใช้จ่ายด้วยประมาณการที่ดีที่สุด ณ วันสิ้นรอบ รายละเอียดการเปลี่ยนแปลงของประมาณการหนี้สินแสดงในหมายเหตุประมาณการหนี้สิน</p>`;
+    t+=`<h3>รายได้แต่ละประเภทที่มีนัยสำคัญ</h3>`+tbl(['ประเภท','บาท'],it.map(([k,v])=>[esc(k),fmt(v)]),[1]);
+    if(xg||xs)t+=`<p>รายได้ข้างต้นรวมรายได้จากการแลกเปลี่ยน${xg?` สินค้า ${fmt(xg)} บาท (ในรายได้จากการขายสินค้า)`:''}${xs?` บริการ ${fmt(xs)} บาท (ในรายได้จากการให้บริการ)`:''} (18.33.3)</p>`;
+    $('nOut').innerHTML=t;G.nAnon=an;G.nTxt=$('nOut').innerText}
+  on(['nName','nAnon','nLoy','nG','nS','nI','nR','nD','nXg','nXs'],nCalc);nCalc();
+  $('nCopy').addEventListener('click',()=>copyText($('nOut').innerText,'nOk'));
+  /* quiz */
+  const QZ=[["LO 18.1", "เข้าใจ", "บริษัทขายสินค้าราคา 107,000 บาท รวมภาษีมูลค่าเพิ่ม 7,000 บาท รายได้ตามบทที่ 18 คือเท่าใด", ["ก. 100,000 บาท", "ข. 107,000 บาท", "ค. 93,000 บาท", "ง. 7,000 บาท"], 0, "ภาษีมูลค่าเพิ่มเป็นจำนวนที่เรียกเก็บแทนบุคคลที่สาม ไม่ทำให้ส่วนของเจ้าของเพิ่มขึ้น จึงไม่ใช่รายได้ (18.2)", "18.1"], ["LO 18.2", "ประยุกต์ใช้", "(ตัวอย่างสมมติ) ผู้ผลิตสองรายแลกวัตถุดิบชนิดและคุณภาพเดียวกันปริมาณเท่ากันเพื่อลดค่าขนส่ง ข้อใดถูกต้อง", ["ก. รับรู้รายได้ด้วยมูลค่ายุติธรรมของวัตถุดิบที่ได้รับ", "ข. รับรู้รายได้ด้วยมูลค่ายุติธรรมของวัตถุดิบที่ให้ไป", "ค. ต้องไม่ถือว่าการแลกเปลี่ยนก่อให้เกิดรายได้", "ง. รับรู้รายได้ด้วยราคาทุนของวัตถุดิบที่ให้ไป"], 2, "สินค้าที่มีลักษณะและมูลค่าใกล้เคียงกัน กิจการต้องไม่ถือว่าการแลกเปลี่ยนก่อให้เกิดรายได้ (18.5)", "18.2"], ["LO 18.3", "วิเคราะห์", "กรณีใดที่กิจการยังคงความเสี่ยงที่มีนัยสำคัญ จึงยังไม่รับรู้รายได้จากการขายสินค้า", ["ก. คงกรรมสิทธิ์ไว้เพียงเพื่อประกันการเรียกเก็บเงิน", "ข. ส่งเครื่องจักรที่การติดตั้งเป็นส่วนสำคัญของสัญญาแต่ยังติดตั้งไม่เสร็จ", "ค. ร้านค้าปลีกคืนเงินให้ลูกค้าที่ไม่พอใจและประมาณการคืนได้อย่างน่าเชื่อถือ", "ง. ผู้ซื้อรับมอบสินค้าและรับความเสี่ยงแล้ว แต่ยังไม่ชำระเงินตามเครดิตปกติ"], 1, "การติดตั้งที่เป็นส่วนสำคัญของสัญญาและยังไม่เสร็จเป็นตัวอย่างของความเสี่ยงที่มีนัยสำคัญที่ยังคงอยู่ (18.8.3) ข้อ ก และ ค เป็นความเสี่ยงที่ไม่เป็นนัยสำคัญตาม 18.9", "18.3"], ["LO 18.4", "ประยุกต์ใช้", "สัญญาบริการ 600,000 บาท ประมาณการต้นทุนทั้งสิ้น 450,000 บาท ต้นทุนของบริการที่ให้แล้ว 180,000 บาท ประมาณผลได้อย่างน่าเชื่อถือ รายได้ที่รับรู้คือเท่าใด", ["ก. 180,000 บาท", "ข. 60,000 บาท", "ค. 240,000 บาท", "ง. 600,000 บาท"], 2, "ขั้นความสำเร็จ 180,000 ÷ 450,000 = ร้อยละ 40 รายได้ 600,000 × ร้อยละ 40 = 240,000 บาท (18.14, 18.18.3)", "18.4"], ["LO 18.4", "เข้าใจ", "กิจการประมาณผลของบริการไม่ได้อย่างน่าเชื่อถือ แต่คาดว่าจะได้รับต้นทุนที่เกิดขึ้นคืน กิจการรับรู้รายได้อย่างไร", ["ก. ไม่เกินจำนวนค่าใช้จ่ายที่รับรู้แล้วซึ่งคาดว่าจะได้รับคืน", "ข. ตามราคาในสัญญาทั้งจำนวน", "ค. ตามเงินที่เรียกเก็บแล้ว", "ง. ไม่รับรู้รายได้จนงานเสร็จ"], 0, "รับรู้รายได้ไม่เกินค่าใช้จ่ายที่รับรู้แล้วซึ่งคาดว่าจะได้รับคืน และไม่รับรู้กำไร (18.20–18.21)", "18.4"], ["LO 18.5", "ประยุกต์ใช้", "ซื้อหุ้นกู้ 1 เมษายน ราคารวมดอกเบี้ยค้างรับ 3 เดือน 75,000 บาท ได้รับดอกเบี้ยทั้งปี 300,000 บาทในวันที่ 31 ธันวาคม รายได้ดอกเบี้ยของปีคือเท่าใด", ["ก. 300,000 บาท", "ข. 375,000 บาท", "ค. 75,000 บาท", "ง. 225,000 บาท"], 3, "ดอกเบี้ยที่ได้รับต้องปันส่วน รับรู้เป็นรายได้เฉพาะส่วนหลังการซื้อ 300,000 − 75,000 = 225,000 บาท (18.25)", "18.5"], ["LO 18.6", "วิเคราะห์", "กิจการเลือกวิธีตามย่อหน้า 18.31.2 ปันส่วนให้คะแนนสะสม 43,062 บาท คาดว่าลูกค้าจะใช้ 45,000 คะแนน ระหว่างปีใช้แล้ว 20,000 คะแนน รายได้จากคะแนนสะสมของปีคือเท่าใด", ["ก. 17,224 บาท", "ข. 19,138 บาท", "ค. 43,062 บาท", "ง. 20,000 บาท"], 1, "รายได้คำนวณจากคะแนนที่ใช้สิทธิเทียบกับคะแนนทั้งหมดที่คาดว่าจะใช้สิทธิ 43,062 × 20,000 ÷ 45,000 = 19,138 บาท (18.31.2) ข้อ ก หารด้วยคะแนนที่ออกทั้งหมด 50,000 ซึ่งไม่ตรงกับถ้อยคำของย่อหน้า", "18.6"], ["LO 18.7", "ประเมินค่า", "ตัวกลางรับสินค้าฝากขาย คืนสินค้าที่ขายไม่ได้ให้ผู้ผลิต ราคากำหนดโดยผู้ผลิต และได้ค่านายหน้า 10 บาทต่อชิ้น ตัวกลางแสดงรายได้อย่างไร", ["ก. ราคาขายเต็ม 100 บาทต่อชิ้น", "ข. ราคาขายหักต้นทุนของผู้ผลิต", "ค. เงินสดที่รับจากลูกค้า", "ง. ค่านายหน้า 10 บาทต่อชิ้น"], 3, "ตัวกลางไม่ได้รับความเสี่ยงและผลตอบแทนที่มีนัยสำคัญ และรายได้กำหนดล่วงหน้าเป็นค่าธรรมเนียมคงที่ต่อชิ้น จึงเป็นตัวแทนและแสดงค่านายหน้า (18.32)", "18.7"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  const goS=()=>{const m=(location.hash||'').match(/^#(S18\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}else{const h=(location.hash||'').slice(1);if(names.includes(h))show(h)}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body>
+</html>

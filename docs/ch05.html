@@ -1,0 +1,683 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 05 · จำแนกการเปลี่ยนแปลงทางบัญชีและปรับงบย้อนหลัง</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun","Thonburi","Leelawadee UI","Noto Sans Thai",system-ui,sans-serif;
+  --body:"Sarabun","Thonburi","Leelawadee UI","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:36px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:32px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="tl"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD"></span>
+    <span class="byline">ชุดเครื่องมือประกอบตำรา การบัญชีตาม TFRS for NPAEs: หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565</span>
+  </div>
+    <style>
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  </style>
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 5 การเปลี่ยนแปลงนโยบายการบัญชี การเปลี่ยนแปลงประมาณการทางบัญชี และข้อผิดพลาด</div>
+      <h1>แอป 05 · จำแนกการเปลี่ยนแปลงทางบัญชีและปรับงบย้อนหลัง</h1>
+      <p class="lede">ตอบคำถามตามคำนิยามในย่อหน้า 5.2–5.4 เพื่อจำแนกว่าเป็นการเปลี่ยนนโยบาย การเปลี่ยนประมาณการ หรือข้อผิดพลาดงวดก่อน แล้วคำนวณการปรับย้อนหลัง (กำไรสะสมต้นงวด งบเปรียบเทียบ รายการปรับปรุง) หรือผลแบบเปลี่ยนทันทีเป็นต้นไป พร้อมร่างหมายเหตุ ชื่อกิจการแสดงเป็นรหัส ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>ย่อหน้า 5.1–5.23</b><br>ตำราบทที่ 5 หัวข้อ 5.1–5.6 · ฉบับ 16-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> จำแนกการเปลี่ยนแปลง → ปรับงบย้อนหลัง (นโยบายหรือข้อผิดพลาด) หรือคำนวณแบบเปลี่ยนทันทีเป็นต้นไป (ประมาณการ) → ทดสอบตนเอง → เนื้อหาเสริม</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="cls"><span class="n">0</span>จำแนกการเปลี่ยนแปลง</button>
+    <button role="tab" aria-selected="false" data-tab="rst"><span class="n">1</span>ปรับงบย้อนหลัง</button>
+    <button role="tab" aria-selected="false" data-tab="est"><span class="n">2</span>ประมาณการใหม่</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">3</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">4</span>เนื้อหาเสริม S5</button>
+  </nav>
+
+  <!-- 0 CLASSIFY -->
+  <div class="grid" data-pane="cls">
+    <section class="panel">
+      <h2>ข้อเท็จจริงของการเปลี่ยนแปลง</h2>
+      <p class="hint">ตอบคำถามตามลำดับ แอปหยุดที่คำถามแรกที่ตอบ "ใช่" และบอกวิธีปฏิบัติพร้อมเลขย่อหน้า ลองกดรายการในตัวอย่างที่ 5.6 เพื่อดูผล</p>
+      <span class="sample" id="kTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 5.6 ก</span>
+      <div class="row-actions" style="margin-bottom:10px" id="kBtns"></div>
+      <label class="f" style="margin-bottom:10px">คำอธิบายรายการ (ไม่บังคับ)<input type="text" id="kDesc" autocomplete="off"></label>
+      <label class="checks" style="display:flex;gap:8px;align-items:center;margin:2px 0 8px"><input type="checkbox" id="kHide" checked>ปกปิดคำอธิบายรายการในบันทึก (ค่าเริ่มต้น)</label>
+      <div id="kQs"></div>
+    </section>
+    <section class="panel voucher" aria-live="polite">
+      <h2>ผลการจำแนก</h2>
+      <div id="kOut"></div>
+      <div class="row-actions"><button class="btn" id="kCopy">คัดลอกบันทึก</button><span class="copied" id="kCopyMsg"></span></div>
+      <details class="theory"><summary>คำนิยามที่ใช้ตัดสิน</summary>
+        <dl>
+          <dt>5.2 นโยบาย</dt><dd>เปลี่ยนวิธีปฏิบัติทางการบัญชีที่เป็นไปตามมาตรฐาน ไปเป็นอีกวิธีหนึ่งที่เป็นไปตามมาตรฐานเช่นเดียวกัน</dd>
+          <dt>5.3 ประมาณการ</dt><dd>ปรับมูลค่าตามบัญชีหรือจำนวนที่ใช้ประโยชน์ของสินทรัพย์หรือหนี้สิน จากการประเมินสภาพปัจจุบันและประโยชน์หรือภาระในอนาคต เป็นผลจากข้อมูลใหม่</dd>
+          <dt>5.4 ข้อผิดพลาด</dt><dd>การละเว้นหรือแสดงรายการขัดต่อข้อเท็จจริงในงวดก่อน ทั้งที่ข้อมูลมีอยู่หรือหาได้อย่างสมเหตุสมผลขณะอนุมัติงบงวดนั้น</dd>
+          <dt>5.11</dt><dd>นโยบายใหม่สำหรับรายการที่มีเนื้อหาต่างไปหรือไม่เคยเกิดขึ้น ไม่ถือเป็นการเปลี่ยนนโยบาย</dd>
+          <dt>5.12ก</dt><dd>การเริ่มใช้วิธีตีราคาใหม่ตามบทที่ 10 ปฏิบัติตามบทที่ 10 ไม่ปรับย้อนหลังตามบทที่ 5</dd>
+        </dl>
+      </details>
+    </section>
+  </div>
+
+  <!-- 1 RESTATE -->
+  <div class="grid" data-pane="rst" hidden>
+    <section class="panel">
+      <h2>ข้อมูลการปรับย้อนหลัง</h2>
+      <p class="hint">ใช้กับการเปลี่ยนนโยบาย (5.12) และการแก้ไขข้อผิดพลาด (5.18–5.21) ใส่ผลกระทบเป็นบวกเมื่อทำให้กำไรหรือส่วนของเจ้าของเพิ่มขึ้น และเป็นลบหรือในวงเล็บเมื่อลดลง</p>
+      <span class="sample" id="rTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 5.1</span>
+      <div class="row-actions" style="margin-bottom:10px">
+        <button class="btn" data-r="e51">ตัวอย่างที่ 5.1</button>
+        <button class="btn" data-r="e52">ตัวอย่างที่ 5.2</button>
+        <button class="btn" data-r="w5">โจทย์ข้อ 3 (ข)</button>
+        <button class="btn" data-r="e55">ตัวอย่างที่ 5.5</button>
+        <button class="btn" data-r="clr">ล้าง</button>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="ประเภท">
+        <label><input type="radio" name="rKind" value="pv" checked>เปลี่ยนนโยบายโดยสมัครใจ (5.9.2)</label>
+        <label><input type="radio" name="rKind" value="pm">เปลี่ยนนโยบายตามข้อกำหนด (5.9.1)</label>
+        <label><input type="radio" name="rKind" value="er">แก้ไขข้อผิดพลาดงวดก่อน (5.18)</label>
+      </div>
+      <label class="checks" style="display:flex;gap:8px;align-items:center;margin:2px 0 8px"><input type="checkbox" id="rHide" checked>ปกปิดชื่อกิจการ (ค่าเริ่มต้น)</label>
+      <div class="fields">
+        <label class="f">ชื่อกิจการ (ไม่บังคับ)<input type="text" id="rEnt" autocomplete="off"></label>
+        <label class="f">ปีปัจจุบัน (พ.ศ.)<input type="text" class="num" id="rY" value="2568" inputmode="numeric"></label>
+        <label class="f">เรื่องที่เปลี่ยนหรือแก้ไข<input type="text" id="rWhat" autocomplete="off"></label>
+        <label class="f">รายการในงบฐานะการเงินที่ได้รับผลกระทบ<input type="text" id="rItem" autocomplete="off"></label>
+        <label class="f">ประเภทของรายการนั้น<select id="rSide"><option value="A">สินทรัพย์</option><option value="L">หนี้สิน</option></select></label>
+        <label class="f">บัญชีคู่ในรายการปรับปรุงต้นงวดปัจจุบัน<input type="text" id="rCounter" autocomplete="off" placeholder="ว่างไว้ = รายการเดียวกับช่องก่อนหน้า"></label>
+        <label class="f">รายการในงบกำไรขาดทุนงวดเปรียบเทียบที่ได้รับผลกระทบ<input type="text" id="rPL" autocomplete="off"></label>
+        <label class="f">ผลสะสมก่อนงวดเปรียบเทียบ (ถึงสิ้นปีก่อนหน้าปีเปรียบเทียบ)<input type="text" class="num" id="rCum" inputmode="decimal"></label>
+        <label class="f">ผลต่อกำไรของงวดเปรียบเทียบ<input type="text" class="num" id="rCmp" inputmode="decimal"></label>
+        <label class="f">กำไรสะสมต้นงวดเปรียบเทียบตามที่รายงานไว้<input type="text" class="num" id="rRE0" inputmode="decimal"></label>
+        <label class="f">กำไรสุทธิงวดเปรียบเทียบตามที่รายงานไว้<input type="text" class="num" id="rNI" inputmode="decimal"></label>
+        <label class="f">การปฏิบัติได้ (5.12, 5.19–5.21)<select id="rPract">
+          <option value="full">ระบุผลรายงวดได้ ปรับย้อนหลังเต็มรูปแบบ</option>
+          <option value="cum">ระบุผลรายงวดไม่ได้ ระบุผลสะสม ณ ต้นงวดปัจจุบันได้</option>
+          <option value="pro">ระบุผลสะสมไม่ได้ ใช้วิธีเปลี่ยนทันทีเป็นต้นไป</option>
+        </select></label>
+      </div>
+      <h3>ผลกระทบทางภาษีเงินได้</h3>
+      <div class="seg" role="radiogroup" aria-label="ภาษี">
+        <label><input type="radio" name="rTax" value="none" checked>ไม่ปรับในรายการนี้ (ปรับในการคำนวณภาษี)</label>
+        <label><input type="radio" name="rTax" value="cur">ปรับภาษีเงินได้ของงวดก่อน (ภาษีปัจจุบัน)</label>
+        <label><input type="radio" name="rTax" value="def">ภาษีเงินได้รอการตัดบัญชี (เฉพาะกิจการที่เลือก 15.2)</label>
+      </div>
+      <label class="f" style="max-width:220px">อัตราภาษี (%)<input type="text" class="num" id="rRate" value="20" inputmode="decimal"></label>
+    </section>
+    <section class="panel voucher" aria-live="polite">
+      <h2>ผลการปรับย้อนหลัง</h2>
+      <div id="rOut"></div>
+      <div class="row-actions"><button class="btn" id="rCopy">คัดลอกตารางและบันทึก</button><span class="copied" id="rCopyMsg"></span></div>
+    </section>
+  </div>
+
+  <!-- 2 ESTIMATE -->
+  <div class="grid" data-pane="est" hidden>
+    <section class="panel">
+      <h2>ทบทวนอายุการใช้ประโยชน์และมูลค่าคงเหลือ</h2>
+      <p class="hint">ใช้กับที่ดิน อาคารและอุปกรณ์ (10.29, 10.35) และสินทรัพย์ไม่มีตัวตน (11.38–11.39) ที่ใช้วิธีเส้นตรง การเปลี่ยนเกิด ณ วันต้นปีปัจจุบัน ผลรับรู้ในงวดปัจจุบันและงวดต่อไปตามย่อหน้า 5.15</p>
+      <span class="sample" id="eTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 5.4</span>
+      <div class="row-actions" style="margin-bottom:10px">
+        <button class="btn" data-e="e54">ตัวอย่างที่ 5.4</button>
+        <button class="btn" data-e="w4">โจทย์ข้อ 3 (ก)</button>
+        <button class="btn" data-e="clr">ล้าง</button>
+      </div>
+      <div class="fields">
+        <label class="f">สินทรัพย์<input type="text" id="eAsset" autocomplete="off"></label>
+        <label class="f">ปีปัจจุบัน (พ.ศ.)<input type="text" class="num" id="eY" value="2568" inputmode="numeric"></label>
+        <label class="f">ราคาทุน<input type="text" class="num" id="eCost" inputmode="decimal"></label>
+        <label class="f">มูลค่าคงเหลือเดิม<input type="text" class="num" id="eRv0" inputmode="decimal"></label>
+        <label class="f">อายุการใช้ประโยชน์เดิม (ปี)<input type="text" class="num" id="eL0" inputmode="decimal"></label>
+        <label class="f">ใช้งานมาแล้วถึงต้นปีปัจจุบัน (ปี)<input type="text" class="num" id="eUsed" inputmode="decimal"></label>
+        <label class="f">อายุที่เหลือตามประมาณการใหม่ (ปี)<input type="text" class="num" id="eL1" inputmode="decimal"></label>
+        <label class="f">มูลค่าคงเหลือตามประมาณการใหม่<input type="text" class="num" id="eRv1" inputmode="decimal"></label>
+        <label class="f">ค่าเสื่อมราคาทางภาษีของปีปัจจุบัน (ราคาทุน ตาม พ.ร.ฎ. ฉบับที่ 145)<input type="text" class="num" id="eTax" inputmode="decimal"></label>
+      </div>
+    </section>
+    <section class="panel voucher" aria-live="polite">
+      <h2>ผลแบบเปลี่ยนทันทีเป็นต้นไป</h2>
+      <div id="eOut"></div>
+      <div class="row-actions"><button class="btn" id="eCopy">คัดลอกตารางและหมายเหตุ</button><span class="copied" id="eCopyMsg"></span></div>
+    </section>
+  </div>
+
+  <!-- 3 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="qBox"></div>
+      <div class="row-actions"><button class="btn primary" id="qChk">ตรวจคำตอบ</button><button class="btn" id="qClr">ล้างคำตอบ</button></div>
+      <div id="qOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 4 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S5</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 5 ลิงก์ #S5.1 ถึง #S5.7 เปิดหัวข้อนั้นได้โดยตรง</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S5.1">S5.1</a><a class="btn" href="#S5.2">S5.2</a><a class="btn" href="#S5.3">S5.3</a><a class="btn" href="#S5.4">S5.4</a><a class="btn" href="#S5.5">S5.5</a><a class="btn" href="#S5.6">S5.6</a><a class="btn" href="#S5.7">S5.7</a></div>
+
+      <h3 id="S5.1">S5.1 งบเปรียบเทียบที่ปรับปรุงใหม่ของตัวอย่างที่ 5.1</h3>
+      <p>บริษัทตัวอย่าง จำกัด เปลี่ยนสูตรต้นทุนสินค้าคงเหลือจากวิธีเข้าก่อนออกก่อนเป็นวิธีถัวเฉลี่ยถ่วงน้ำหนักในปี 2568 ปรับย้อนหลังตามย่อหน้า 5.12 (หน่วย: บาท)</p>
+      <div class="tbl"><table>
+        <thead><tr><th>งบฐานะการเงิน (บางส่วน)</th><th class="num">31 ธ.ค. 2568</th><th class="num">31 ธ.ค. 2567 (ปรับปรุงใหม่)</th></tr></thead>
+        <tbody>
+          <tr><td>สินค้าคงเหลือ</td><td class="num">1,600,000</td><td class="num">1,350,000</td></tr>
+          <tr><td>กำไรสะสม</td><td class="num">ตามผลงานปี 2568</td><td class="num">5,550,000</td></tr>
+        </tbody></table></div>
+      <div class="tbl" style="margin-top:10px"><table>
+        <thead><tr><th>งบการเปลี่ยนแปลงส่วนของเจ้าของ คอลัมน์กำไรสะสม (4.18.3)</th><th class="num">บาท</th></tr></thead>
+        <tbody>
+          <tr><td>ยอดคงเหลือ 1 ม.ค. 2567 ตามที่รายงานไว้เดิม</td><td class="num">5,000,000</td></tr>
+          <tr><td>ผลสะสมจากการเปลี่ยนแปลงนโยบายการบัญชี (หมายเหตุ 3)</td><td class="num">(100,000)</td></tr>
+          <tr><td><b>ยอดคงเหลือ 1 ม.ค. 2567 หลังปรับปรุง</b></td><td class="num"><b>4,900,000</b></td></tr>
+          <tr><td>กำไรสุทธิปี 2567 (ปรับปรุงใหม่ 700,000 − 50,000)</td><td class="num">650,000</td></tr>
+          <tr><td><b>ยอดคงเหลือ 31 ธ.ค. 2567 (ปรับปรุงใหม่)</b></td><td class="num"><b>5,550,000</b></td></tr>
+        </tbody></table></div>
+      <p>งบกำไรขาดทุนปี 2567 ที่แสดงเปรียบเทียบ ต้นทุนขายเพิ่มขึ้น 50,000 บาท (สินค้าปลายงวดลดลง 150,000 บาท หักสินค้าต้นงวดที่ลดลง 100,000 บาท) กำไรสุทธิลดลงจาก 700,000 เป็น 650,000 บาท ในปี 2568 กิจการใช้วิธีถัวเฉลี่ยถ่วงน้ำหนักตั้งแต่ต้นปี สินค้าคงเหลือต้นงวดจึงเป็น 1,350,000 บาท</p>
+
+      <h3 id="S5.2">S5.2 แม่แบบหมายเหตุสามแบบ</h3>
+      <pre class="memo">หมายเหตุ 3 การเปลี่ยนแปลงนโยบายการบัญชี (5.14)
+   ในปี [2568] บริษัทเปลี่ยนนโยบายการบัญชีเรื่อง [การคำนวณต้นทุนสินค้าคงเหลือ] จาก [วิธีเข้าก่อนออกก่อน]
+   เป็น [วิธีถัวเฉลี่ยถ่วงน้ำหนัก] เนื่องจาก [เหตุผลที่ทำให้งบการเงินน่าเชื่อถือและเกี่ยวข้องมากขึ้น]
+   บริษัทปรับงบการเงินย้อนหลัง ผลกระทบต่อรายการในงบการเงินมีดังนี้
+   - งบฐานะการเงิน 31 ธ.ค. [2567]: [สินค้าคงเหลือ] ลดลง [150,000] บาท กำไรสะสมลดลง [150,000] บาท
+   - งบกำไรขาดทุนปี [2567]: [ต้นทุนขาย] เพิ่มขึ้น [50,000] บาท กำไรสุทธิลดลง [50,000] บาท
+   - กำไรสะสม 1 ม.ค. [2567] ลดลง [100,000] บาท
+   - ปี [2568]: [ต้นทุนขาย] สูงกว่าวิธีเดิม [...] บาท (5.14.3 ถ้าทำได้ในทางปฏิบัติ)
+
+หมายเหตุ 4 การเปลี่ยนแปลงประมาณการทางบัญชี (5.16–5.17)
+   ณ วันที่ [1 ม.ค. 2568] บริษัททบทวน [อายุการใช้ประโยชน์ของเครื่องจักร] จาก [10] ปี เป็น [7] ปี
+   และมูลค่าคงเหลือเป็น [50,000] บาท ตาม [ข้อมูลการใช้งานใหม่] บริษัทรับรู้ผลโดยวิธีเปลี่ยนทันทีเป็นต้นไป
+   ค่าเสื่อมราคาปี [2568] เพิ่มขึ้น [50,000] บาท และจะเพิ่มขึ้นปีละ [50,000] บาทจนถึงปี [2572]
+
+หมายเหตุ 5 การแก้ไขข้อผิดพลาดงวดก่อน (5.23)
+   บริษัทพบว่า [ไม่ได้บันทึกค่าสาธารณูปโภคค้างจ่ายเดือนธันวาคม 2567] จำนวน [50,000] บาท
+   บริษัทแก้ไขโดยปรับงบการเงินปี [2567] ที่แสดงเปรียบเทียบใหม่ ผลกระทบมีดังนี้
+   - งบฐานะการเงิน 31 ธ.ค. [2567]: [ค่าใช้จ่ายค้างจ่าย] เพิ่มขึ้น [50,000] บาท กำไรสะสมลดลง [50,000] บาท
+   - งบกำไรขาดทุนปี [2567]: [ค่าใช้จ่ายในการบริหาร] เพิ่มขึ้น [50,000] บาท กำไรสุทธิลดลง [50,000] บาท
+   - กำไรสะสม 1 ม.ค. [2567]: [ไม่มีผลกระทบ]
+   (ถ้าปรับย้อนหลังไม่ได้ ให้อธิบายสถานการณ์ และวิธีและเวลาที่แก้ไขตาม 5.23.4)</pre>
+
+      <h3 id="S5.3">S5.3 ตารางรายการที่พบบ่อยและการจำแนก</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>รายการ</th><th>การจำแนก</th><th>วิธีปฏิบัติ</th><th>ย่อหน้า</th></tr></thead>
+        <tbody>
+          <tr><td>เปลี่ยนสูตรต้นทุนสินค้าคงเหลือ (เข้าก่อนออกก่อน ↔ ถัวเฉลี่ยถ่วงน้ำหนัก)</td><td>นโยบาย</td><td>ปรับย้อนหลัง</td><td class="nw">5.2, 5.9.2, 5.12</td></tr>
+          <tr><td>อสังหาริมทรัพย์เพื่อการลงทุน วิธีราคาทุน → วิธีมูลค่ายุติธรรม</td><td>นโยบาย</td><td>ปรับย้อนหลัง</td><td class="nw">12.15, 5.12</td></tr>
+          <tr><td>เริ่มใช้วิธีตีราคาใหม่กับที่ดิน อาคารและอุปกรณ์</td><td>ตามบทที่ 10</td><td>บันทึกส่วนเกินทุนจากการตีราคาสินทรัพย์ ไม่ปรับย้อนหลัง</td><td class="nw">5.12ก, 10.14, 10.20</td></tr>
+          <tr><td>เปลี่ยนวิธีแสดงงบกำไรขาดทุนเบ็ดเสร็จ (งบเดียว ↔ สองงบ)</td><td>นโยบาย</td><td>ต้องมีเหตุผลตาม 5.9.2 และปรับงบงวดก่อนที่แสดงเปรียบเทียบย้อนหลัง (ตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี 20 ก.ย. 2566 หน้า 9)</td><td class="nw">4.15, 5.8, 5.9.2</td></tr>
+          <tr><td>ทบทวนอายุการใช้ประโยชน์หรือมูลค่าคงเหลือ</td><td>ประมาณการ</td><td>เปลี่ยนทันทีเป็นต้นไป</td><td class="nw">10.29, 11.39, 5.15</td></tr>
+          <tr><td>เปลี่ยนวิธีคิดค่าเสื่อมราคาหรือค่าตัดจำหน่าย เพราะรูปแบบประโยชน์เปลี่ยน</td><td>ประมาณการ</td><td>เปลี่ยนทันทีเป็นต้นไป</td><td class="nw">10.35, 11.38</td></tr>
+          <tr><td>ปรับค่าเผื่อหนี้สงสัยจะสูญหรือมูลค่าสุทธิที่จะได้รับของสินค้า</td><td>ประมาณการ</td><td>เปลี่ยนทันทีเป็นต้นไป</td><td class="nw">5.15</td></tr>
+          <tr><td>ประมาณการผลงานก่อสร้างหรือต้นทุนรวมของสัญญาเปลี่ยน</td><td>ประมาณการ</td><td>เปลี่ยนทันทีเป็นต้นไป</td><td class="nw">20.19</td></tr>
+          <tr><td>จ่ายคืนเงินอุดหนุนจากรัฐบาล</td><td>ประมาณการ</td><td>เปลี่ยนทันทีเป็นต้นไป</td><td class="nw">23.14</td></tr>
+          <tr><td>ผลของคดีความที่ยุติในปีนี้ต่างจากที่ประมาณไว้</td><td>ประมาณการ (ไม่ใช่ข้อผิดพลาด)</td><td>รับรู้ในงวดปัจจุบัน</td><td class="nw">5.22</td></tr>
+          <tr><td>ลืมบันทึกรายการ คำนวณผิด ใช้นโยบายผิด หรือทุจริต ในงวดก่อน</td><td>ข้อผิดพลาด</td><td>ปรับย้อนหลังถ้ามีสาระสำคัญ</td><td class="nw">5.4, 5.18</td></tr>
+          <tr><td>เริ่มใช้นโยบายกับรายการที่ไม่เคยเกิดขึ้นหรือเคยเกิดแต่ไม่มีสาระสำคัญ</td><td>ไม่ใช่การเปลี่ยนนโยบาย</td><td>ใช้นโยบายตั้งแต่เกิดรายการ</td><td class="nw">5.11</td></tr>
+          <tr><td>นำ TFRS for NPAEs (ปรับปรุง 2565) มาใช้ครั้งแรก</td><td>การปฏิบัติในช่วงเปลี่ยนผ่าน</td><td>ตามบทที่ 28 และเปิดเผยตาม 5.13</td><td class="nw">28.3, 5.13</td></tr>
+        </tbody></table></div>
+
+      <h3 id="S5.4">S5.4 เฉลยแบบฝึกหัดท้ายบท</h3>
+      <div class="tbl"><table><thead><tr><th class="num">ข้อ</th><th>คำตอบ</th><th>เหตุผล</th></tr></thead><tbody id="sKey"></tbody></table></div>
+      <h3>แนวคำตอบส่วนที่ 2 โจทย์ปฏิบัติงาน</h3>
+      <ol>
+        <li><b>กระดาษทำการจำแนก</b> (1) นโยบาย (5.2, 5.9.2) ปรับย้อนหลัง (5.12) แก้ตัวเลขปี 2567 และกำไรสะสม 1 ม.ค. 2567 ทางภาษีขออนุมัติอธิบดีกรมสรรพากรก่อนเปลี่ยนวิธี (มาตรา 65 ทวิ (6)) · (2) ประมาณการ (5.3) เปลี่ยนทันทีเป็นต้นไป (5.15) ไม่กระทบปี 2567 เปิดเผยตาม 5.16 · (3) ข้อผิดพลาด (5.4) ปรับงบปี 2567 (5.18.1) ค่าใช้จ่ายลดลง 400,000 บาท อาคารเพิ่มขึ้น 400,000 บาท หักค่าเสื่อมราคาของส่วนนี้สำหรับปี 2567 และเปิดเผยตาม 5.23 · (4) ไม่ใช่การเปลี่ยนนโยบาย (5.11) ใช้นโยบายตั้งแต่เกิดรายการ ไม่กระทบปี 2567 เปิดเผยนโยบาย (4.19.2) · (5) ปฏิบัติตามบทที่ 10 (5.12ก, 10.20) ไม่ปรับย้อนหลัง ส่วนเกินทุนแสดงในส่วนของเจ้าของปี 2568 · (6) รายการที่ไม่เคยเกิดขึ้น จึงไม่ใช่การเปลี่ยนนโยบาย (5.11) กำหนดนโยบายตามลำดับในย่อหน้า 5.5 คือ ข้อกำหนดของมาตรฐานฉบับนี้ในเรื่องที่คล้ายคลึง เช่น บทที่ 8 หรือบทที่ 11 ตามวัตถุประสงค์ที่ถือไว้ (แนวการตีความ) แล้วจึงคำนิยามและเกณฑ์ในกรอบแนวคิด (บทที่ 3) และ TFRS for PAEs เฉพาะรายการนั้น บันทึกเหตุผลในกระดาษทำการ เปิดเผยนโยบาย (4.19.2) ไม่กระทบปี 2567 ตรวจแต่ละรายการด้วยแท็บ 0 ได้</li>
+        <li><b>(ก) สูตรต้นทุนสินค้า</b> ผลสะสมก่อนปี 2567 = 760,000 − 800,000 = (40,000) บาท กำไรสะสม 1 ม.ค. 2567 ปรับปรุงแล้ว 2,960,000 บาท ผลต่อปี 2567: ต้นทุนขายเพิ่ม 20,000 บาท (60,000 − 40,000) กำไรสุทธิปรับปรุงแล้ว 380,000 บาท ผลสะสม ณ 31 ธ.ค. 2567 = (60,000) บาท กำไรสะสม 31 ธ.ค. 2567 ปรับปรุงแล้ว 3,340,000 บาท บันทึก 1 ม.ค. 2568: เดบิต กำไรสะสม 60,000 เครดิต สินค้าคงเหลือ 60,000 · บรรทัดในงบการเปลี่ยนแปลงส่วนของเจ้าของ: ยอดคงเหลือ 1 ม.ค. 2567 ตามที่รายงานไว้เดิม 3,000,000 · ผลสะสมจากการเปลี่ยนแปลงนโยบายการบัญชี (40,000) · ยอดคงเหลือหลังปรับปรุง 2,960,000 · กำไรสุทธิปี 2567 (ปรับปรุงใหม่) 380,000 · ยอดคงเหลือ 31 ธ.ค. 2567 3,340,000 ทางภาษีขออนุมัติตามมาตรา 65 ทวิ (6) วรรคสอง ก่อนใช้วิธีใหม่<br><b>(ข) อสังหาริมทรัพย์เพื่อการลงทุน</b> มูลค่าตามบัญชี 31 ธ.ค. 2566 = 2,940,000 บาท ผลสะสมก่อนปี 2567 = 3,100,000 − 2,940,000 = 160,000 บาท ผลต่อปี 2567 = กลับค่าเสื่อมราคา 60,000 หักขาดทุนจากมูลค่ายุติธรรม 50,000 = 10,000 บาท ผลสะสม ณ 31 ธ.ค. 2567 = 3,050,000 − 2,880,000 = 170,000 บาท บันทึก 1 ม.ค. 2568: เดบิต ค่าเสื่อมราคาสะสม 120,000 เดบิต อสังหาริมทรัพย์เพื่อการลงทุน 50,000 เครดิต กำไรสะสม 170,000 ทางภาษียังใช้ราคาทุนและค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) ผลต่างจากมูลค่ายุติธรรมไม่นำมาคำนวณ (มาตรา 65 ทวิ (3)) คำนวณทั้งสองเรื่องได้ในแท็บ 1</li>
+        <li><b>(ก) ประมาณการใหม่</b> ค่าเสื่อมราคาเดิม (900,000 − 100,000) ÷ 8 = 100,000 บาทต่อปี มูลค่าตามบัญชี 1 ม.ค. 2568 = 900,000 − 300,000 = 600,000 บาท ค่าเสื่อมราคาใหม่ = (600,000 − 120,000) ÷ 4 = 120,000 บาทต่อปี เพิ่มขึ้นปีละ 20,000 บาท บันทึก: เดบิต ค่าเสื่อมราคา 120,000 เครดิต ค่าเสื่อมราคาสะสม – รถบรรทุก 120,000 ร่างหมายเหตุ: "ณ วันที่ 1 มกราคม 2568 บริษัททบทวนอายุการใช้ประโยชน์ของรถบรรทุกจาก 8 ปี เป็น 7 ปี และมูลค่าคงเหลือจาก 100,000 บาท เป็น 120,000 บาท ตามข้อมูลการใช้งาน บริษัทรับรู้ผลโดยวิธีเปลี่ยนทันทีเป็นต้นไป ค่าเสื่อมราคาปี 2568 เพิ่มขึ้น 20,000 บาท และเพิ่มขึ้นในจำนวนเดียวกันทุกปีจนถึงปี 2571" ทางภาษี ถ้าใช้ค่าเสื่อมราคา 120,000 บาท เท่ากับร้อยละ 13.3 ของราคาทุน ไม่เกินอัตราร้อยละ 20 สำหรับยานพาหนะตาม พ.ร.ฎ. ฉบับที่ 145 (แนวการตีความ ตรวจกับอัตราที่กิจการใช้ทางภาษี ดูบทที่ 10 และบทที่ 15) คำนวณได้ในแท็บ 2<br><b>(ข) ข้อผิดพลาด</b> งบปี 2567 รายได้จากการขายสูงไป 200,000 บาท ลูกหนี้การค้าสูงไป 200,000 บาท กำไรสุทธิสูงไป 200,000 บาท ปรับงบปี 2567 ที่แสดงเปรียบเทียบ (5.18.1) บันทึก 1 ม.ค. 2568 กรณีไม่ปรับภาษีในรายการนี้: เดบิต กำไรสะสม 200,000 เครดิต ลูกหนี้การค้า 200,000 กรณีขอคืนภาษีที่ชำระเกินร้อยละ 20: เดบิต กำไรสะสม 160,000 เดบิต ภาษีเงินได้รอขอคืน 40,000 เครดิต ลูกหนี้การค้า 200,000 และเปิดเผยตาม 5.23 การขอคืนภาษีทำโดยยื่นแบบแสดงรายการเพิ่มเติมของรอบบัญชี 2567 พร้อมงบการเงินที่ผู้สอบบัญชีรับรอง แล้วยื่นคำร้องขอคืนภายในสามปีนับแต่วันสุดท้ายของกำหนดเวลายื่นรายการ (มาตรา 27 ตรี ดู S5.7) คำนวณได้ในแท็บ 1</li>
+        <li><b>ประเมินข้อเสนอ</b> อาคารพร้อมใช้งานตั้งแต่ 1 ม.ค. 2567 ข้อมูลที่ใช้คิดค่าเสื่อมราคามีครบขณะอนุมัติงบปี 2567 การไม่คิดค่าเสื่อมราคาจึงเป็นการละเว้นตามย่อหน้า 5.4 ไม่ใช่การปรับจากข้อมูลใหม่ตามย่อหน้า 5.3 และไม่ใช่ผลของรายการที่ไม่แน่นอนตามย่อหน้า 5.22 จำนวน 600,000 บาท (12,000,000 ÷ 20) เท่ากับร้อยละ 30 ของกำไร มีสาระสำคัญ จึงต้องปรับย้อนหลัง (5.18) ตัวเลขปี 2567 ที่ปรับปรุงใหม่: ค่าเสื่อมราคา 600,000 บาท กำไรสุทธิ 1,400,000 บาท อาคารสุทธิ 11,400,000 บาท บันทึก 1 ม.ค. 2568: เดบิต กำไรสะสม 600,000 เครดิต ค่าเสื่อมราคาสะสม – อาคาร 600,000 และปี 2568 บันทึกค่าเสื่อมราคาตามปกติ 600,000 บาท ร่างหมายเหตุ: "บริษัทพบว่าไม่ได้บันทึกค่าเสื่อมราคาอาคารสำนักงานปี 2567 จำนวน 600,000 บาท บริษัทแก้ไขโดยปรับงบการเงินปี 2567 ที่แสดงเปรียบเทียบใหม่ ค่าเสื่อมราคาเพิ่มขึ้นและกำไรสุทธิลดลง 600,000 บาท ค่าเสื่อมราคาสะสม ณ 31 ธันวาคม 2567 เพิ่มขึ้น 600,000 บาท" บันทึกถึงผู้จัดการ: การเรียกเป็นประมาณการทำให้กำไรปี 2568 ต่ำเกินจริง 600,000 บาท และงบปี 2567 แสดงสูงไป ขัดย่อหน้า 5.18 ทางภาษี ค่าเสื่อมราคาเป็นรายจ่ายของรอบบัญชี 2567 นำมาหักในรอบ 2568 ไม่ได้ (มาตรา 65 ตรี (9)) ให้ยื่นแบบแสดงรายการเพิ่มเติมของรอบ 2567 (ดู S5.7)</li>
+      </ol>
+
+      <h3 id="S5.5">S5.5 แนวคำตอบกรณีศึกษา 5.1 (สำหรับผู้สอน)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>ประเด็น</th><th>การจำแนกและวิธีปฏิบัติ</th><th class="num">ตัวเลขสำคัญ (บาท)</th></tr></thead>
+        <tbody>
+          <tr><td>1 อสังหาริมทรัพย์เพื่อการลงทุน ราคาทุน → มูลค่ายุติธรรม</td><td>นโยบายโดยสมัครใจ (12.15, 5.9.2) ปรับย้อนหลัง (5.12)</td><td class="num">ต้นงวด 2567 +400,000 · ปี 2567 +200,000 · สะสม +600,000</td></tr>
+          <tr><td>2 อายุรถบรรทุกเหลือ 4 ปี</td><td>ประมาณการ (10.29) เปลี่ยนทันทีเป็นต้นไป (5.15)</td><td class="num">ค่าเสื่อมราคา 450,000 ต่อปี เพิ่มขึ้น 150,000</td></tr>
+          <tr><td>3 สินค้าปลายงวด 2567 แสดงสูงไป</td><td>ข้อผิดพลาด (5.4) ปรับงบปี 2567 (5.18.1)</td><td class="num">ต้นทุนขาย 2567 +300,000 · สินค้า −300,000</td></tr>
+          <tr><td>กำไรสะสม 1 ม.ค. 2567</td><td>8,000,000 + 400,000</td><td class="num">8,400,000</td></tr>
+          <tr><td>กำไรสุทธิปี 2567</td><td>1,500,000 + 200,000 − 300,000</td><td class="num">1,400,000</td></tr>
+          <tr><td>กำไรสะสม 31 ธ.ค. 2567</td><td>รายงานไว้ 9,500,000 + 600,000 − 300,000</td><td class="num">9,800,000</td></tr>
+        </tbody></table></div>
+      <p><b>บันทึก 1 ม.ค. 2568</b> (1) เดบิต ค่าเสื่อมราคาสะสม 300,000 เดบิต อสังหาริมทรัพย์เพื่อการลงทุน 300,000 เครดิต กำไรสะสม 600,000 (2) เดบิต กำไรสะสม 300,000 เครดิต สินค้าคงเหลือ (ต้นงวด) 300,000 ส่วนค่าเสื่อมราคารถบรรทุกปี 2568 บันทึกตามปกติ 450,000 บาท</p>
+      <p><b>การนำเสนอและเปิดเผย</b> งบการเปลี่ยนแปลงส่วนของเจ้าของแยกบรรทัด "ผลสะสมจากการเปลี่ยนแปลงนโยบายการบัญชี" และ "การแก้ไขข้อผิดพลาด" หมายเหตุตาม 5.14 (นโยบาย พร้อมเหตุผล) 5.16 (ประมาณการ) และ 5.23 (ข้อผิดพลาด) คำตอบที่ได้คะแนนสูงแยกสามเรื่องออกจากกันได้ ไม่รวมผลข้อผิดพลาดกับผลการเปลี่ยนนโยบายเป็นบรรทัดเดียว และอธิบายว่ากำไรที่เปลี่ยนจากวิธีมูลค่ายุติธรรมไม่กระทบการคำนวณภาษีซึ่งใช้ราคาทุนเท่านั้น หักค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) แห่งประมวลรัษฎากร และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527) และที่แก้ไขเพิ่มเติม ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3)</p>
+      <h3 id="S5.6">S5.6 การเปลี่ยนแปลงจากฉบับ 2554 (ย่อหน้า 48–70) สู่ฉบับปรับปรุง 2565 (ย่อหน้า 5.1–5.23)</h3>
+      <p class="hint">เทียบตัวบทประกาศสภาวิชาชีพบัญชี ฉบับที่ 20/2554 กับประกาศ ที่ 48/2565 และเอกสารประกอบการอบรมของสภาวิชาชีพบัญชี วันที่ 9 ธันวาคม 2565 (ฉบับเผยแพร่ 12 มกราคม 2566) สไลด์ที่ 30–31 ซึ่งไม่ถือเป็นส่วนหนึ่งของมาตรฐาน</p>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>ฉบับ 2554</th><th>ฉบับปรับปรุง 2565</th><th>ผลในทางปฏิบัติ</th></tr></thead><tbody>
+        <tr><td>ชื่อบทและประเภทที่ (ค)</td><td>"การแก้ไขข้อผิดพลาด" · ย่อหน้า 48 (ค) การแก้ไขข้อผิดพลาดในงวดก่อน</td><td>"ข้อผิดพลาด" · ย่อหน้า 5.1 (ค) ข้อผิดพลาดในงวดก่อน</td><td>ปรับถ้อยคำ</td></tr>
+        <tr><td>นิยามการเปลี่ยนนโยบาย</td><td>ย่อหน้า 49 เปลี่ยนระหว่างวิธีที่เป็นไปตาม "มาตรฐานการบัญชีที่รับรองทั่วไป"</td><td>ย่อหน้า 5.2 เปลี่ยนระหว่างวิธีที่เป็นไปตาม "มาตรฐานการรายงานทางการเงินฉบับนี้"</td><td>ทางเลือกนโยบายคือวิธีที่มาตรฐานฉบับนี้อนุญาต หรือที่ได้มาตามลำดับในย่อหน้า 5.5</td></tr>
+        <tr><td>ลำดับแหล่งอ้างอิง</td><td>ย่อหน้า 52.1–52.3 (ลำดับที่ 3 คือมาตรฐานการรายงานทางการเงินของไทยเฉพาะรายการนั้น)</td><td>ย่อหน้า 5.5.1–5.5.3 (ลำดับที่ 3 คือ TFRS for PAEs เฉพาะรายการนั้น)</td><td>สไลด์ที่ 31 ระบุว่าหลักการไม่ได้เปลี่ยนแปลงจากเดิม</td></tr>
+        <tr><td>ปรับย้อนหลังไม่ได้ (นโยบาย)</td><td>ย่อหน้า 59 ใช้วิธีเปลี่ยนทันทีเป็นต้นไปหลังวันที่เปลี่ยนนโยบาย</td><td>ย่อหน้า 5.12 สามขั้น: ปรับย้อนหลัง → ปรับยอดยกมาของงวดแรกสุดที่ทำได้ (อาจเป็นงวดปัจจุบัน) → เปลี่ยนทันทีเป็นต้นไปนับจากวันแรกสุดที่ทำได้</td><td>สอดคล้องกับข้อผิดพลาด (5.19–5.21) สไลด์ที่ 30 เรียกว่าการขยายความ</td></tr>
+        <tr><td>เริ่มใช้วิธีตีราคาใหม่</td><td>ฉบับ 2554 ไม่มีวิธีตีราคาใหม่ ประกาศ ที่ 42/2563 (ใช้กับรอบที่เริ่ม 1 ม.ค. 2563) ให้เปลี่ยนจากวิธีราคาทุนด้วยวิธีเปลี่ยนทันทีเป็นต้นไป ไม่ปรับงวดก่อน</td><td>ย่อหน้า 5.12ก ปฏิบัติตามบทที่ 10</td><td>ไม่ปรับย้อนหลัง บันทึกส่วนเกินทุนจากการตีราคาสินทรัพย์ตามบทที่ 10 · ประกาศ 42/2563 ถูกยกเลิกโดยประกาศ ที่ 34/2566</td></tr>
+        <tr><td>อสังหาริมทรัพย์เพื่อการลงทุน ราคาทุน → มูลค่ายุติธรรม</td><td>ประกาศ ที่ 42/2563 ปรับกำไรสะสมต้นงวดแรกสุดที่นำเสนอ ปรับข้อมูลเปรียบเทียบเมื่อเคยเปิดเผยมูลค่ายุติธรรมไว้</td><td>ย่อหน้า 5.12 ปรับย้อนหลังตามปกติ</td><td>ตัวอย่างที่ 5.2 ใช้แนวฉบับปรับปรุง</td></tr>
+        <tr><td>ย่อหน้าอื่น (การเปิดเผย ประมาณการ ข้อผิดพลาด)</td><td>ย่อหน้า 60–70</td><td>ย่อหน้า 5.13–5.23</td><td>สาระเดิม</td></tr>
+      </tbody></table></div>
+
+      <h3 id="S5.7">S5.7 ภาษีเงินได้และงานสอบบัญชีเมื่อเปลี่ยนแปลงทางบัญชี</h3>
+      <div class="tbl"><table><thead><tr><th>กรณี</th><th>ทางภาษี</th><th>แหล่ง</th></tr></thead><tbody>
+        <tr><td>ข้อผิดพลาดงวดก่อนที่กระทบกำไรสุทธิทางภาษี</td><td>การปรับกำไรสะสมทางบัญชีไม่ย้ายรายการมาเป็นของรอบปัจจุบัน ยื่นแบบแสดงรายการภาษีเงินได้นิติบุคคล (ภ.ง.ด.50) เพิ่มเติมของรอบที่เกิดรายการ กรอกตัวเลขที่ถูกต้องครบทุกรายการ แนบงบการเงินที่ปรับปรุงและผู้สอบบัญชีลงลายมือชื่อรับรอง ถ้าชำระภาษีไว้เกิน ยื่นคำร้องขอคืนภายในสามปีนับแต่วันสุดท้ายของกำหนดเวลายื่นรายการ</td><td>มาตรา 65 · มาตรา 65 ตรี (9) · มาตรา 27 ตรี · กรมสรรพากร สารพันคำถามแบบ ภ.ง.ด.50 คำถามที่ 20 · กค 0811/14782 (16 ต.ค. 2541)</td></tr>
+        <tr><td>เปลี่ยนหลักเกณฑ์คำนวณราคาทุนสินค้าคงเหลือ</td><td>ใช้หลักเกณฑ์เดิมตลอดไปจนกว่าอธิบดีอนุมัติ ยื่นคำร้องพร้อมคำชี้แจงเหตุผล หลักเกณฑ์ที่ใช้อยู่และที่ขอใช้ใหม่ และหลักฐานความเห็นชอบของที่ประชุมกรรมการหรือหุ้นส่วนผู้จัดการ</td><td>มาตรา 65 ทวิ (6) วรรคสอง · แนวทางปฏิบัติกรมสรรพากร ที่ มก.4/2546 (1 ก.ค. 2546)</td></tr>
+        <tr><td>เปลี่ยนวิธีหรืออัตราค่าเสื่อมราคาทางภาษี</td><td>ยื่นคำร้องขออนุมัติตามแนวทางเดียวกัน อัตราไม่เกินที่ พ.ร.ฎ. ฉบับที่ 145 กำหนด การทบทวนอายุทางบัญชี (5.15) ไม่เปลี่ยนค่าเสื่อมราคาทางภาษีโดยอัตโนมัติ</td><td>มาตรา 65 ทวิ (2) · มก.4/2546 · พ.ร.ฎ. ฉบับที่ 145</td></tr>
+        <tr><td>อสังหาริมทรัพย์เพื่อการลงทุนตามมูลค่ายุติธรรม</td><td>แนวการตีความ: ทางภาษียังใช้ราคาทุนและหักค่าเสื่อมราคาตาม พ.ร.ฎ. ฉบับที่ 145 ผลต่างจากมูลค่ายุติธรรมปรับปรุงในการคำนวณกำไรสุทธิ (ยังไม่พบหนังสือตอบข้อหารือที่ตรงประเด็น)</td><td>มาตรา 65 ทวิ (2) (3)</td></tr>
+      </tbody></table></div>
+      <p><b>งานสอบบัญชี</b> เมื่อพบข้อผิดพลาดที่มีสาระสำคัญในงบงวดก่อน ผู้สอบบัญชีประเมินว่าข้อมูลเปรียบเทียบปรับย้อนหลังและเปิดเผยอย่างเหมาะสม (มาตรฐานการสอบบัญชี รหัส 710 ย่อหน้า 7–8) ขอหนังสือรับรองจากผู้บริหารเฉพาะเรื่องการปรับย้อนหลัง (ย่อหน้า 9 และ ก1) และถ้างบงวดก่อนเคยได้รับความเห็นแบบไม่มีเงื่อนไข แต่ตัวเลขเปรียบเทียบยังไม่ได้ปรับย้อนหลังอย่างเหมาะสมหรือเปิดเผยไม่เพียงพอ ผู้สอบบัญชีแสดงความเห็นอย่างมีเงื่อนไขหรือแสดงความเห็นว่างบการเงินไม่ถูกต้อง (ย่อหน้า 12)</p>
+      <p class="hint">เพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการบัญชีระหว่างประเทศ (International Accounting Standards: IAS) ฉบับที่ 8 ที่แก้ไขนิยามประมาณการทางบัญชี (มีผล 1 ม.ค. 2566) และมาตรฐานการรายงานทางการเงินระหว่างประเทศ (International Financial Reporting Standards: IFRS) สำหรับกิจการขนาดกลางและขนาดย่อม (Small and Medium-sized Entities: SMEs) ฉบับที่ 3 (ออก 27 ก.พ. 2568 มีผล 1 ม.ค. 2570) เพิ่มนิยามประมาณการทางบัญชีว่าเป็นจำนวนเงินที่มีความไม่แน่นอนในการวัดมูลค่า ทั้งสองฉบับถือว่าการเปลี่ยนวิธีคิดค่าเสื่อมราคาเป็นการเปลี่ยนแปลงประมาณการ สอดคล้องกับวิธีปฏิบัติในย่อหน้า 10.35 TFRS for NPAEs ยังไม่ได้นำนิยามใหม่นี้มาใช้</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ใช้ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 5 ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพ ข้อมูลที่กรอกไม่ถูกส่งออกจากเครื่อง</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 5.1–5.6 · กรณีศึกษา 5.1 · แบบฝึกหัดส่วนที่ 1</span>
+  </footer>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmt=(n,d=0)=>{if(!isFinite(n))return '–';if(Math.abs(n)<0.005)n=0;return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d})};
+  const acc=n=>!isFinite(n)?'–':(Math.abs(n)<0.005?'0':(n<0?'('+fmt(-n)+')':fmt(n)));
+  function num(s){s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-'||s==='–')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  const n0=v=>isFinite(v)?v:0;
+  function copyText(t,msgEl){
+    const done=()=>{if(msgEl){msgEl.textContent='คัดลอกแล้ว';setTimeout(()=>msgEl.textContent='',1800)}};
+    try{navigator.clipboard.writeText(t).then(done,()=>fallback())}catch(e){fallback()}
+    function fallback(){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();done()}
+  }
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes05tab',name)}catch(e){}
+  }
+  window.__show=show;
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='cls';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes05tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+  const yn=(k,t,ref,hint)=>`<div class="q" id="box_${k}"><div class="lab">${ref}</div><div>${esc(t)}</div>${hint?`<div class="hint" style="margin:2px 0 0">${esc(hint)}</div>`:''}<div class="seg"><label><input type="radio" name="${k}" value="y">ใช่</label><label><input type="radio" name="${k}" value="n">ไม่ใช่</label></div></div>`;
+  const ans=n=>{const x=document.querySelector(`input[name="${n}"]:checked`);return x?x.value:''};
+  const setR=(n,v)=>{const x=document.querySelector(`input[name="${n}"][value="${v}"]`);if(x)x.checked=true};
+
+  /* =========================================================
+     TAB 0  CLASSIFY
+     ========================================================= */
+  const KQ=[
+    ['ft','เป็นการนำ TFRS for NPAEs (ปรับปรุง 2565) มาถือปฏิบัติเป็นครั้งแรกใช่หรือไม่','28.3, 5.13',''],
+    ['rv','เป็นการเริ่มใช้วิธีตีราคาใหม่กับที่ดิน อาคารและอุปกรณ์ตามบทที่ 10 ใช่หรือไม่','5.12ก',''],
+    ['er','ในงวดก่อน กิจการละเว้นหรือแสดงรายการขัดต่อข้อเท็จจริง ทั้งที่ข้อมูลมีอยู่หรือหาได้อย่างสมเหตุสมผลขณะอนุมัติงบการเงินงวดนั้น ใช่หรือไม่','5.4','รวมการคำนวณผิด การใช้นโยบายการบัญชีผิด การมองข้ามหรือตีความข้อเท็จจริงผิด และการทุจริต'],
+    ['mat','ข้อผิดพลาดนั้นมีสาระสำคัญใช่หรือไม่','5.18, 3.13','พิจารณาทั้งขนาดและลักษณะของรายการ'],
+    ['est','เป็นการปรับมูลค่าตามบัญชีหรือจำนวนที่ใช้ประโยชน์ของสินทรัพย์หรือหนี้สิน อันเป็นผลจากข้อมูลใหม่หรือพัฒนาการเพิ่มเติม ใช่หรือไม่','5.3, 5.22','เช่น อายุการใช้ประโยชน์ มูลค่าคงเหลือ ค่าเผื่อหนี้สงสัยจะสูญ มูลค่าสุทธิที่จะได้รับ และการเปลี่ยนวิธีคิดค่าเสื่อมราคาหรือค่าตัดจำหน่ายเพราะรูปแบบประโยชน์เปลี่ยน (10.35, 11.38)'],
+    ['pol','เป็นการเปลี่ยนจากวิธีปฏิบัติทางการบัญชีที่มาตรฐานอนุญาตวิธีหนึ่ง ไปเป็นอีกวิธีหนึ่งที่มาตรฐานอนุญาตเช่นกัน ใช่หรือไม่','5.2','เกณฑ์การรับรู้ การวัดมูลค่า หรือการนำเสนอ เช่น สูตรต้นทุนสินค้า วิธีวัดมูลค่าอสังหาริมทรัพย์เพื่อการลงทุน'],
+    ['new','นโยบายนั้นใช้กับรายการที่มีเนื้อหาต่างจากเดิม ไม่เคยเกิดขึ้นมาก่อน หรือเคยเกิดขึ้นแต่ไม่มีสาระสำคัญ ใช่หรือไม่','5.11',''],
+    ['req','การเปลี่ยนเกิดจากข้อกำหนดของมาตรฐานฉบับนี้ใช่หรือไม่','5.9.1',''],
+    ['rel','การเปลี่ยนทำให้งบการเงินให้ข้อมูลที่น่าเชื่อถือและเกี่ยวข้องกับการตัดสินใจมากขึ้นใช่หรือไม่','5.9.2','ต้องอธิบายเหตุผลได้ในหมายเหตุ (5.14.2)']];
+  $('kQs').innerHTML=KQ.map(q=>yn(...q)).join('');
+  $('kQs').querySelectorAll('input').forEach(x=>x.addEventListener('change',kCalc));
+  $('kDesc').addEventListener('input',kCalc);$('kHide').addEventListener('change',kCalc);
+  const KS={
+    'ก':['เปลี่ยนสูตรต้นทุนสินค้าคงเหลือจากเข้าก่อนออกก่อนเป็นถัวเฉลี่ยถ่วงน้ำหนัก เพื่อสะท้อนต้นทุนที่ใกล้เคียงราคาซื้อเฉลี่ย',{ft:'n',rv:'n',er:'n',est:'n',pol:'y',new:'n',req:'n',rel:'y'}],
+    'ข':['ลดอายุการใช้ประโยชน์ของเครื่องจักรจาก 10 ปีเป็น 7 ปี หลังพบว่าใช้งานหนักกว่าที่คาด',{ft:'n',rv:'n',er:'n',est:'y'}],
+    'ค':['เปลี่ยนวิธีคิดค่าเสื่อมราคาจากเส้นตรงเป็นยอดคงเหลือลดลง เพราะรูปแบบประโยชน์ที่ได้รับเปลี่ยนไป',{ft:'n',rv:'n',er:'n',est:'y'}],
+    'ง':['เปลี่ยนการวัดมูลค่าอสังหาริมทรัพย์เพื่อการลงทุนจากวิธีราคาทุนเป็นวิธีมูลค่ายุติธรรม',{ft:'n',rv:'n',er:'n',est:'n',pol:'y',new:'n',req:'n',rel:'y'}],
+    'จ':['เริ่มบันทึกที่ดินด้วยราคาที่ตีใหม่',{ft:'n',rv:'y'}],
+    'ฉ':['พบว่าไม่ได้บันทึกค่าใช้จ่ายค้างจ่ายเดือนธันวาคมของปีก่อน จำนวนมีสาระสำคัญ',{ft:'n',rv:'n',er:'y',mat:'y'}],
+    'ช':['เพิ่มค่าเผื่อหนี้สงสัยจะสูญ เพราะลูกหนี้รายใหญ่ล้มละลายในปีนี้',{ft:'n',rv:'n',er:'n',est:'y'}],
+    'ซ':['เริ่มให้เช่าอาคารเป็นครั้งแรก จึงเริ่มใช้นโยบายอสังหาริมทรัพย์เพื่อการลงทุน',{ft:'n',rv:'n',er:'n',est:'n',pol:'y',new:'y'}],
+    'ฌ':['พบว่าปีก่อนคิดค่าเสื่อมราคาอาคารซ้ำสองครั้งจากสูตรในแฟ้มคำนวณ จำนวนมีสาระสำคัญ',{ft:'n',rv:'n',er:'y',mat:'y'}]};
+  window.__KS=KS;
+  $('kBtns').innerHTML=Object.keys(KS).map(k=>`<button class="btn" data-k="${k}">${k}</button>`).join('')+'<button class="btn" data-k="clr">ล้าง</button>';
+  function kLoad(k){
+    document.querySelectorAll('#kQs input').forEach(x=>x.checked=false);
+    if(k==='clr'){$('kDesc').value='';$('kTag').textContent='ข้อมูลของผู้ใช้';kCalc();return}
+    $('kDesc').value=KS[k][0];Object.entries(KS[k][1]).forEach(([n,v])=>setR(n,v));$('kTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 5.6 '+k;kCalc();
+  }
+  window.__kLoad=kLoad;
+  document.querySelectorAll('[data-k]').forEach(b=>b.addEventListener('click',()=>kLoad(b.dataset.k)));
+  let KCOPY='';
+  function kCalc(){
+    const a={};KQ.forEach(q=>a[q[0]]=ans(q[0]));
+    const vis={ft:1};let res=null;const steps=[];
+    const st=(k,hit,r)=>{steps.push({k,hit,r});};
+    const q=k=>KQ.find(x=>x[0]===k);
+    const flow=['ft','rv','er','est','pol'];
+    for(const k of flow){
+      vis[k]=1;
+      if(a[k]!=='y'){st(k,false,a[k]==='n'?'ไม่ใช่':'ยังไม่ได้ตอบ');if(!a[k])break;continue}
+      st(k,true,'ใช่');
+      if(k==='ft'){res={cls:'ok',h:'การปฏิบัติในช่วงเปลี่ยนผ่าน',p:'ใช้ข้อกำหนดของบทที่ 28 (28.3–28.21) ซึ่งอ้างวิธีปรับย้อนหลังหรือวิธีเปลี่ยนทันทีเป็นต้นไปตามบทที่ 5 และเปิดเผยข้อมูลตามย่อหน้า 5.13',refs:'28.3, 28.4, 5.13'};break}
+      if(k==='rv'){res={cls:'ok',h:'ปฏิบัติตามบทที่ 10 ไม่ปรับย้อนหลังตามบทที่ 5',p:'ย่อหน้า 5.12ก ถือว่าการเริ่มใช้ราคาที่ตีใหม่เป็นการเปลี่ยนนโยบายเกี่ยวกับการปรับมูลค่าตามบทที่ 10 บันทึกส่วนที่เพิ่มขึ้นในส่วนของเจ้าของภายใต้ "ส่วนเกินทุนจากการตีราคาสินทรัพย์" (10.20) ไม่แก้ตัวเลขงวดก่อน',refs:'5.12ก, 10.14, 10.20'};break}
+      if(k==='er'){vis.mat=1;
+        if(a.mat==='y'){st('mat',true,'ใช่');res={cls:'bad',h:'ข้อผิดพลาดในงวดก่อน: แก้ไขโดยปรับย้อนหลัง',p:'ปรับงบการเงินงวดก่อนที่แสดงเปรียบเทียบเสมือนแก้ไขในงวดที่เกิด หรือปรับยอดยกมาต้นงวดแรกสุดที่แสดงเปรียบเทียบ ถ้าระบุผลรายงวดไม่ได้ใช้ลำดับใน 5.20–5.21 และเปิดเผยตาม 5.23 คำนวณได้ในแท็บ 1',refs:'5.18–5.21, 5.23'}}
+        else if(a.mat==='n'){st('mat',false,'ไม่ใช่');res={cls:'warn',h:'ข้อผิดพลาดที่ไม่มีสาระสำคัญ',p:'ย่อหน้า 5.18 บังคับการปรับย้อนหลังเฉพาะข้อผิดพลาดที่มีสาระสำคัญ รายการนี้แก้ไขในงวดปัจจุบันได้ ควรบันทึกเหตุผลที่ประเมินว่าไม่มีสาระสำคัญไว้ในแฟ้มงาน',refs:'5.18, 3.13'}}
+        else st('mat',false,'ยังไม่ได้ตอบ');
+        break}
+      if(k==='est'){res={cls:'ok',h:'การเปลี่ยนแปลงประมาณการทางบัญชี: เปลี่ยนทันทีเป็นต้นไป',p:'รับรู้ผลในงวดปัจจุบันและงวดอนาคตที่ได้รับผลกระทบ ไม่แก้ตัวเลขงวดก่อน เปิดเผยลักษณะและจำนวนเงินตาม 5.16–5.17 คำนวณค่าเสื่อมราคาใหม่ได้ในแท็บ 2',refs:'5.3, 5.15–5.17'};break}
+      if(k==='pol'){vis.new=1;
+        if(a.new==='y'){st('new',true,'ใช่');res={cls:'ok',h:'ไม่ถือเป็นการเปลี่ยนแปลงนโยบายการบัญชี',p:'ย่อหน้า 5.11 ใช้นโยบายกับรายการนั้นตั้งแต่เกิดขึ้น ไม่ปรับย้อนหลัง และเปิดเผยนโยบายในหมายเหตุตามย่อหน้า 4.19.2',refs:'5.11, 4.19.2'};break}
+        if(a.new!=='n'){st('new',false,'ยังไม่ได้ตอบ');break}
+        st('new',false,'ไม่ใช่');vis.req=1;
+        if(a.req==='y'){st('req',true,'ใช่');res={cls:'bad',h:'เปลี่ยนนโยบายตามข้อกำหนดของมาตรฐาน: ปรับย้อนหลัง',p:'ปรับย้อนหลังตาม 5.12 เว้นแต่ข้อกำหนดเฉพาะเรื่องนั้นกำหนดวิธีอื่น และเปิดเผยตาม 5.13',refs:'5.9.1, 5.12, 5.13'};break}
+        if(a.req!=='n'){st('req',false,'ยังไม่ได้ตอบ');break}
+        st('req',false,'ไม่ใช่');vis.rel=1;
+        if(a.rel==='y'){st('rel',true,'ใช่');res={cls:'bad',h:'เปลี่ยนนโยบายโดยสมัครใจ: ปรับย้อนหลัง',p:'ปรับย้อนหลังตาม 5.12 ถ้าระบุผลรายงวดไม่ได้ ปรับยอดยกมาของงวดแรกสุดที่ทำได้ ถ้าระบุผลสะสมไม่ได้ ใช้วิธีเปลี่ยนทันทีเป็นต้นไป และเปิดเผยตาม 5.14 รวมเหตุผลที่ข้อมูลน่าเชื่อถือและเกี่ยวข้องมากขึ้น คำนวณได้ในแท็บ 1',refs:'5.9.2, 5.12, 5.14'}}
+        else if(a.rel==='n'){st('rel',false,'ไม่ใช่');res={cls:'warn',h:'เปลี่ยนนโยบายไม่ได้',p:'ไม่เข้าเงื่อนไขของย่อหน้า 5.9 กิจการต้องใช้นโยบายเดิมอย่างสม่ำเสมอ (5.8, 5.10)',refs:'5.8–5.10'}}
+        else st('rel',false,'ยังไม่ได้ตอบ');
+        break}
+    }
+    if(!res&&steps.length&&steps.every(s=>s.r==='ไม่ใช่')&&a.pol==='n')res={cls:'warn',h:'ไม่เข้าคำนิยามทั้งสามประเภท',p:'ตรวจข้อเท็จจริงอีกครั้ง หรือพิจารณาว่าเป็นรายการปกติของงวดปัจจุบัน',refs:'5.1–5.4'};
+    KQ.forEach(q=>{$('box_'+q[0]).hidden=!vis[q[0]]});
+    const desc=$('kDesc').value.trim();const dshow=desc?($('kHide').checked?'รายการ A':desc):'(ไม่ได้ระบุ)';
+    if(!res){$('kOut').innerHTML=`<p class="hint">ตอบคำถามให้ครบเพื่อดูผล</p><ol class="steps">${steps.map((s,i)=>`<li class="${s.hit?'hit':''}"><span class="no">${i+1}</span><div>${esc(q(s.k)[1])} <span class="pill">${q(s.k)[2]}</span><div class="r">${s.r}</div></div></li>`).join('')}</ol>`;KCOPY='';return}
+    $('kOut').innerHTML=`<div class="verdict ${res.cls}"><h4>${esc(res.h)}</h4><p style="margin:0">${esc(res.p)}</p><p style="margin:6px 0 0"><span class="pill">${res.refs}</span></p></div>
+      <ol class="steps">${steps.map((s,i)=>`<li class="${s.hit?'hit':''}"><span class="no">${i+1}</span><div>${esc(q(s.k)[1])} <span class="pill">${q(s.k)[2]}</span><div class="r">${s.r}</div></div></li>`).join('')}</ol>
+      <div class="tax"><b>ภาษีเงินได้</b> การจำแนกทางบัญชีไม่เปลี่ยนเกณฑ์ภาษี การคำนวณกำไรสุทธิทางภาษีใช้ราคาทุนเท่านั้น หักค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) แห่งประมวลรัษฎากร และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527) และที่แก้ไขเพิ่มเติม ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) ผลต่างจากทางบัญชีปรับปรุงในการคำนวณภาษี (บทที่ 15)</div>`;
+    KCOPY=['บันทึกการจำแนกการเปลี่ยนแปลงทางบัญชี (TFRS for NPAEs บทที่ 5)','รายการ: '+dshow,'ผล: '+res.h,res.p,'อ้างอิง: '+res.refs,'ขั้นการพิจารณา:'].concat(steps.map((s,i)=>`${i+1}. [${q(s.k)[2]}] ${q(s.k)[1]} → ${s.r}`)).join('\n');
+  }
+  $('kCopy').addEventListener('click',()=>{if(KCOPY)copyText(KCOPY,$('kCopyMsg'))});
+
+  /* =========================================================
+     TAB 1  RESTATEMENT
+     ========================================================= */
+  const RS={
+    e51:{tag:'ตัวอย่างที่ 5.1',kind:'pv',what:'สูตรต้นทุนสินค้าคงเหลือ จากเข้าก่อนออกก่อนเป็นถัวเฉลี่ยถ่วงน้ำหนัก',item:'สินค้าคงเหลือ',side:'A',counter:'',pl:'ต้นทุนขาย',cum:-100000,cmp:-50000,re0:5000000,ni:700000,pract:'full',tax:'none'},
+    e52:{tag:'ตัวอย่างที่ 5.2 (กำไรสะสม 1 ม.ค. 2567 และกำไรสุทธิปี 2567 เป็นข้อมูลสมมติเพิ่ม เล่มไม่ได้กำหนด)',split:[['ค่าเสื่อมราคาสะสม – อสังหาริมทรัพย์เพื่อการลงทุน',80000],['อสังหาริมทรัพย์เพื่อการลงทุน',100000]],kind:'pv',what:'การวัดมูลค่าอสังหาริมทรัพย์เพื่อการลงทุน จากวิธีราคาทุนเป็นวิธีมูลค่ายุติธรรม',item:'อสังหาริมทรัพย์เพื่อการลงทุน',side:'A',counter:'อสังหาริมทรัพย์เพื่อการลงทุน',pl:'ค่าเสื่อมราคาและกำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรม',cum:90000,cmp:90000,re0:5000000,ni:700000,pract:'full',tax:'none'},
+    e55:{tag:'ตัวอย่างที่ 5.5',kind:'er',what:'ไม่ได้บันทึกค่าสาธารณูปโภคค้างจ่ายเดือนธันวาคม 2567',item:'ค่าใช้จ่ายค้างจ่าย',side:'L',counter:'ค่าสาธารณูปโภค (ที่บันทึกเมื่อจ่ายในปี 2568)',pl:'ค่าใช้จ่ายในการบริหาร',cum:0,cmp:-50000,re0:5000000,ni:700000,pract:'full',tax:'none'},
+    w5:{tag:'โจทย์ปฏิบัติงานข้อ 3 (ข)',kind:'er',what:'บันทึกรายได้จากการขายปี 2567 ซ้ำ',item:'ลูกหนี้การค้า',side:'A',counter:'',pl:'รายได้จากการขาย',cum:0,cmp:-200000,re0:NaN,ni:NaN,pract:'full',tax:'cur'}};
+  let RKEY='';
+  function rLoad(k){
+    RKEY=k;const f=RS[k]||{tag:'ข้อมูลของผู้ใช้',kind:'pv',what:'',item:'',side:'A',counter:'',pl:'',cum:NaN,cmp:NaN,re0:NaN,ni:NaN,pract:'full',tax:'none'};
+    setR('rKind',f.kind);$('rWhat').value=f.what;$('rItem').value=f.item;$('rSide').value=f.side;$('rCounter').value=f.counter;$('rPL').value=f.pl;
+    const sv=(id,v)=>$(id).value=isFinite(v)?acc(v):'';sv('rCum',f.cum);sv('rCmp',f.cmp);sv('rRE0',f.re0);sv('rNI',f.ni);
+    $('rPract').value=f.pract;setR('rTax',f.tax);$('rY').value='2568';$('rTag').textContent=(RS[k]?'ข้อมูลตัวอย่าง: ':'')+f.tag;rCalc();
+  }
+  window.__rLoad=rLoad;
+  document.querySelectorAll('[data-r]').forEach(b=>b.addEventListener('click',()=>rLoad(b.dataset.r)));
+  ['rEnt','rY','rWhat','rItem','rCounter','rPL','rCum','rCmp','rRE0','rNI','rRate'].forEach(id=>$(id).addEventListener('input',rCalc));
+  ['rSide','rPract','rHide'].forEach(id=>$(id).addEventListener('change',rCalc));
+  document.querySelectorAll('input[name="rKind"],input[name="rTax"]').forEach(x=>x.addEventListener('change',rCalc));
+  let RCOPY='';
+  function rCalc(){
+    const kind=ans('rKind'),tax=ans('rTax'),pract=$('rPract').value;
+    const Y=parseInt($('rY').value,10)||2568,Yc=Y-1,Y0=Y-2;
+    const ent=$('rEnt').value.trim();const entS=($('rHide').checked||!ent)?'กิจการ A':ent;
+    const what=$('rWhat').value.trim()||'[เรื่องที่เปลี่ยนหรือแก้ไข]',item=$('rItem').value.trim()||'[รายการในงบฐานะการเงิน]',side=$('rSide').value;
+    const counter=$('rCounter').value.trim()||item,pl=$('rPL').value.trim()||'[รายการในงบกำไรขาดทุน]';
+    const C0=n0(num($('rCum').value)),C1=n0(num($('rCmp').value)),T=C0+C1;
+    const RE0=num($('rRE0').value),NI=num($('rNI').value);
+    const t=tax==='none'?0:Math.max(0,n0(num($('rRate').value)))/100;
+    const net=g=>g*(1-t);
+    const warn=[];
+    if(kind==='er'&&C0===0&&C1===0)warn.push('ยังไม่ได้ใส่จำนวนผลกระทบ');
+    if(tax==='def')warn.push('ใช้ภาษีเงินได้รอการตัดบัญชีเฉพาะกิจการที่เลือกถือปฏิบัติตามย่อหน้า 15.2 ทุกข้อกำหนดอย่างสม่ำเสมอ');
+    if(tax==='cur'&&kind!=='er')warn.push('การเปลี่ยนนโยบายการบัญชีไม่เปลี่ยนเกณฑ์ภาษีโดยอัตโนมัติ ตรวจว่ารายการนี้กระทบภาษีของงวดก่อนจริงก่อนใช้ทางเลือกนี้');
+    const taxAcc=tax==='cur'?(T>0?'ภาษีเงินได้ค้างจ่าย':'ภาษีเงินได้รอขอคืน'):(T>0?'หนี้สินภาษีเงินได้รอการตัดบัญชี':'สินทรัพย์ภาษีเงินได้รอการตัดบัญชี');
+    const dirItem=(side==='A')===(T>0)?'เพิ่มขึ้น':'ลดลง';
+    const full=pract==='full',cum=pract==='cum',pro=pract==='pro';
+    const kindName=kind==='er'?'การแก้ไขข้อผิดพลาดงวดก่อน':(kind==='pm'?'การเปลี่ยนแปลงนโยบายการบัญชีตามข้อกำหนดของมาตรฐาน':'การเปลี่ยนแปลงนโยบายการบัญชีโดยสมัครใจ');
+    const refs=kind==='er'?(full?'5.18':cum?'5.20':'5.21')+', 5.23':(full?'5.12':cum?'5.12 (งวดแรกสุดที่ทำได้)':'5.12 (วิธีเปลี่ยนทันทีเป็นต้นไป)')+(kind==='pm'?', 5.13':', 5.14');
+    // restated table
+    const rows=[];
+    if(full){
+      rows.push([`กำไรสะสม 1 ม.ค. ${Yc}`,RE0,net(C0)]);
+      rows.push([`กำไรสุทธิปี ${Yc}`,NI,net(C1)]);
+      rows.push([`กำไรสะสม 31 ธ.ค. ${Yc} (ก่อนรายการอื่น เช่น เงินปันผล)`,isFinite(RE0)&&isFinite(NI)?RE0+NI:NaN,net(T)]);
+    }else if(cum){
+      rows.push([`กำไรสะสม 1 ม.ค. ${Y} (ยอดยกมาของงวดปัจจุบัน)`,isFinite(RE0)&&isFinite(NI)?RE0+NI:NaN,net(T)]);
+    }
+    const trs=rows.map(r=>`<tr><td>${esc(r[0])}</td><td class="num">${acc(r[1])}</td><td class="num">${acc(r[2])}</td><td class="num">${isFinite(r[1])?acc(r[1]+r[2]):'–'}</td></tr>`).join('');
+    // journal entry at start of current year
+    const je=[];
+    if(!pro&&Math.abs(T)>0.004){
+      if(T<0){je.push(['เดบิต','กำไรสะสม',net(-T)]);if(t)je.push(['เดบิต',taxAcc,-T*t]);je.push(['เครดิต',counter,-T])}
+      else{const sp=(RS[RKEY]&&RS[RKEY].split&&!t&&Math.abs(T-RS[RKEY].split.reduce((a,b)=>a+b[1],0))<0.5)?RS[RKEY].split:null;
+        if(sp)sp.forEach(x=>je.push(['เดบิต',x[0],x[1]]));else je.push(['เดบิต',counter,T]);je.push(['เครดิต','กำไรสะสม',net(T)]);if(t)je.push(['เครดิต',taxAcc,T*t])}
+    }
+    const jeHtml=je.length?`<div class="je"><div class="cap"><span>รายการปรับปรุง ณ วันที่ 1 มกราคม ${Y}</span><span>${refs}</span></div><div class="tbl"><table><thead><tr><th>บัญชี</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${je.map(r=>`<tr><td class="${r[0]==='เครดิต'?'cr':''}">${esc(r[1])}</td><td class="num dr-amt">${r[0]==='เดบิต'?fmt(r[2]):''}</td><td class="num cr-amt">${r[0]==='เครดิต'?fmt(r[2]):''}</td></tr>`).join('')}</tbody></table></div><div class="why" style="border-left:0;border-top:1px solid var(--rule);border-radius:0">ผลสะสมถึงวันที่ 31 ธันวาคม ${Yc} บันทึกเมื่อเปิดงวด ${Y} เพราะปิดบัญชีปี ${Yc} แล้ว ในงบเปรียบเทียบ ${full?`แสดงตัวเลขปี ${Yc} ใหม่ตามตารางด้านบน`:'ไม่แก้ตัวเลขปีเปรียบเทียบ'}</div></div>`:(pro?`<div class="alert warn">ระบุผลสะสมไม่ได้ในทางปฏิบัติ จึงไม่มีรายการปรับปรุงยอดยกมา ใช้${kind==='er'?'การแก้ไข':'นโยบายใหม่'}กับรายการตั้งแต่วันแรกสุดที่ทำได้ (${kind==='er'?'5.21':'5.12'})</div>`:'');
+    const figs=`<div class="figs"><div class="fig"><div class="k">ผลสะสมก่อนปี ${Yc}</div><div class="v">${acc(C0)}</div></div><div class="fig"><div class="k">ผลต่อกำไรปี ${Yc}</div><div class="v">${acc(C1)}</div></div><div class="fig"><div class="k">ผลสะสม ณ 31 ธ.ค. ${Yc}</div><div class="v">${acc(T)}</div></div></div>`;
+    const tbl=rows.length?`<h3>งบที่ปรับปรุงใหม่ (ส่วนที่ได้รับผลกระทบ)</h3><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">ตามที่รายงานไว้</th><th class="num">ปรับปรุง${t?' (สุทธิจากภาษี)':''}</th><th class="num">ปรับปรุงใหม่</th></tr></thead><tbody>${trs}<tr><td>${esc(item)} ${full?'ณ 31 ธ.ค. '+Yc:'ณ 1 ม.ค. '+Y} (${dirItem})</td><td class="num">–</td><td class="num">${fmt(Math.abs(T))}</td><td class="num">–</td></tr>${t?`<tr><td>${esc(taxAcc)} ${full?'ณ 31 ธ.ค. '+Yc:'ณ 1 ม.ค. '+Y}</td><td class="num">–</td><td class="num">${fmt(Math.abs(T*t))}</td><td class="num">–</td></tr>`:''}</tbody></table></div>`:'';
+    const soceAdj=net(full?C0:T);const soce=pro?'':(Math.abs(soceAdj)<0.005?`<div class="note"><div class="cap">งบการเปลี่ยนแปลงส่วนของเจ้าของ (4.18.3)</div>ไม่มีรายการปรับยอดกำไรสะสมต้นงวด ${Yc} ผลทั้งหมดอยู่ในกำไรสุทธิปี ${Yc} ที่ปรับปรุงใหม่</div>`:`<div class="note"><div class="cap">งบการเปลี่ยนแปลงส่วนของเจ้าของ คอลัมน์กำไรสะสม (4.18.3)</div>ยอดคงเหลือ 1 ม.ค. ${full?Yc:Y} ตามที่รายงานไว้เดิม<br>${kind==='er'?'การแก้ไขข้อผิดพลาด':'ผลสะสมจากการเปลี่ยนแปลงนโยบายการบัญชี'} ${acc(soceAdj)}<br><b>ยอดคงเหลือ 1 ม.ค. ${full?Yc:Y} หลังปรับปรุง</b></div>`);
+    // note
+    const N=[];
+    if(kind==='er'){
+      N.push(`หมายเหตุ [x] การแก้ไขข้อผิดพลาดงวดก่อน (5.23)`,`${entS} พบว่า${what} ซึ่งเป็นข้อผิดพลาดของงบการเงินปี ${Yc}${full?'':' และก่อนหน้า'}`);
+      if(full)N.push(`กิจการแก้ไขโดยปรับงบการเงินปี ${Yc} ที่แสดงเปรียบเทียบใหม่ ผลกระทบ: ${pl}ปี ${Yc} ${C1<0?'ทำให้กำไรลดลง':'ทำให้กำไรเพิ่มขึ้น'} ${fmt(Math.abs(C1))} บาท · ${item} ณ 31 ธ.ค. ${Yc} ${dirItem} ${fmt(Math.abs(T))} บาท · กำไรสะสม 1 ม.ค. ${Yc} ${Math.abs(C0)<0.005?'ไม่มีผลกระทบ':'ปรับปรุง '+acc(net(C0))+' บาท'}`);
+      if(cum)N.push(`กิจการไม่สามารถระบุผลกระทบของแต่ละงวดที่แสดงเปรียบเทียบได้ในทางปฏิบัติ เนื่องจาก [สถานการณ์] จึงปรับยอดยกมา ณ 1 ม.ค. ${Y} จำนวน ${acc(net(T))} บาท (5.20, 5.23.4)`);
+      if(pro)N.push(`กิจการไม่สามารถระบุผลกระทบสะสมได้ในทางปฏิบัติ เนื่องจาก [สถานการณ์] จึงแก้ไขโดยวิธีเปลี่ยนทันทีเป็นต้นไปตั้งแต่ [วันที่] (5.21, 5.23.4)`);
+    }else{
+      N.push(`หมายเหตุ [x] การเปลี่ยนแปลงนโยบายการบัญชี (${kind==='pm'?'5.13':'5.14'})`,`ในปี ${Y} ${entS} เปลี่ยนนโยบายการบัญชีเรื่อง${what}`);
+      N.push(kind==='pm'?'ตามข้อกำหนดของ [ชื่อมาตรฐานหรือบท] และวิธีปฏิบัติในช่วงเปลี่ยนแปลง [คำอธิบาย] (5.13.1–5.13.5)':'เนื่องจาก [เหตุผลที่ทำให้งบการเงินให้ข้อมูลที่น่าเชื่อถือและเกี่ยวข้องมากขึ้น] (5.14.2)');
+      if(full)N.push(`กิจการปรับงบการเงินย้อนหลัง ผลกระทบ: ${pl}ปี ${Yc} ${C1<0?'ทำให้กำไรลดลง':'ทำให้กำไรเพิ่มขึ้น'} ${fmt(Math.abs(C1))} บาท · ${item} ณ 31 ธ.ค. ${Yc} ${dirItem} ${fmt(Math.abs(T))} บาท · กำไรสะสม 1 ม.ค. ${Yc} ปรับปรุง ${acc(net(C0))} บาท`);
+      if(cum)N.push(`กิจการไม่สามารถระบุผลกระทบของแต่ละงวดที่แสดงเปรียบเทียบได้ในทางปฏิบัติ จึงปรับยอดยกมา ณ 1 ม.ค. ${Y} จำนวน ${acc(net(T))} บาท`);
+      if(pro)N.push(`กิจการไม่สามารถระบุผลกระทบสะสม ณ ต้นงวดปัจจุบันได้ในทางปฏิบัติ จึงใช้นโยบายใหม่โดยวิธีเปลี่ยนทันทีเป็นต้นไปตั้งแต่ [วันที่]`);
+      N.push(`ผลกระทบต่อรายการในงบการเงินปี ${Y}: [จำนวนเงิน ถ้าทำได้ในทางปฏิบัติ] (${kind==='pm'?'5.13.6':'5.14.3'})`);
+    }
+    if(t)N.push(`ผลต่อกำไรสะสมสุทธิจากภาษีเงินได้ร้อยละ ${fmt(t*100)} เท่ากับ ${acc(net(T))} บาท`);
+    $('rOut').innerHTML=`<div class="verdict ${pro?'warn':'ok'}"><h4>${esc(kindName)}</h4><p style="margin:0">${full?'ปรับย้อนหลังเต็มรูปแบบ':cum?'ปรับยอดยกมาของงวดแรกสุดที่ทำได้ (งวดปัจจุบัน)':'วิธีเปลี่ยนทันทีเป็นต้นไป'} <span class="pill">${refs}</span></p></div>
+      ${warn.length?`<div class="alert warn"><ul style="margin:0;padding-left:18px">${warn.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>`:''}
+      ${figs}${tbl}${jeHtml}${soce}
+      <div class="note"><div class="cap">ร่างหมายเหตุ</div>${N.map(esc).join('<br>')}</div>
+      <div class="tax"><b>ภาษีเงินได้</b> กำไรสุทธิทางภาษีใช้ราคาทุนเท่านั้น หักค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) แห่งประมวลรัษฎากร และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527) และที่แก้ไขเพิ่มเติม ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) การปรับงบทางบัญชีไม่เปลี่ยนเกณฑ์ภาษี ข้อผิดพลาดที่ทำให้เงินได้ของรอบก่อนผิด แก้ทางภาษีโดยยื่นแบบแสดงรายการเพิ่มเติมของรอบที่เกิดรายการ พร้อมงบการเงินที่ผู้สอบบัญชีรับรอง และขอคืนภาษีที่ชำระเกินภายในสามปี (มาตรา 27 ตรี) ไม่นำรายการของรอบก่อนมาหักในรอบปัจจุบัน (มาตรา 65 ตรี (9)) ขั้นตอนอยู่ใน S5.7</div>`;
+    const cl=[`${kindName} · ${refs}`,`กิจการ: ${entS}`,`เรื่อง: ${what}`,`ผลสะสมก่อนปี ${Yc}\t${C0}`,`ผลต่อกำไรปี ${Yc}\t${C1}`,`ผลสะสม ณ 31 ธ.ค. ${Yc}\t${T}`];
+    rows.forEach(r=>cl.push(`${r[0]}\t${isFinite(r[1])?r[1]:''}\t${r[2]}\t${isFinite(r[1])?r[1]+r[2]:''}`));
+    if(je.length){cl.push('',`รายการปรับปรุง 1 ม.ค. ${Y}`);je.forEach(r=>cl.push(`${r[0]==='เครดิต'?'    ':''}${r[1]}\t${r[0]==='เดบิต'?r[2]:''}\t${r[0]==='เครดิต'?r[2]:''}`))}
+    cl.push('',...N);RCOPY=cl.join('\n');
+  }
+  $('rCopy').addEventListener('click',()=>{if(RCOPY)copyText(RCOPY,$('rCopyMsg'))});
+
+  /* =========================================================
+     TAB 2  ESTIMATE (prospective depreciation)
+     ========================================================= */
+  const ES={e54:{tag:'ตัวอย่างที่ 5.4',a:'เครื่องจักร',cost:1000000,rv0:0,l0:10,used:2,l1:5,rv1:50000,tax:100000},
+            w4:{tag:'โจทย์ปฏิบัติงานข้อ 3 (ก)',a:'รถบรรทุก',cost:900000,rv0:100000,l0:8,used:3,l1:4,rv1:120000,tax:NaN}};
+  function eLoad(k){
+    const f=ES[k]||{tag:'ข้อมูลของผู้ใช้',a:'',cost:NaN,rv0:NaN,l0:NaN,used:NaN,l1:NaN,rv1:NaN,tax:NaN};
+    $('eAsset').value=f.a;const sv=(id,v)=>$(id).value=isFinite(v)?fmt(v):'';
+    sv('eCost',f.cost);sv('eRv0',f.rv0);sv('eL0',f.l0);sv('eUsed',f.used);sv('eL1',f.l1);sv('eRv1',f.rv1);sv('eTax',f.tax);$('eY').value='2568';
+    $('eTag').textContent=(ES[k]?'ข้อมูลตัวอย่าง: ':'')+f.tag;eCalc();
+  }
+  window.__eLoad=eLoad;
+  document.querySelectorAll('[data-e]').forEach(b=>b.addEventListener('click',()=>eLoad(b.dataset.e)));
+  ['eAsset','eY','eCost','eRv0','eL0','eUsed','eL1','eRv1','eTax'].forEach(id=>$(id).addEventListener('input',eCalc));
+  let ECOPY='';
+  function eCalc(){
+    const Y=parseInt($('eY').value,10)||2568,a=$('eAsset').value.trim()||'สินทรัพย์';
+    const cost=num($('eCost').value),rv0=n0(num($('eRv0').value)),l0=num($('eL0').value),used=num($('eUsed').value),l1=num($('eL1').value),rv1=n0(num($('eRv1').value)),tx=num($('eTax').value);
+    if(![cost,l0,used,l1].every(isFinite)||l0<=0){$('eOut').innerHTML='<p class="hint">กรอกราคาทุน อายุเดิม ปีที่ใช้งานแล้ว และอายุที่เหลือใหม่</p>';ECOPY='';return}
+    const warn=[];
+    const d0=(cost-rv0)/l0,accd=d0*Math.min(used,l0),bv=cost-accd;
+    if(used>=l0)warn.push('ใช้งานครบอายุเดิมแล้ว ตรวจข้อมูลอีกครั้ง');
+    if(l1<=0)warn.push('อายุที่เหลือต้องมากกว่าศูนย์');
+    if(rv1>bv)warn.push('มูลค่าคงเหลือใหม่สูงกว่ามูลค่าตามบัญชี ค่าเสื่อมราคาจะเป็นศูนย์ (10.29)');
+    const d1=l1>0?Math.max(0,(bv-rv1)/l1):NaN,diff=d1-d0;
+    const yrs=[];if(isFinite(d1)){let b=bv;for(let i=0;i<Math.min(Math.ceil(l1),12);i++){const d=Math.min(d1,Math.max(0,b-rv1));b-=d;yrs.push([Y+i,d,b])}}
+    const taxRow=isFinite(tx)?(d1-tx):NaN;
+    const taxTxt=!isFinite(tx)?'ใส่ค่าเสื่อมราคาที่กิจการหักทางภาษีในปีปัจจุบันเพื่อดูผลต่าง การหักทางภาษีคิดจากราคาทุนและต้องไม่เกินอัตราตาม พ.ร.ฎ. ฉบับที่ 145 (มาตรา 65 ทวิ (2))':(`ถ้าค่าเสื่อมราคาที่กิจการหักทางภาษีในปี ${Y} คือ ${fmt(tx)} บาท `+(taxRow>0.004?`ค่าเสื่อมราคาทางบัญชีสูงกว่าทางภาษี ${fmt(taxRow)} บาท ผลต่างนี้บวกกลับในการคำนวณกำไรสุทธิทางภาษีปี ${Y}`:(taxRow<-0.004?`ค่าเสื่อมราคาทางภาษีสูงกว่าทางบัญชี ${fmt(-taxRow)} บาท ผลต่างนี้หักออกในการคำนวณกำไรสุทธิทางภาษี`:'ค่าเสื่อมราคาทางบัญชีเท่ากับทางภาษี ไม่มีผลต่าง'))+' ตัวเลขทางภาษีขึ้นกับอัตราที่กิจการใช้ ซึ่งคิดจากราคาทุนและต้องไม่เกินอัตราตาม พ.ร.ฎ. ฉบับที่ 145 (มาตรา 65 ทวิ (2)) ผลต่างจึงไม่ได้มีค่าเดียว');
+    $('eOut').innerHTML=`<div class="verdict ok"><h4>การเปลี่ยนแปลงประมาณการ: เปลี่ยนทันทีเป็นต้นไป</h4><p style="margin:0">ไม่แก้ค่าเสื่อมราคาที่รับรู้แล้ว ใช้มูลค่าตามบัญชี ณ วันเปลี่ยนเป็นฐาน <span class="pill">5.15, 10.29</span></p></div>
+      ${warn.length?`<div class="alert warn"><ul style="margin:0;padding-left:18px">${warn.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>`:''}
+      <div class="figs"><div class="fig"><div class="k">ค่าเสื่อมราคาเดิมต่อปี</div><div class="v">${fmt(d0)}</div></div><div class="fig"><div class="k">มูลค่าตามบัญชี 1 ม.ค. ${Y}</div><div class="v">${fmt(bv)}</div></div><div class="fig"><div class="k">ค่าเสื่อมราคาใหม่ต่อปี</div><div class="v">${fmt(d1)}</div></div></div>
+      <p style="margin:0">ผลต่อกำไรปี ${Y}: ค่าเสื่อมราคา${diff>=0?'เพิ่มขึ้น':'ลดลง'} <b>${fmt(Math.abs(diff))}</b> บาท และผลเดียวกันในปีต่อไปจนสิ้นอายุใหม่</p>
+      <div class="tbl"><table><thead><tr><th>ปี</th><th class="num">ค่าเสื่อมราคา</th><th class="num">มูลค่าตามบัญชีปลายปี</th></tr></thead><tbody>${yrs.map(r=>`<tr><td>${r[0]}</td><td class="num">${fmt(r[1])}</td><td class="num">${fmt(r[2])}</td></tr>`).join('')}</tbody></table></div>
+      <div class="je"><div class="cap"><span>บันทึกค่าเสื่อมราคาปี ${Y}</span><span>5.15</span></div><div class="tbl"><table><thead><tr><th>บัญชี</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>ค่าเสื่อมราคา</td><td class="num dr-amt">${fmt(d1)}</td><td></td></tr><tr><td class="cr">ค่าเสื่อมราคาสะสม – ${esc(a)}</td><td></td><td class="num cr-amt">${fmt(d1)}</td></tr></tbody></table></div></div>
+      <div class="note"><div class="cap">ร่างหมายเหตุ (5.16–5.17)</div>ณ วันที่ 1 มกราคม ${Y} กิจการทบทวนอายุการใช้ประโยชน์ของ${esc(a)} จาก ${fmt(l0)} ปี เป็น ${fmt(used+l1)} ปี${rv1!==rv0?` และมูลค่าคงเหลือจาก ${fmt(rv0)} บาท เป็น ${fmt(rv1)} บาท`:''} ตาม [ข้อมูลใหม่] กิจการรับรู้ผลโดยวิธีเปลี่ยนทันทีเป็นต้นไป ค่าเสื่อมราคาปี ${Y} ${diff>=0?'เพิ่มขึ้น':'ลดลง'} ${fmt(Math.abs(diff))} บาท และจะ${diff>=0?'เพิ่มขึ้น':'ลดลง'}ในจำนวนเดียวกันทุกปีจนถึงปี ${Y+Math.ceil(l1)-1}</div>
+      <div class="tax"><b>ภาษีเงินได้</b> ใช้ราคาทุนเท่านั้น หักค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) แห่งประมวลรัษฎากร และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527) และที่แก้ไขเพิ่มเติม ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) ${esc(taxTxt)}</div>`;
+    ECOPY=[`การเปลี่ยนแปลงประมาณการ ${a} (5.15)`,`ค่าเสื่อมราคาเดิมต่อปี\t${d0}`,`มูลค่าตามบัญชี 1 ม.ค. ${Y}\t${bv}`,`ค่าเสื่อมราคาใหม่ต่อปี\t${d1}`,`ผลต่างต่อปี\t${diff}`,'ปี\tค่าเสื่อมราคา\tมูลค่าตามบัญชีปลายปี'].concat(yrs.map(r=>r.join('\t'))).concat(['',`ภาษี: ${taxTxt}`]).join('\n');
+  }
+  $('eCopy').addEventListener('click',()=>{if(ECOPY)copyText(ECOPY,$('eCopyMsg'))});
+
+  /* =========================================================
+     TAB 3 QUIZ
+     ========================================================= */
+  const QZ=[["LO 5.1", "จำ", "ข้อใดไม่อยู่ในการเปลี่ยนแปลงทางการบัญชีตามย่อหน้า 5.1", ["ก. การเปลี่ยนแปลงนโยบายการบัญชี", "ข. การเปลี่ยนแปลงประมาณการทางบัญชี", "ค. ข้อผิดพลาดในงวดก่อน", "ง. เหตุการณ์ภายหลังรอบระยะเวลารายงาน"], 3, "ย่อหน้า 5.1 มีสามเรื่อง คือ นโยบาย ประมาณการ และข้อผิดพลาดในงวดก่อน เหตุการณ์ภายหลังรอบระยะเวลารายงานอยู่ในบทที่ 17", "5.1"], ["LO 5.2", "เข้าใจ", "มาตรฐานไม่ได้กำหนดวิธีปฏิบัติสำหรับรายการหนึ่งไว้เป็นการเฉพาะ แหล่งใดต้องพิจารณาเป็นลำดับแรกตามย่อหน้า 5.5", ["ก. TFRS for PAEs เฉพาะรายการนั้น", "ข. กรอบแนวคิดของมาตรฐานฉบับนี้", "ค. ข้อกำหนดในมาตรฐานฉบับนี้สำหรับเรื่องที่คล้ายคลึงและเกี่ยวข้องกัน", "ง. แนวปฏิบัติของอุตสาหกรรม"], 2, "ลำดับใน 5.5 คือ เรื่องที่คล้ายคลึงในมาตรฐานฉบับนี้ (5.5.1) กรอบแนวคิด (5.5.2) แล้วจึง TFRS for PAEs เฉพาะรายการนั้น (5.5.3)", "5.2"], ["LO 5.3", "เข้าใจ", "กรณีใดไม่ถือเป็นการเปลี่ยนแปลงนโยบายการบัญชีตามย่อหน้า 5.11", ["ก. เปลี่ยนสูตรต้นทุนสินค้าจากเข้าก่อนออกก่อนเป็นถัวเฉลี่ยถ่วงน้ำหนัก", "ข. เปลี่ยนอสังหาริมทรัพย์เพื่อการลงทุนจากวิธีราคาทุนเป็นวิธีมูลค่ายุติธรรม", "ค. เริ่มใช้นโยบายกับรายการที่ไม่เคยเกิดขึ้นมาก่อน", "ง. เปลี่ยนการแสดงงบกำไรขาดทุนเบ็ดเสร็จจากแบบงบเดียวเป็นแบบสองงบ"], 2, "ย่อหน้า 5.11.2 นโยบายใหม่สำหรับรายการที่ไม่เคยเกิดขึ้น หรือเคยเกิดแต่ไม่มีสาระสำคัญ ไม่ถือเป็นการเปลี่ยนนโยบาย", "5.3"], ["LO 5.3", "ประยุกต์ใช้", "จากตัวอย่างที่ 5.1 กำไรสะสม 1 มกราคม 2567 ที่แสดงในงบการเปลี่ยนแปลงส่วนของเจ้าของหลังปรับปรุงเป็นเท่าใด", ["ก. 5,000,000 บาท", "ข. 4,900,000 บาท", "ค. 4,850,000 บาท", "ง. 5,550,000 บาท"], 1, "สินค้าคงเหลือ 31 ธ.ค. 2566 ตามวิธีใหม่ต่ำกว่าเดิม 100,000 บาท กำไรสะสมต้นงวดเปรียบเทียบจึงเป็น 5,000,000 − 100,000 = 4,900,000 บาท (5.12)", "5.3"], ["LO 5.3", "เข้าใจ", "กิจการเริ่มบันทึกที่ดินด้วยราคาที่ตีใหม่ในปีปัจจุบัน ข้อใดถูกต้อง", ["ก. ปรับงบการเงินงวดก่อนย้อนหลังตามย่อหน้า 5.12", "ข. บันทึกส่วนที่เพิ่มขึ้นในส่วนของเจ้าของภายใต้ส่วนเกินทุนจากการตีราคาสินทรัพย์ตามบทที่ 10 ไม่ปรับย้อนหลัง", "ค. รับรู้ส่วนที่เพิ่มขึ้นเป็นกำไรในงบกำไรขาดทุน", "ง. เปิดเผยในหมายเหตุเท่านั้น"], 1, "ย่อหน้า 5.12ก ให้ปฏิบัติตามบทที่ 10 ส่วนเพิ่มบันทึกในส่วนของเจ้าของ (10.20) ไม่ปรับย้อนหลังตามบทที่ 5", "5.3"], ["LO 5.4", "ประยุกต์ใช้", "เครื่องจักรราคาทุน 600,000 บาท อายุ 6 ปี ไม่มีมูลค่าคงเหลือ วิธีเส้นตรง ต้นปีที่ 4 ประมาณอายุที่เหลือใหม่เป็น 2 ปี ค่าเสื่อมราคาปีที่ 4 เป็นเท่าใด", ["ก. 100,000 บาท", "ข. 120,000 บาท", "ค. 150,000 บาท", "ง. 300,000 บาท"], 2, "มูลค่าตามบัญชีต้นปีที่ 4 = 600,000 − 300,000 = 300,000 บาท หารอายุที่เหลือ 2 ปี ได้ 150,000 บาท ไม่แก้ค่าเสื่อมราคาสามปีแรก (5.15)", "5.4"], ["LO 5.5", "วิเคราะห์", "รายการใดเป็นข้อผิดพลาดในงวดก่อน", ["ก. เพิ่มค่าเผื่อหนี้สงสัยจะสูญเพราะลูกหนี้รายใหญ่ล้มละลายในปีนี้", "ข. ใบแจ้งหนี้ค่าบริการเดือนธันวาคมปีก่อนได้รับก่อนวันอนุมัติงบ แต่ไม่ได้บันทึก", "ค. ลดอายุการใช้ประโยชน์ของเครื่องจักรจากข้อมูลการใช้งานใหม่", "ง. ปรับลดมูลค่าสินค้าคงเหลือเพิ่มในปีนี้ เพราะราคาขายลดลงหลังวันสิ้นปีก่อน"], 1, "ข้อมูลมีอยู่ขณะอนุมัติงบงวดก่อนแต่ไม่ได้ใช้ (5.4) ข้อ ก ค และ ง เป็นการปรับจากข้อมูลใหม่ จึงเป็นการเปลี่ยนแปลงประมาณการ (5.3, 5.15)", "5.5"], ["LO 5.6", "ประเมินค่า", "ปีก่อนกิจการประเมินคดีความจากข้อมูลที่มีครบในขณะนั้นว่าน่าจะชนะ จึงไม่รับรู้ประมาณการหนี้สิน ปีนี้ศาลตัดสินให้แพ้ ผู้บริหารเสนอให้แก้ไขงบปีก่อนย้อนหลังเป็นข้อผิดพลาด ข้อใดประเมินข้อเสนอนี้ได้ถูกต้อง", ["ก. ไม่เห็นด้วย ผลของรายการที่มีความไม่แน่นอนเมื่อรู้ผลภายหลังไม่ถือเป็นการแก้ไขข้อผิดพลาด จึงรับรู้ในงวดปัจจุบัน", "ข. เห็นด้วย เพราะผลคดีแสดงว่างบปีก่อนแสดงรายการขัดต่อข้อเท็จจริง", "ค. เห็นด้วยเฉพาะเมื่อจำนวนเงินมีสาระสำคัญ", "ง. ไม่เห็นด้วย และไม่ต้องรับรู้รายการ เปิดเผยในหมายเหตุเท่านั้น"], 0, "ย่อหน้า 5.22 ระบุว่าผลกำไรหรือขาดทุนจากรายการที่มีความไม่แน่นอนไม่ถือเป็นการแก้ไขข้อผิดพลาด การประเมินปีก่อนใช้ข้อมูลที่มีครบในขณะนั้น จึงไม่เข้าคำนิยามข้อผิดพลาดในย่อหน้า 5.4 ผลของคดีรับรู้ในงวดปัจจุบันตามบทที่ 16 ข้อ ข และ ค ใช้ผลที่รู้ภายหลังตัดสินงบปีก่อน ข้อ ง ไม่รับรู้ผลที่เกิดขึ้นแล้ว", "5.6"]];
+  window.__QZ=QZ;
+  $('qBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="qf${i}"></div></div>`).join('');
+  $('sKey').innerHTML=QZ.map((q,i)=>`<tr><td class="num">${i+1}</td><td>${esc(q[3][q[4]])}</td><td>${esc(q[5])}</td></tr>`).join('');
+  $('qChk').addEventListener('click',qCheck);
+  $('qClr').addEventListener('click',()=>{document.querySelectorAll('#qBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('qf'+i).innerHTML='');$('qOut').innerHTML=''});
+  function qCheck(){
+    let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="q${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;
+      lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('qf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort().map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('qOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div><div class="fig"><div class="k">LO ที่บรรลุ</div><div class="v">${Object.values(lo).filter(x=>x.ok===x.n).length}/${Object.keys(lo).length}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+})();
+</script>
+<script>
+(function(){
+  window.__kLoad('ก');window.__rLoad('e51');window.__eLoad('e54');
+  const goS=()=>{const m=(location.hash||'').match(/^#(S5\.\d)$/);if(m){window.__show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body></html>

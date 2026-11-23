@@ -1,0 +1,524 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 16 · กระดาษทำการประมาณการหนี้สิน</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="reg"],[data-pane="tax"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 16 ประมาณการหนี้สิน หนี้สินที่อาจเกิดขึ้น และสินทรัพย์ที่อาจเกิดขึ้น</div>
+      <h1>แอป 16 · กระดาษทำการประมาณการหนี้สิน</h1>
+      <p class="lede">ทำทะเบียนประมาณการหนี้สิน ตัดสินการรับรู้หรือเปิดเผย วัดประมาณการที่ดีที่สุด คำนวณค่าชดเชยเกษียณตามมาตรา 118 เทียบค่ารื้อถอนแบบไม่คิดลดกับแบบคิดลด จัดทำตารางเคลื่อนไหว กระทบยอดภาษี และร่างหมายเหตุ</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 16 ย่อหน้า 16.1–16.16</b><br>ตำราบทที่ 16 · ฉบับ 18-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> ทะเบียน · ตัดสินการรับรู้ · วัดมูลค่า (ค่าชดเชยเกษียณ ค่ารื้อถอน) · ตารางเคลื่อนไหว · กระทบยอดภาษี · ร่างหมายเหตุ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="reg"><span class="n">0</span>ทะเบียนประมาณการหนี้สิน</button>
+    <button role="tab" aria-selected="false" data-tab="dec"><span class="n">1</span>ลำดับการตัดสินใจ</button>
+    <button role="tab" aria-selected="false" data-tab="best"><span class="n">2</span>ประมาณการที่ดีที่สุด</button>
+    <button role="tab" aria-selected="false" data-tab="emp"><span class="n">3</span>ค่าชดเชยเกษียณ</button>
+    <button role="tab" aria-selected="false" data-tab="dis"><span class="n">4</span>ค่ารื้อถอนสองแบบ</button>
+    <button role="tab" aria-selected="false" data-tab="ca"><span class="n">5</span>สินทรัพย์ที่อาจเกิดขึ้น</button>
+    <button role="tab" aria-selected="false" data-tab="mov"><span class="n">6</span>ตารางเคลื่อนไหว</button>
+    <button role="tab" aria-selected="false" data-tab="tax"><span class="n">7</span>กระทบยอดภาษี</button>
+    <button role="tab" aria-selected="false" data-tab="note"><span class="n">8</span>ร่างหมายเหตุ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">9</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">10</span>เนื้อหาเสริม S16</button>
+  </nav>
+
+  <!-- 0 REG -->
+  <div class="grid" data-pane="reg" style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ทะเบียนประมาณการหนี้สิน ณ วันสิ้นรอบ</h2>
+      <p class="hint">ค่าเริ่มต้นคือบริษัทสมมติในตัวอย่างที่ 16.3–16.6 ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น ไม่ส่งออกจากเครื่อง ชื่อคู่สัญญาปกปิดโดยค่าเริ่มต้น</p>
+      <span class="sample">ข้อมูลตัวอย่าง: บริษัท ตัวอย่างเครื่องใช้ไฟฟ้า จำกัด 31 ธันวาคม 2568</span>
+      <div class="fields"><label class="f">วันสิ้นรอบระยะเวลารายงาน<input type="date" id="iYe" value="2025-12-31"></label></div>
+      <div class="checks" style="margin:8px 0"><label><input type="checkbox" id="rAnon" checked><span><b>ปกปิดชื่อคู่สัญญา</b> แสดงเป็น "คู่สัญญา 1, 2, …"</span></label></div>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th>คู่สัญญา</th><th>ประเภท</th><th class="num">จำนวน</th><th>จ่ายภายใน 12 เดือน</th><th></th></tr></thead><tbody id="rBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="rAdd">เพิ่มรายการ</button><button class="btn" id="rReset">ค่าเริ่มต้น</button></div>
+      <div id="rOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 1 DEC -->
+  <div class="grid" data-pane="dec" hidden>
+    <section class="panel">
+      <h2>ลำดับการตัดสินใจ (ตารางที่ 16-2)</h2>
+      <p class="hint">ตอบตามข้อเท็จจริง ณ วันสิ้นรอบ และหลักฐาน เช่น หนังสือยืนยันจากทนายความ</p>
+      <div class="fields">
+        <label class="f">ขั้น 1 ภาระผูกพันปัจจุบันจากเหตุการณ์ในอดีต (16.6.1, 16.9, 16.10)<select id="dOb"><option value="yes">มี หรือน่าจะมีอยู่มากกว่าไม่น่าจะมีอยู่</option><option value="poss">อาจมีอยู่ รอเหตุการณ์ในอนาคตยืนยัน</option><option value="no">ไม่มี (กิจการเลี่ยงรายจ่ายได้)</option></select></label>
+        <label class="f">ขั้น 2 โอกาสที่จะสูญเสียทรัพยากร (16.6.2, 16.11)<select id="dPr"><option value="more">มากกว่าไม่เกิดขึ้น</option><option value="less">ไม่มากกว่า แต่ไม่ถึงระดับไม่น่าจะเป็นไปได้</option><option value="remote">ไม่น่าจะเป็นไปได้</option></select></label>
+        <label class="f">ขั้น 3 ประมาณจำนวนได้อย่างน่าเชื่อถือ (16.6.3)<select id="dRe"><option value="yes">ได้</option><option value="no">ไม่ได้</option></select></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="dOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 2 BEST -->
+  <div class="grid" data-pane="best" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ประมาณการที่ดีที่สุด (16.12–16.13)</h2>
+      <p class="hint">เลือกลักษณะของภาระผูกพัน <span class="pill warn">แนวการตีความ</span> ประชากรรายการใช้ค่าคาดคะเน ภาระผูกพันเดี่ยวใช้ผลลัพธ์ที่น่าจะเป็นที่สุด</p>
+      <div class="fields">
+        <label class="f">ลักษณะ<select id="bMode"><option value="pop">ประชากรรายการ (ตัวอย่างที่ 16.3)</option><option value="one">ภาระผูกพันเดี่ยว (ตัวอย่างที่ 16.4)</option></select></label>
+        <label class="f">จำนวนหน่วย (เฉพาะประชากรรายการ)<input type="number" id="bUnits" value="10000"></label>
+      </div>
+      <div class="tbl"><table><thead><tr><th>ผลลัพธ์</th><th class="num">ความน่าจะเป็น (%)</th><th class="num">จำนวนเงิน (ต่อหน่วยหรือทั้งคดี)</th><th></th></tr></thead><tbody id="bBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="bAdd">เพิ่มผลลัพธ์</button><button class="btn" id="bReset">ค่าเริ่มต้น</button></div>
+      <div id="bOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 3 EMP -->
+  <div class="grid" data-pane="emp" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ค่าชดเชยเกษียณตามย่อหน้า 16.14 และมาตรา 118</h2>
+      <p class="hint">วิธีหลัก: ค่าจ้างอัตราสุดท้าย ÷ 30 × วันค่าชดเชยตามอายุงาน ณ วันสิ้นรอบ (16.13, 16.14) ไม่คิดลด · ทางเลือก <span class="pill warn">แนวการตีความ</span> คูณโอกาสอยู่จนเกษียณ นำเข้า CSV (UTF-8) คอลัมน์ พนักงาน, ค่าจ้าง, อายุงาน, อายุ, โอกาส(%) ชื่อพนักงานปกปิดโดยค่าเริ่มต้น</p>
+      <div class="fields">
+        <label class="f">อายุเกษียณตามข้อบังคับ<input type="number" id="eRet" value="60"></label>
+        <label class="f">ประมาณการต้นปี (บาท)<input type="number" id="eOpen" value="700000"></label>
+        <label class="f">ค่าชดเชยที่จ่ายระหว่างปี (บาท)<input type="number" id="ePaid" value="120000"></label>
+        <label class="f">ไฟล์ CSV<input type="file" id="eFile" accept=".csv,.txt"></label>
+      </div>
+      <div class="checks" style="margin:8px 0"><label><input type="checkbox" id="eAlt"><span><b>ทางเลือก (แนวการตีความ)</b> ถ่วงด้วยโอกาสอยู่จนเกษียณ</span></label></div>
+      <div class="checks" style="margin:8px 0"><label><input type="checkbox" id="eAnon" checked><span><b>ปกปิดชื่อพนักงาน</b> แสดงเป็น "พนักงาน 1, 2, …"</span></label></div>
+      <p class="hint" id="eStatus"></p>
+      <div class="tbl"><table><thead><tr><th>พนักงาน</th><th class="num">ค่าจ้าง</th><th class="num">อายุงาน (ปี)</th><th class="num">อายุ</th><th class="num">โอกาสอยู่จนเกษียณ (%)</th><th></th></tr></thead><tbody id="eBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="eAdd">เพิ่มพนักงาน</button><button class="btn" id="eReset">ค่าเริ่มต้น</button></div>
+      <div id="eOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 4 DIS -->
+  <div class="grid" data-pane="dis" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ค่ารื้อถอนและบูรณะ: แบบไม่คิดลดกับแบบคิดลด (ตัวอย่างที่ 16.6)</h2>
+      <p class="hint">แบบที่ 1 ตามตัวบท 16.12–16.13 และ 10.5.3 · แบบที่ 2 <span class="pill warn">แนวการตีความ</span> ผ่านย่อหน้า 5.5.3 (มาตรฐานการบัญชี ฉบับที่ 37 เรื่อง ประมาณการหนี้สิน หนี้สินที่อาจเกิดขึ้น และสินทรัพย์ที่อาจเกิดขึ้น (TAS 37)) เลือกแล้วใช้สม่ำเสมอ (5.8, 5.10)</p>
+      <div class="fields">
+        <label class="f">ราคาทุนของสินทรัพย์ไม่รวมค่ารื้อถอน (บาท)<input type="number" id="xEq" value="5000000"></label>
+        <label class="f">ประมาณการค่ารื้อถอน ณ วันจ่าย (บาท)<input type="number" id="xCost" value="1000000"></label>
+        <label class="f">อายุการใช้ประโยชน์และปีที่จ่าย (ปี)<input type="number" id="xLife" value="10"></label>
+        <label class="f">อัตราคิดลดก่อนภาษี (%)<input type="number" id="xRate" value="5" step="0.1"></label>
+      </div>
+      <div id="xOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 5 CA -->
+  <div class="grid" data-pane="ca" hidden>
+    <section class="panel">
+      <h2>สินทรัพย์ที่อาจเกิดขึ้น (16.3, 16.5)</h2>
+      <p class="hint">สถานการณ์จากตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี เผยแพร่ 20 กันยายน 2566 หน้า 51–53 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <div class="fields">
+        <label class="f">จำนวนที่เรียกร้อง (บาท)<input type="number" id="cAmt" value="2000000"></label>
+        <label class="f">สถานะ ณ วันอนุมัติงบการเงิน<select id="cSt"><option value="prob">ค่อนข้างแน่ว่าจะได้รับ คดียังไม่ถึงที่สุด (ตัวอย่างที่ 1)</option><option value="vc">คำพิพากษาถึงที่สุดก่อนวันอนุมัติงบ (ตัวอย่างที่ 2)</option><option value="np">ไม่ค่อนข้างแน่ว่าจะได้รับ (ตัวอย่างที่ 3)</option></select></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="cOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 6 MOV -->
+  <div class="grid" data-pane="mov" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ตารางเคลื่อนไหวตามย่อหน้า 16.15 (ตารางที่ 16-7)</h2>
+      <p class="hint">ค่าเริ่มต้นตามตารางที่ 16-7 กด "ใช้ตัวเลขจากแท็บ 3 และ 4" เพื่อดึงค่าชดเชยเกษียณและค่ารื้อถอนที่คำนวณไว้</p>
+      <div class="tbl"><table><thead><tr><th>ประเภท</th><th class="num">ต้นงวด</th><th class="num">รับรู้เพิ่ม</th><th class="num">ใช้ไป</th><th class="num">กลับบัญชี</th><th></th></tr></thead><tbody id="mBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="mAdd">เพิ่มประเภท</button><button class="btn" id="mPull">ใช้ตัวเลขจากแท็บ 3 และ 4</button><button class="btn" id="mReset">ค่าเริ่มต้น</button></div>
+      <div id="mOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 7 TAX -->
+  <div class="grid" data-pane="tax" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>กระทบยอดภาษี (ตารางที่ 16-8)</h2>
+      <p class="hint">ประมาณการที่ตั้งเป็นเงินสำรองตามมาตรา 65 ตรี (1) บวกกลับ หักเมื่อจ่ายจริง (ข้อหารือ กค 0702/1978 ลงวันที่ 8 เมษายน 2568 สำหรับค่าชดเชยเกษียณ ประเภทอื่นเป็นแนวการตีความ) ผลสุทธิใช้ต่อในตารางกระทบยอดของแอป 15</p>
+      <div class="checks" style="margin:8px 0"><label><input type="checkbox" id="tDisc"><span>ค่ารื้อถอนใช้แบบที่ 2 (คิดลด)</span></label></div>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th>ทิศทาง</th><th class="num">จำนวน</th><th></th></tr></thead><tbody id="tBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="tAdd">เพิ่มรายการ</button><button class="btn" id="tReset">ค่าเริ่มต้น</button></div>
+      <div id="tOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <!-- 8 NOTE -->
+  <div class="grid" data-pane="note" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ร่างหมายเหตุประกอบงบการเงิน</h2>
+      <p class="hint">ตัวเลขมาจากแท็บ 3, 4 และ 6 คัดลอกไปปรับถ้อยคำในงบการเงินของกิจการ</p>
+      <div class="row-actions"><button class="btn" id="nCopy">คัดลอกร่างหมายเหตุ</button><span class="copied" id="nOk" hidden>คัดลอกแล้ว</span></div>
+      <div id="nOut"></div>
+    </section>
+  </div>
+
+  <!-- 9 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 10 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S16</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 16 ลิงก์ #S16.1 ถึง #S16.9 เปิดหัวข้อนั้นได้โดยตรง ตัวเลขตรงกับตัวอย่างในตำรา</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S16.1">S16.1</a><a class="btn" href="#S16.2">S16.2</a><a class="btn" href="#S16.3">S16.3</a><a class="btn" href="#S16.4">S16.4</a><a class="btn" href="#S16.5">S16.5</a><a class="btn" href="#S16.6">S16.6</a><a class="btn" href="#S16.7">S16.7</a><a class="btn" href="#S16.8">S16.8</a><a class="btn" href="#S16.9">S16.9</a></div>
+<h3 id="S16.1">S16.1 ตารางเทียบย่อหน้า 301–314 กับ 16.1–16.16</h3><p>ฉบับ 2554 ชื่อบทที่ 16 &quot;ประมาณการหนี้สินและหนี้สินที่อาจเกิดขึ้น&quot; ฉบับปรับปรุง 2565 ชื่อ &quot;ประมาณการหนี้สิน หนี้สินที่อาจเกิดขึ้น และสินทรัพย์ที่อาจเกิดขึ้น&quot; เนื้อหาที่ไม่ได้ระบุว่าเปลี่ยนมีสาระเดิม</p><div class="tbl"><table><thead><tr><th>ฉบับ 2554</th><th>ฉบับปรับปรุง 2565</th><th>เรื่อง</th><th>การเปลี่ยนแปลง</th></tr></thead><tbody><tr><td>301</td><td>16.1</td><td>คำนิยามประมาณการหนี้สิน</td><td>คงเดิม</td></tr><tr><td>302</td><td>16.2</td><td>คำนิยามหนี้สินที่อาจเกิดขึ้น</td><td>คงเดิม</td></tr><tr><td>–</td><td>16.3</td><td>คำนิยามสินทรัพย์ที่อาจเกิดขึ้น</td><td>เพิ่มใหม่</td></tr><tr><td>303</td><td>16.4</td><td>ไม่รับรู้หนี้สินที่อาจเกิดขึ้นแต่เปิดเผย</td><td>คงเดิม</td></tr><tr><td>–</td><td>16.5</td><td>ไม่รับรู้สินทรัพย์ที่อาจเกิดขึ้น เปิดเผยเมื่อค่อนข้างแน่ รับรู้เมื่อเสมือนแน่นอน</td><td>เพิ่มใหม่</td></tr><tr><td>304</td><td>16.6</td><td>เงื่อนไขการรับรู้สามข้อ</td><td>คงเดิม</td></tr><tr><td>305</td><td>16.7</td><td>ภาระผูกพันตามกฎหมาย</td><td>คงเดิม</td></tr><tr><td>306</td><td>16.8</td><td>ภาระผูกพันจากการอนุมาน</td><td>คงเดิม</td></tr><tr><td>307</td><td>16.9</td><td>รับรู้เมื่อน่าจะมีอยู่มากกว่าไม่น่าจะมีอยู่</td><td>คงเดิม</td></tr><tr><td>308</td><td>16.10</td><td>เหตุการณ์ที่ก่อให้เกิดภาระผูกพัน</td><td>คงเดิม</td></tr><tr><td>309</td><td>16.11</td><td>ความเป็นไปได้ค่อนข้างแน่</td><td>คงเดิม</td></tr><tr><td>310</td><td>16.12</td><td>ประมาณการที่ดีที่สุด</td><td>คงเดิม</td></tr><tr><td>311</td><td>16.13</td><td>ความหมายของประมาณการที่ดีที่สุด</td><td>คงเดิม</td></tr><tr><td>312</td><td>16.14</td><td>ผลประโยชน์ของพนักงาน</td><td>ทางเลือกเปลี่ยนจาก &quot;TFRSs&quot; เป็นมาตรฐานการบัญชี ฉบับที่ 19 เรื่อง ผลประโยชน์ของพนักงาน (TAS 19) และอ้างหลักการรับรู้ 16.6 แทน 304</td></tr><tr><td>313</td><td>16.15</td><td>ตารางเคลื่อนไหว</td><td>คงเดิม</td></tr><tr><td>314</td><td>16.16</td><td>คำอธิบายลักษณะและความไม่แน่นอน</td><td>คงเดิม</td></tr></tbody></table></div><p>ผลต่อกิจการที่ใช้ฉบับ 2554: ประมาณการหนี้สินที่วัดไว้เดิมไม่ต้องวัดใหม่ เรื่องที่ต้องเพิ่มคือการพิจารณาและเปิดเผยสินทรัพย์ที่อาจเกิดขึ้นตามย่อหน้า 16.5 และตรวจว่าทางเลือกผลประโยชน์พนักงานที่ใช้อยู่เป็นไปตามมาตรฐานการบัญชี ฉบับที่ 19 เรื่อง ผลประโยชน์ของพนักงาน (TAS 19) ทุกข้อหรือประมาณการที่ดีที่สุด</p><h3 id="S16.2">S16.2 การปรับโครงสร้าง: ตัวอย่างตัวเลขและจังหวะเวลาของภาระผูกพัน</h3><p>แนวการตีความ: บทที่ 16 ไม่มีย่อหน้าเฉพาะ ตัวอย่างนี้ใช้ย่อหน้า 16.8 และ 16.10 และอ้าง TAS 37 ผ่านย่อหน้า 5.5.3 เรื่องรายจ่ายที่รวมในประมาณการ การเลิกจ้างเพราะปิดโรงงานใช้ค่าชดเชยตามมาตรา 118 ส่วนมาตรา 121 ใช้กับการเลิกจ้างเพราะนำเครื่องจักรมาใช้หรือเปลี่ยนเทคโนโลยี ซึ่งไม่ใช่กรณีนี้</p><p>บริษัทสมมติอนุมัติแผนปิดโรงงานแห่งที่สองเมื่อ 1 ธันวาคม 2568 ประกาศแผนต่อพนักงาน 50 คนและแจ้งเลิกจ้างเป็นหนังสือเมื่อ 15 ธันวาคม 2568 มีผล 28 กุมภาพันธ์ 2569 ค่าชดเชยตามมาตรา 118 เฉลี่ยคนละ 200,000 บาท ค่าปรับยกเลิกสัญญาเช่าโรงงาน 1,200,000 บาท ค่าฝึกอบรมพนักงานที่ย้ายไปโรงงานแรก 800,000 บาท</p><div class="tbl"><table><thead><tr><th>รายการ</th><th>รวมในประมาณการ</th><th>เหตุผล</th><th class="num">จำนวน</th></tr></thead><tbody><tr><td>ค่าชดเชยเลิกจ้าง 50 × 200,000</td><td>รวม</td><td>เกิดจากการปรับโครงสร้างโดยตรง ภาระผูกพันตามกฎหมายเมื่อแจ้งเลิกจ้าง</td><td class="num">10,000,000</td></tr><tr><td>ค่าปรับยกเลิกสัญญาเช่า</td><td>รวม</td><td>เกิดจากการปิดโรงงานโดยตรง</td><td class="num">1,200,000</td></tr><tr><td>ค่าฝึกอบรมพนักงานที่ย้าย</td><td>ไม่รวม</td><td>รายจ่ายของกิจกรรมที่ดำเนินต่อ บันทึกเมื่อเกิด</td><td class="num">–</td></tr><tr><td>รวม</td><td></td><td></td><td class="num">11,200,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าใช้จ่ายในการปรับโครงสร้าง</td><td class="num">11,200,000</td><td class="num"></td></tr><tr><td>    เครดิต ประมาณการหนี้สิน – การปรับโครงสร้าง</td><td class="num"></td><td class="num">11,200,000</td></tr></tbody></table></div><p>ถ้า ณ 31 ธันวาคม 2568 บริษัทอนุมัติแผนภายในแต่ยังไม่ประกาศต่อผู้ได้รับผลกระทบ ยังไม่มีภาระผูกพันจากการอนุมาน (16.8.2) จึงไม่รับรู้ ถ้าประกาศหลังวันสิ้นรอบแต่ก่อนอนุมัติงบการเงิน เป็นเหตุการณ์ที่ไม่ต้องปรับปรุง และเปิดเผยตามย่อหน้า 17.6 ถ้ามีสาระสำคัญ ทางภาษี ค่าชดเชยที่ตั้งไว้บวกกลับตามมาตรา 65 ตรี (1) และหักเมื่อจ่ายในปี 2569</p><h3 id="S16.3">S16.3 สัญญาที่สร้างภาระ: คลังสินค้าเช่าที่เลิกใช้</h3><p>แนวการตีความ: บริษัทเช่าคลังสินค้าเป็นสัญญาเช่าดำเนินงานตามบทที่ 14 ค่าเช่าเดือนละ 100,000 บาท ปลายปี 2568 ย้ายสินค้าไปคลังใหม่ สัญญาเหลือ 36 เดือน คาดว่าให้เช่าช่วงได้ 1,200,000 บาท หรือยกเลิกสัญญาโดยจ่ายค่าปรับ 2,000,000 บาท</p><div class="tbl"><table><thead><tr><th>ทางเลือก</th><th>การคำนวณ</th><th class="num">ต้นทุนสุทธิ</th></tr></thead><tbody><tr><td>ปฏิบัติตามสัญญาต่อ</td><td>100,000 × 36 − รายได้ค่าเช่าช่วง 1,200,000</td><td class="num">2,400,000</td></tr><tr><td>ยกเลิกสัญญา</td><td>ค่าปรับ</td><td class="num">2,000,000</td></tr><tr><td>จำนวนที่รับรู้</td><td>จำนวนที่ต่ำกว่า (16.13 ประกอบ TAS 37 ผ่าน 5.5.3)</td><td class="num">2,000,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ค่าใช้จ่ายจากสัญญาที่สร้างภาระ</td><td class="num">2,000,000</td><td class="num"></td></tr><tr><td>    เครดิต ประมาณการหนี้สิน – สัญญาที่สร้างภาระ</td><td class="num"></td><td class="num">2,000,000</td></tr></tbody></table></div><p>ภาระผูกพันเกิดจากสัญญาที่ยกเลิกไม่ได้โดยไม่เสียค่าปรับ (16.7.1) ผลขาดทุนจากการดำเนินงานในอนาคตทั่วไปไม่ใช่ภาระผูกพัน จึงไม่ตั้งประมาณการ ทางภาษีค่าปรับหักได้เมื่อจ่ายหรือเมื่อภาระแน่นอน ประมาณการบวกกลับตามมาตรา 65 ตรี (1)</p><h3 id="S16.4">S16.4 การรับชดเชยจากบริษัทประกันภัย</h3><p>แนวการตีความ: ต่อจากตัวอย่างที่ 16.4 บริษัทมีประกันความรับผิดต่อบุคคลภายนอก ความคุ้มครอง 2,300,000 บาท หักค่าเสียหายส่วนแรก 800,000 บาท บริษัทประกันภัยตอบรับเป็นหนังสือเมื่อ 5 มีนาคม 2569 ก่อนวันอนุมัติงบการเงิน ว่าจะจ่าย 1,500,000 บาท</p><ol><li>ประมาณการหนี้สินคดีความยังเป็น 2,300,000 บาท ไม่หักเงินชดเชย</li><li>สิทธิรับชดเชยเสมือนแน่นอนเมื่อบริษัทประกันภัยตอบรับ จึงรับรู้เป็นสินทรัพย์แยกต่างหาก 1,500,000 บาท ไม่เกินประมาณการหนี้สินที่เกี่ยวข้อง</li><li>ถ้าบริษัทประกันภัยยังไม่ตอบรับ สิทธินั้นเป็นสินทรัพย์ที่อาจเกิดขึ้น เปิดเผยเมื่อค่อนข้างแน่ (16.5)</li><li>ในงบกำไรขาดทุน อาจแสดงค่าใช้จ่ายสุทธิจากเงินชดเชยตาม TAS 37 ผ่านย่อหน้า 5.5.3 แต่ในงบฐานะการเงินแสดงแยก</li></ol><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ลูกหนี้อื่น – เงินชดเชยจากบริษัทประกันภัย</td><td class="num">1,500,000</td><td class="num"></td></tr><tr><td>    เครดิต ค่าใช้จ่ายจากคดีความ</td><td class="num"></td><td class="num">1,500,000</td></tr></tbody></table></div><h3 id="S16.5">S16.5 การคำนวณค่าชดเชยเกษียณรายพนักงานและกรอบ TAS 19</h3><p>ขั้นตอนตามหัวข้อ 16.4.3: (1) รวบรวมทะเบียนพนักงาน ค่าจ้างอัตราสุดท้าย วันเริ่มงาน และอายุ (2) หาอายุงาน ณ วันสิ้นรอบ แล้วหาวันค่าชดเชยตามมาตรา 118 (3) วิธีหลัก: ค่าจ้าง ÷ 30 × วัน เป็นจำนวนที่กิจการจะจ่ายถ้าภาระผูกพันสิ้นสุด ณ วันสิ้นรอบ (16.13, 16.14) (4) ทางเลือก (แนวการตีความ): คูณโอกาสอยู่จนเกษียณจากสถิติการลาออกของกิจการ (5) แยกส่วนที่คาดว่าจะจ่ายภายใน 12 เดือนไปรายการ 3.8 ส่วนที่เหลือรายการ 4.6 ใช้แท็บ 3 ของแอปคำนวณได้ และนำเข้า CSV ได้</p><div class="tbl"><table><thead><tr><th>พนักงาน</th><th class="num">ค่าจ้าง</th><th class="num">อายุงาน</th><th class="num">วัน</th><th class="num">วิธีหลัก</th><th class="num">โอกาส</th><th class="num">ทางเลือก</th></tr></thead><tbody><tr><td>พนักงาน 1</td><td class="num">30,000</td><td class="num">22</td><td class="num">400</td><td class="num">400,000</td><td class="num">100%</td><td class="num">400,000</td></tr><tr><td>พนักงาน 2</td><td class="num">25,000</td><td class="num">12</td><td class="num">300</td><td class="num">250,000</td><td class="num">90%</td><td class="num">225,000</td></tr><tr><td>พนักงาน 3</td><td class="num">20,000</td><td class="num">7</td><td class="num">240</td><td class="num">160,000</td><td class="num">70%</td><td class="num">112,000</td></tr><tr><td>พนักงาน 4</td><td class="num">18,000</td><td class="num">4</td><td class="num">180</td><td class="num">108,000</td><td class="num">50%</td><td class="num">54,000</td></tr><tr><td>พนักงาน 5</td><td class="num">15,000</td><td class="num">0.5</td><td class="num">30</td><td class="num">15,000</td><td class="num">30%</td><td class="num">4,500</td></tr><tr><td>รวม</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">933,000</td><td class="num"></td><td class="num">795,500</td></tr></tbody></table></div><h4>ผลของการเปลี่ยนข้อสมมติ</h4><p>วิธีหลักให้ 933,000 บาท ทางเลือกให้ 795,500 บาท ต่างกัน 137,500 บาท ความต่างนี้มาจากดุลยพินิจเรื่องการลาออก ภายใต้ทางเลือก ถ้าโอกาสอยู่จนเกษียณของพนักงาน 3 เป็นร้อยละ 90 ประมาณการเป็น 827,500 บาท เพิ่มขึ้น 32,000 บาท ข้อสมมตินี้มีผลต่อจำนวนอย่างมีสาระสำคัญ จึงเปิดเผยตามย่อหน้า 16.16.2 และควรทบทวนจากสถิติทุกปี การเปลี่ยนข้อสมมติเป็นการเปลี่ยนแปลงประมาณการตามย่อหน้า 5.15</p><h4>กิจการที่ไม่เคยตั้งประมาณการมาก่อน</h4><p>แนวการตีความ: ย่อหน้า 16.14 ใช้ตั้งแต่ฉบับ 2554 (ย่อหน้า 312) การไม่ตั้งประมาณการในงวดก่อนจึงเป็นข้อผิดพลาดที่ต้องพิจารณาตามบทที่ 5 ไม่ใช่การเปลี่ยนแปลงประมาณการ ส่วนที่เกี่ยวกับงวดก่อนปรับกับกำไรสะสมต้นงวดเมื่อเข้าเงื่อนไขของบทที่ 5</p><h4>สาระของทางเลือก TAS 19 (เฉพาะกิจการที่เลือกตามย่อหน้า 16.14)</h4><ol><li>ใช้ข้อกำหนดของ TAS 19 ทุกข้อ ไม่เลือกเฉพาะบางส่วน</li><li>วัดภาระผูกพันผลประโยชน์หลังออกจากงานด้วยวิธีคิดลดแต่ละหน่วยที่ประมาณการไว้ ใช้ข้อสมมติอัตราคิดลด การขึ้นเงินเดือน อัตราการลาออก และอัตรามรณะ</li><li>ต้นทุนบริการและดอกเบี้ยสุทธิรับรู้ในกำไรขาดทุน ย่อหน้า 4.14.2 จัดผลกำไรหรือขาดทุนจากการวัดมูลค่าใหม่เป็นรายการกำไรขาดทุนเบ็ดเสร็จอื่น ซึ่งรับรู้โดยตรงไปยังส่วนของเจ้าของ หรือแสดงในงบกำไรขาดทุนเบ็ดเสร็จถ้ากิจการเลือกจัดทำ (4.14, 4.15)</li><li>เปิดเผยตามที่ TAS 19 กำหนด รวมข้อสมมติหลักและการวิเคราะห์ความอ่อนไหว</li><li>ผลทางภาษีเหมือนแนวประมาณการที่ดีที่สุด: บวกกลับเงินสำรอง หักเมื่อจ่ายจริง (กค 0702/1978)</li></ol><h3 id="S16.6">S16.6 ตารางค่ารื้อถอน 10 ปีทั้งสองแบบ</h3><p>ข้อมูลตัวอย่างที่ 16.6: ค่ารื้อถอน 1,000,000 บาท จ่ายสิ้นปีที่ 10 แบบที่ 2 อัตราร้อยละ 5 มูลค่าปัจจุบัน 613,913 บาท การคลายส่วนลดปีสุดท้ายปรับเศษจากการปัดให้ยอดครบ 1,000,000 บาท</p><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">แบบที่ 1 ค่าเสื่อมราคา</th><th class="num">แบบที่ 1 ยอดหนี้สิน</th><th class="num">แบบที่ 2 ค่าเสื่อมราคา</th><th class="num">แบบที่ 2 ยอดต้นปี</th><th class="num">แบบที่ 2 คลายส่วนลด</th><th class="num">แบบที่ 2 ยอดปลายปี</th></tr></thead><tbody><tr><td>1</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">613,913</td><td class="num">30,696</td><td class="num">644,609</td></tr><tr><td>2</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">644,609</td><td class="num">32,230</td><td class="num">676,839</td></tr><tr><td>3</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">676,839</td><td class="num">33,842</td><td class="num">710,681</td></tr><tr><td>4</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">710,681</td><td class="num">35,534</td><td class="num">746,215</td></tr><tr><td>5</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">746,215</td><td class="num">37,311</td><td class="num">783,526</td></tr><tr><td>6</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">783,526</td><td class="num">39,176</td><td class="num">822,702</td></tr><tr><td>7</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">822,702</td><td class="num">41,135</td><td class="num">863,837</td></tr><tr><td>8</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">863,837</td><td class="num">43,192</td><td class="num">907,029</td></tr><tr><td>9</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,391</td><td class="num">907,029</td><td class="num">45,351</td><td class="num">952,380</td></tr><tr><td>10</td><td class="num">100,000</td><td class="num">1,000,000</td><td class="num">61,394</td><td class="num">952,380</td><td class="num">47,620</td><td class="num">1,000,000</td></tr></tbody></table></div><p>รวมสิบปี แบบที่ 1 ค่าเสื่อมราคา 1,000,000 บาท แบบที่ 2 ค่าเสื่อมราคา 613,913 บาท บวกการคลายส่วนลด 386,087 บาท = 1,000,000 บาท</p><h4>เมื่อประมาณการเปลี่ยน</h4><p>แนวการตีความ: ถ้าปลายปีที่ 3 ประมาณการค่ารื้อถอนเพิ่มเป็น 1,200,000 บาท ส่วนที่เพิ่มปรับทั้งประมาณการหนี้สินและราคาทุนของสินทรัพย์ แล้วคิดค่าเสื่อมราคาส่วนเพิ่มตลอดอายุที่เหลือ เป็นการเปลี่ยนแปลงประมาณการตามย่อหน้า 5.15 แบบที่ 1 เพิ่ม 200,000 บาท ค่าเสื่อมราคาเพิ่มปีละ 200,000 ÷ 7 = 28,571 บาท</p><h4>เมื่อจ่ายค่ารื้อถอนจริง</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ประมาณการหนี้สิน – ค่ารื้อถอนและบูรณะ</td><td class="num">1,000,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">1,000,000</td></tr></tbody></table></div><p>ถ้าจ่ายจริงต่างจากประมาณการ ผลต่างรับรู้ในกำไรขาดทุนของปีที่จ่าย ทางภาษีหักรายจ่ายที่จ่ายจริงในปีนั้น</p><h3 id="S16.7">S16.7 แม่แบบหมายเหตุประกอบงบการเงินของบทที่ 16</h3><h4>นโยบายการบัญชี</h4><p>บริษัทรับรู้ประมาณการหนี้สินเมื่อมีภาระผูกพันปัจจุบันตามกฎหมายหรือจากการอนุมานอันเป็นผลจากเหตุการณ์ในอดีต มีความเป็นไปได้ค่อนข้างแน่ว่าจะสูญเสียทรัพยากรเพื่อจ่ายชำระ และประมาณจำนวนได้อย่างน่าเชื่อถือ วัดด้วยประมาณการที่ดีที่สุดของรายจ่าย ณ วันสิ้นรอบระยะเวลารายงาน [ไม่คิดลด / คิดลดด้วยอัตราก่อนภาษีร้อยละ … สำหรับภาระผูกพันที่จ่ายเกินหนึ่งปี] ประมาณการค่าชดเชยเกษียณวัดด้วยประมาณการที่ดีที่สุดตามย่อหน้า 16.14 จากค่าจ้างอัตราสุดท้ายและอายุงาน ณ วันสิ้นรอบตามมาตรา 118 แห่งพระราชบัญญัติคุ้มครองแรงงาน [ถ้าใช้ทางเลือก: และโอกาสที่พนักงานจะทำงานจนเกษียณตามสถิติการลาออกของบริษัท]</p><h4>ประมาณการหนี้สิน (หน่วย: บาท)</h4><div class="tbl"><table><thead><tr><th>ประเภท</th><th class="num">1 ม.ค. 2568</th><th class="num">รับรู้เพิ่ม</th><th class="num">ใช้ไป</th><th class="num">กลับบัญชี</th><th class="num">31 ธ.ค. 2568</th></tr></thead><tbody><tr><td>ค่ารับประกันสินค้า</td><td class="num">420,000</td><td class="num">500,000</td><td class="num">(380,000)</td><td class="num">(40,000)</td><td class="num">500,000</td></tr><tr><td>คดีความ</td><td class="num">0</td><td class="num">2,300,000</td><td class="num">–</td><td class="num">–</td><td class="num">2,300,000</td></tr><tr><td>ค่ารื้อถอนและบูรณะ (ไม่คิดลด)</td><td class="num">0</td><td class="num">1,000,000</td><td class="num">–</td><td class="num">–</td><td class="num">1,000,000</td></tr><tr><td>ค่าชดเชยเกษียณ</td><td class="num">700,000</td><td class="num">353,000</td><td class="num">(120,000)</td><td class="num">–</td><td class="num">933,000</td></tr></tbody></table></div><p>ค่ารับประกันสินค้า: การรับประกันหนึ่งปีของสินค้าที่ขาย คาดว่าจ่ายภายในปี 2569 ประมาณจากสถิติการเรียกร้องสามปี · คดีความ: ตามคำพิพากษาศาลชั้นต้น 20 กุมภาพันธ์ 2569 คาดว่าชำระในไตรมาสที่ 2 ปี 2569 · ค่ารื้อถอนและบูรณะ: ตามสัญญาเช่าที่ดิน จ่ายเมื่อสิ้นสัญญาปี 2577 · ค่าชดเชยเกษียณ: วัดจากค่าจ้างและอายุงาน ณ วันสิ้นรอบ ไม่คิดลดและไม่ประมาณการขึ้นค่าจ้าง ส่วนที่คาดว่าจ่ายภายในปี 2569 จำนวน 400,000 บาท</p><h4>หนี้สินที่อาจเกิดขึ้น</h4><p>บริษัทค้ำประกันเงินกู้ยืมจากธนาคารของบริษัทที่เกี่ยวข้องวงเงิน 5,000,000 บาท ณ วันสิ้นรอบผู้กู้ชำระตามกำหนด บริษัทประเมินว่าไม่ค่อนข้างแน่ว่าต้องชำระแทน</p><h4>สินทรัพย์ที่อาจเกิดขึ้น</h4><p>บริษัทฟ้องเรียกค่าเสียหายจาก … จำนวน … บาท ทนายความของบริษัทเห็นว่ามีความเป็นไปได้ค่อนข้างแน่ที่บริษัทจะชนะคดี คดีอยู่ระหว่างการพิจารณาของศาล …</p><h4>รายการตรวจก่อนปิดบัญชี</h4><ol><li>ขอหนังสือยืนยันจากทนายความทุกคดี ระบุโอกาสแพ้หรือชนะและจำนวนที่ประมาณได้</li><li>ทบทวนสัญญาค้ำประกัน สัญญาที่ยกเลิกไม่ได้ และภาระรื้อถอนในสัญญาเช่า</li><li>ปรับทะเบียนพนักงานและคำนวณค่าชดเชยเกษียณใหม่</li><li>ตรวจเหตุการณ์ภายหลังรอบถึงวันอนุมัติงบการเงิน (บทที่ 17)</li><li>จัดทำตารางเคลื่อนไหวแยกประเภทและแยกส่วนหมุนเวียนตามแบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566)</li><li>รวบรวมรายการบวกกลับและหักทางภาษีเข้าตารางกระทบยอดของบทที่ 15</li></ol><h3 id="S16.8">S16.8 เฉลยแบบฝึกหัดและแนวคำตอบกรณีศึกษา 16.1</h3><h4>ส่วนที่ 1</h4><ol><li>ค · ย่อหน้า 16.2.1 นิยามภาระผูกพันที่อาจมีอยู่ซึ่งรอการยืนยันจากเหตุการณ์ในอนาคต ข้อ ก เป็นประมาณการหนี้สินตาม 16.6 ข้อ ข เป็นเจ้าหนี้หรือค่าใช้จ่ายค้างจ่าย ข้อ ง เป็นสินทรัพย์ที่อาจเกิดขึ้นตาม 16.3 (หัวข้อ 16.1.2)</li><li>ก · โอกาสที่ต้องจ่ายไม่มากกว่าไม่น่าจะเกิดขึ้น จึงไม่เข้า 16.6.2 และ 16.11 ย่อหน้า 16.9 และ 16.4 ให้เปิดเผยหนี้สินที่อาจเกิดขึ้นพร้อมผลกระทบทางการเงินหากประมาณได้ เว้นแต่โอกาสอยู่ในระดับไม่น่าจะเป็นไปได้ ร้อยละ 40 ไม่ใช่ระดับนั้น (หัวข้อ 16.2.2)</li><li>ง · ภาระผูกพันเดี่ยวเข้าเงื่อนไข 16.6 แล้ว ย่อหน้า 16.13 ให้วัดด้วยจำนวนที่สมเหตุสมผลที่กิจการจะจ่ายเพื่อชำระภาระผูกพัน แนวการตีความ: ผลลัพธ์ที่น่าจะเป็นที่สุด 2,000,000 บาทคือจำนวนนั้น ส่วน 1,200,000 บาทเป็นค่าถ่วงน้ำหนักที่กิจการจะไม่จ่ายจริงในผลลัพธ์ใดเลย (หัวข้อ 16.3.2)</li><li>ข · คำพิพากษายืนยันภาระผูกพันที่มีอยู่แล้ว ณ วันสิ้นรอบ ย่อหน้า 17.3 ยกคำพิพากษาของคดีความเป็นตัวอย่างของเหตุการณ์ที่ต้องปรับปรุง เมื่อเกิดก่อนวันอนุมัติงบการเงิน (หัวข้อ 16.3.3)</li><li>ค · อายุงาน 10 ปีขึ้นไปแต่ไม่ครบ 20 ปี ได้ค่าจ้างอัตราสุดท้าย 300 วัน = 25,000 ÷ 30 × 300 = 250,000 บาท ข้อ ข ใช้อัตรา 400 วันของอายุงาน 20 ปีขึ้นไป (หัวข้อ 16.4.2)</li><li>ก · บทที่ 16 วัดด้วยประมาณการที่ดีที่สุดโดยไม่กล่าวถึงการคิดลด ย่อหน้า 10.5.3 ให้รวมต้นทุนรื้อถอนที่ประมาณที่ดีที่สุดในราคาทุน การคิดลดจึงต้องอาศัยย่อหน้า 5.5.3 และใช้สม่ำเสมอ (หัวข้อ 16.5)</li><li>ง · กรมสรรพากรตอบข้อหารือ กค 0702/1978 (8 เมษายน 2568) ว่าประมาณการค่าชดเชยเกษียณเป็นเงินสำรองตามมาตรา 65 ตรี (1) หักได้ในรอบที่จ่ายจริง บวกกลับสุทธิ 233,000 บาท ภาษีเงินได้รอการตัดบัญชีเกิดเฉพาะกิจการที่เลือกตาม 15.2 และเป็นสินทรัพย์ ไม่ใช่หนี้สิน (หัวข้อ 16.4.5)</li><li>ข · ย่อหน้า 16.5 ห้ามรับรู้สินทรัพย์ที่อาจเกิดขึ้น และให้เปิดเผยเมื่อมีความเป็นไปได้ค่อนข้างแน่ที่จะได้รับประโยชน์ การรับรู้ทำได้เมื่อเสมือนแน่นอน เช่น เมื่อมีคำพิพากษาถึงที่สุด (ตัวอย่างประกอบความเข้าใจ ตัวอย่างที่ 1 และ 2) (หัวข้อ 16.1.3)</li></ol><h4>ส่วนที่ 2</h4><ol><li>(ก) รับรู้ ครบ 16.6 (ข) เปิดเผยเป็นหนี้สินที่อาจเกิดขึ้น เพราะยังไม่ค่อนข้างแน่ แต่ไม่ใช่ระดับไม่น่าจะเป็นไปได้ (16.4, 16.9) และต้องประเมินใหม่ทุกงวด (ค) ไม่รับรู้ไม่เปิดเผย ไม่มีภาระผูกพันปัจจุบัน (16.10) (ง) เปิดเผยเป็นสินทรัพย์ที่อาจเกิดขึ้น (16.5) (จ) ไม่ต้องเปิดเผย (16.9, 16.11)</li><li>ค่าคาดคะเนต่อหน่วย 4% × 500 + 1% × 2,000 = 40 บาท ประมาณการเพิ่ม 8,000 × 40 = 320,000 บาท ยอดปลายปี 250,000 + 320,000 − 230,000 − 10,000 = 330,000 บาท บันทึก เดบิต ค่าใช้จ่ายการรับประกันสินค้า 320,000 เครดิต ประมาณการหนี้สิน · เดบิต ประมาณการหนี้สิน 240,000 เครดิต เงินสด 230,000 และค่าใช้จ่ายการรับประกันสินค้า 10,000</li><li>วิธีหลัก: ก: 45,000 ÷ 30 × 400 = 600,000 · ข: 22,000 ÷ 30 × 240 = 176,000 · ค: 16,000 ÷ 30 × 90 = 48,000 รวม 824,000 บาท · ทางเลือก (แนวการตีความ): ก: 600,000 × 100% = 600,000 · ข: 176,000 × 60% = 105,600 · ค: 48,000 × 40% = 19,200 รวม 724,800 บาท ทางภาษีส่วนที่ตั้งเพิ่มเป็นเงินสำรองตามมาตรา 65 ตรี (1) บวกกลับ หักเมื่อจ่ายจริง (กค 0702/1978)</li><li>ไม่คิดลด: ต้นทุนรื้อถอนในราคาทุน 2,000,000 บาท ค่าเสื่อมราคาปีแรก 250,000 บาท ประมาณการปลายปี 2,000,000 บาท · คิดลด: 2,000,000 ÷ (1.04)^8 = 1,461,380 บาท ค่าเสื่อมราคา 182,673 บาท คลายส่วนลด 58,455 บาท รวม 241,128 บาท ประมาณการปลายปี 1,519,835 บาท (ใช้ยอดที่ปัดแล้วต่อเนื่องแบบเดียวกับตัวอย่างที่ 16.6 ถ้าไม่ปัดก่อนจะได้ 1,519,836 บาท) แบบไม่คิดลดแสดงหนี้สินสูงกว่าและกำไรปีแรกต่ำกว่า ค่าใช้จ่ายรวมแปดปีเท่ากัน ผู้ใช้งบการเงินต้องอ่านนโยบายการบัญชีก่อนเทียบอัตราส่วนหนี้สินระหว่างกิจการ</li><li>ตารางเคลื่อนไหวตามตารางที่ 16-7 ยอดปลายปี: ค่ารับประกัน 500,000 คดีความ 2,300,000 (รายการ 3.9) ค่ารื้อถอน 1,000,000 (รายการ 4.7) ค่าชดเชยเกษียณ 933,000 แยก 400,000 ในรายการ 3.8 และ 533,000 ในรายการ 4.6 ผลสุทธิรายการปรับปรุงทางภาษี บวกกลับ 2,713,000 บาท (แบบคิดลด 2,705,087 บาท)</li></ol><h4>กรณีศึกษา 16.1</h4><ol><li>เรื่อง 1 ไม่รับรู้ ค่าซ่อมใหญ่เป็นรายจ่ายในอนาคตที่เลี่ยงได้ ไม่มีเหตุการณ์ที่ก่อให้เกิดภาระผูกพัน (16.6.1, 16.10) การตั้งเพื่อเกลี่ยกำไรขัดย่อหน้า 16.12</li><li>เรื่อง 2 ต้องรับรู้ 640,000 บาท ภาระผูกพันตามมาตรา 118/1 สะสมตามอายุงาน ไม่ขึ้นกับว่ามีผู้เกษียณในห้าปีข้างหน้าหรือไม่ (16.14)</li><li>เรื่อง 3 ต้องรับรู้ 900,000 บาท ครบ 16.6 และ 16.9 การเปิดเผยใช้แทนการรับรู้ไม่ได้ เงื่อนไขเงินกู้ไม่ใช่เหตุผลทางบัญชี</li><li>เรื่อง 4 ไม่รับรู้รายได้ สิทธิเรียกร้องค่าสินไหมยังไม่เสมือนแน่นอน เปิดเผยเมื่อค่อนข้างแน่ (16.5)</li><li>ผลต่อกำไร: ข้อเสนอลดกำไร 1,100,000 บาท ที่ถูกต้องลดกำไร 1,540,000 บาท กำไรตามข้อเสนอสูงกว่า 440,000 บาท หนี้สินต่ำกว่า 40,000 บาท และมีลูกหนี้ที่ไม่ควรรับรู้ 400,000 บาท</li><li>การตอบผู้บริหาร: ชี้ย่อหน้าที่เกี่ยวข้อง อธิบายผลต่ออัตราส่วนตามสัญญาเงินกู้ตามตัวเลขที่ถูกต้อง เสนอคุยกับผู้ให้กู้ก่อนวันวัดอัตราส่วน และเก็บเอกสารประกอบประมาณการทุกรายการ ประเด็นอภิปราย: หน้าที่ของผู้ทำบัญชีเมื่อผู้บริหารต้องการเลือกตัวเลขตามเป้าหมาย</li></ol>
+      <h3 id="S16.9">S16.9 ผลวิจัยปี 2569: ภาษี กฎหมายแรงงาน แหล่งของสภาวิชาชีพบัญชี และงานของผู้สอบบัญชี</h3>
+      <p class="hint">เลขย่อหน้าใน S16.9 เป็นเลขของ TFRS for NPAEs ฉบับปรับปรุง 2565 · เทียบฉบับ 2554 ดู S16.1 · เอกสารอบรม 9 ธ.ค. 2565 สไลด์ 66, 67 และ 157 สรุปจุดที่เพิ่มเรื่องสินทรัพย์ที่อาจเกิดขึ้น (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <h4>ก. ข้อหารือกรมสรรพากรที่ยืนยันแล้ว</h4>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th>หลัก</th><th>ที่มา</th></tr></thead><tbody><tr><td>ค่าชดเชยเกษียณ</td><td>เงินสำรองต้องห้ามตาม ม.65 ตรี (1) หักได้ในรอบที่จ่ายจริง</td><td>กค 0702/1978 (8 เม.ย. 2568)</td></tr><tr><td>ค่าชดเชยเลิกจ้างจากการโอนกิจการ</td><td>ตั้งสำรองต้องห้าม ค่าชดเชยที่จ่ายหรือโอนจริงหักได้ในรอบนั้น</td><td>กค 0702/8680 (3 ต.ค. 2556)</td></tr><tr><td>ค่าเสียหาย</td><td>ลงรายจ่ายในรอบที่ผลเสียหายเกิด ถ้าลงไม่ได้ หักในรอบที่ศาลมีคำพิพากษา</td><td>กค 0702/6602 (9 ส.ค. 2559)</td></tr><tr><td>ค่ารับประกันสินค้า ค่ารื้อถอน โบนัสค้างจ่าย</td><td>ยังไม่พบข้อหารือปี 2555–2569 โดยตรง ใช้หลักทั่วไป ม.65 วรรคสอง และ 65 ตรี (1) (แนวการตีความ)</td><td>—</td></tr></tbody></table></div>
+      <h4>ข. พระราชบัญญัติคุ้มครองแรงงาน พ.ศ. 2541 ที่เกี่ยวกับค่าชดเชย</h4>
+      <div class="tbl"><table><thead><tr><th>ฉบับแก้ไข</th><th>สาระ</th></tr></thead><tbody><tr><td>ฉบับที่ 7 พ.ศ. 2562</td><td>อัตราค่าชดเชยมาตรา 118 (30/90/180/240/300/400 วัน)</td></tr><tr><td>ฉบับที่ 6 พ.ศ. 2560</td><td>มาตรา 118/1 การเกษียณอายุถือเป็นการเลิกจ้าง</td></tr><tr><td>ฉบับที่ 8 พ.ศ. 2566</td><td>การทำงานนอกสถานประกอบการ ไม่แก้มาตรา 118 และ 118/1</td></tr><tr><td>ฉบับที่ 9 พ.ศ. 2568 (มีผล 7 ธ.ค. 2568)</td><td>ลาคลอดและลาดูแลครอบครัว ไม่แก้มาตรา 118 และ 118/1</td></tr></tbody></table></div>
+      <p class="hint">ตรวจตัวบทฉบับล่าสุดก่อนคำนวณทุกปี</p>
+      <h4>ค. แหล่งของสภาวิชาชีพบัญชีเรื่องผลประโยชน์พนักงาน (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</h4>
+      <ul><li>ไฟล์ตัวอย่างการคำนวณผลประโยชน์พนักงานสำหรับ NPAEs (Excel) บนเว็บไซต์ของสภาฯ ใช้อัตราการลาออกตามช่วงอายุและการคิดลด เป็นตัวอย่างของวิธีทางเลือกในแท็บ 3</li><li>คำถาม-คำตอบด้านมาตรฐานการรายงานทางการเงิน TFRS for NPAEs เรื่องการประมาณการหนี้สินผลประโยชน์พนักงาน (ปรับปรุงไฟล์ 23 ธ.ค. 2568) อ้างย่อหน้า 16.12–16.14</li><li>แนวการตีความ: ทบทวนข้อสมมติแต่ละปีเป็นการเปลี่ยนแปลงประมาณการ ส่วนการเปลี่ยนไปใช้ TAS 19 เป็นการเปลี่ยนนโยบายการบัญชีตามบทที่ 5</li></ul>
+      <h4>ง. งานของผู้สอบบัญชี</h4>
+      <div class="tbl"><table><thead><tr><th>จุดเสี่ยง</th><th>หลักฐาน</th><th>มาตรฐานการสอบบัญชี</th></tr></thead><tbody><tr><td>ความครบถ้วนของคดีความและการค้ำประกัน</td><td>หนังสือยืนยันจากที่ปรึกษากฎหมาย รายงานการประชุม สัญญาค้ำประกัน</td><td>รหัส 501</td></tr><tr><td>ค่าชดเชยเกษียณ</td><td>ทะเบียนพนักงานเทียบเงินเดือนและวันเริ่มงาน ข้อบังคับการเกษียณ ข้อสมมติการลาออก</td><td>รหัส 540 (ปรับปรุง)</td></tr><tr><td>ค่ารับประกันและค่ารื้อถอน</td><td>สถิติการเคลม ใบเสนอราคาผู้รับเหมา อัตราคิดลด (ถ้าใช้แบบที่ 2)</td><td>รหัส 540 (ปรับปรุง)</td></tr><tr><td>เหตุการณ์ภายหลัง</td><td>คำพิพากษาหรือการชำระก่อนวันอนุมัติงบการเงิน (บทที่ 17)</td><td>รหัส 560</td></tr><tr><td>กิจการที่มีความซับซ้อนน้อย</td><td>ประกาศ 32/2568 มาตรฐานทางเลือก ใช้กับรอบที่เริ่มในหรือหลัง 15 ธ.ค. 2568</td><td>—</td></tr></tbody></table></div>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการรายงานทางการเงินระหว่างประเทศ (International Financial Reporting Standards: IFRS) สำหรับกิจการขนาดกลางและขนาดย่อม (Small and Medium-sized Entities: SMEs) ฉบับที่ 3 (27 ก.พ. 2568 ใช้ 1 ม.ค. 2570) หมวด 28 ย่อหน้า 28.19 ให้วิธีผ่อนปรนวัดภาระด้วยจำนวนที่ต้องจ่ายถ้าพนักงานทุกคนออกจากงาน ณ วันรายงาน ซึ่งใกล้กับวิธีหลักของบทนี้</p>
+    </section>
+  </div>
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 16 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์ ใช้งานออฟไลน์ได้</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 16.1–16.6 และตารางที่ 16-1 ถึง 16-8 ในตำรา</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=0)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fp=x=>x<0?'('+fmt(-x)+')':fmt(x);
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function je(title,lines,ref){
+    const L=lines.filter(l=>Math.abs(l.amt)>=0.5);const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);
+    const rows=dr.concat(cr).map(l=>l.dr?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`:`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,t])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${t?esc(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const theory=items=>`<details class="theory"><summary>มาตรฐานและแหล่งอ้างอิง</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  const tbl=(h,rows,num)=>`<div class="tbl"><table><thead><tr>${h.map((x,i)=>`<th${num.includes(i)?' class="num"':''}>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td${num.includes(i)?' class="num"':''}>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  /* tabs */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];const names=tabs.map(b=>b.dataset.tab);
+  function show(name){tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);try{localStorage.setItem('npaes16tab',name)}catch(e){}}
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='reg';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes16tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  function parseCSV(text){const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true;else if(ch===delim){row.push(f);f=''}else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''}else if(ch!=='\r')f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''))}
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{e.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+
+  /* data */
+  const REG0=[["ค่ารับประกันสินค้า", "", "oth", 500000, true], ["คดีความ", "ลูกค้าผู้ฟ้องคดี ก", "oth", 2300000, true], ["ค่ารื้อถอนและบูรณะ", "ผู้ให้เช่าที่ดิน ข", "oth", 1000000, false], ["ค่าชดเชยเกษียณ ส่วนที่จ่ายปี 2569", "", "emp", 400000, true], ["ค่าชดเชยเกษียณ ส่วนที่เหลือ", "", "emp", 533000, false]],B_POP0=[["ไม่มีข้อบกพร่อง", 95.0, 0], ["ข้อบกพร่องเล็กน้อย", 3.0, 600], ["ข้อบกพร่องสำคัญ", 2.0, 1600]],B_ONE0=[["ชนะคดี", 40, 0], ["แพ้คดี ค่าเสียหายที่น่าจะเป็นที่สุด", 60, 2000000]],EMP0=[["พนักงาน 1", 30000, 22, 59, 100], ["พนักงาน 2", 25000, 12, 48, 90], ["พนักงาน 3", 20000, 7, 41, 70], ["พนักงาน 4", 18000, 4, 33, 50], ["พนักงาน 5", 15000, 0.5, 26, 30]],MOV0=[["ค่ารับประกันสินค้า", 420000, 500000, 380000, 40000], ["คดีความ", 0, 2300000, 0, 0], ["ค่ารื้อถอนและบูรณะ (ไม่คิดลด)", 0, 1000000, 0, 0], ["ค่าชดเชยเกษียณ", 700000, 353000, 120000, 0]],TAX0=[["ประมาณการค่ารับประกันสินค้า: ตั้งเพิ่มสุทธิจากกลับรายการ", 460000, "บวก"], ["ค่ารับประกันที่จ่ายจริงในปี", 380000, "หัก"], ["ประมาณการหนี้สินคดีความ (ปรับตามคำพิพากษาภายหลังรอบ)", 2300000, "บวก"], ["ค่าเสื่อมราคาส่วนต้นทุนรื้อถอนที่ยังไม่ได้จ่าย (แบบไม่คิดลด)", 100000, "บวก"], ["ประมาณการค่าชดเชยเกษียณที่ตั้งเพิ่ม", 353000, "บวก"], ["ค่าชดเชยเกษียณที่จ่ายจริงในปี", 120000, "หัก"]],M118=[[120/365,1,30],[1,3,90],[3,6,180],[6,10,240],[10,20,300],[20,99,400]];
+  let REG=REG0.map(r=>r.slice()),BR=B_POP0.map(r=>r.slice()),EMP=EMP0.map(r=>r.slice()),MOV=MOV0.map(r=>r.slice()),TX=TAX0.map(r=>r.slice());
+  const days118=y=>{for(const [lo,hi,d] of M118){if(y>=lo&&y<hi)return d}return 0};
+  const R0=x=>Math.round(x+1e-9);
+  const TM=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const thDate=()=>{const m=($('iYe').value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${+m[3]} ${TM[+m[2]-1]} ${+m[1]+543}`:''};
+  const G={};
+  /* tab 0 */
+  function rRender(){const an=$('rAnon').checked;
+    $('rBody').innerHTML=REG.map((r,i)=>`<tr><td><input type="text" data-r="${i}" data-k="0" value="${esc(r[0])}"></td><td>${an?(r[1]?'คู่สัญญา '+(REG.slice(0,i+1).filter(x=>x[1]).length):'–'):`<input type="text" data-r="${i}" data-k="1" value="${esc(r[1])}">`}</td><td><select data-r="${i}" data-k="2"><option value="emp"${r[2]==='emp'?' selected':''}>ผลประโยชน์พนักงาน</option><option value="oth"${r[2]==='oth'?' selected':''}>อื่น</option></select></td><td><input class="num" type="number" data-r="${i}" data-k="3" value="${r[3]}"></td><td><input type="checkbox" data-r="${i}" data-k="4"${r[4]?' checked':''}></td><td><button class="btn del" data-rd="${i}">ลบ</button></td></tr>`).join('');calc()}
+  const rUpd=e=>{const t=e.target;if(t.dataset.r==null)return;const i=+t.dataset.r,k=+t.dataset.k;REG[i][k]=k===3?val(t):k===4?t.checked:t.value;calc()};
+  $('rBody').addEventListener('input',rUpd);$('rBody').addEventListener('change',rUpd);
+  $('rBody').addEventListener('click',e=>{const d=e.target.dataset.rd;if(d!=null){REG.splice(+d,1);rRender()}});
+  $('rAdd').addEventListener('click',()=>{REG.push(['รายการใหม่','','oth',0,true]);rRender()});
+  $('rReset').addEventListener('click',()=>{REG=REG0.map(r=>r.slice());rRender()});
+  $('rAnon').addEventListener('change',rRender);
+  /* tab 2 */
+  function bRender(){$('bBody').innerHTML=BR.map((r,i)=>`<tr><td><input type="text" data-b="${i}" data-k="0" value="${esc(r[0])}"></td><td><input class="num" type="number" data-b="${i}" data-k="1" value="${r[1]}"></td><td><input class="num" type="number" data-b="${i}" data-k="2" value="${r[2]}"></td><td><button class="btn del" data-bd="${i}">ลบ</button></td></tr>`).join('');calc()}
+  $('bBody').addEventListener('input',e=>{const t=e.target;if(t.dataset.b==null)return;const i=+t.dataset.b,k=+t.dataset.k;BR[i][k]=k?val(t):t.value;calc()});
+  $('bBody').addEventListener('click',e=>{const d=e.target.dataset.bd;if(d!=null){BR.splice(+d,1);bRender()}});
+  $('bAdd').addEventListener('click',()=>{BR.push(['ผลลัพธ์ใหม่',0,0]);bRender()});
+  const bDef=()=>{BR=($('bMode').value==='pop'?B_POP0:B_ONE0).map(r=>r.slice());bRender()};
+  $('bReset').addEventListener('click',bDef);$('bMode').addEventListener('change',bDef);
+  /* tab 3 */
+  function eRender(){const an=$('eAnon').checked;
+    $('eBody').innerHTML=EMP.map((r,i)=>`<tr><td>${an?'พนักงาน '+(i+1):`<input type="text" data-e="${i}" data-k="0" value="${esc(r[0])}">`}</td>${[1,2,3,4].map(k=>`<td><input class="num" type="number" step="any" data-e="${i}" data-k="${k}" value="${r[k]}"></td>`).join('')}<td><button class="btn del" data-ed="${i}">ลบ</button></td></tr>`).join('');calc()}
+  $('eBody').addEventListener('input',e=>{const t=e.target;if(t.dataset.e==null)return;const i=+t.dataset.e,k=+t.dataset.k;EMP[i][k]=k?val(t):t.value;calc()});
+  $('eBody').addEventListener('click',e=>{const d=e.target.dataset.ed;if(d!=null){EMP.splice(+d,1);eRender()}});
+  $('eAdd').addEventListener('click',()=>{EMP.push(['พนักงานใหม่',0,0,0,100]);eRender()});
+  $('eReset').addEventListener('click',()=>{EMP=EMP0.map(r=>r.slice());$('eStatus').textContent='';eRender()});
+  $('eAnon').addEventListener('change',eRender);
+  $('eFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(!/\.(csv|txt)$/i.test(f.name)){$('eStatus').textContent='แอปรับเฉพาะไฟล์ CSV (UTF-8) บันทึกไฟล์ Excel เป็น CSV แล้วนำเข้าอีกครั้ง';return}
+    const rd=new FileReader();rd.onload=()=>{const rows=parseCSV(String(rd.result).replace(/^﻿/,''));if(!rows.length){$('eStatus').textContent='ไม่พบข้อมูล';return}
+      const hd=rows[0].map(x=>String(x).trim());const ci=re=>hd.findIndex(x=>re.test(x));
+      const c0=ci(/พนักงาน|ชื่อ|name/i),c1=ci(/ค่าจ้าง|เงินเดือน|salary|wage/i),c2=ci(/อายุงาน|service/i),c3=ci(/^อายุ$|^age$/i),c4=ci(/โอกาส|prob/i);
+      if(c1<0||c2<0){$('eStatus').textContent='ไม่พบคอลัมน์ "ค่าจ้าง" หรือ "อายุงาน"';return}
+      EMP=rows.slice(1).map(r=>[c0>=0?r[c0]:'',num(r[c1])||0,num(r[c2])||0,c3>=0?(num(r[c3])||0):0,c4>=0&&isFinite(num(r[c4]))?num(r[c4]):100]).filter(r=>r[1]>0);
+      $('eStatus').textContent=`นำเข้า ${EMP.length} คน (ชื่อปกปิดตามตัวเลือก)`;eRender()};rd.readAsText(f,'utf-8')});
+  /* tab 6 */
+  function mRender(){$('mBody').innerHTML=MOV.map((r,i)=>`<tr><td><input type="text" data-m="${i}" data-k="0" value="${esc(r[0])}"></td>${[1,2,3,4].map(k=>`<td><input class="num" type="number" data-m="${i}" data-k="${k}" value="${r[k]}"></td>`).join('')}<td><button class="btn del" data-md="${i}">ลบ</button></td></tr>`).join('');calc()}
+  $('mBody').addEventListener('input',e=>{const t=e.target;if(t.dataset.m==null)return;const i=+t.dataset.m,k=+t.dataset.k;MOV[i][k]=k?val(t):t.value;calc()});
+  $('mBody').addEventListener('click',e=>{const d=e.target.dataset.md;if(d!=null){MOV.splice(+d,1);mRender()}});
+  $('mAdd').addEventListener('click',()=>{MOV.push(['ประเภทใหม่',0,0,0,0]);mRender()});
+  $('mReset').addEventListener('click',()=>{MOV=MOV0.map(r=>r.slice());mRender()});
+  $('mPull').addEventListener('click',()=>{MOV.forEach(r=>{if(/ค่าชดเชย/.test(r[0])){r[1]=G.eOpen;r[2]=G.eAdd;r[3]=G.ePaid;r[4]=0}if(/รื้อถอน/.test(r[0])){r[1]=0;r[2]=G.xCost;r[3]=0;r[4]=0}});mRender()});
+  /* tab 7 */
+  function tRender(){$('tBody').innerHTML=TX.map((r,i)=>`<tr><td><input type="text" data-t="${i}" data-k="0" value="${esc(r[0])}"></td><td><select data-t="${i}" data-k="2"><option value="บวก"${r[2]==='บวก'?' selected':''}>บวกกลับ</option><option value="หัก"${r[2]==='หัก'?' selected':''}>หัก</option></select></td><td><input class="num" type="number" data-t="${i}" data-k="1" value="${r[1]}"></td><td><button class="btn del" data-td="${i}">ลบ</button></td></tr>`).join('');calc()}
+  const tUpd=e=>{const t=e.target;if(t.dataset.t==null)return;const i=+t.dataset.t,k=+t.dataset.k;TX[i][k]=k===1?val(t):t.value;calc()};
+  $('tBody').addEventListener('input',tUpd);$('tBody').addEventListener('change',tUpd);
+  $('tBody').addEventListener('click',e=>{const d=e.target.dataset.td;if(d!=null){TX.splice(+d,1);tRender()}});
+  $('tAdd').addEventListener('click',()=>{TX.push(['รายการใหม่',0,'บวก']);tRender()});
+  $('tReset').addEventListener('click',()=>{TX=TAX0.map(r=>r.slice());$('tDisc').checked=false;tRender()});
+  $('tDisc').addEventListener('change',()=>{TX.forEach(r=>{if(/รื้อถอน/.test(r[0]))r[1]=$('tDisc').checked?G.xY1d:G.xY1n});tRender()});
+  ['iYe','dOb','dPr','dRe','bUnits','eAlt','eRet','eOpen','ePaid','xEq','xCost','xLife','xRate','cAmt','cSt'].forEach(id=>$(id).addEventListener($(id).tagName==='SELECT'?'change':'input',calc));
+  $('nCopy').addEventListener('click',()=>copyText($('nOut').innerText,'nOk'));
+  function calc(){
+    /* tab0 */
+    const sum=f=>REG.filter(f).reduce((s,r)=>s+r[3],0);
+    const l38=sum(r=>r[2]==='emp'&&r[4]),l46=sum(r=>r[2]==='emp'&&!r[4]),l39=sum(r=>r[2]!=='emp'&&r[4]),l47=sum(r=>r[2]!=='emp'&&!r[4]);
+    $('rOut').innerHTML=tbl(['รายการในแบบ 2','จำนวน'],[['3.8 ประมาณการหนี้สินหมุนเวียนสำหรับผลประโยชน์พนักงาน',fmt(l38)],['3.9 ประมาณการหนี้สินระยะสั้นอื่น',fmt(l39)],['4.6 ประมาณการหนี้สินไม่หมุนเวียนสำหรับผลประโยชน์พนักงาน',fmt(l46)],['4.7 ประมาณการหนี้สินระยะยาวอื่น',fmt(l47)],['รวม',fmt(l38+l39+l46+l47)]],[1])+theory([['แบบ 2','ชื่อรายการตามคำชี้แจงแบบ 2 ของกรมพัฒนาธุรกิจการค้า (2566) แยกผลประโยชน์พนักงานและแยกตามระยะเวลาที่คาดว่าจะจ่าย'],['16.15','เปิดเผยตารางเคลื่อนไหวแยกตามประเภทในแท็บ 6']]);
+    /* tab1 */
+    const ob=$('dOb').value,pr=$('dPr').value,re=$('dRe').value;let cls,h,why;
+    if(pr==='remote'){cls='ok';h='ไม่รับรู้ ไม่ต้องเปิดเผย';why='โอกาสที่จะสูญเสียทรัพยากรอยู่ในระดับไม่น่าจะเป็นไปได้ (16.9, 16.11)'}
+    else if(ob==='no'){cls='ok';h='ไม่รับรู้ ไม่ต้องเปิดเผย';why='ไม่มีภาระผูกพันปัจจุบัน กิจการยังเลี่ยงรายจ่ายได้ จึงไม่มีเหตุการณ์ที่ก่อให้เกิดภาระผูกพัน (16.6.1, 16.10)'}
+    else if(ob==='yes'&&pr==='more'&&re==='yes'){cls='ok';h='รับรู้ประมาณการหนี้สิน';why='ครบสามเงื่อนไขของย่อหน้า 16.6 วัดด้วยประมาณการที่ดีที่สุด (16.12–16.13) ในแท็บ 2'}
+    else if(ob==='yes'&&pr==='more'){cls='warn';h='เปิดเผยเป็นหนี้สินที่อาจเกิดขึ้น';why='ประมาณจำนวนไม่ได้อย่างน่าเชื่อถือเพียงพอ (16.2.2.2, 16.4) กรณีนี้เกิดได้น้อย บันทึกเหตุผลไว้เป็นหลักฐาน'}
+    else {cls='warn';h='เปิดเผยเป็นหนี้สินที่อาจเกิดขึ้น';why='ภาระผูกพันอาจมีอยู่ หรือโอกาสที่จะสูญเสียทรัพยากรไม่มากกว่าไม่เกิดขึ้น (16.2, 16.4, 16.9) เปิดเผยลักษณะและผลกระทบทางการเงินถ้าประมาณได้'}
+    $('dOut').innerHTML='<h2>ผล</h2>'+verdict(cls,h,why)+theory([['16.6','ภาระผูกพันปัจจุบัน ค่อนข้างแน่ว่าจะสูญเสียทรัพยากร และประมาณจำนวนได้อย่างน่าเชื่อถือ'],['16.11','ความเป็นไปได้ค่อนข้างแน่ หมายถึง มีโอกาสเกิดขึ้นมากกว่าไม่เกิดขึ้น มาตรฐานไม่กำหนดร้อยละของระดับไม่น่าจะเป็นไปได้'],['16.7–16.8','ภาระผูกพันตามกฎหมายและจากการอนุมาน']]);
+    G.dec=h;
+    /* tab2 */
+    const pop=$('bMode').value==='pop',units=val($('bUnits'));const psum=BR.reduce((s,r)=>s+r[1],0);
+    const ev=BR.reduce((s,r)=>s+r[1]/100*r[2],0);let ml=BR.slice().sort((a,b)=>b[1]-a[1])[0]||['',0,0];
+    let best,bh,bw;
+    if(pop){best=R0(units*ev);bh='ค่าคาดคะเน';bw=`${fmt(units)} หน่วย × ${fmt(ev,2)} บาทต่อหน่วย = ${fmt(best)} บาท`}
+    else{const lose=BR.filter(r=>r[2]>0);const tot=lose.reduce((s,r)=>s+r[1],0);ml=lose.slice().sort((a,b)=>b[1]-a[1])[0]||['',0,0];best=tot>50?ml[2]:0;bh=tot>50?'ผลลัพธ์ที่น่าจะเป็นที่สุด':'ไม่รับรู้';bw=tot>50?`ผลลัพธ์ "${esc(ml[0])}" ${fmt(ml[2])} บาท · ค่าถ่วงน้ำหนัก ${fmt(R0(ev))} บาทไม่ใช่จำนวนที่กิจการจะจ่ายในผลลัพธ์ใดเลย พิจารณาผลลัพธ์อื่นที่สูงหรือต่ำกว่าประกอบ`:`โอกาสที่ต้องจ่ายรวม ${fmt(tot,0)}% ไม่มากกว่าไม่เกิดขึ้น เปิดเผยเป็นหนี้สินที่อาจเกิดขึ้น (16.9)`}
+    $('bOut').innerHTML=figs([['ผลรวมความน่าจะเป็น (%)',fmt(psum,0),1],[pop?'ค่าคาดคะเนต่อหน่วย':'ค่าถ่วงน้ำหนัก',pop?fmt(ev,2):fmt(R0(ev)),1],['ประมาณการที่ดีที่สุด',best]])+(Math.abs(psum-100)>0.01?verdict('warn','ความน่าจะเป็นรวมไม่เท่ากับร้อยละ 100','ตรวจข้อมูลผลลัพธ์อีกครั้ง'):'')+verdict('ok',bh,bw)+
+      je('รายการบันทึก',[{dr:1,acct:pop?'ค่าใช้จ่ายการรับประกันสินค้า':'ค่าใช้จ่ายจากคดีความ',amt:best},{dr:0,acct:pop?'ประมาณการหนี้สิน – ค่ารับประกันสินค้า':'ประมาณการหนี้สิน – คดีความ',amt:best}],pop?'ตัวอย่างที่ 16.3':'ตัวอย่างที่ 16.4')+
+      theory([['16.12–16.13','ประมาณการที่ดีที่สุดคือจำนวนที่สมเหตุสมผลที่กิจการจะจ่ายเพื่อชำระหรือโอนภาระผูกพัน ณ วันสิ้นรอบ'],['แนวการตีความ','ประชากรรายการใช้ค่าคาดคะเน ภาระผูกพันเดี่ยวใช้ผลลัพธ์ที่น่าจะเป็นที่สุด สอดคล้องกับ TAS 37 ผ่านย่อหน้า 5.5.3'],['17.3','คำพิพากษาก่อนวันอนุมัติงบการเงินเป็นเหตุการณ์ที่ต้องปรับปรุง']]);
+    /* tab3 */
+    const ret=val($('eRet')),eOpen=val($('eOpen')),ePaid=val($('ePaid')),alt=$('eAlt').checked;let eFull=0,eAltT=0,eClose=0,eCur=0;
+    const erows=EMP.map((r,i)=>{const d=days118(r[2]),full=R0(r[1]/30*d),ax=R0(full*r[4]/100),ex=alt?ax:full,cur=r[3]>=ret-1;eFull+=full;eAltT+=ax;eClose+=ex;if(cur)eCur+=ex;
+      return [$('eAnon').checked?'พนักงาน '+(i+1):esc(r[0]),fmt(r[2],r[2]%1?1:0),String(d),fmt(full),fmt(r[4],0)+'%',fmt(ax),cur?'3.8':'4.6']});
+    const eAdd=eClose-eOpen+ePaid;
+    $('eOut').innerHTML=tbl(['พนักงาน','อายุงาน','วันค่าชดเชย','วิธีหลัก','โอกาส','ทางเลือก','แบบ 2'],erows.concat([['รวม','','',fmt(eFull),'',fmt(eAltT),'']]),[1,2,3,4,5])+verdict(alt?'warn':'ok',alt?'ใช้ทางเลือก (แนวการตีความ)':'ใช้วิธีหลัก',alt?'ถ่วงด้วยโอกาสอยู่จนเกษียณจากสถิติของกิจการ ข้อสมมติต้องเปิดเผยตาม 16.16.2 และใช้สม่ำเสมอ (5.8, 5.10)':'ค่าชดเชยตามค่าจ้างและอายุงาน ณ วันสิ้นรอบ ไม่สะท้อนการเลื่อนขั้นวันค่าชดเชยและการขึ้นค่าจ้างในอนาคต')+
+      figs([['ประมาณการปลายปี',eClose],['รับรู้เพิ่มในปี',eAdd],['รายการ 3.8',eCur],['รายการ 4.6',eClose-eCur]])+
+      je('รายการบันทึก ณ วันสิ้นรอบ',[{dr:eAdd>=0,acct:'ค่าใช้จ่ายผลประโยชน์พนักงาน',amt:Math.abs(eAdd)},{dr:eAdd<0,acct:'ประมาณการหนี้สินผลประโยชน์พนักงาน',amt:Math.abs(eAdd)}],'รายการบันทึกที่ 16-7')+
+      verdict('ok','ผลทางภาษี',`บวกกลับ ${fmt(eAdd)} บาท หัก ${fmt(ePaid)} บาทที่จ่ายจริง ผลสุทธิ ${fp(eAdd-ePaid)} บาท (มาตรา 65 ตรี (1) ข้อหารือ กค 0702/1978)`)+
+      `<p class="hint">ส่วนที่คาดว่าจ่ายภายใน 12 เดือน: พนักงานที่อายุตั้งแต่ ${fmt(ret-1)} ปี</p>`+
+      theory([['16.13–16.14','วัดด้วยประมาณการที่ดีที่สุด คือจำนวนที่สมเหตุสมผลที่กิจการจะจ่าย ณ วันสิ้นรอบ หรือเลือก TAS 19 ทุกข้ออย่างสม่ำเสมอ'],['มาตรา 118','120 วัน–1 ปี 30 วัน · 1–3 ปี 90 วัน · 3–6 ปี 180 วัน · 6–10 ปี 240 วัน · 10–20 ปี 300 วัน · 20 ปีขึ้นไป 400 วัน (ฉบับที่ 7 พ.ศ. 2562)'],['มาตรา 118/1','การเกษียณตามข้อตกลงหรือข้อบังคับถือเป็นการเลิกจ้าง (ฉบับที่ 6 พ.ศ. 2560)']]);
+    Object.assign(G,{eOpen,eAdd,ePaid,eClose,alt});
+    /* tab4 */
+    const xEq=val($('xEq')),xCost=val($('xCost')),xLife=Math.max(1,Math.round(val($('xLife')))),xr=val($('xRate'))/100;
+    const pv=R0(xCost/Math.pow(1+xr,xLife)),u1=R0(pv*xr),depN=R0(xCost/xLife),depD=R0(pv/xLife),y1d=depD+u1;
+    let bal=pv;const sch=[];for(let y=1;y<=xLife;y++){const u=y<xLife?R0(bal*xr):xCost-bal;sch.push([String(y),fmt(bal),fmt(u),fmt(bal+u)]);bal+=u}
+    $('xOut').innerHTML=tbl(['รายการ','แบบที่ 1 ไม่คิดลด','แบบที่ 2 คิดลด'],[['ต้นทุนรื้อถอนในราคาทุน',fmt(xCost),fmt(pv)],['ราคาทุนรวม',fmt(xEq+xCost),fmt(xEq+pv)],['ค่าเสื่อมราคาส่วนรื้อถอนปีแรก',fmt(depN),fmt(depD)],['การคลายส่วนลดปีแรก','–',fmt(u1)],['ค่าใช้จ่ายปีแรก',fmt(depN),fmt(y1d)],['ประมาณการหนี้สินปลายปีแรก',fmt(xCost),fmt(pv+u1)],['ค่าใช้จ่ายรวมตลอดอายุ',fmt(xCost),fmt(xCost)]],[1,2])+
+      je('แบบที่ 1 ณ วันติดตั้ง',[{dr:1,acct:'เครื่องจักรและอุปกรณ์',amt:xCost},{dr:0,acct:'ประมาณการหนี้สิน – ค่ารื้อถอนและบูรณะ',amt:xCost}],'รายการบันทึกที่ 16-8')+
+      je('แบบที่ 2 ณ วันติดตั้ง',[{dr:1,acct:'เครื่องจักรและอุปกรณ์',amt:pv},{dr:0,acct:'ประมาณการหนี้สิน – ค่ารื้อถอนและบูรณะ',amt:pv}],'รายการบันทึกที่ 16-9')+
+      je('แบบที่ 2 การคลายส่วนลดปีแรก',[{dr:1,acct:'ต้นทุนทางการเงิน',amt:u1},{dr:0,acct:'ประมาณการหนี้สิน – ค่ารื้อถอนและบูรณะ',amt:u1}],'รายการบันทึกที่ 16-10')+
+      `<details class="theory"><summary>ตารางแบบที่ 2 รายปี</summary>${tbl(['ปี','ยอดต้นปี','คลายส่วนลด','ยอดปลายปี'],sch,[1,2,3])}</details>`+
+      verdict('warn','แบบที่ 2 เป็นแนวการตีความ','ตัวบทไม่กำหนดการคิดลด เลือกแล้วใช้สม่ำเสมอกับรายการที่คล้ายกันและทุกงวด (5.8, 5.10) และเปิดเผยเป็นนโยบายการบัญชี ทางภาษีบวกกลับค่าเสื่อมราคาส่วนรื้อถอนและการคลายส่วนลด หักเมื่อจ่ายจริง')+
+      theory([['10.5.3','ราคาทุนรวมต้นทุนที่ประมาณที่ดีที่สุดสำหรับการรื้อ การขนย้าย และการบูรณะสถานที่'],['5.5.3','อ้าง TFRS for PAEs เฉพาะรายการ เมื่อมาตรฐานฉบับนี้ไม่ได้กำหนด']]);
+    Object.assign(G,{xCost,pv,u1,xY1n:depN,xY1d:y1d});
+    /* tab5 */
+    const cA=val($('cAmt')),st=$('cSt').value;let ch,cw,cj='';
+    if(st==='prob'){ch='ไม่รับรู้ เปิดเผยในหมายเหตุ';cw=`ค่อนข้างแน่ว่าจะได้รับประโยชน์ เปิดเผยลักษณะของสิทธิเรียกร้องและผลกระทบทางการเงิน ${fmt(cA)} บาท (16.5)`}
+    else if(st==='vc'){ch='รับรู้ ณ วันสิ้นรอบ';cw='คำพิพากษาถึงที่สุดก่อนวันอนุมัติงบการเงิน เสมือนแน่นอน จึงไม่ใช่สินทรัพย์ที่อาจเกิดขึ้นอีกต่อไป (16.5 ประกอบ 17.3)';cj=je('รายการบันทึก ณ วันสิ้นรอบ',[{dr:1,acct:'ลูกหนี้อื่น – คดีความฟ้องร้อง',amt:cA},{dr:0,acct:'รายได้อื่น',amt:cA}],'รายการบันทึกที่ 16-1')}
+    else {ch='ไม่รับรู้ ไม่เปิดเผยเป็นสินทรัพย์ที่อาจเกิดขึ้น';cw='ไม่ค่อนข้างแน่ว่าจะได้รับประโยชน์ ตัวอย่างของสภาวิชาชีพบัญชีแนะนำให้เปิดเผยการฟ้องคดีเพื่อให้ข้อมูลครบ'}
+    $('cOut').innerHTML='<h2>ผล</h2>'+verdict(st==='np'?'warn':'ok',ch,cw)+cj+(st==='vc'?'<p class="hint">แสดงในแบบ 2 รายการ 1.3 ลูกหนี้อื่น และรายการ 2 รายได้อื่น (แนวการตีความ)</p>':st==='prob'?'<p class="hint">ไม่แสดงในงบฐานะการเงินและงบกำไรขาดทุน เปิดเผยในหมายเหตุ (16.5)</p>':'<p class="hint">ไม่แสดงในงบการเงิน และไม่ต้องเปิดเผยเป็นสินทรัพย์ที่อาจเกิดขึ้น (16.5)</p>');
+    /* tab6 */
+    const mrows=MOV.map(r=>[esc(r[0]),fmt(r[1]),fmt(r[2]),r[3]?fp(-r[3]):'–',r[4]?fp(-r[4]):'–',fmt(r[1]+r[2]-r[3]-r[4])]);
+    const mClose=MOV.map(r=>r[1]+r[2]-r[3]-r[4]);
+    $('mOut').innerHTML=tbl(['ประเภท','ต้นงวด (16.15.1)','รับรู้เพิ่ม (16.15.2)','ใช้ไป (16.15.3)','กลับบัญชี (16.15.4)','ปลายงวด (16.15.1)'],mrows,[1,2,3,4,5])+(mClose.some(x=>x<0)?verdict('warn','ยอดปลายงวดติดลบ','ใช้ไปหรือกลับบัญชีเกินยอดที่มี ตรวจข้อมูล'):'');
+    G.mClose=mClose;
+    /* tab7 */
+    const tNet=TX.reduce((s,r)=>s+(r[2]==='บวก'?r[1]:-r[1]),0);
+    $('tOut').innerHTML=figs([['บวกกลับรวม',TX.filter(r=>r[2]==='บวก').reduce((s,r)=>s+r[1],0)],['หักรวม',TX.filter(r=>r[2]==='หัก').reduce((s,r)=>s+r[1],0)],['ผลสุทธิ',tNet]])+verdict('ok','นำไปใช้ต่อ',`ผลสุทธิ ${fp(tNet)} บาท เป็นผลต่างชั่วคราว ใส่ในตารางกระทบยอดข้ามบทของบทที่ 15 (แท็บ 1 ของแอป 15) กิจการที่เลือกตามย่อหน้า 15.2 รับรู้สินทรัพย์ภาษีเงินได้รอการตัดบัญชี ไม่ใช่หนี้สิน`);
+    /* tab8 */
+    const ye=thDate();
+    $('nOut').innerHTML=`<h3>นโยบายการบัญชี: ประมาณการหนี้สิน</h3><p>บริษัทรับรู้ประมาณการหนี้สินเมื่อมีภาระผูกพันปัจจุบันตามกฎหมายหรือจากการอนุมานอันเป็นผลจากเหตุการณ์ในอดีต มีความเป็นไปได้ค่อนข้างแน่ว่าจะสูญเสียทรัพยากรเพื่อจ่ายชำระ และประมาณจำนวนได้อย่างน่าเชื่อถือ วัดด้วยประมาณการที่ดีที่สุดของรายจ่าย ณ วันสิ้นรอบระยะเวลารายงาน${$('tDisc').checked?' ภาระผูกพันค่ารื้อถอนวัดด้วยมูลค่าปัจจุบันโดยใช้อัตราคิดลดก่อนภาษีร้อยละ '+fmt(xr*100,1):' โดยไม่คิดลด'} ประมาณการค่าชดเชยเกษียณวัดด้วยประมาณการที่ดีที่สุดตามย่อหน้า 16.14 จากค่าจ้างอัตราสุดท้ายและอายุงาน ณ วันสิ้นรอบตามมาตรา 118 แห่งพระราชบัญญัติคุ้มครองแรงงาน${G.alt?' และโอกาสที่พนักงานจะทำงานจนเกษียณตามสถิติการลาออกของบริษัท':''}</p><h3>ประมาณการหนี้สิน (วันสิ้นรอบ ${esc(ye)})</h3>`+tbl(['ประเภท','ต้นงวด','รับรู้เพิ่ม','ใช้ไป','กลับบัญชี','ปลายงวด'],mrows,[1,2,3,4,5])+`<p>ส่วนที่คาดว่าจะจ่ายภายใน 12 เดือนแสดงในรายการ 3.8 จำนวน ${fmt(l38)} บาท และรายการ 3.9 จำนวน ${fmt(l39)} บาท ส่วนที่เหลือแสดงในรายการ 4.6 จำนวน ${fmt(l46)} บาท และรายการ 4.7 จำนวน ${fmt(l47)} บาท</p><h3>หนี้สินที่อาจเกิดขึ้นและสินทรัพย์ที่อาจเกิดขึ้น</h3><p>[ระบุลักษณะ ผลกระทบทางการเงินที่ประมาณได้ และความไม่แน่นอน ตามย่อหน้า 16.4 และ 16.5 ผลจากแท็บ 1: ${esc(G.dec)} · แท็บ 5: ${esc(ch)}]</p>`;
+    window.__R={l38,l39,l46,l47,best,ev,eClose,eAdd,eCur,eFull,eAltT,pv,u1,depD,y1d,mClose,tNet,dec:h,ca:ch};
+  }
+  rRender();bRender();eRender();mRender();tRender();
+  /* quiz */
+  const QZ=[["LO 16.1", "เข้าใจ", "รายการใดเป็นหนี้สินที่อาจเกิดขึ้นตามย่อหน้า 16.2", ["ก. ภาระผูกพันปัจจุบันที่ประมาณจำนวนได้อย่างน่าเชื่อถือและมีความเป็นไปได้ค่อนข้างแน่ว่าต้องจ่าย", "ข. ค่าใช้จ่ายค้างจ่ายที่ทราบจำนวนแน่นอนตามใบแจ้งหนี้", "ค. ภาระผูกพันที่อาจมีอยู่ ซึ่งจะทราบว่ามีอยู่หรือไม่เมื่อเหตุการณ์ในอนาคตที่ไม่อยู่ในความควบคุมทั้งหมดของกิจการเกิดขึ้นหรือไม่เกิดขึ้น", "ง. สิทธิเรียกร้องค่าเสียหายจากบุคคลอื่นที่คดียังไม่ถึงที่สุด"], 2, "ย่อหน้า 16.2.1 นิยามภาระผูกพันที่อาจมีอยู่ซึ่งรอการยืนยันจากเหตุการณ์ในอนาคต ข้อ ก เป็นประมาณการหนี้สินตาม 16.6 ข้อ ข เป็นเจ้าหนี้หรือค่าใช้จ่ายค้างจ่าย ข้อ ง เป็นสินทรัพย์ที่อาจเกิดขึ้นตาม 16.3", "16.1.2"], ["LO 16.2", "ประยุกต์ใช้", "ทนายความประเมินว่าบริษัทมีโอกาสแพ้คดีร้อยละ 40 และประมาณค่าเสียหายได้ บริษัทควรปฏิบัติอย่างไร ณ วันสิ้นรอบระยะเวลารายงาน", ["ก. ไม่รับรู้ประมาณการหนี้สิน แต่เปิดเผยเป็นหนี้สินที่อาจเกิดขึ้น พร้อมผลกระทบทางการเงินที่ประมาณได้", "ข. รับรู้ประมาณการหนี้สินร้อยละ 40 ของค่าเสียหาย", "ค. รับรู้ประมาณการหนี้สินเต็มจำนวนตามหลักความระมัดระวัง", "ง. ไม่รับรู้และไม่เปิดเผย เพราะโอกาสแพ้คดีต่ำกว่าร้อยละ 50"], 0, "โอกาสที่ต้องจ่ายไม่มากกว่าไม่น่าจะเกิดขึ้น จึงไม่เข้า 16.6.2 และ 16.11 ย่อหน้า 16.9 และ 16.4 ให้เปิดเผยหนี้สินที่อาจเกิดขึ้นพร้อมผลกระทบทางการเงินหากประมาณได้ เว้นแต่โอกาสอยู่ในระดับไม่น่าจะเป็นไปได้ ร้อยละ 40 ไม่ใช่ระดับนั้น", "16.2.2"], ["LO 16.3", "ประยุกต์ใช้", "บริษัทถูกฟ้อง 3,000,000 บาท โอกาสแพ้คดีร้อยละ 60 ถ้าแพ้ ค่าเสียหายที่น่าจะเป็นที่สุดคือ 2,000,000 บาท ประมาณการหนี้สินที่รับรู้ตามแนวการตีความของตำราเป็นเท่าใด", ["ก. 1,200,000 บาท", "ข. 3,000,000 บาท", "ค. ไม่รับรู้ เพราะยังไม่มีคำพิพากษา", "ง. 2,000,000 บาท"], 3, "ภาระผูกพันเดี่ยวเข้าเงื่อนไข 16.6 แล้ว ย่อหน้า 16.13 ให้วัดด้วยจำนวนที่สมเหตุสมผลที่กิจการจะจ่ายเพื่อชำระภาระผูกพัน แนวการตีความ: ผลลัพธ์ที่น่าจะเป็นที่สุด 2,000,000 บาทคือจำนวนนั้น ส่วน 1,200,000 บาทเป็นค่าถ่วงน้ำหนักที่กิจการจะไม่จ่ายจริงในผลลัพธ์ใดเลย", "16.3.2"], ["LO 16.3", "วิเคราะห์", "ประมาณการหนี้สินคดีความ ณ 31 ธันวาคม 2568 จำนวน 2,000,000 บาท ศาลพิพากษาเมื่อ 20 กุมภาพันธ์ 2569 ให้จ่าย 2,300,000 บาท ผู้บริหารอนุมัติงบการเงินวันที่ 15 มีนาคม 2569 ข้อใดถูก", ["ก. รับรู้ส่วนต่าง 300,000 บาทในงวด 2569 เป็นการเปลี่ยนแปลงประมาณการ", "ข. ปรับประมาณการหนี้สิน ณ 31 ธันวาคม 2568 เป็น 2,300,000 บาท เพราะเป็นเหตุการณ์ภายหลังรอบระยะเวลารายงานที่ต้องปรับปรุง", "ค. คงไว้ 2,000,000 บาท และเปิดเผยคำพิพากษาเป็นเหตุการณ์ที่ไม่ต้องปรับปรุง", "ง. แก้ไขงบการเงินย้อนหลังเป็นข้อผิดพลาดตามบทที่ 5"], 1, "คำพิพากษายืนยันภาระผูกพันที่มีอยู่แล้ว ณ วันสิ้นรอบ ย่อหน้า 17.3 ยกคำพิพากษาของคดีความเป็นตัวอย่างของเหตุการณ์ที่ต้องปรับปรุง เมื่อเกิดก่อนวันอนุมัติงบการเงิน", "16.3.3"], ["LO 16.4", "ประยุกต์ใช้", "พนักงานทำงานติดต่อกัน 12 ปี ค่าจ้างอัตราสุดท้ายเดือนละ 25,000 บาท ค่าชดเชยตามมาตรา 118 แห่งพระราชบัญญัติคุ้มครองแรงงาน หากเกษียณ ณ วันสิ้นรอบเป็นเท่าใด", ["ก. 200,000 บาท", "ข. 333,333 บาท", "ค. 250,000 บาท", "ง. 300,000 บาท"], 2, "อายุงาน 10 ปีขึ้นไปแต่ไม่ครบ 20 ปี ได้ค่าจ้างอัตราสุดท้าย 300 วัน = 25,000 ÷ 30 × 300 = 250,000 บาท ข้อ ข ใช้อัตรา 400 วันของอายุงาน 20 ปีขึ้นไป", "16.4.2"], ["LO 16.5", "วิเคราะห์", "ข้อใดถูกเกี่ยวกับการคิดลดประมาณการค่ารื้อถอนของกิจการที่ใช้ TFRS for NPAEs", ["ก. ย่อหน้า 16.12–16.13 และ 10.5.3 ไม่กำหนดการคิดลด การคิดลดเป็นแนวการตีความที่อ้าง TFRS for PAEs ผ่านย่อหน้า 5.5.3 และเมื่อเลือกแล้วต้องใช้สม่ำเสมอตามย่อหน้า 5.8 และ 5.10", "ข. มาตรฐานบังคับให้คิดลดเมื่อภาระผูกพันเกิน 12 เดือน", "ค. มาตรฐานห้ามรวมต้นทุนรื้อถอนในราคาทุนของสินทรัพย์", "ง. กิจการเลือกคิดลดในปีที่ทำให้กำไรสูงขึ้นได้"], 0, "บทที่ 16 วัดด้วยประมาณการที่ดีที่สุดโดยไม่กล่าวถึงการคิดลด ย่อหน้า 10.5.3 ให้รวมต้นทุนรื้อถอนที่ประมาณที่ดีที่สุดในราคาทุน การคิดลดจึงต้องอาศัยย่อหน้า 5.5.3 และใช้สม่ำเสมอ", "16.5"], ["LO 16.6", "วิเคราะห์", "บริษัทตั้งประมาณการหนี้สินค่าชดเชยเกษียณเพิ่ม 353,000 บาท และจ่ายค่าชดเชยจริง 120,000 บาท ผลทางภาษีเงินได้นิติบุคคลของปีเป็นอย่างไร", ["ก. หักได้ทั้ง 353,000 บาท เพราะเป็นรายจ่ายตามกฎหมายแรงงาน", "ข. หักไม่ได้ทั้งสองจำนวนจนกว่าพนักงานทุกคนเกษียณ", "ค. บันทึกหนี้สินภาษีเงินได้รอการตัดบัญชี 70,600 บาทเป็นข้อบังคับ", "ง. บวกกลับ 353,000 บาทเป็นเงินสำรองตามมาตรา 65 ตรี (1) และหัก 120,000 บาทที่จ่ายจริง"], 3, "กรมสรรพากรตอบข้อหารือ กค 0702/1978 (8 เมษายน 2568) ว่าประมาณการค่าชดเชยเกษียณเป็นเงินสำรองตามมาตรา 65 ตรี (1) หักได้ในรอบที่จ่ายจริง บวกกลับสุทธิ 233,000 บาท ภาษีเงินได้รอการตัดบัญชีเกิดเฉพาะกิจการที่เลือกตาม 15.2 และเป็นสินทรัพย์ ไม่ใช่หนี้สิน", "16.4.5"], ["LO 16.1", "เข้าใจ", "บริษัทฟ้องเรียกค่าเสียหาย 2,000,000 บาท ทนายความยืนยันว่ามีความเป็นไปได้ค่อนข้างแน่ที่จะชนะ แต่คดียังไม่ถึงที่สุด ณ วันสิ้นรอบ บริษัทควรปฏิบัติอย่างไร", ["ก. รับรู้ลูกหนี้อื่นและรายได้อื่น 2,000,000 บาท", "ข. ไม่รับรู้ แต่เปิดเผยลักษณะของสินทรัพย์ที่อาจเกิดขึ้นและประมาณการผลกระทบทางการเงินหากทำได้", "ค. ไม่รับรู้และไม่เปิดเผย จนกว่าจะได้รับเงิน", "ง. รับรู้ครึ่งหนึ่งตามความน่าจะเป็น"], 1, "ย่อหน้า 16.5 ห้ามรับรู้สินทรัพย์ที่อาจเกิดขึ้น และให้เปิดเผยเมื่อมีความเป็นไปได้ค่อนข้างแน่ที่จะได้รับประโยชน์ การรับรู้ทำได้เมื่อเสมือนแน่นอน เช่น เมื่อมีคำพิพากษาถึงที่สุด (ตัวอย่างประกอบความเข้าใจ ตัวอย่างที่ 1 และ 2)", "16.1.3"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  const goS=()=>{const m=(location.hash||'').match(/^#(S16\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  const goH=()=>{const h=(location.hash||'').slice(1);if(names.includes(h))show(h);else goS()};
+  goS();window.addEventListener('hashchange',goH);
+})();
+</script>
+</body>
+</html>
+</body></html>

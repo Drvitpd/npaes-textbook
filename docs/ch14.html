@@ -1,0 +1,926 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 14 · ทะเบียนและการคำนวณสัญญาเช่า</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="reg"],[data-pane="tax"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 14 สัญญาเช่า</div>
+      <h1>แอป 14 · ทะเบียนและการคำนวณสัญญาเช่า</h1>
+      <p class="lede">นำเข้าทะเบียนสัญญาเช่า จัดประเภทตามย่อหน้า 14.21–14.29 ทำตารางผ่อนชำระของผู้เช่าและผู้ให้เช่า คำนวณค่าเช่าตามวิธีเส้นตรง การขายและเช่ากลับคืน ผลต่างกับภาษีตามรูปแบบทางกฎหมาย และร่างหมายเหตุตามช่วงเวลาครบกำหนด</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 14 ย่อหน้า 14.1–14.64</b><br>ตำราบทที่ 14 · ฉบับ 17-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> ทะเบียนสัญญา → จัดประเภท → ตารางผู้เช่าหรือผู้ให้เช่า → ภาษี → หมายเหตุ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="reg"><span class="n">0</span>ทะเบียนสัญญาเช่า</button>
+    <button role="tab" aria-selected="false" data-tab="cls"><span class="n">1</span>จัดประเภท</button>
+    <button role="tab" aria-selected="false" data-tab="fin"><span class="n">2</span>ผู้เช่า: เงินทุน</button>
+    <button role="tab" aria-selected="false" data-tab="op"><span class="n">3</span>เช่าดำเนินงาน</button>
+    <button role="tab" aria-selected="false" data-tab="lsr"><span class="n">4</span>ผู้ให้เช่า: เงินทุน</button>
+    <button role="tab" aria-selected="false" data-tab="slb"><span class="n">5</span>ขายและเช่ากลับคืน</button>
+    <button role="tab" aria-selected="false" data-tab="tax"><span class="n">6</span>ภาษี</button>
+    <button role="tab" aria-selected="false" data-tab="disc"><span class="n">7</span>เปิดเผยข้อมูล</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">8</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">9</span>เนื้อหาเสริม S14</button>
+  </nav>
+
+  <!-- 0 REGISTER -->
+  <div class="grid" data-pane="reg">
+    <section class="panel">
+      <h2>ทะเบียนสัญญาเช่าของผู้เช่า</h2>
+      <p class="hint">นำเข้าทะเบียนจาก Excel หรือ CSV (ไฟล์ข้อความคั่นด้วยจุลภาค) หนึ่งแถวต่อหนึ่งสัญญา แอปแสดงตัวเลขทดสอบเทียบตัวเลขประกอบของย่อหน้า 14.23 ผู้ใช้ยืนยันประเภทในคอลัมน์ "ประเภทที่ยืนยัน" แอปคำนวณหนี้สินเฉพาะสัญญาที่ยืนยันแล้วและจัดช่วงเวลาครบกำหนด ณ วันสิ้นปี สัญญาที่มีค่าเช่าไม่เท่ากันทุกงวดให้คำนวณในแท็บ 3</p>
+      <span class="sample" id="gTag">ข้อมูลตัวอย่าง: หัวข้อ 14.9 (ตัวอย่างที่ 14.3 ร่วมกับสำนักงานในแท็บ 3)</span>
+      <div class="fields">
+        <label class="f">ไฟล์ทะเบียน (Excel/CSV)<input type="file" id="gFile" accept=".xlsx,.xls,.csv,.txt"></label><p class="hint" style="grid-column:1/-1;margin:0">ไฟล์ .xlsx ใช้ได้เมื่อเชื่อมต่ออินเทอร์เน็ต (แอปโหลดตัวอ่านไฟล์เมื่อเลือกไฟล์) เมื่อออฟไลน์ให้ใช้ CSV (UTF-8)</p>
+        <label class="f">วันสิ้นรอบระยะเวลารายงาน<input type="date" id="gYe" value="2025-12-31"></label>
+      </div>
+      <div class="checks" style="margin:8px 0"><label><input type="checkbox" id="gAnon" checked><span><b>ปกปิดชื่อคู่สัญญา</b> แปลงชื่อสัญญาและผู้ให้เช่าเป็นรหัสทันทีที่อ่านไฟล์</span></label></div>
+      <div class="row-actions"><button class="btn" id="gTpl">คัดลอกหัวตารางแม่แบบ</button><span class="copied" id="gTplOk" hidden>คัดลอกแล้ว</span><button class="btn" id="gReset">ข้อมูลตัวอย่าง: หัวข้อ 14.9</button><button class="btn" id="gFull">ทะเบียนตัวอย่างสามสัญญา</button></div>
+      <p class="hint" id="gStatus"></p>
+      <div class="tbl"><table><thead><tr><th>สัญญา</th><th>เริ่ม</th><th class="num">งวด</th><th class="num">งวด/ปี</th><th class="num">ค่าเช่าต่องวด</th><th>ต้นงวด</th><th class="num">มูลค่ายุติธรรม</th><th class="num">อายุเชิงเศรษฐกิจ (ปี)</th><th class="num">สิทธิซื้อ</th><th>โอน</th><th class="num">อัตรา %</th><th class="num">ต้นทุนทางตรง</th><th>ประเภทที่ยืนยัน</th><th class="num">มูลค่าที่คาด ณ วันใช้สิทธิ</th><th></th></tr></thead><tbody id="gBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="gAdd">เพิ่มสัญญา</button></div>
+    </section>
+    <section class="panel voucher" id="gOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 1 CLASSIFY -->
+  <div class="grid" data-pane="cls" hidden>
+    <section class="panel">
+      <h2>ทดสอบการจัดประเภท (14.21–14.25)</h2>
+      <p class="hint">กรอกข้อมูล ณ วันเริ่มต้นของสัญญาเช่า จำนวนเงินขั้นต่ำไม่รวมภาษีมูลค่าเพิ่ม ค่าบริการ และค่าเช่าที่อาจเกิดขึ้น ร้อยละ 5, 80 และ 90 เป็นตัวเลขประกอบที่ย่อหน้า 14.23 ยกเป็นตัวอย่าง ไม่ใช่เส้นตัด แอปแสดงตำแหน่งของตัวเลขเทียบตัวเลขประกอบโดยไม่ประกาศผลจากตัวเลขอย่างเดียว แล้วให้ผู้ใช้ยืนยันประเภทตามย่อหน้า 14.22 และ 14.24 เอง</p>
+      <span class="sample" id="kTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 14.1</span>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" data-k="m">14.1 เครื่องจักร</button><button class="btn" data-k="b">ตาราง 14-3 กรณี ข</button><button class="btn" data-k="c">ตาราง 14-3 กรณี ค</button><button class="btn" data-k="d">ตาราง 14-3 กรณี ง</button></div>
+      <div class="fields">
+        <label class="f">มูลค่ายุติธรรมของสินทรัพย์<input class="num" type="number" id="kFv" value="1000000"></label>
+        <label class="f">ค่าเช่าต่องวด<input class="num" type="number" id="kP" value="280000"></label>
+        <label class="f">จำนวนงวด<input class="num" type="number" id="kN" value="4"></label>
+        <label class="f">งวดต่อปี<select id="kM"><option value="1">1 (รายปี)</option><option value="12">12 (รายเดือน)</option></select></label>
+        <label class="f">จ่าย<select id="kAdv"><option value="0">ปลายงวด</option><option value="1">ต้นงวด</option></select></label>
+        <label class="f">อัตราคิดลด (% ต่อปี)<input class="num" type="number" id="kR" value="6" step="0.01"></label>
+        <label class="f">อายุเชิงเศรษฐกิจ (ปี)<input class="num" type="number" id="kLife" value="5" step="0.5"></label>
+        <label class="f">ราคาสิทธิเลือกซื้อ (0 = ไม่มี)<input class="num" type="number" id="kOpt" value="0"></label>
+        <label class="f">มูลค่ายุติธรรมที่คาด ณ วันใช้สิทธิ<input class="num" type="number" id="kOptFv" value="0"></label>
+        <label class="f">มูลค่าคงเหลือที่ผู้เช่าประกัน<input class="num" type="number" id="kRvg" value="0"></label>
+      </div>
+      <div class="checks" style="margin-top:10px">
+        <label><input type="checkbox" id="kTr"><span>สัญญาโอนกรรมสิทธิ์ให้ผู้เช่าเมื่อสิ้นสุดสัญญา เช่น เช่าซื้อ (14.23.1)</span></label>
+        <label><input type="checkbox" id="kTrFv"><span>การโอนกรรมสิทธิ์ ณ วันสิ้นสัญญาจ่ายค่าตอบแทนเท่ามูลค่ายุติธรรม (14.24)</span></label>
+        <label><input type="checkbox" id="kCont"><span>ค่าเช่าส่วนใหญ่เป็นค่าเช่าที่อาจเกิดขึ้น ผู้เช่าจึงไม่ได้รับความเสี่ยงและผลตอบแทน (14.24)</span></label>
+      </div>
+      <div class="fields" style="margin-top:10px">
+        <label class="f">ประเภทที่ผู้ใช้ยืนยันตามย่อหน้า 14.22 และ 14.24<select id="kJud"><option value="">ยังไม่ยืนยัน</option><option value="fin">สัญญาเช่าเงินทุน</option><option value="op">สัญญาเช่าดำเนินงาน</option></select></label>
+        <label class="f">เหตุผลเชิงเนื้อหา (บันทึกในกระดาษทำการ)<input type="text" id="kWhy" value=""></label>
+      </div>
+      <h3>เช่าที่ดินและอาคาร (14.26–14.29)</h3>
+      <span class="sample" id="lTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 14.2</span>
+      <div class="fields">
+        <label class="f">เงินก้อน ณ วันเริ่มต้น<input class="num" type="number" id="lLump" value="2000000"></label>
+        <label class="f">ค่าเช่าต่อปี (ปลายปี)<input class="num" type="number" id="lRent" value="1200000"></label>
+        <label class="f">อายุสัญญา (ปี)<input class="num" type="number" id="lN" value="20"></label>
+        <label class="f">มูลค่ายุติธรรมของสิทธิในที่ดิน<input class="num" type="number" id="lLand" value="12000000"></label>
+        <label class="f">มูลค่ายุติธรรมของสิทธิในอาคาร<input class="num" type="number" id="lBld" value="4000000"></label>
+        <label class="f">อายุเชิงเศรษฐกิจคงเหลือของอาคาร (ปี)<input class="num" type="number" id="lLife" value="20"></label>
+        <label class="f">อัตราคิดลด (% ต่อปี)<input class="num" type="number" id="lR" value="6" step="0.01"></label>
+      </div>
+      <div class="checks" style="margin-top:8px"><label><input type="checkbox" id="lTr"><span>โอนกรรมสิทธิ์ทั้งที่ดินและอาคารเมื่อสิ้นสัญญา (14.27)</span></label></div>
+      <div class="fields" style="margin-top:8px"><label class="f">ประเภทส่วนอาคารที่ผู้ใช้ยืนยัน<select id="lJud"><option value="">ยังไม่ยืนยัน</option><option value="fin" selected>สัญญาเช่าเงินทุน</option><option value="op">สัญญาเช่าดำเนินงาน</option></select></label></div>
+    </section>
+    <section class="panel voucher" id="kOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 2 LESSEE FINANCE -->
+  <div class="grid" data-pane="fin" hidden>
+    <section class="panel">
+      <h2>ผู้เช่า: สัญญาเช่าเงินทุน (14.30–14.37)</h2>
+      <p class="hint">แอปรับรู้หนี้สินด้วยจำนวนที่ต่ำกว่าระหว่างมูลค่ายุติธรรมกับมูลค่าปัจจุบัน (PV) ทำตารางดอกเบี้ยอัตราคงที่ แยกส่วนที่ถึงกำหนดภายในหนึ่งปี และส่งผลไปแท็บ 6 และ 7</p>
+      <span class="sample" id="fTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 14.3</span>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" data-f="m">14.3 เครื่องจักร</button><button class="btn" data-f="car">14.9 รถยนต์นั่ง</button><button class="btn" data-f="ex2">อัตนัยข้อ 3</button></div>
+      <div class="fields">
+        <label class="f">ชื่อสินทรัพย์<input type="text" id="fName" value="เครื่องจักรบรรจุภัณฑ์"></label>
+        <label class="f">วันที่สัญญาเช่าเริ่มมีผล<input type="date" id="fStart" value="2025-01-01"></label>
+        <label class="f">วันสิ้นรอบระยะเวลารายงาน<input type="date" id="fYe" value="2025-12-31"></label>
+        <label class="f">มูลค่ายุติธรรม<input class="num" type="number" id="fFv" value="1000000"></label>
+        <label class="f">ค่าเช่าต่องวด (ไม่รวมภาษีมูลค่าเพิ่ม)<input class="num" type="number" id="fP" value="280000"></label>
+        <label class="f">จำนวนงวด<input class="num" type="number" id="fN" value="4"></label>
+        <label class="f">งวดต่อปี<select id="fM"><option value="1">1 (รายปี)</option><option value="12">12 (รายเดือน)</option></select></label>
+        <label class="f">จ่าย<select id="fAdv"><option value="0">ปลายงวด</option><option value="1">ต้นงวด</option></select></label>
+        <label class="f">อัตราคิดลด (% ต่อปี)<input class="num" type="number" id="fR" value="6" step="0.01"></label>
+        <label class="f">ราคาสิทธิเลือกซื้อที่ค่อนข้างแน่นอนว่าจะใช้ / มูลค่าคงเหลือที่ประกัน<input class="num" type="number" id="fOpt" value="0"></label>
+        <label class="f">ต้นทุนทางตรงเริ่มแรกของผู้เช่า<input class="num" type="number" id="fIdc" value="20000"></label>
+        <label class="f">อายุการใช้ประโยชน์ (ปี)<input class="num" type="number" id="fLife" value="5" step="0.5"></label>
+      </div>
+      <div class="checks" style="margin-top:10px"><label><input type="checkbox" id="fOwn"><span>ค่อนข้างแน่นอนว่าจะได้กรรมสิทธิ์เมื่อสิ้นสัญญา ใช้อายุการใช้ประโยชน์ (14.35)</span></label></div>
+    </section>
+    <section class="panel voucher" id="fOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 3 OPERATING -->
+  <div class="grid" data-pane="op" hidden>
+    <section class="panel">
+      <h2>สัญญาเช่าดำเนินงาน: วิธีเส้นตรง (14.38, 14.51–14.53)</h2>
+      <p class="hint">กรอกค่าเช่าเป็นช่วง จำนวนเดือนและค่าเช่าต่อเดือน ช่วงปลอดค่าเช่าใส่ 0 ไม่รวมค่าบริการ แอปคำนวณค่าเช่าเส้นตรง ยอดค้างจ่ายหรือค้างรับ และภาระในอนาคตตามช่วงเวลา</p>
+      <span class="sample" id="oTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 14.4</span>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" data-o="off">14.4 สำนักงาน</button><button class="btn" data-o="ex3">อัตนัยข้อ 4</button></div>
+      <div class="fields">
+        <label class="f">มุมมอง<select id="oRole"><option value="lessee">ผู้เช่า (ค่าใช้จ่าย)</option><option value="lessor">ผู้ให้เช่า (รายได้)</option></select></label>
+        <label class="f">วันเริ่มสัญญา<input type="date" id="oStart" value="2025-01-01"></label>
+        <label class="f">วันสิ้นรอบระยะเวลารายงาน<input type="date" id="oYe" value="2025-12-31"></label>
+        <label class="f">ต้นทุนทางตรงเริ่มแรกของผู้ให้เช่า (14.53)<input class="num" type="number" id="oIdc" value="0"></label>
+      </div>
+      <div class="tbl"><table><thead><tr><th>ช่วง</th><th class="num">จำนวนเดือน</th><th class="num">ค่าเช่าต่อเดือน</th><th></th></tr></thead><tbody id="oBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="oAdd">เพิ่มช่วง</button></div>
+    </section>
+    <section class="panel voucher" id="oOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 4 LESSOR FINANCE -->
+  <div class="grid" data-pane="lsr" hidden>
+    <section class="panel">
+      <h2>ผู้ให้เช่า: สัญญาเช่าเงินทุน (14.40–14.49)</h2>
+      <p class="hint">ผู้ให้เช่าทั่วไป แอปหาอัตราดอกเบี้ยตามนัยที่รวมต้นทุนทางตรงเริ่มแรก ผู้ผลิตหรือผู้แทนจำหน่าย แอปคิดลดด้วยอัตราเชิงพาณิชย์และคำนวณกำไรจากการขายตามย่อหน้า 14.48</p>
+      <span class="sample" id="sTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 14.5</span>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" data-s="lsg">14.5 บริษัทลีสซิ่ง</button><button class="btn" data-s="dlr">14.6 ผู้ผลิต</button></div>
+      <div class="fields">
+        <label class="f">ประเภทผู้ให้เช่า<select id="sMode"><option value="std">ผู้ให้เช่าทั่วไป</option><option value="dlr">ผู้ผลิตหรือผู้แทนจำหน่าย</option></select></label>
+        <label class="f">วันที่สัญญาเริ่มมีผล<input type="date" id="sStart" value="2025-01-01"></label>
+        <label class="f">วันสิ้นรอบระยะเวลารายงาน<input type="date" id="sYe" value="2025-12-31"></label>
+        <label class="f">มูลค่ายุติธรรม (ราคาขายปกติ)<input class="num" type="number" id="sFv" value="1000000"></label>
+        <label class="f">ค่าเช่าต่องวด<input class="num" type="number" id="sP" value="280000"></label>
+        <label class="f">จำนวนงวด<input class="num" type="number" id="sN" value="4"></label>
+        <label class="f">งวดต่อปี<select id="sM"><option value="1">1 (รายปี)</option><option value="12">12 (รายเดือน)</option></select></label>
+        <label class="f">จ่าย<select id="sAdv"><option value="0">ปลายงวด</option><option value="1">ต้นงวด</option></select></label>
+        <label class="f">มูลค่าคงเหลือที่ได้รับการประกัน<input class="num" type="number" id="sRvg" value="0"></label>
+        <label class="f">มูลค่าคงเหลือที่ไม่ได้รับการประกัน<input class="num" type="number" id="sRvu" value="50000"></label>
+        <label class="f">ต้นทุนทางตรงเริ่มแรกของผู้ให้เช่า<input class="num" type="number" id="sIdc" value="10000"></label>
+        <label class="f">ต้นทุนของสินทรัพย์ (ผู้ผลิต)<input class="num" type="number" id="sCost" value="750000"></label>
+        <label class="f">อัตราดอกเบี้ยเชิงพาณิชย์ (% ต่อปี, ผู้ผลิต)<input class="num" type="number" id="sMkt" value="8" step="0.01"></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="sOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 5 SALE AND LEASEBACK -->
+  <div class="grid" data-pane="slb" hidden>
+    <section class="panel">
+      <h2>การขายและเช่ากลับคืน (14.58–14.64)</h2>
+      <p class="hint">เลือกประเภทของสัญญาเช่ากลับคืน แล้วกรอกราคาขาย มูลค่ายุติธรรม และมูลค่าตามบัญชี แอปแยกส่วนที่รับรู้ทันทีกับส่วนรอการตัดบัญชี และเทียบกำไรทางภาษีในปีที่ขาย</p>
+      <span class="sample" id="bTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 14.7 กรณีที่ 2</span>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" data-b="1">กรณี 1</button><button class="btn" data-b="2">กรณี 2</button><button class="btn" data-b="3">กรณี 3</button><button class="btn" data-b="4">กรณี 4</button><button class="btn" data-b="5">กรณี 5</button><button class="btn" data-b="ex4">อัตนัยข้อ 6 (ก)</button></div>
+      <div class="fields">
+        <label class="f">ประเภทสัญญาเช่ากลับคืน<select id="bType"><option value="op">สัญญาเช่าดำเนินงาน</option><option value="fin">สัญญาเช่าเงินทุน</option></select></label>
+        <label class="f">ราคาทุนของสินทรัพย์<input class="num" type="number" id="bCost" value="10000000"></label>
+        <label class="f">ค่าเสื่อมราคาสะสม<input class="num" type="number" id="bAcc" value="2000000"></label>
+        <label class="f">ราคาขาย<input class="num" type="number" id="bPrice" value="11000000"></label>
+        <label class="f">มูลค่ายุติธรรม<input class="num" type="number" id="bFv" value="10000000"></label>
+        <label class="f">อายุสัญญาเช่ากลับคืน (ปี)<input class="num" type="number" id="bN" value="5"></label>
+        <label class="f">มูลค่าต้นทุนคงเหลือทางภาษี<input class="num" type="number" id="bTax" value="8000000"></label>
+      </div>
+      <div class="checks" style="margin-top:10px">
+        <label><input type="checkbox" id="bComp"><span>ขาดทุนได้รับชดเชยด้วยค่าเช่าในอนาคตที่ต่ำกว่าราคาตลาด (14.61.2)</span></label>
+        <label><input type="checkbox" id="bMkt" checked><span>ทางภาษี: ถ้าราคาขายต่ำกว่าราคาตลาดโดยไม่มีเหตุผลที่กฎหมายยอมรับ ใช้ราคาตลาด (ม.65 ทวิ (4))</span></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="bOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 6 TAX -->
+  <div class="grid" data-pane="tax" hidden>
+    <section class="panel">
+      <h2>ผลต่างบัญชีกับภาษีของสัญญาในแท็บ 2</h2>
+      <p class="hint">ทางภาษีใช้รูปแบบทางกฎหมายของสัญญาและราคาทุนตามกฎหมาย เลือกรูปแบบสัญญา แอปใช้ตารางจากแท็บ 2 คำนวณรายจ่ายทางภาษีและรายการบวกกลับรายปี</p>
+      <span class="sample" id="xTag">ข้อมูลจากแท็บ 2</span>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" data-x="a">14.8 (ก) ลีสซิ่ง</button><button class="btn" data-x="b">14.8 (ข) เช่าซื้อ</button><button class="btn" data-x="car">14.9 รถยนต์นั่ง</button></div>
+      <div class="fields">
+        <label class="f">รูปแบบทางกฎหมาย<select id="xForm"><option value="lease">สัญญาเช่า / ลีสซิ่ง</option><option value="hp">สัญญาเช่าซื้อ</option></select></label>
+        <label class="f">ประเภททรัพย์สิน<select id="xCar"><option value="0">ทั่วไป</option><option value="1">รถยนต์นั่งหรือรถโดยสารไม่เกิน 10 ที่นั่ง</option></select></label>
+        <label class="f">อัตรา VAT (%)<input class="num" type="number" id="xVat" value="7" step="0.01"></label>
+        <label class="f">อัตราค่าเสื่อมราคาทางภาษี (% ต่อปี, เช่าซื้อ)<input class="num" type="number" id="xRate" value="20" step="0.01"></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="xOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 7 DISCLOSURE -->
+  <div class="grid" data-pane="disc" hidden>
+    <section class="panel">
+      <h2>ร่างหมายเหตุ (14.36, 14.39)</h2>
+      <p class="hint">แอปใช้ยอดรวมจากทะเบียนในแท็บ 0 แก้ไขทะเบียนแล้วหมายเหตุปรับตามทันที คัดลอกไปวางใน Word</p>
+      <div class="fields">
+        <label class="f">ชื่อกิจการในหมายเหตุ<input type="text" id="nCo" value="บริษัท"></label>
+      </div>
+      <div class="checks" style="margin-top:8px"><label><input type="checkbox" id="nOp" checked><span>รวมสัญญาเช่าดำเนินงานจากแท็บ 3 (ผู้เช่า)</span></label>
+      </div>
+      <div class="row-actions"><button class="btn primary" id="nCopy">คัดลอกร่างหมายเหตุ</button><span class="copied" id="nCopied" hidden>คัดลอกแล้ว วางใน Word ได้</span></div>
+    </section>
+    <section class="panel voucher" id="nOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 8 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 9 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S14</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 14 ลิงก์ #S14.1 ถึง #S14.8 เปิดหัวข้อนั้นได้โดยตรง ตัวเลขใช้ข้อมูลชุดเดียวกับตำรา (ชื่อบริษัทเป็นชื่อสมมติ)</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S14.1">S14.1</a><a class="btn" href="#S14.2">S14.2</a><a class="btn" href="#S14.3">S14.3</a><a class="btn" href="#S14.4">S14.4</a><a class="btn" href="#S14.5">S14.5</a><a class="btn" href="#S14.6">S14.6</a><a class="btn" href="#S14.7">S14.7</a><a class="btn" href="#S14.8">S14.8</a></div>
+<h3 id="S14.1">S14.1 ตารางนิยามฉบับเต็มและการจำแนกกรณีที่พบบ่อย</h3><div class="tbl"><table><thead><tr><th>คำ</th><th>สาระของนิยาม</th><th>ย่อหน้า</th></tr></thead><tbody><tr><td>สัญญาเช่า</td><td>สัญญาหรือข้อตกลงที่ให้สิทธิใช้สินทรัพย์ตามช่วงเวลาที่ตกลงเพื่อแลกค่าตอบแทน ชำระงวดเดียวหรือหลายงวด</td><td>14.1</td></tr><tr><td>สัญญาเช่าเงินทุน</td><td>โอนความเสี่ยงและผลตอบแทนของความเป็นเจ้าของทั้งหมดหรือเกือบทั้งหมดให้ผู้เช่า ไม่ว่ากรรมสิทธิ์จะโอนในที่สุดหรือไม่</td><td>14.2</td></tr><tr><td>สัญญาเช่าดำเนินงาน</td><td>สัญญาเช่าที่ไม่ใช่สัญญาเช่าเงินทุน</td><td>14.3</td></tr><tr><td>สัญญาเช่าที่บอกเลิกไม่ได้</td><td>บอกเลิกได้เฉพาะสี่กรณี: เหตุการณ์ที่โอกาสเกิดน้อยมาก ผู้ให้เช่ายินยอม ทำสัญญาใหม่กับผู้ให้เช่ารายเดิมสำหรับสินทรัพย์เดิมหรือเทียบเท่า หรือต้องจ่ายเงินเพิ่มจนเชื่อได้ว่าสัญญาจะต่อเนื่อง</td><td>14.4</td></tr><tr><td>วันเริ่มต้นของสัญญาเช่า</td><td>วันทำสัญญาหรือวันตกลงเงื่อนไขหลัก แล้วแต่วันใดก่อน ใช้จัดประเภทและกำหนดจำนวนที่จะรับรู้</td><td>14.5</td></tr><tr><td>วันที่สัญญาเช่าเริ่มมีผล</td><td>วันที่ผู้เช่าใช้สิทธิได้ เป็นวันรับรู้รายการเริ่มแรก</td><td>14.6</td></tr><tr><td>อายุสัญญาเช่า</td><td>ระยะเวลาที่บอกเลิกไม่ได้ รวมช่วงต่ออายุที่เชื่อได้อย่างสมเหตุสมผลว่าจะใช้สิทธิ</td><td>14.7</td></tr><tr><td>จำนวนเงินขั้นต่ำที่ต้องจ่าย</td><td>เงินที่ต้องจ่ายตลอดอายุสัญญา บวกมูลค่าคงเหลือที่ได้รับการประกัน และราคาสิทธิเลือกซื้อที่เชื่อได้ว่าจะใช้ ไม่รวมค่าเช่าที่อาจเกิดขึ้น ต้นทุนบริการ และภาษีที่เรียกคืนได้</td><td>14.8</td></tr><tr><td>มูลค่ายุติธรรม</td><td>จำนวนที่ผู้ซื้อและผู้ขายที่รอบรู้ เต็มใจ และเป็นอิสระต่อกันตกลงแลกเปลี่ยน</td><td>14.9</td></tr><tr><td>อายุเชิงเศรษฐกิจ</td><td>ระยะเวลาหรือจำนวนผลผลิตที่สินทรัพย์ให้ประโยชน์แก่ผู้ใช้รายเดียวหรือหลายราย</td><td>14.10</td></tr><tr><td>อายุการใช้ประโยชน์</td><td>ระยะเวลาที่เหลือนับจากวันเริ่มมีผลที่กิจการคาดว่าจะได้ประโยชน์ โดยไม่คำนึงถึงอายุสัญญา</td><td>14.11</td></tr><tr><td>มูลค่าคงเหลือที่ได้รับการประกัน</td><td>ด้านผู้เช่า: ส่วนที่ผู้เช่าหรือบุคคลที่เกี่ยวข้องรับประกันจะจ่าย (จำนวนสูงสุดที่ต้องจ่าย) · ด้านผู้ให้เช่า: ส่วนที่ผู้เช่าหรือบุคคลที่สามที่ไม่เกี่ยวข้องกับผู้ให้เช่าและมีฐานะการเงินเพียงพอรับประกัน</td><td>14.12</td></tr><tr><td>มูลค่าคงเหลือที่ไม่ได้รับการประกัน</td><td>ส่วนที่ผู้ให้เช่าอาจไม่ได้รับคืน หรือได้รับการประกันจากบุคคลที่เกี่ยวข้องกับผู้ให้เช่าเท่านั้น</td><td>14.13</td></tr><tr><td>ต้นทุนทางตรงเริ่มแรก</td><td>ต้นทุนส่วนเพิ่มที่เกิดโดยตรงจากการต่อรองและทำสัญญาเช่า ไม่รวมของผู้ให้เช่าที่เป็นผู้ผลิตหรือผู้แทนจำหน่าย</td><td>14.14</td></tr><tr><td>เงินลงทุนขั้นต้น / สุทธิ</td><td>จำนวนเงินขั้นต่ำที่ผู้ให้เช่าจะได้รับบวกมูลค่าคงเหลือที่ไม่ได้รับการประกัน / เงินลงทุนขั้นต้นคิดลดด้วยอัตราตามนัย</td><td>14.15–14.16</td></tr><tr><td>รายได้ทางการเงินรอการรับรู้</td><td>เงินลงทุนขั้นต้นหักเงินลงทุนสุทธิ</td><td>14.17</td></tr><tr><td>อัตราดอกเบี้ยตามนัย</td><td>อัตราที่ทำให้ PV ของจำนวนเงินขั้นต่ำและมูลค่าคงเหลือที่ไม่ได้รับการประกันเท่ามูลค่ายุติธรรมบวกต้นทุนทางตรงเริ่มแรกของผู้ให้เช่า</td><td>14.18</td></tr><tr><td>อัตราดอกเบี้ยเงินกู้ยืมส่วนเพิ่มของผู้เช่า</td><td>อัตราของสัญญาเช่าที่คล้ายคลึงกัน หรืออัตราที่ต้องจ่ายถ้ากู้มาซื้อสินทรัพย์ด้วยระยะเวลาและหลักประกันคล้ายคลึงกัน</td><td>14.19</td></tr><tr><td>ค่าเช่าที่อาจเกิดขึ้น</td><td>ส่วนของค่าเช่าที่ขึ้นกับปัจจัยอื่น เช่น ยอดขาย ปริมาณใช้ ดัชนีราคา อัตราดอกเบี้ยในอนาคต</td><td>14.20</td></tr></tbody></table></div><h4>การจำแนกกรณีที่พบบ่อย</h4><div class="tbl"><table><thead><tr><th>กรณี</th><th>ผลที่พบบ่อย</th><th>เหตุผล</th></tr></thead><tbody><tr><td>สัญญาเช่าซื้อรถยนต์หรือเครื่องจักร โอนกรรมสิทธิ์เมื่อชำระครบ</td><td>เงินทุน</td><td>เกิดสถานการณ์ 14.23.1 ซึ่งยกสัญญาเช่าซื้อเป็นตัวอย่างเอง</td></tr><tr><td>ลีสซิ่งรถยนต์ 4–5 ปี มีสิทธิซื้อราคาต่ำมาก</td><td>เงินทุน</td><td>ราคาสิทธิซื้อต่ำกว่าตัวเลขประกอบของ 14.23.2 และ PV มักสูงกว่าตัวเลขประกอบของ 14.23.4 สรุปตาม 14.22 และ 14.24</td></tr><tr><td>เช่ารถยนต์รายเดือน ผู้ให้เช่าดูแลซ่อมบำรุงและเปลี่ยนรถได้</td><td>ดำเนินงาน</td><td>ตัวเลขทดสอบต่ำกว่าระดับตัวเลขประกอบชัดเจน ค่าบริการแยกออกตาม 14.8</td></tr><tr><td>เช่าพื้นที่สำนักงานหรือร้านค้า 3–5 ปี</td><td>ดำเนินงาน</td><td>ส่วนที่ดินไม่โอน อาคารอายุยาวกว่าสัญญามาก PV ต่ำกว่ามูลค่ายุติธรรมมาก</td></tr><tr><td>สิทธิการเช่าที่ดิน 30 ปี จ่ายเงินก้อนล่วงหน้า</td><td>ดำเนินงานส่วนที่ดิน</td><td>เงินก้อนเป็นค่าเช่าจ่ายล่วงหน้าตัดตลอดอายุสัญญา (14.26)</td></tr><tr><td>เช่าที่ดินพร้อมอาคารระยะยาวเท่าอายุอาคาร</td><td>ที่ดินดำเนินงาน อาคารมักเป็นเงินทุน</td><td>ปันส่วนตามมูลค่ายุติธรรมของสิทธิ (14.27–14.28)</td></tr><tr><td>เช่าเครื่องถ่ายเอกสารคิดค่าเช่าตามจำนวนแผ่น</td><td>มักเป็นดำเนินงาน</td><td>ค่าเช่าส่วนใหญ่เป็นค่าเช่าที่อาจเกิดขึ้น (14.24)</td></tr><tr><td>ให้เช่าช่วงพื้นที่ที่เช่ามา</td><td>ผู้เช่าเดิมเป็นผู้ให้เช่าในสัญญาช่วง</td><td>จัดประเภทสัญญาช่วงแยก เปิดเผยเงินที่คาดว่าจะได้รับ (14.36.4 14.39.2)</td></tr></tbody></table></div><h3 id="S14.2">S14.2 ตารางผ่อนชำระฉบับเต็มและกรณี PV สูงกว่ามูลค่ายุติธรรม</h3><h4>ก. ผู้เช่า ตัวอย่างที่ 14.3 (ค่าเช่าปลายปี ร้อยละ 6)</h4><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">หนี้สินต้นปี</th><th class="num">ดอกเบี้ย</th><th class="num">ค่าเช่า</th><th class="num">ลดหนี้สิน</th><th class="num">หนี้สินปลายปี</th></tr></thead><tbody><tr><td>2568</td><td class="num">970,229.57</td><td class="num">58,213.77</td><td class="num">280,000.00</td><td class="num">221,786.23</td><td class="num">748,443.34</td></tr><tr><td>2569</td><td class="num">748,443.34</td><td class="num">44,906.60</td><td class="num">280,000.00</td><td class="num">235,093.40</td><td class="num">513,349.94</td></tr><tr><td>2570</td><td class="num">513,349.94</td><td class="num">30,801.00</td><td class="num">280,000.00</td><td class="num">249,199.00</td><td class="num">264,150.94</td></tr><tr><td>2571</td><td class="num">264,150.94</td><td class="num">15,849.06</td><td class="num">280,000.00</td><td class="num">264,150.94</td><td class="num">0.00</td></tr></tbody></table></div><p>ค่าเสื่อมราคาปีละ 247,557.39 บาท สี่ปี รวม 990,229.57 บาท ดอกเบี้ยรวม 149,770.43 บาท ค่าใช้จ่ายรวมตลอดสัญญา 1,140,000 บาท เท่าค่าเช่า 1,120,000 บวกค่าธรรมเนียม 20,000 บาท</p><h4>ข. ผู้ให้เช่า ตัวอย่างที่ 14.5 (อัตราตามนัยร้อยละ 5.9930)</h4><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">เงินลงทุนสุทธิต้นปี</th><th class="num">รายได้ทางการเงิน</th><th class="num">ค่าเช่ารับ</th><th class="num">ปลายปี</th></tr></thead><tbody><tr><td>2568</td><td class="num">1,010,000.00</td><td class="num">60,529.41</td><td class="num">280,000.00</td><td class="num">790,529.41</td></tr><tr><td>2569</td><td class="num">790,529.41</td><td class="num">47,376.51</td><td class="num">280,000.00</td><td class="num">557,905.92</td></tr><tr><td>2570</td><td class="num">557,905.92</td><td class="num">33,435.36</td><td class="num">280,000.00</td><td class="num">311,341.28</td></tr><tr><td>2571</td><td class="num">311,341.28</td><td class="num">18,658.72</td><td class="num">280,000.00</td><td class="num">50,000.00</td></tr></tbody></table></div><h4>ค. PV สูงกว่ามูลค่ายุติธรรม (แบบฝึกหัดอัตนัยข้อ 2)</h4><p>ค่าเช่าปีละ 250,000 บาท 5 ปี คิดลดร้อยละ 6 ได้ PV 1,053,090.95 บาท สูงกว่ามูลค่ายุติธรรม 1,000,000 บาท (ร้อยละ 105.3) สูงกว่าตัวเลขประกอบของ 14.23.4 ชัดเจน อายุสัญญา 5 ÷ 7 = ร้อยละ 71.4 ต่ำกว่าระดับตัวเลขประกอบของ 14.23.3 ย่อหน้า 14.23 ใช้คำว่าอย่างน้อยหนึ่งสถานการณ์ เมื่อไม่มีลักษณะหักล้างตาม 14.24 จึงสรุปเป็นสัญญาเช่าเงินทุนตาม 14.22 ได้ ย่อหน้า 14.30 ให้รับรู้ด้วยจำนวนที่ต่ำกว่า คือ 1,000,000 บาท ตารางผ่อนชำระใช้อัตราที่ทำให้ PV ของค่าเช่าเท่ากับ 1,000,000 บาท คือร้อยละ 7.9308 ต่อปี</p><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">หนี้สินต้นปี</th><th class="num">ดอกเบี้ย</th><th class="num">ค่าเช่า</th><th class="num">ลดหนี้สิน</th><th class="num">หนี้สินปลายปี</th></tr></thead><tbody><tr><td>1</td><td class="num">1,000,000.00</td><td class="num">79,308.26</td><td class="num">250,000.00</td><td class="num">170,691.74</td><td class="num">829,308.26</td></tr><tr><td>2</td><td class="num">829,308.26</td><td class="num">65,771.00</td><td class="num">250,000.00</td><td class="num">184,229.00</td><td class="num">645,079.26</td></tr><tr><td>3</td><td class="num">645,079.26</td><td class="num">51,160.11</td><td class="num">250,000.00</td><td class="num">198,839.89</td><td class="num">446,239.37</td></tr><tr><td>4</td><td class="num">446,239.37</td><td class="num">35,390.47</td><td class="num">250,000.00</td><td class="num">214,609.53</td><td class="num">231,629.84</td></tr><tr><td>5</td><td class="num">231,629.84</td><td class="num">18,370.16</td><td class="num">250,000.00</td><td class="num">231,629.84</td><td class="num">0.00</td></tr></tbody></table></div><h4>ง. ค่าเช่าจ่ายต้นงวด (แบบฝึกหัดอัตนัยข้อ 3)</h4><p>PV = 170,000 × (1 + 1/1.07 + 1/1.07²) = 477,363.09 บาท (ร้อยละ 95.5 ของมูลค่ายุติธรรม) งวดแรกจ่ายวันเริ่มมีผลทั้งหมดเป็นเงินต้น หนี้สินคงเหลือ 307,363.09 บาท ดอกเบี้ยปีแรก 307,363.09 × 7% = 21,515.42 บาท</p><h3 id="S14.3">S14.3 ตัวอย่างเพิ่ม: ที่ดินและอาคาร การเช่าช่วง และค่าเช่าที่อาจเกิดขึ้น</h3><h4>ก. ส่วนอาคารของตัวอย่างที่ 14.2 (ค่าเช่าส่วนอาคารปีละ 300,000 บาท ร้อยละ 6)</h4><p>สินทรัพย์ 3,940,976.37 บาท หนี้สินหลังจ่ายเงินก้อนส่วนอาคาร 500,000 บาท = 3,440,976.37 บาท ค่าเสื่อมราคาปีละ 197,048.82 บาท ส่วนที่ดินรับรู้ค่าใช้จ่ายปีละ 975,000 บาท (ตัดเงินกินเปล่า 75,000 บวกค่าเช่า 900,000)</p><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">หนี้สินต้นปี</th><th class="num">ดอกเบี้ย</th><th class="num">ลดหนี้สิน</th><th class="num">หนี้สินปลายปี</th></tr></thead><tbody><tr><td>1</td><td class="num">3,440,976.37</td><td class="num">206,458.58</td><td class="num">93,541.42</td><td class="num">3,347,434.95</td></tr><tr><td>2</td><td class="num">3,347,434.95</td><td class="num">200,846.10</td><td class="num">99,153.90</td><td class="num">3,248,281.05</td></tr><tr><td>3</td><td class="num">3,248,281.05</td><td class="num">194,896.86</td><td class="num">105,103.14</td><td class="num">3,143,177.91</td></tr><tr><td>4</td><td class="num">3,143,177.91</td><td class="num">188,590.67</td><td class="num">111,409.33</td><td class="num">3,031,768.58</td></tr><tr><td>5</td><td class="num">3,031,768.58</td><td class="num">181,906.11</td><td class="num">118,093.89</td><td class="num">2,913,674.69</td></tr><tr><td>6</td><td class="num">2,913,674.69</td><td class="num">174,820.48</td><td class="num">125,179.52</td><td class="num">2,788,495.17</td></tr><tr><td>7</td><td class="num">2,788,495.17</td><td class="num">167,309.71</td><td class="num">132,690.29</td><td class="num">2,655,804.88</td></tr><tr><td>8</td><td class="num">2,655,804.88</td><td class="num">159,348.29</td><td class="num">140,651.71</td><td class="num">2,515,153.17</td></tr><tr><td>9</td><td class="num">2,515,153.17</td><td class="num">150,909.19</td><td class="num">149,090.81</td><td class="num">2,366,062.36</td></tr><tr><td>10</td><td class="num">2,366,062.36</td><td class="num">141,963.74</td><td class="num">158,036.26</td><td class="num">2,208,026.10</td></tr><tr><td>11</td><td class="num">2,208,026.10</td><td class="num">132,481.57</td><td class="num">167,518.43</td><td class="num">2,040,507.67</td></tr><tr><td>12</td><td class="num">2,040,507.67</td><td class="num">122,430.46</td><td class="num">177,569.54</td><td class="num">1,862,938.13</td></tr><tr><td>13</td><td class="num">1,862,938.13</td><td class="num">111,776.29</td><td class="num">188,223.71</td><td class="num">1,674,714.42</td></tr><tr><td>14</td><td class="num">1,674,714.42</td><td class="num">100,482.87</td><td class="num">199,517.13</td><td class="num">1,475,197.29</td></tr><tr><td>15</td><td class="num">1,475,197.29</td><td class="num">88,511.84</td><td class="num">211,488.16</td><td class="num">1,263,709.13</td></tr><tr><td>16</td><td class="num">1,263,709.13</td><td class="num">75,822.55</td><td class="num">224,177.45</td><td class="num">1,039,531.68</td></tr><tr><td>17</td><td class="num">1,039,531.68</td><td class="num">62,371.90</td><td class="num">237,628.10</td><td class="num">801,903.58</td></tr><tr><td>18</td><td class="num">801,903.58</td><td class="num">48,114.21</td><td class="num">251,885.79</td><td class="num">550,017.79</td></tr><tr><td>19</td><td class="num">550,017.79</td><td class="num">33,001.07</td><td class="num">266,998.93</td><td class="num">283,018.86</td></tr><tr><td>20</td><td class="num">283,018.86</td><td class="num">16,981.14</td><td class="num">283,018.86</td><td class="num">0.00</td></tr></tbody></table></div><h4>ข. การเช่าช่วง</h4><p>บริษัทเช่าคลังสินค้าแบบสัญญาเช่าดำเนินงาน 5 ปี ค่าเช่าเดือนละ 100,000 บาท แล้วให้เช่าช่วงพื้นที่ครึ่งหนึ่ง 3 ปี เดือนละ 55,000 บาท ผู้เช่าเดิมรับรู้ค่าเช่าจ่ายเต็มจำนวนตามวิธีเส้นตรง (14.38) และรับรู้รายได้ค่าเช่าช่วงตามวิธีเส้นตรงในฐานะผู้ให้เช่า (14.51) หมายเหตุเปิดเผยจำนวนเงินขั้นต่ำที่คาดว่าจะได้รับจากการเช่าช่วงที่บอกเลิกไม่ได้ (14.39.2) และแยกจำนวนที่ได้รับจากการเช่าช่วงในงวด (14.39.3) ถ้าสัญญาหลักเป็นสัญญาเช่าเงินทุน ให้เปิดเผยตามย่อหน้า 14.36.4</p><h4>ค. ค่าเช่าที่อาจเกิดขึ้น</h4><p>สัญญาเช่าพื้นที่ในศูนย์การค้ากำหนดค่าเช่าคงที่เดือนละ 50,000 บาท บวกร้อยละ 3 ของยอดขายส่วนที่เกิน 2,000,000 บาทต่อเดือน เดือนที่ยอดขาย 2,500,000 บาท ค่าเช่าที่อาจเกิดขึ้นคือ 15,000 บาท ส่วนคงที่รับรู้ตามวิธีเส้นตรง ส่วนที่อาจเกิดขึ้นรับรู้เป็นค่าใช้จ่ายในงวดที่เกิด และไม่รวมในจำนวนเงินขั้นต่ำ (14.8) แนวการตีความ: ย่อหน้า 14.38 ไม่ได้กล่าวถึงค่าเช่าที่อาจเกิดขึ้นของสัญญาเช่าดำเนินงานโดยตรง บทนี้เทียบเคียงย่อหน้า 14.32 และ 14.39.3 ฝั่งผู้ให้เช่าเปิดเผยค่าเช่าที่อาจเกิดขึ้นที่รับรู้เป็นรายได้ (14.49.5 14.56.2)</p><h3 id="S14.4">S14.4 ภาษีของสัญญาเช่าฉบับเต็ม</h3><div class="tbl"><table><thead><tr><th>เรื่อง</th><th>หลัก</th><th>ฐาน</th></tr></thead><tbody><tr><td>ลีสซิ่ง (สัญญาเช่าทางกฎหมาย)</td><td>ผู้เช่าหักค่าเช่าที่ถึงกำหนดตามสัญญาในรอบระยะเวลาบัญชี ไม่หักค่าเสื่อมราคาและดอกเบี้ยตามบัญชี เมื่อใช้สิทธิซื้อ ราคาซื้อเป็นต้นทุนทรัพย์สิน</td><td>ม.65 ทวิ ม.65 ตรี · แนวการตีความ</td></tr><tr><td>ค่าธรรมเนียมทำสัญญาลีสซิ่ง</td><td>ตัดตามอายุสัญญา (ไม่หักทั้งจำนวนในปีแรก)</td><td>แนวการตีความ</td></tr><tr><td>เช่าซื้อ</td><td>ต้นทุนคือราคาที่ต้องชำระทั้งหมดตามสัญญา ค่าเสื่อมราคาสะสมไม่เกินค่าเช่าซื้อที่ต้องผ่อนชำระจนถึงรอบนั้น อัตราไม่เกินวิธีทางบัญชี</td><td>คำสั่งกรมสรรพากรที่ ป.3/2527 ข้อ 2 และข้อ 7</td></tr><tr><td>รถยนต์นั่งหรือรถโดยสารไม่เกิน 10 ที่นั่ง</td><td>ค่าเช่าหักได้ไม่เกินคันละ 36,000 บาทต่อเดือน หรือ 1,200 บาทต่อวัน รวมภาษีมูลค่าเพิ่ม ต้นทุนหักค่าเสื่อมราคาได้เฉพาะส่วนไม่เกิน 1,000,000 บาท แนวการตีความ: นับภาษีซื้อต้องห้ามรวมในเพดาน</td><td>ม.65 ตรี (20) · พ.ร.ฎ. (ฉบับที่ 315) พ.ศ. 2540 มาตรา 4 (1) (2) · ม.82/5 (6) และประกาศอธิบดีฯ เกี่ยวกับภาษีมูลค่าเพิ่ม (ฉบับที่ 42) ลงวันที่ 29 ธ.ค. 2535 ข้อ 2 (1)</td></tr><tr><td>ภาษีหัก ณ ที่จ่ายค่าเช่า</td><td>ค่าเช่าทรัพย์สินที่จ่ายให้นิติบุคคล ร้อยละ 5 · ค่าบริการ ร้อยละ 3 · แยกสัญญาเช่ากับสัญญาบริการตามข้อเท็จจริง</td><td>ม.3 เตรส · คำสั่งกรมสรรพากรที่ ท.ป.4/2528</td></tr><tr><td>ภาษีมูลค่าเพิ่ม</td><td>เช่าสังหาริมทรัพย์เป็นการให้บริการ เช่าอสังหาริมทรัพย์ยกเว้น เช่าซื้อมีความรับผิดเมื่อถึงกำหนดชำระแต่ละงวด ภาษีซื้อที่เกี่ยวกับการให้เช่าอสังหาริมทรัพย์ซึ่งได้รับยกเว้นใช้เครดิตไม่ได้</td><td>ม.77/1 ม.78 (2) ม.81 (1) (ต)</td></tr><tr><td>อากรแสตมป์</td><td>สัญญาเช่าที่ดิน โรงเรือน 1 บาทต่อค่าเช่าทุก 1,000 บาทหรือเศษตลอดอายุสัญญา · สัญญาเช่าซื้อ 1 บาทต่อทุก 1,000 บาทของราคาเช่าซื้อ</td><td>บัญชีอัตราอากรแสตมป์ ลักษณะแห่งตราสาร 1 (เช่าที่ดิน โรงเรือน) และ 3 (เช่าซื้อทรัพย์สิน)</td></tr><tr><td>ขายและเช่ากลับคืน</td><td>ขายเสร็จเด็ดขาดทางภาษี กำไรรับรู้ทั้งจำนวนในรอบที่ขาย ขายต่ำกว่าราคาตลาดโดยไม่มีเหตุผลที่กฎหมายยอมรับ ประเมินตามราคาตลาด (ยังไม่พบข้อหารือปี 2560–2569 เรื่องนี้โดยตรง)</td><td>ม.65 ทวิ (4)</td></tr></tbody></table></div><h4>แม่แบบทะเบียนภาษีของสัญญาเช่า</h4><div class="tbl"><table><thead><tr><th>คอลัมน์</th><th>ความหมาย</th></tr></thead><tbody><tr><td>รูปแบบทางกฎหมาย</td><td>เช่า เช่าซื้อ ขายและเช่ากลับคืน</td></tr><tr><td>ประเภททางบัญชี</td><td>เงินทุน หรือ ดำเนินงาน</td></tr><tr><td>ค่าใช้จ่ายตามบัญชี</td><td>ค่าเสื่อมราคา ดอกเบี้ย ค่าเช่าเส้นตรง</td></tr><tr><td>รายจ่ายทางภาษี</td><td>ค่าเช่าที่จ่ายหรือค้างจ่าย ค่าเสื่อมราคาจากต้นทุนทางภาษี หลังเพดาน</td></tr><tr><td>ผลต่างชั่วคราว / ถาวร</td><td>บวกกลับหรือหักออกรายปี และยอดสะสม</td></tr></tbody></table></div><p>ประเด็นที่ควรตรวจกับข้อหารือฉบับล่าสุดก่อนยื่นแบบ: การถือค่าธรรมเนียมทำสัญญาลีสซิ่งเป็นต้นทุนของสิทธิตามสัญญา และต้นทุนรถยนต์ทางภาษีเมื่อใช้สิทธิซื้อ</p><h3 id="S14.5">S14.5 แม่แบบหมายเหตุและรายการตรวจสอบก่อนปิดบัญชี</h3><h4>ผู้เช่า</h4><p>นโยบายการบัญชี: สัญญาเช่าที่โอนความเสี่ยงและผลตอบแทนของความเป็นเจ้าของเกือบทั้งหมดให้บริษัทจัดเป็นสัญญาเช่าเงินทุน รับรู้เป็นสินทรัพย์และหนี้สินด้วยมูลค่ายุติธรรมหรือมูลค่าปัจจุบันของจำนวนเงินขั้นต่ำที่ต้องจ่าย แล้วแต่จำนวนใดต่ำกว่า ค่าเช่าที่จ่ายแยกเป็นค่าใช้จ่ายทางการเงินและส่วนที่ลดหนี้สินให้อัตราดอกเบี้ยคงที่ สินทรัพย์คิดค่าเสื่อมราคาตลอดอายุสัญญาเช่าหรืออายุการใช้ประโยชน์ แล้วแต่อย่างใดสั้นกว่า เว้นแต่แน่นอนอย่างสมเหตุสมผลว่าจะได้กรรมสิทธิ์ สัญญาเช่าอื่นจัดเป็นสัญญาเช่าดำเนินงาน รับรู้ค่าเช่าเป็นค่าใช้จ่ายตามวิธีเส้นตรงตลอดอายุสัญญา</p><div class="tbl"><table><thead><tr><th>ระยะเวลา</th><th>จำนวนเงินขั้นต่ำ</th><th>ค่าใช้จ่ายทางการเงินในอนาคต</th><th>มูลค่าปัจจุบัน</th></tr></thead><tbody><tr><td>ไม่เกินหนึ่งปี</td><td></td><td></td><td></td></tr><tr><td>เกินหนึ่งปีแต่ไม่เกินห้าปี</td><td></td><td></td><td></td></tr><tr><td>เกินห้าปี</td><td></td><td></td><td></td></tr><tr><td>รวม</td><td></td><td></td><td></td></tr></tbody></table></div><h4>ผู้ให้เช่า</h4><p>นโยบายการบัญชี: สัญญาเช่าที่โอนความเสี่ยงและผลตอบแทนของความเป็นเจ้าของเกือบทั้งหมดให้ผู้เช่าจัดเป็นสัญญาเช่าเงินทุน รับรู้เป็นลูกหนี้ด้วยเงินลงทุนสุทธิในสัญญาเช่า และรับรู้รายได้ทางการเงินด้วยอัตราผลตอบแทนคงที่ สินทรัพย์ที่ให้เช่าตามสัญญาเช่าดำเนินงานแสดงตามลักษณะของสินทรัพย์ และรับรู้รายได้ค่าเช่าตามวิธีเส้นตรง เปิดเผยตามย่อหน้า 14.49 และ 14.56: การกระทบยอดเงินลงทุนขั้นต้นกับ PV ตามช่วงเวลา รายได้ทางการเงินรอการรับรู้ มูลค่าคงเหลือที่ไม่ได้รับการประกัน ค่าเผื่อหนี้สงสัยจะสูญ ค่าเช่าที่อาจเกิดขึ้น และคำอธิบายข้อตกลงที่สำคัญ</p><h4>รายการตรวจสอบก่อนปิดบัญชี</h4><ol><li>ทะเบียนสัญญาเช่าครบทุกสัญญา รวมสัญญาที่ไม่ได้ใช้ชื่อว่าเช่าแต่ให้สิทธิใช้สินทรัพย์ตามช่วงเวลา (14.1)</li><li>กระดาษทำการจัดประเภท ณ วันเริ่มต้น พร้อมตัวเลขทดสอบ 14.23 และการพิจารณา 14.24</li><li>ที่ดินและอาคารแยกองค์ประกอบตามสัดส่วนมูลค่ายุติธรรมของสิทธิ (14.26–14.29)</li><li>หนี้สินเริ่มแรกใช้จำนวนที่ต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV ไม่รวมภาษีมูลค่าเพิ่มหรือค่าบริการ</li><li>อายุการคิดค่าเสื่อมราคาสอดคล้องกับความแน่นอนของการได้กรรมสิทธิ์ (14.35)</li><li>หนี้สินแยกรายการ 3.5 และ 4.2 ของแบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566) หลังหักดอกเบี้ยในอนาคต</li><li>สัญญาเช่าดำเนินงานที่มีช่วงปลอดค่าเช่าหรือค่าเช่าขั้นบันไดคำนวณตามวิธีเส้นตรง</li><li>ผู้ให้เช่าทบทวนมูลค่าคงเหลือที่ไม่ได้รับการประกัน (14.44)</li><li>การขายและเช่ากลับคืนเทียบราคาขาย มูลค่ายุติธรรม และมูลค่าตามบัญชี (14.59–14.63)</li><li>ทะเบียนภาษีแยกรูปแบบทางกฎหมาย เพดานรถยนต์นั่ง ภาษีหัก ณ ที่จ่าย และหมายเหตุครบตามย่อหน้า 14.36 14.39 14.49 14.56 และ 14.64</li></ol><h3 id="S14.6">S14.6 แนวคำตอบกรณีศึกษา 14.1 (สำหรับผู้สอน)</h3><p>(ก) รถบรรทุก: ราคาสิทธิซื้อ 50,000 ÷ 1,200,000 = ร้อยละ 4.2 ต่ำกว่าตัวเลขประกอบของ 14.23.2 · PV = 1,100,000 × 2.624316 + 50,000 × 0.816298 = 2,927,562.54 บาท ร้อยละ 97.6 ของมูลค่ายุติธรรม สูงกว่าตัวเลขประกอบของ 14.23.4 ชัดเจน · อายุสัญญาร้อยละ 60 ต่ำกว่าระดับตัวเลขประกอบของ 14.23.3 แต่ไม่ใช่ลักษณะหักล้างตาม 14.24 ย่อหน้า 14.23 ใช้คำว่าอย่างน้อยหนึ่งสถานการณ์ จึงสรุปเป็นสัญญาเช่าเงินทุนตาม 14.22 · พื้นที่ร้านเป็นสัญญาเช่าดำเนินงาน</p><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">หนี้สินต้นปี</th><th class="num">ดอกเบี้ย 7%</th><th class="num">เงินจ่าย</th><th class="num">ลดหนี้สิน</th><th class="num">ปลายปี</th></tr></thead><tbody><tr><td>2569</td><td class="num">2,927,562.54</td><td class="num">204,929.38</td><td class="num">1,100,000.00</td><td class="num">895,070.62</td><td class="num">2,032,491.92</td></tr><tr><td>2570</td><td class="num">2,032,491.92</td><td class="num">142,274.43</td><td class="num">1,100,000.00</td><td class="num">957,725.57</td><td class="num">1,074,766.35</td></tr><tr><td>2571</td><td class="num">1,074,766.35</td><td class="num">75,233.65</td><td class="num">1,150,000.00</td><td class="num">1,074,766.35</td><td class="num">0.00</td></tr></tbody></table></div><p>(ข) ปี 2569: สินทรัพย์และหนี้สิน 2,927,562.54 ดอกเบี้ย 204,929.38 ค่าเสื่อมราคา 585,512.51 (5 ปี เพราะเชื่อได้ว่าจะใช้สิทธิซื้อ 14.35) ค่าใช้จ่ายรวม 790,441.89 บาท · ร้าน: ค่าเช่ารวม 58 × 80,000 = 4,640,000 ÷ 60 = 77,333.33 บาทต่อเดือน ค่าใช้จ่ายปี 928,000 บาท จ่าย 800,000 บาท ค่าเช่าค้างจ่าย 128,000 บาท</p><p>(ค) รถบรรทุกแสดงในรายการ 2.10 ที่ดิน อาคารและอุปกรณ์ หนี้สินรายการ 3.5 จำนวน 957,725.57 บาท และรายการ 4.2 จำนวน 1,074,766.35 บาท ดอกเบี้ยในรายการ 12 ต้นทุนทางการเงิน (อ. 2-11 งบแบบจำแนกค่าใช้จ่ายตามธรรมชาติ) ค่าเช่าค้างจ่าย 128,000 บาทลดลงปีละ 32,000 บาทตั้งแต่ปี 2570 แนวการตีความ: แสดง 32,000 บาทในรายการ 3.2 (อ. 2-5) และ 96,000 บาทในรายการ 4.3 (อ. 2-6) เปิดเผยตาม 14.36 (มูลค่าสุทธิ ตารางช่วงเวลา) และ 14.39 (ภาระสัญญาเช่าดำเนินงาน ไม่เกินหนึ่งปี 960,000 บาท เกินหนึ่งปีแต่ไม่เกินห้าปี 2,880,000 บาท)</p><p>(ง) ข้อเสนอของผู้บริหารทำให้หนี้สินที่ธนาคารใช้ต่ำไป 2,032,491.92 บาท และกำไรต่ำไป 309,558.11 บาท (ค่าเช่า 1,100,000 แทนค่าใช้จ่ายตามบัญชี 790,441.89) การจัดประเภททางภาษีไม่เกี่ยวกับมาตรฐาน และอายุสัญญาร้อยละ 60 ไม่หักล้างสถานการณ์ 14.23.2 และ 14.23.4 ที่เกิดขึ้น ผู้ทำบัญชีควรปฏิเสธและแจ้งผลต่อเงื่อนไขเงินกู้ให้ผู้บริหารทราบ ทางภาษีหักค่าเช่า 1,100,000 บาท จึงหักออกจากกำไรทางบัญชี 309,558.11 บาท และหักภาษี ณ ที่จ่ายร้อยละ 5 จำนวน 55,000 บาท ค่าเช่าร้านทางภาษีหักตามค่าเช่าที่ถึงกำหนด 800,000 บาท บวกกลับ 128,000 บาท (แนวการตีความ)</p><h3 id="S14.7">S14.7 เฉลยแบบฝึกหัดท้ายบท</h3><h4>ส่วนที่ 1</h4><ol><li>ค · ย่อหน้า 14.8.1 รวมมูลค่าคงเหลือที่ผู้เช่าหรือบุคคลที่เกี่ยวข้องประกัน ส่วนค่าเช่าที่อาจเกิดขึ้น ต้นทุนบริการ และภาษีที่ผู้ให้เช่าจ่ายและเรียกคืนจากผู้เช่าไม่รวม (หัวข้อ 14.1)</li><li>ก · ย่อหน้า 14.23.3 ขึ้นต้นด้วย &quot;เช่น&quot; และใช้คำว่า &quot;ประมาณอย่างน้อย&quot; ย่อหน้า 14.24 ยังให้จัดเป็นสัญญาเช่าดำเนินงานได้เมื่อมีลักษณะอื่นที่แน่ชัดว่าไม่ได้โอนความเสี่ยงและผลตอบแทน (หัวข้อ 14.2)</li><li>ง · ย่อหน้า 14.26–14.28 ให้แยกองค์ประกอบ ที่ดินมีอายุเชิงเศรษฐกิจไม่จำกัดและไม่โอนกรรมสิทธิ์จึงเป็นสัญญาเช่าดำเนินงาน อาคารจัดประเภทตามหลักทั่วไป ย่อหน้า 14.29 ยกเว้นเฉพาะเมื่อส่วนที่ดินไม่มีสาระสำคัญ (หัวข้อ 14.3)</li><li>ข · ย่อหน้า 14.30 ใช้จำนวนที่ต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV คือ 970,229.57 บาท แล้วรวมต้นทุนทางตรงเริ่มแรกเข้าสินทรัพย์ (14.30–14.31) ได้ 990,229.57 บาท (หัวข้อ 14.4)</li><li>ข · ย่อหน้า 14.38 ให้รับรู้ตามวิธีเส้นตรงตลอดอายุสัญญา 2,052,000 ÷ 36 = 57,000 บาท รวมเดือนที่ปลอดค่าเช่าด้วย (หัวข้อ 14.5)</li><li>ง · ย่อหน้า 14.46 และ 14.48 ให้ใช้อัตราเชิงพาณิชย์เมื่ออัตราที่ใช้ต่ำเกินจริง และรายได้จากการขายเป็นจำนวนที่ต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV ที่อัตราตลาด (หัวข้อ 14.6)</li><li>ก · ย่อหน้า 14.61.3 ให้ส่วนที่ราคาขายสูงกว่ามูลค่ายุติธรรม 1,000,000 บาทรอการตัดบัญชี ส่วนมูลค่ายุติธรรมเทียบมูลค่าตามบัญชีรับรู้ทันที 10,000,000 − 8,000,000 = 2,000,000 บาท (หัวข้อ 14.7)</li><li>ค · ย่อหน้า 14.22 ให้จัดตามเนื้อหาของการโอนความเสี่ยงและผลตอบแทน การจัดประเภททางภาษีไม่เกี่ยว และหมายเหตุไม่แทนการรับรู้ที่ถูกต้อง (หัวข้อ 14.9)</li></ol><h4>ส่วนที่ 2</h4><ol><li>จำนวนเงินขั้นต่ำคือค่าเช่า 45,000 บาทต่องวด บวกราคาสิทธิซื้อที่เชื่อได้ว่าจะใช้ ค่าประกันภัย 5,000 บาทเป็นต้นทุนการให้บริการ และภาษีมูลค่าเพิ่ม 3,500 บาทเป็นภาษีที่ผู้ให้เช่าเรียกคืนจากผู้เช่า จึงไม่ใช่ (14.8)</li><li>PV 1,053,090.95 บาท สูงกว่ามูลค่ายุติธรรม สถานการณ์ 14.23.4 เกิดขึ้นและไม่มีลักษณะหักล้าง สรุปเป็นสัญญาเช่าเงินทุน รับรู้ 1,000,000 บาท (14.30) และใช้อัตราร้อยละ 7.93 ทำตารางผ่อนชำระ (S14.2 ค)</li><li>PV 477,363.09 บาท ร้อยละ 95.5 สูงกว่าตัวเลขประกอบของ 14.23.4 ชัดเจน ไม่มีลักษณะหักล้าง สรุปเป็นสัญญาเช่าเงินทุน หนี้สินเริ่มแรก 477,363.09 บาท หลังจ่ายงวดแรกเหลือ 307,363.09 บาท ดอกเบี้ยปีแรก 21,515.42 บาท</li><li>ค่าเช่ารวม 22 × 30,000 = 660,000 ÷ 24 = 27,500 บาทต่อเดือน ค่าใช้จ่าย 12 เดือน 330,000 บาท จ่าย 300,000 บาท ค่าเช่าค้างจ่าย 30,000 บาท (14.38)</li><li>อัตราร้อยละ 0 ต่ำเกินจริง ย่อหน้า 14.46 ให้กำหนดกำไรจากการขายด้วยอัตราเชิงพาณิชย์ รายได้จากการขายเป็นจำนวนที่ต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV ที่อัตราตลาด (14.48) ส่วนต่างจากราคาป้ายเป็นรายได้ทางการเงินในอนาคต การรับรู้เต็มราคาป้ายทำให้กำไรขายสูงเกินจริง</li><li>(ก) กำไรทันที 5,000,000 − 4,200,000 = 800,000 บาท ส่วนเกินมูลค่ายุติธรรม 1,000,000 บาท ตัดปีละ 250,000 บาท (14.61.3) กำไรทางภาษี 1,800,000 บาท (สมมติราคาทุนทางภาษีเท่ามูลค่าตามบัญชี) (ข) (50,000 − 36,000) × 12 = 168,000 บาทต่อปี เป็นผลต่างถาวร เพราะ ม.65 ตรี (20) ห้ามหักส่วนที่เกินเพดาน ไม่ใช่การเลื่อนเวลาการหัก</li></ol>
+      <h3 id="S14.8">S14.8 ผลวิจัยปี 2569: ฉบับ 2554 ภาษีที่ยืนยันแล้ว รายการย่อ งานของผู้สอบบัญชี และการเปรียบเทียบ</h3>
+      <p class="hint">เลขย่อหน้าทุกแห่งใน S14.8 เป็นเลขของ TFRS for NPAEs ฉบับปรับปรุง 2565 เลขฉบับ 2554 ปรากฏเฉพาะคอลัมน์ที่ระบุว่าเป็นฉบับ 2554</p>
+      <h4>ก. ฉบับ 2554 เทียบฉบับปรับปรุง 2565</h4>
+      <div class="tbl"><table><thead><tr><th>ฉบับปรับปรุง 2565</th><th>ฉบับ 2554</th><th>ความต่าง</th></tr></thead><tbody><tr><td>14.1–14.64</td><td>235–298</td><td>ตรงกันตามลำดับ เลขใหม่ = เลขเดิม − 234 หลักการไม่เปลี่ยน (เอกสารอบรม 9 ธ.ค. 2565 สไลด์ 64 และ 157)</td></tr><tr><td>14.2 14.22 14.30 ฯลฯ</td><td>236 256 264 ฯลฯ</td><td>"สัญญาเช่าการเงิน" เป็น "สัญญาเช่าเงินทุน" ทั้งบท</td></tr><tr><td>14.10</td><td>244</td><td>"อายุการให้ประโยชน์เชิงเศรษฐกิจ" เป็น "อายุเชิงเศรษฐกิจ"</td></tr><tr><td>14.23.1–14.23.4</td><td>257.1–257.4</td><td>สี่สถานการณ์และตัวเลขประกอบร้อยละ 5, 80 และ 90 อยู่ในตัวมาตรฐานทั้งสองฉบับ</td></tr><tr><td>14.24</td><td>258</td><td>ลักษณะหักล้าง</td></tr><tr><td>14.36 14.39</td><td>270 273</td><td>การเปิดเผยข้อมูลของผู้เช่า</td></tr><tr><td>14.59–14.64</td><td>293–298</td><td>การขายและเช่ากลับคืน</td></tr></tbody></table></div>
+      <h4>ข. ภาษีที่ยืนยันกับเว็บไซต์กรมสรรพากร</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>หลัก</th><th>ที่มา</th></tr></thead><tbody><tr><td>เพดานรถยนต์นั่ง</td><td>ค่าเช่าไม่เกิน 36,000 บาทต่อเดือน หรือ 1,200 บาทต่อวัน รวมภาษีมูลค่าเพิ่ม · ต้นทุนหักค่าเสื่อมราคาเฉพาะส่วนไม่เกิน 1,000,000 บาท ยังไม่พบกฎหมายแก้เพดานสำหรับรถยนต์นั่งไฟฟ้า</td><td>พ.ร.ฎ. 315 มาตรา 4 (1) (2) · พ.ร.ฎ. 145 มาตรา 5 · ออกตาม ม.65 ตรี (20)</td></tr><tr><td>ทรัพย์สินที่เช่าซื้อ</td><td>ต้นทุนคือราคาที่ต้องชำระทั้งหมด ค่าเสื่อมราคาสะสมไม่เกินค่าเช่าซื้อสะสมถึงรอบนั้น ชำระครบแล้วยังเหลือต้นทุนให้หักต่อ เพดานในข้อ 5 6 8 ของคำสั่งเป็นตัวเลขเดิม ใช้ พ.ร.ฎ. 145 และ 315 แทน</td><td>ป.3/2527 ข้อ 2 และข้อ 7</td></tr><tr><td>ภาษีมูลค่าเพิ่ม เช่าซื้อ</td><td>ความรับผิดเกิดเมื่อถึงกำหนดชำระแต่ละงวด ปรับโครงสร้างหนี้แล้วเกิดตามงวดใหม่</td><td>ม.78 (2) · กค 0702/2490 (3 พ.ค. 2567)</td></tr><tr><td>ภาษีมูลค่าเพิ่ม ลีสซิ่ง</td><td>เป็นการให้บริการ ความรับผิดเกิดเมื่อได้รับชำระค่าบริการ</td><td>ม.78/1 (1)</td></tr><tr><td>ภาษีซื้อรถยนต์นั่ง</td><td>ซื้อ เช่าซื้อ เช่า หรือรับโอน เป็นภาษีซื้อต้องห้าม</td><td>ม.82/5 (6) · ประกาศอธิบดีฯ ภาษีมูลค่าเพิ่ม ฉบับที่ 42 (29 ธ.ค. 2535) ข้อ 2 (1)</td></tr><tr><td>อากรแสตมป์</td><td>ลักษณะ 1 เช่าที่ดิน โรงเรือน สิ่งปลูกสร้าง หรือแพ · ลักษณะ 3 เช่าซื้อทรัพย์สิน อัตรา 1 บาทต่อทุก 1,000 บาท ผู้ให้เช่าเสียอากร ลีสซิ่งรถยนต์หรือเครื่องจักรไม่เข้าลักษณะ 1 ชำระเป็นตัวเงินทางอิเล็กทรอนิกส์ได้</td><td>บัญชีอัตราอากรแสตมป์ · ประกาศอธิบดีฯ อากรแสตมป์ ฉบับที่ 67</td></tr><tr><td>ขายและเช่ากลับคืน</td><td>แนวการตีความจากหลักทั่วไป: ขายเสร็จเด็ดขาด ขาขายเป็นการขายสินค้า ขาเช่ากลับเป็นบริการ ยังไม่พบข้อหารือปี 2560–2569 เรื่องนี้โดยตรง</td><td>ม.65 ม.65 ทวิ (4) ม.78 (1) ม.78/1</td></tr></tbody></table></div>
+      <h4>ค. กฎหมายกำกับธุรกิจเช่าซื้อและรายการย่อแบบ 2</h4>
+      <p>ประกาศคณะกรรมการว่าด้วยสัญญา เรื่อง ให้ธุรกิจให้เช่าซื้อรถยนต์และรถจักรยานยนต์เป็นธุรกิจที่ควบคุมสัญญา พ.ศ. 2565 ใช้กับสัญญาที่ทำตั้งแต่ 10 ม.ค. 2566 เพดานอัตราดอกเบี้ยแท้จริงต่อปี รถยนต์ใหม่ร้อยละ 10 รถยนต์ใช้แล้วร้อยละ 15 รถจักรยานยนต์ร้อยละ 23 · ธนาคารแห่งประเทศไทยกำกับธุรกิจเช่าซื้อและลีสซิ่งรถยนต์และรถจักรยานยนต์ตั้งแต่ 2 ธ.ค. 2568 (พระราชกฤษฎีกา พ.ศ. 2568) แนวการตีความ: กระทบอัตราดอกเบี้ยและกระแสเงินสดที่ใช้วัดมูลค่า ไม่เปลี่ยนเกณฑ์จัดประเภทตาม 14.21–14.24</p>
+      <p>ประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566 แบบ 2: รายการ 3.5 ส่วนของหนี้สินตามสัญญาเช่าเงินทุนที่ถึงกำหนดชำระภายในหนึ่งปี · รายการ 4.2 หนี้สินตามสัญญาเช่าเงินทุน · ลูกหนี้ตามสัญญาเช่าของผู้ให้เช่าอยู่ในลูกหนี้การค้า รายการ 1.3 และ 2.6</p>
+      <h4>ง. งานของผู้สอบบัญชี</h4>
+      <div class="tbl"><table><thead><tr><th>จุดเสี่ยง</th><th>หลักฐาน</th><th>มาตรฐานการสอบบัญชี</th></tr></thead><tbody><tr><td>การจัดประเภท (14.21–14.24)</td><td>สัญญาฉบับจริง เงื่อนไขโอนกรรมสิทธิ์ สิทธิเลือกซื้อ กระดาษทำการเหตุผลเชิงเนื้อหา</td><td>รหัส 500</td></tr><tr><td>อัตราคิดลด มูลค่าคงเหลือ ความแน่นอนของสิทธิเลือกซื้อ (14.8 14.30)</td><td>หนังสือยืนยันอัตราดอกเบี้ย ราคาตลาดของรถหรือเครื่องจักรใช้แล้ว</td><td>รหัส 540 (ปรับปรุง)</td></tr><tr><td>ความครบถ้วนของภาระผูกพันตามสัญญาเช่าดำเนินงาน (14.39)</td><td>ทะเบียนสัญญาเทียบบัญชีค่าเช่าและใบแจ้งหนี้</td><td>รหัส 500</td></tr><tr><td>ขายและเช่ากลับคืน (14.59–14.64)</td><td>ราคาประเมินมูลค่ายุติธรรม สัญญาขายและสัญญาเช่ากลับ</td><td>รหัส 500 และ 540 (ปรับปรุง)</td></tr><tr><td>กิจการที่มีความซับซ้อนน้อย</td><td>ประกาศสภาวิชาชีพบัญชี ที่ 32/2568 (ลงวันที่ 15 ธ.ค. 2568) มาตรฐานทางเลือก</td><td>—</td></tr></tbody></table></div>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการรายงานทางการเงินระหว่างประเทศ (International Financial Reporting Standards: IFRS) สำหรับกิจการขนาดกลางและขนาดย่อม (Small and Medium-sized Entities: SMEs) ฉบับที่ 3 (27 ก.พ. 2568 ใช้ 1 ม.ค. 2570) หมวด 20 ยังใช้แบบจำลองสองประเภทเหมือนบทที่ 14 คณะกรรมการมาตรฐานการบัญชีระหว่างประเทศไม่ปรับตาม IFRS 16 เพราะต้นทุนไม่ได้สัดส่วนกับประโยชน์ และรอประสบการณ์จากการใช้ IFRS 16</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 14 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์เท่านั้น ข้อมูลที่กรอกไม่ถูกส่งออกจากเครื่อง ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพหรือคำปรึกษาภาษี</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 14.1–14.9 และตารางที่ 14-1 ถึง 14-6 ในตำรา · สภาวิชาชีพบัญชีไม่ได้ออกตัวอย่างประกอบความเข้าใจสำหรับบทที่ 14</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=2)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const pct=(x,d=2)=>isFinite(x)?(x*100).toFixed(d)+'%':'–';
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* ---------- shared renderers ---------- */
+  function je(title,lines,ref){
+    const rows=lines.map(l=>l.dr
+      ?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`
+      :`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,isPct])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${isPct?pct(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const facts=(title,items)=>`<div class="facts"><h4>${esc(title)}</h4><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  const theory=(items,open)=>`<details class="theory"${open?' open':''}><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes14tab',name)}catch(e){}
+  }
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='reg';
+  const h=(location.hash||'').slice(1);
+  if(names.includes(h)) start=h; else {try{const s=localStorage.getItem('npaes14tab'); if(names.includes(s)) start=s}catch(e){}}
+  show(start);
+
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-'||s==='–')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  const nz=v=>isFinite(v)?v:0;
+  function fmtD(d){return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`}
+  function parseDate(v){
+    if(v instanceof Date&&!isNaN(v)) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+    if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*86400000));return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}
+    const s=String(v||'').trim();if(!s) return null;
+    let m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if(m){let y=+m[1];if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[3])}
+    m=s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+    if(m){let y=+m[3];if(y<100)y+=y>50?2500:2000;if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[1])}
+    return null;
+  }
+  function parseCSV(text){
+    const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true; else if(ch===delim){row.push(f);f=''} else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''} else if(ch!=='\r') f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+  }
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{const x=$(okId);if(x)x.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,fb); else fb();}
+  const r2=x=>Math.round(x*100)/100;
+  function jeAuto(title,lines,ref){const L=lines.filter(l=>Math.abs(l.amt)>=0.005);if(!L.length)return '';
+    const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);return je(title,dr.concat(cr),ref)}
+  const alertBox=(cls,html)=>`<div class="alert ${cls}">${html}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const DAY=86400000;const days=(a,b)=>Math.max(0,Math.round((b-a)/DAY));
+  const yfrac=(a,b)=>Math.max(0,(b.getFullYear()-a.getFullYear())+(b.getMonth()-a.getMonth())/12+(b.getDate()-a.getDate())/365);
+  /* =========================================================
+     ENGINE: dates, PV, lease schedule (shared by tabs 0, 2, 4, 6)
+     ========================================================= */
+  const addM=(d,k)=>new Date(d.getFullYear(),d.getMonth()+k,d.getDate());
+  const addD=(d,k)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+k);
+  const isoD=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const BE=d=>d.getFullYear()+543;
+  const pvAnn=(P,n,i,adv)=>{let s=0;for(let t=1;t<=n;t++)s+=P/Math.pow(1+i,t-(adv?1:0));return s};
+  const pvOf=(P,n,i,adv,end)=>pvAnn(P,n,i,adv)+(end||0)/Math.pow(1+i,n);
+  function solve(f,target){let lo=-0.95,hi=2;for(let k=0;k<200;k++){const mid=(lo+hi)/2;if(f(mid)>target)lo=mid;else hi=mid}return (lo+hi)/2}
+  /* schedule: o={start,P,n,m,adv,i,end,L0} -> periods with dates; L(d) balance at date d */
+  function sched(o){
+    const k=12/o.m,per=[],pays=[];let b=o.L0;
+    for(let t=1;t<=o.n;t++){
+      const ps=addM(o.start,(t-1)*k),px=addM(o.start,t*k),pe=addD(px,-1);const open=b;let pay=0;
+      if(o.adv){b-=o.P;pays.push([ps,o.P]);pay+=o.P}
+      let int=Math.round(b*o.i*100)/100;b+=int;
+      if(!o.adv){b-=o.P;pays.push([pe,o.P]);pay+=o.P}
+      if(t===o.n&&o.end){b-=o.end;pays.push([pe,o.end]);pay+=o.end}
+      if(t===o.n&&Math.abs(b)<1){int-=b;b=0}
+      b=Math.round(b*100)/100;
+      per.push({t,ps,px,pe,open,int,pay,close:b});
+    }
+    const frac=(p,d)=>{const e=addD(d,1);if(e<=p.ps)return 0;if(e>=p.px)return 1;return (e-p.ps)/(p.px-p.ps)};
+    const intTo=d=>per.reduce((s,p)=>s+p.int*frac(p,d),0);
+    const payTo=d=>pays.reduce((s,[dt,a])=>s+(dt<=d?a:0),0);
+    const L=d=>{if(d<o.start)return o.L0;const v=o.L0+intTo(d)-payTo(d);return Math.abs(v)<0.005?0:v};
+    const last=per.length?per[per.length-1].pe:o.start;
+    return {per,pays,L,intTo,payTo,last,o};
+  }
+  /* fiscal years overlapping [start,last] given a year-end date */
+  function fyears(ye,start,last){
+    let e=new Date(ye);while(addM(e,-12)>=start)e=addM(e,-12);while(e<start)e=addM(e,12);
+    const out=[];let prev=addM(e,-12);while(true){out.push([prev,e]);if(e>=last)break;prev=e;e=addM(e,12);if(out.length>60)break}
+    return out;
+  }
+  const mIdx=d=>d.getFullYear()*12+d.getMonth();
+  /* straight-line depreciation by months from start month */
+  function depFY(A,start,lifeM,fyS,fyE){const s=mIdx(start),e=s+lifeM;const a=Math.max(s,mIdx(fyS)+1),b=Math.min(e,mIdx(fyE)+1);return b>a?A*(b-a)/lifeM:0}
+  /* maturity bands of a schedule at date ye */
+  function bands(S,ye){
+    const y1=addM(ye,12),y5=addM(ye,60);
+    const mlp=[0,0,0];S.pays.forEach(([d,a])=>{if(d<=ye)return;if(d<=y1)mlp[0]+=a;else if(d<=y5)mlp[1]+=a;else mlp[2]+=a});
+    const pv=[S.L(ye)-S.L(y1),S.L(y1)-S.L(y5),S.L(y5)];
+    return {mlp,pv,fin:mlp.map((v,j)=>v-pv[j])};
+  }
+  /* lessee finance lease from inputs */
+  function lessee(x){
+    const i=x.r/x.m,pv=pvOf(x.P,x.n,i,x.adv,x.end);let L0=pv,ii=i,capped=false;
+    if(pv>x.fv&&x.fv>0){L0=x.fv;capped=true;ii=solve(j=>pvOf(x.P,x.n,j,x.adv,x.end),x.fv)}
+    const S=sched({start:x.start,P:x.P,n:x.n,m:x.m,adv:x.adv,i:ii,end:x.end,L0});
+    const A=L0+(x.idc||0);const termM=Math.round(x.n*12/x.m);const lifeM=x.own?Math.round(x.life*12):Math.min(termM,Math.round(x.life*12));
+    return {...x,i,ii,pv,L0,A,capped,S,termM,lifeM};
+  }
+  /* classification tests */
+  function classify(c){
+    const pv=pvOf(c.P,c.n,c.r/c.m,c.adv,(c.opt||0)+(c.rvg||0));const term=c.n/c.m;
+    const t1=!!c.tr,t2=c.opt>0&&c.optFv>0&&c.opt<=0.05*c.optFv,t3=c.life>0&&term/c.life>=0.8-1e-9,t4=c.fv>0&&pv/c.fv>=0.9-1e-9;
+    const over=!!(c.trFv||c.cont);const fin=(t1||t2||t3||t4)&&!over;const rT=c.life?term/c.life:0,rP=c.fv?pv/c.fv:0;const near=(c.life>0&&Math.abs(rT-0.8)<=0.05)||(c.fv>0&&Math.abs(rP-0.9)<=0.05);
+    return {pv,term,t1,t2,t3,t4,over,fin,near,ratioT:c.life?term/c.life:0,ratioP:c.fv?pv/c.fv:0,ratioO:c.optFv?c.opt/c.optFv:0};
+  }
+  const posGE=(r,l)=>r>=l+0.05?'สูงกว่าระดับตัวเลขประกอบชัดเจน':(r>l-0.05?'อยู่ใกล้ระดับตัวเลขประกอบ':'ต่ำกว่าระดับตัวเลขประกอบชัดเจน');
+  const posLE=(r,l)=>r<=l-0.02?'ต่ำกว่าระดับตัวเลขประกอบชัดเจน (ราคาต่ำมาก)':(r<l+0.02?'อยู่ใกล้ระดับตัวเลขประกอบ':'สูงกว่าระดับตัวเลขประกอบ');
+  const BANDS=['ไม่เกิน 1 ปี','เกิน 1 ปี ไม่เกิน 5 ปี','เกิน 5 ปี'];
+  const yes=(b,t='มี',f='ไม่มี')=>`<span class="pill ${b?'ok':'warn'}">${b?t:f}</span>`;
+
+  /* =========================================================
+     0 REGISTER
+     ========================================================= */
+  const ANON=new Map();
+  const ali=n=>{if(!$('gAnon').checked)return n;if(!ANON.has(n))ANON.set(n,'สัญญา '+String(ANON.size+1).padStart(3,'0'));return ANON.get(n)};
+  // [name,start,n,m,P,adv,FV,life,opt,tr,rate,idc]
+  const GS=[['เครื่องจักรบรรจุภัณฑ์ (14.1)','2025-01-01',4,1,280000,false,1000000,5,0,false,6,20000,'fin',0]];
+  const GS3=[['เครื่องจักรบรรจุภัณฑ์ (14.1)','2025-01-01',4,1,280000,false,1000000,5,0,false,6,20000,'fin',0],
+            ['รถยนต์นั่งผู้บริหาร (14.9)','2025-01-01',48,12,45000,false,2000000,5,20000,false,6,0,'fin',800000],
+            ['รถยกสินค้า','2025-04-01',36,12,15000,false,900000,10,0,false,6,0,'op',0]];
+  let GR=GS.map(r=>r.slice());
+  function gRender(){$('gBody').innerHTML=GR.map((r,i)=>`<tr>
+    <td><input type="text" data-g="${i}" data-k="0" value="${esc(r[0])}" style="min-width:15em"></td><td><input type="date" data-g="${i}" data-k="1" value="${r[1]}"></td>
+    <td><input class="num" type="number" data-g="${i}" data-k="2" value="${r[2]}" style="width:5em"></td>
+    <td><select data-g="${i}" data-k="3"><option value="1"${r[3]==1?' selected':''}>1</option><option value="12"${r[3]==12?' selected':''}>12</option></select></td>
+    <td><input class="num" type="number" data-g="${i}" data-k="4" value="${r[4]}"></td><td><input type="checkbox" data-g="${i}" data-k="5"${r[5]?' checked':''}></td>
+    <td><input class="num" type="number" data-g="${i}" data-k="6" value="${r[6]}"></td><td><input class="num" type="number" data-g="${i}" data-k="7" value="${r[7]}" style="width:5em"></td>
+    <td><input class="num" type="number" data-g="${i}" data-k="8" value="${r[8]}"></td><td><input type="checkbox" data-g="${i}" data-k="9"${r[9]?' checked':''}></td>
+    <td><input class="num" type="number" data-g="${i}" data-k="10" value="${r[10]}" step="0.01" style="width:5em"></td>
+    <td><input class="num" type="number" data-g="${i}" data-k="11" value="${r[11]||0}"></td>
+    <td><select data-g="${i}" data-k="12"><option value=""${!r[12]?' selected':''}>รอยืนยัน</option><option value="fin"${r[12]==='fin'?' selected':''}>เงินทุน</option><option value="op"${r[12]==='op'?' selected':''}>ดำเนินงาน</option></select></td>
+    <td><input class="num" type="number" data-g="${i}" data-k="13" value="${r[13]||0}"></td>
+    <td><button class="del" data-gdel="${i}" aria-label="ลบ">×</button></td></tr>`).join('');gCalc()}
+  const gSet=e=>{const t=e.target;if(t.dataset.g==null)return;const i=+t.dataset.g,k=+t.dataset.k;GR[i][k]=t.type==='checkbox'?t.checked:(t.type==='number'||k===3)?val(t):t.value;if(k===0){}gCalc()};
+  $('gBody').addEventListener('input',gSet);$('gBody').addEventListener('change',gSet);
+  $('gBody').addEventListener('click',e=>{const i=e.target.dataset.gdel;if(i!=null){GR.splice(+i,1);gRender()}});
+  $('gAdd').addEventListener('click',()=>{GR.push(['สัญญาใหม่','2025-01-01',12,12,10000,false,500000,5,0,false,6,0,'',0]);gRender()});
+  $('gReset').addEventListener('click',()=>{GR=GS.map(r=>r.slice());$('gTag').textContent='ข้อมูลตัวอย่าง: หัวข้อ 14.9 (ตัวอย่างที่ 14.3 ร่วมกับสำนักงานในแท็บ 3)';$('gStatus').textContent='';$('gFile').value='';gRender()});
+  $('gFull').addEventListener('click',()=>{GR=GS3.map(r=>r.slice());$('gTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 14.1 14.9 และรถยกสินค้า';$('gStatus').textContent='';gRender()});
+  $('gYe').addEventListener('input',gCalc);
+  const GTPL=['สัญญา','ผู้ให้เช่า','วันที่เริ่ม','จำนวนงวด','งวดต่อปี','ค่าเช่าต่องวด','จ่ายต้นงวด (Y/N)','มูลค่ายุติธรรม','อายุเชิงเศรษฐกิจ (ปี)','ราคาสิทธิซื้อ','โอนกรรมสิทธิ์ (Y/N)','อัตรา %','ต้นทุนทางตรงเริ่มแรก','ประเภทที่ยืนยัน (เงินทุน/ดำเนินงาน)','มูลค่ายุติธรรมที่คาด ณ วันใช้สิทธิ'].join('\t');
+  $('gTpl').addEventListener('click',()=>copyText(GTPL,'gTplOk'));
+  function gImport(rows,label){ANON.clear();const hi=rows.findIndex(r=>r.some(c=>/สัญญา|lease|contract/i.test(String(c))));const H=(rows[hi]||[]).map(x=>String(x));
+    const ci=rx=>H.findIndex(x=>rx.test(x));const cN=ci(/^สัญญา|contract|lease/i),cL=ci(/ผู้ให้เช่า|lessor/i),cS=ci(/วันที่|start|date/i),cn=ci(/จำนวนงวด|periods|^n$/i),cm=ci(/งวดต่อปี|per ?year/i),
+      cP=ci(/ค่าเช่า|rent|payment/i),cA=ci(/ต้นงวด|advance/i),cF=ci(/ยุติธรรม|fair/i),cE=ci(/เชิงเศรษฐกิจ|economic/i),cO=ci(/สิทธิซื้อ|option/i),cT=ci(/โอน|transfer/i),cR=ci(/อัตรา|rate/i),cI=ci(/ต้นทุนทางตรง|idc|initial/i),cJ=ci(/ประเภทที่ยืนยัน|classification/i),cX=ci(/ที่คาด|expected/i);const jd=v=>/เงินทุน|finance/i.test(String(v))?'fin':/ดำเนินงาน|operating/i.test(String(v))?'op':'';
+    const yn=v=>/^(y|yes|ใช่|1|true|มี)$/i.test(String(v).trim());const out=[];
+    rows.slice(hi+1).forEach(r=>{const dt=parseDate(r[cS]);const P=num(r[cP]);const n=num(r[cn]);if(!dt||!isFinite(P)||!isFinite(n))return;
+      const nm=String(cN>=0?r[cN]:'สัญญา')+(cL>=0&&String(r[cL]).trim()?' / '+String(r[cL]):'');
+      out.push([ali(nm),isoD(dt),n,cm>=0&&num(r[cm])==1?1:12,P,cA>=0?yn(r[cA]):false,nz(num(r[cF])),nz(num(r[cE])),cO>=0?nz(num(r[cO])):0,cT>=0?yn(r[cT]):false,cR>=0&&isFinite(num(r[cR]))?num(r[cR]):6,cI>=0?nz(num(r[cI])):0,cJ>=0?jd(r[cJ]):'',cX>=0?nz(num(r[cX])):0])});
+    if(!out.length){$('gStatus').textContent='ไม่พบแถวที่อ่านได้ ตรวจว่ามีคอลัมน์ สัญญา วันที่เริ่ม จำนวนงวด และค่าเช่าต่องวด';return}
+    GR=out;$('gStatus').textContent=`${label}: ${out.length} สัญญา`;$('gTag').textContent='ข้อมูลของกิจการ';gRender()}
+  $('gFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const ext=f.name.split('.').pop().toLowerCase();const rd=new FileReader();
+    if(ext==='csv'||ext==='txt'){rd.onload=()=>gImport(parseCSV(String(rd.result).replace(/^﻿/,'')),'นำเข้า '+f.name);rd.readAsText(f,'utf-8');return}
+    if(typeof XLSX==='undefined'){$('gStatus').textContent='กำลังโหลดตัวอ่านไฟล์ Excel (ใช้ได้เมื่อเชื่อมต่ออินเทอร์เน็ต)…';
+      const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      sc.onload=()=>{e.target.dispatchEvent(new Event('change'))};
+      sc.onerror=()=>{$('gStatus').textContent='ออฟไลน์อยู่ จึงอ่านไฟล์ .xlsx ไม่ได้ ให้บันทึกเป็น CSV (UTF-8) แล้วนำเข้าอีกครั้ง'};
+      document.head.appendChild(sc);return}
+    rd.onload=()=>{try{const wb=XLSX.read(new Uint8Array(rd.result),{type:'array',cellDates:true});gImport(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''}),'นำเข้า '+f.name)}catch(err){$('gStatus').textContent='เปิดไฟล์นี้ไม่ได้ ให้บันทึกเป็น CSV'}};rd.readAsArrayBuffer(f)});
+  const R={reg:null,fin:null,op:null};
+  function gCalc(){
+    const ye=parseDate($('gYe').value)||new Date(2025,11,31);
+    const res=GR.map(r=>{const [name,st,n,m,P,adv,fv,life,opt,tr,rate,idc,jud,xfv]=r;const start=parseDate(st)||new Date(2025,0,1);
+      const c=classify({P,n,m,adv,r:rate/100,fv,life,opt,optFv:xfv||fv,tr,rvg:0});
+      const pend=!jud;const fin=jud==='fin';if(pend)return {name,c,fin:false,pend,b:{mlp:[0,0,0]},ex:0};if(fin){const x=lessee({start,P,n,m,adv,r:rate/100,end:opt,fv,idc:idc||0,life,own:tr||c.t2});const b=bands(x.S,ye);
+        return {name,c,fin:true,pend,x,L:x.S.L(ye),b,nbv:x.A-[...fyears(ye,start,ye)].reduce((s,[a,e])=>s+depFY(x.A,start,x.lifeM,a,e),0)}}
+      const y1=addM(ye,12),y5=addM(ye,60),y0=addM(ye,-12),k=12/m,mlp=[0,0,0];let ex=0;
+      for(let t=1;t<=n;t++){const d=adv?addM(start,(t-1)*k):addD(addM(start,t*k),-1);const ps=addM(start,(t-1)*k);if(ps>y0&&ps<=ye)ex+=P;if(d<=ye)continue;if(d<=y1)mlp[0]+=P;else if(d<=y5)mlp[1]+=P;else mlp[2]+=P}
+      return {name,c,fin:false,pend,b:{mlp},ex}});
+    const F=res.filter(z=>z.fin),O=res.filter(z=>!z.fin&&!z.pend),Pd=res.filter(z=>z.pend);
+    const sum=(arr,f)=>arr.reduce((s,z)=>s+f(z),0);
+    const T={L:sum(F,z=>z.L),cur:sum(F,z=>z.b.pv[0]),nbv:sum(F,z=>z.nbv),fm:[0,1,2].map(j=>sum(F,z=>z.b.mlp[j])),fp:[0,1,2].map(j=>sum(F,z=>z.b.pv[j])),om:[0,1,2].map(j=>sum(O,z=>z.b.mlp[j])),oex:sum(O,z=>z.ex),nF:F.length,nO:O.length,nP:Pd.length};
+    R.reg={ye,res,T};
+    const rows=res.map(z=>`<tr><td>${esc(z.name)}</td><td>${z.pend?'<span class="pill warn">รอยืนยัน ไม่นับรวมในยอด</span>':(z.fin?'<span class="pill ok">เงินทุน</span>':'<span class="pill">ดำเนินงาน</span>')}</td><td class="num">${pct(z.c.ratioT,0)}</td><td class="num">${pct(z.c.ratioP,1)}</td><td class="num">${z.fin?fmt(z.L):'–'}</td><td class="num">${z.fin?fmt(z.b.pv[0]):'–'}</td><td class="num">${z.pend?'–':fmt(z.b.mlp[0]+z.b.mlp[1]+z.b.mlp[2])}</td></tr>`).join('');
+    $('gOut').innerHTML=`<h2>ผลการจัดประเภทและยอด ณ ${fmtD(ye)}</h2>
+      ${Pd.length?alertBox('warn',`ยังไม่ยืนยันประเภท ${Pd.length} สัญญา แอปไม่นับรวมในยอดหนี้สิน ตารางช่วงเวลา และร่างหมายเหตุ จนกว่าจะเลือกประเภทในคอลัมน์ "ประเภทที่ยืนยัน" (14.22 14.24)`):''}
+      ${figs([['หนี้สินตามสัญญาเช่าเงินทุน',T.L],['ส่วนที่ถึงกำหนดภายในหนึ่งปี',T.cur],['ภาระสัญญาเช่าดำเนินงาน',T.om[0]+T.om[1]+T.om[2]]])}
+      <div class="tbl"><table><thead><tr><th>สัญญา</th><th>ประเภท</th><th class="num">อายุสัญญา/อายุเชิงเศรษฐกิจ</th><th class="num">PV/มูลค่ายุติธรรม</th><th class="num">หนี้สินสิ้นปี</th><th class="num">ภายใน 1 ปี</th><th class="num">ค่าเช่าคงเหลือ</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <h3>ช่วงเวลาครบกำหนด (14.36.2, 14.39.1)</h3>
+      <div class="tbl"><table><thead><tr><th>ช่วง</th><th class="num">เงินทุน: จำนวนเงินขั้นต่ำ</th><th class="num">เงินทุน: มูลค่าปัจจุบัน</th><th class="num">ดำเนินงาน: จำนวนเงินขั้นต่ำ</th></tr></thead><tbody>
+      ${BANDS.map((l,j)=>`<tr><td class="nw">${l}</td><td class="num">${fmt(T.fm[j])}</td><td class="num">${fmt(T.fp[j])}</td><td class="num">${fmt(T.om[j])}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>รวม</td><td class="num">${fmt(T.fm[0]+T.fm[1]+T.fm[2])}</td><td class="num">${fmt(T.L)}</td><td class="num">${fmt(T.om[0]+T.om[1]+T.om[2])}</td></tr></tfoot></table></div>
+      ${facts('ตัวเลขบอกอะไร',[`สัญญาเช่าเงินทุน ${F.length} สัญญา หนี้สินรวม ${fmt(T.L)} บาท ค่าใช้จ่ายทางการเงินในอนาคต ${fmt(T.fm[0]+T.fm[1]+T.fm[2]-T.L)} บาท`,
+        `สัญญาเช่าดำเนินงาน ${O.length} สัญญา ไม่รับรู้หนี้สิน แต่มีภาระที่ต้องเปิดเผย ${fmt(T.om[0]+T.om[1]+T.om[2])} บาท`,
+        'ทดสอบสิทธิเลือกซื้อด้วยคอลัมน์มูลค่าที่คาด ณ วันใช้สิทธิ ถ้าว่างใช้มูลค่ายุติธรรม ณ วันเริ่มต้น สัญญาที่ตัวเลขใกล้ระดับตัวเลขประกอบให้ทดสอบละเอียดในแท็บ 1'])}
+      ${theory([['14.23','สี่สถานการณ์และตัวเลขประกอบร้อยละ 5, 80 และ 90 (ไม่ใช่เส้นตัด)'],['14.30','หนี้สินเริ่มแรกต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV'],['14.36.2','จำนวนเงินขั้นต่ำและมูลค่าปัจจุบันตามช่วงเวลา'],['14.39.1','ภาระสัญญาเช่าดำเนินงานที่บอกเลิกไม่ได้ตามช่วงเวลา']])}`;
+    if(typeof nCalc==='function')nCalc();
+  }
+
+  /* =========================================================
+     1 CLASSIFY
+     ========================================================= */
+  const KS={m:['ตัวอย่างที่ 14.1',{kFv:1000000,kP:280000,kN:4,kM:1,kAdv:0,kR:6,kLife:5,kOpt:0,kOptFv:0,kRvg:0},{kTr:0,kTrFv:0,kCont:0}],
+    b:['ตารางที่ 14-3 กรณี ข',{kFv:1500000,kP:28300,kN:36,kM:12,kAdv:0,kR:6,kLife:8,kOpt:0,kOptFv:0,kRvg:0},{kTr:0,kTrFv:0,kCont:0}],
+    c:['ตารางที่ 14-3 กรณี ค',{kFv:1000000,kP:15000,kN:48,kM:12,kAdv:0,kR:6,kLife:8,kOpt:20000,kOptFv:600000,kRvg:0},{kTr:0,kTrFv:0,kCont:0}],
+    d:['ตารางที่ 14-3 กรณี ง',{kFv:1000000,kP:280000,kN:4,kM:1,kAdv:0,kR:6,kLife:5,kOpt:0,kOptFv:0,kRvg:0},{kTr:0,kTrFv:1,kCont:1}]};
+  const KJ={m:'fin',b:'op',c:'fin',d:'op'};
+  function kLoad(k){const s=KS[k];Object.entries(s[1]).forEach(([id,v])=>$(id).value=v);Object.entries(s[2]).forEach(([id,v])=>$(id).checked=!!v);$('kJud').value=KJ[k]||'';$('kWhy').value='';$('kTag').textContent='ข้อมูลตัวอย่าง: '+s[0];kCalc()}
+  document.querySelectorAll('[data-k]').forEach(b=>b.addEventListener('click',()=>kLoad(b.dataset.k)));
+  ['kFv','kP','kN','kM','kAdv','kR','kLife','kOpt','kOptFv','kRvg','kTr','kTrFv','kCont','lLump','lRent','lN','lLand','lBld','lLife','lR','lTr','kJud','kWhy','lJud'].forEach(id=>{$(id).addEventListener('input',kCalc);$(id).addEventListener('change',kCalc)});
+  function kCalc(){
+    const c={fv:val($('kFv')),P:val($('kP')),n:Math.max(1,val($('kN'))),m:+$('kM').value,adv:$('kAdv').value==='1',r:val($('kR'))/100,life:val($('kLife')),opt:val($('kOpt')),optFv:val($('kOptFv')),rvg:val($('kRvg')),tr:$('kTr').checked,trFv:$('kTrFv').checked,cont:$('kCont').checked};
+    const z=classify(c);
+    // land & building
+    const lump=val($('lLump')),rent=val($('lRent')),ln=Math.max(1,val($('lN'))),la=val($('lLand')),bd=val($('lBld')),bl=val($('lLife')),lr=val($('lR'))/100;
+    const sh=la+bd>0?bd/(la+bd):0;const bLump=lump*sh,bRent=rent*sh,lLump=lump-bLump,lRent=rent-bRent;
+    const bPV=bLump+pvAnn(bRent,ln,lr,false);const bT3=bl>0&&ln/bl>=0.8,bT4=bd>0&&bPV/bd>=0.9,bSug=$('lTr').checked||bT3||bT4,bFin=$('lTr').checked||$('lJud').value==='fin';
+    const bL=bFin?Math.min(bd,bPV)-bLump:0,bA=bFin?Math.min(bd,bPV):0;
+    $('kOut').innerHTML=`<h2>ผลการทดสอบ</h2>
+      ${(()=>{const jud=$('kJud').value;
+        const pos=`ตำแหน่งตัวเลข: 14.23.1 ${z.t1?'เกิดสถานการณ์':'ไม่เกิด'} · 14.23.2 ${c.opt>0&&c.optFv>0?posLE(z.ratioO,0.05):'ไม่มีสิทธิเลือกซื้อ'} · 14.23.3 ร้อยละ ${(z.ratioT*100).toFixed(1)} ${posGE(z.ratioT,0.8)} · 14.23.4 ร้อยละ ${(z.ratioP*100).toFixed(1)} ${posGE(z.ratioP,0.9)}${z.over?' · มีลักษณะหักล้างตามย่อหน้า 14.24':''} ตัวเลขประกอบในย่อหน้า 14.23 ขึ้นต้นด้วย "เช่น" และใช้คำว่า "ประมาณ" ตัวเลขอย่างเดียวจึงไม่ใช่ข้อสรุป`;
+        if(!jud)return verdict('warn','ยังไม่ได้ยืนยันประเภท',esc(pos)+' · ยืนยันประเภทในช่อง "ประเภทที่ผู้ใช้ยืนยัน" ตามเนื้อหาของการโอนความเสี่ยงและผลตอบแทน (14.22) และลักษณะหักล้าง (14.24)');
+        const fin=jud==='fin',clear=z.t1||(c.opt>0&&c.optFv>0&&z.ratioO<=0.03)||z.ratioT>=0.85||z.ratioP>=0.95,low=!z.t1&&!(c.opt>0&&c.optFv>0&&z.ratioO<0.07)&&z.ratioT<0.75&&z.ratioP<0.85;
+        const warnTxt=(!fin&&clear&&!z.over)?'<br><b>มีตัวเลขที่อยู่ห่างจากระดับตัวเลขประกอบชัดเจนและไม่มีลักษณะหักล้าง ให้บันทึกเหตุผลเชิงเนื้อหาที่สรุปเป็นสัญญาเช่าดำเนินงาน</b>':((fin&&(low||z.over))?'<br><b>ตัวเลขทุกข้ออยู่ต่ำกว่าระดับตัวเลขประกอบหรือมีลักษณะหักล้าง ให้บันทึกเหตุผลเชิงเนื้อหาที่สรุปเป็นสัญญาเช่าเงินทุน</b>':'');
+        return verdict('ok',fin?'สัญญาเช่าเงินทุน (ผู้ใช้ยืนยัน)':'สัญญาเช่าดำเนินงาน (ผู้ใช้ยืนยัน)',esc(pos)+warnTxt+($('kWhy').value.trim()?'<br>เหตุผล: '+esc($('kWhy').value.trim()):''))})()}
+      <div class="tbl"><table><thead><tr><th>ย่อหน้า</th><th>ทดสอบ</th><th class="num">ค่า</th><th>ผล</th></tr></thead><tbody>
+        <tr><td>14.23.1</td><td>โอนกรรมสิทธิ์</td><td class="num">${c.tr?'มี':'ไม่มี'}</td><td>${z.t1?'เกิดสถานการณ์นี้':'ไม่เกิดสถานการณ์นี้'}</td></tr>
+        <tr><td>14.23.2</td><td>ราคาสิทธิเลือกซื้อเป็นร้อยละของมูลค่ายุติธรรมที่คาด · ตัวเลขประกอบตาม 14.23.2 ระบุว่า ราคาประมาณไม่เกินร้อยละ 5</td><td class="num">${c.opt>0&&c.optFv>0?pct(z.ratioO,1):'–'}</td><td>${c.opt>0&&c.optFv>0?posLE(z.ratioO,0.05):'ไม่มีสิทธิเลือกซื้อ'}</td></tr>
+        <tr><td>14.23.3</td><td>อายุสัญญาเป็นร้อยละของอายุเชิงเศรษฐกิจ · ตัวเลขประกอบตาม 14.23.3 ระบุว่า ประมาณอย่างน้อยร้อยละ 80</td><td class="num">${pct(z.ratioT,1)}</td><td>${posGE(z.ratioT,0.8)}</td></tr>
+        <tr><td>14.23.4</td><td>PV ของจำนวนเงินขั้นต่ำเป็นร้อยละของมูลค่ายุติธรรม · ตัวเลขประกอบตาม 14.23.4 ระบุว่า ประมาณอย่างน้อยร้อยละ 90</td><td class="num">${pct(z.ratioP,2)}</td><td>${posGE(z.ratioP,0.9)}</td></tr>
+        <tr><td>14.24</td><td>ลักษณะอื่นที่หักล้าง</td><td class="num">${z.over?'มี':'ไม่มี'}</td><td>${yes(!z.over,'ไม่มี','มี')}</td></tr></tbody></table></div>
+      ${figs([['PV ของจำนวนเงินขั้นต่ำ',z.pv],['มูลค่ายุติธรรม',c.fv],['อายุสัญญา (ปี)',z.term]])}
+      <h3>เช่าที่ดินและอาคาร</h3>
+      <div class="tbl"><table><thead><tr><th>ส่วน</th><th class="num">เงินก้อน</th><th class="num">ค่าเช่าต่อปี</th><th>ประเภท</th></tr></thead><tbody>
+        <tr><td>ที่ดิน (${pct(1-sh,0)})</td><td class="num">${fmt(lLump)}</td><td class="num">${fmt(lRent)}</td><td>${$('lTr').checked?'<span class="pill ok">เงินทุน (14.27)</span>':'<span class="pill">ดำเนินงาน (14.26)</span>'}</td></tr>
+        <tr><td>อาคาร (${pct(sh,0)})</td><td class="num">${fmt(bLump)}</td><td class="num">${fmt(bRent)}</td><td>${$('lJud').value||$('lTr').checked?(bFin?'<span class="pill ok">เงินทุน (ยืนยัน)</span>':'<span class="pill">ดำเนินงาน (ยืนยัน)</span>'):'<span class="pill warn">ยังไม่ยืนยัน</span>'} อายุ ร้อยละ ${(bl>0?ln/bl*100:0).toFixed(1)} ${posGE(bl>0?ln/bl:0,0.8)} · PV ร้อยละ ${(bd>0?bPV/bd*100:0).toFixed(1)} ${posGE(bd>0?bPV/bd:0,0.9)}</td></tr></tbody></table></div>
+      ${figs([['PV ส่วนอาคาร',bPV],['PV ÷ มูลค่ายุติธรรมอาคาร',bd?bPV/bd:0,true],['สินทรัพย์ส่วนอาคาร',bA]])}
+      ${facts('ตัวเลขบอกอะไร',[`ส่วนที่ดิน: เงินก้อน ${fmt(lLump)} บาทเป็นค่าเช่าจ่ายล่วงหน้า ตัดปีละ ${fmt(lLump/ln)} บาท รวมค่าเช่าเป็นค่าใช้จ่ายปีละ ${fmt(lLump/ln+lRent)} บาท`,
+        bFin?`ส่วนอาคาร: รับรู้สินทรัพย์ ${fmt(bA)} บาท หนี้สินหลังจ่ายเงินก้อน ${fmt(bL)} บาท ค่าเสื่อมราคาปีละ ${fmt(bA/ln)} บาท ดอกเบี้ยปีแรก ${fmt(bL*lr)} บาท`:'ส่วนอาคารเป็นสัญญาเช่าดำเนินงาน เงินก้อนเป็นค่าเช่าจ่ายล่วงหน้าเช่นกัน',
+        'ถ้าปันส่วนตามสัดส่วนมูลค่ายุติธรรมอย่างน่าเชื่อถือไม่ได้ ทั้งสัญญาถือเป็นสัญญาเช่าเงินทุน เว้นแต่ชัดเจนว่าเป็นสัญญาเช่าดำเนินงานทั้งสองส่วน (14.28)'])}
+      ${theory([['14.4','สัญญาเช่าที่บอกเลิกไม่ได้'],['14.8.1','จำนวนเงินขั้นต่ำฝั่งผู้เช่า รวมมูลค่าคงเหลือที่ผู้เช่าประกันและราคาสิทธิเลือกซื้อที่ค่อนข้างแน่นอน'],['14.22–14.23','จัดประเภทตามการโอนความเสี่ยงและผลตอบแทน สี่สถานการณ์'],['14.23','ตัวเลขร้อยละ 5, 80 และ 90 ขึ้นต้นด้วย "เช่น" และ "ประมาณ" เป็นตัวเลขประกอบ'],['14.24','สถานการณ์ไม่ใช่ข้อยุติ ถ้ามีลักษณะอื่นที่แน่ชัด'],['14.25','จัดประเภท ณ วันเริ่มต้น ไม่จัดใหม่เมื่อประมาณการเปลี่ยน'],['14.26–14.29','แยกที่ดินและอาคารตามสัดส่วนมูลค่ายุติธรรมของสิทธิ']])}`;
+  }
+  /* =========================================================
+     2 LESSEE FINANCE LEASE (14.30–14.37)
+     ========================================================= */
+  const FS={m:['ตัวอย่างที่ 14.3',{fName:'เครื่องจักรบรรจุภัณฑ์',fStart:'2025-01-01',fYe:'2025-12-31',fFv:1000000,fP:280000,fN:4,fM:1,fAdv:0,fR:6,fOpt:0,fIdc:20000,fLife:5},false,{xForm:'lease',xCar:'0'}],
+    car:['ตัวอย่างที่ 14.9',{fName:'รถยนต์นั่งผู้บริหาร',fStart:'2025-01-01',fYe:'2025-12-31',fFv:2000000,fP:45000,fN:48,fM:12,fAdv:0,fR:6,fOpt:20000,fIdc:0,fLife:5},true,{xForm:'lease',xCar:'1'}],
+    ex2:['อัตนัยข้อ 3',{fName:'อุปกรณ์',fStart:'2025-01-01',fYe:'2025-12-31',fFv:500000,fP:170000,fN:3,fM:1,fAdv:1,fR:7,fOpt:0,fIdc:0,fLife:6},false,{xForm:'lease',xCar:'0'}]};
+  function fLoad(k){const s=FS[k];Object.entries(s[1]).forEach(([id,v])=>$(id).value=v);$('fOwn').checked=s[2];Object.entries(s[3]).forEach(([id,v])=>$(id).value=v);$('fTag').textContent='ข้อมูลตัวอย่าง: '+s[0];fCalc()}
+  document.querySelectorAll('[data-f]').forEach(b=>b.addEventListener('click',()=>fLoad(b.dataset.f)));
+  ['fName','fStart','fYe','fFv','fP','fN','fM','fAdv','fR','fOpt','fIdc','fLife','fOwn'].forEach(id=>{$(id).addEventListener('input',fCalc);$(id).addEventListener('change',fCalc)});
+  function fCalc(){
+    const start=parseDate($('fStart').value)||new Date(2025,0,1),ye=parseDate($('fYe').value)||new Date(2025,11,31);
+    const x=lessee({start,P:val($('fP')),n:Math.max(1,Math.round(val($('fN')))),m:+$('fM').value,adv:$('fAdv').value==='1',r:val($('fR'))/100,end:val($('fOpt')),fv:val($('fFv')),idc:val($('fIdc')),life:val($('fLife')),own:$('fOwn').checked});
+    const S=x.S;const dEnd=addD(addM(start,x.lifeM),-1);const FY=fyears(ye,start,dEnd>S.last?dEnd:S.last);
+    const yr=FY.map(([a,e])=>({a,e,int:r2(S.intTo(e)-S.intTo(a)),pay:r2(S.payTo(e)-S.payTo(a)),dep:r2(depFY(x.A,start,x.lifeM,a,e)),L:r2(S.L(e))}));
+    {const li=yr.map(y=>y.dep>0).lastIndexOf(true);if(li>=0&&addD(addM(start,x.lifeM),-1)<=yr[li].e){yr[li].dep=r2(x.A-yr.reduce((s,y,j)=>s+(j===li?0:y.dep),0))}}
+    let acc=0;yr.forEach(y=>{acc+=y.dep;y.nbv=x.A-acc});
+    const cy=yr.find(y=>y.e.getTime()===ye.getTime())||yr[0];const b=bands(S,ye);const name=$('fName').value.trim()||'สินทรัพย์';
+    R.fin={x,yr,cy,b,ye,name,FY};
+    const firstPay=S.pays.find(([d])=>d>=start);
+    $('fOut').innerHTML=`<h2>${esc(name)}: รับรู้เริ่มแรก</h2>
+      ${figs([['PV ของจำนวนเงินขั้นต่ำ',x.pv],['หนี้สินเริ่มแรก (14.30)',x.L0],['สินทรัพย์เริ่มแรก',x.A]])}
+      ${x.capped?alertBox('warn',`PV ${fmt(x.pv)} สูงกว่ามูลค่ายุติธรรม จึงรับรู้ที่มูลค่ายุติธรรม และใช้อัตรา ${pct(x.ii*x.m,4)} ต่อปีที่ทำให้ PV เท่ามูลค่ายุติธรรมในการทำตาราง`):''}
+      ${jeAuto('วันที่สัญญาเช่าเริ่มมีผล '+fmtD(start)+' (14.30–14.31)',[{dr:true,acct:'สินทรัพย์ภายใต้สัญญาเช่าเงินทุน – '+name,amt:x.A},{dr:false,acct:'หนี้สินตามสัญญาเช่าเงินทุน',amt:x.L0},{dr:false,acct:'เงินสด (ต้นทุนทางตรงเริ่มแรก)',amt:x.idc}],'')}
+      <h3>ตารางรายปี (อัตรา ${pct(x.ii*x.m,4)} ต่อปี ค่าเสื่อมราคา ${fmt(x.lifeM/12,1)} ปี)</h3>
+      <div class="tbl"><table><thead><tr><th>ปี</th><th class="num">ดอกเบี้ย</th><th class="num">ค่าเช่าที่จ่าย</th><th class="num">หนี้สินปลายปี</th><th class="num">ค่าเสื่อมราคา</th><th class="num">มูลค่าสุทธิ</th></tr></thead><tbody>
+      ${yr.map(y=>`<tr><td>${BE(y.e)}</td><td class="num">${fmt(y.int)}</td><td class="num">${fmt(y.pay)}</td><td class="num">${fmt(y.L)}</td><td class="num">${fmt(y.dep)}</td><td class="num">${fmt(y.nbv)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>รวม</td><td class="num">${fmt(yr.reduce((s,y)=>s+y.int,0))}</td><td class="num">${fmt(yr.reduce((s,y)=>s+y.pay,0))}</td><td></td><td class="num">${fmt(yr.reduce((s,y)=>s+y.dep,0))}</td><td></td></tr></tfoot></table></div>
+      ${jeAuto('ปี '+BE(cy.e)+': ค่าเช่า ดอกเบี้ย และค่าเสื่อมราคา (14.32–14.35)',[{dr:true,acct:'ดอกเบี้ยจ่ายตามสัญญาเช่าเงินทุน',amt:cy.int},{dr:true,acct:'หนี้สินตามสัญญาเช่าเงินทุน',amt:cy.pay-cy.int},{dr:true,acct:'ค่าเสื่อมราคา',amt:cy.dep},{dr:false,acct:'เงินสด',amt:cy.pay},{dr:false,acct:'ค่าเสื่อมราคาสะสม',amt:cy.dep}],'ไม่รวมภาษีมูลค่าเพิ่มและภาษีหัก ณ ที่จ่าย ดูแท็บ 6')}
+      <h3>ณ ${fmtD(ye)}</h3>
+      ${figs([['หนี้สินคงเหลือ',cy.L],['ส่วนที่ถึงกำหนดภายในหนึ่งปี',b.pv[0]],['ส่วนที่เกินหนึ่งปี',b.pv[1]+b.pv[2]]])}
+      <div class="tbl"><table><thead><tr><th>ช่วง (14.36.2)</th><th class="num">จำนวนเงินขั้นต่ำ</th><th class="num">ค่าใช้จ่ายทางการเงินในอนาคต</th><th class="num">มูลค่าปัจจุบัน</th></tr></thead><tbody>
+      ${BANDS.map((l,j)=>`<tr><td class="nw">${l}</td><td class="num">${fmt(b.mlp[j])}</td><td class="num">${fmt(b.fin[j])}</td><td class="num">${fmt(b.pv[j])}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>รวม</td><td class="num">${fmt(b.mlp[0]+b.mlp[1]+b.mlp[2])}</td><td class="num">${fmt(b.fin[0]+b.fin[1]+b.fin[2])}</td><td class="num">${fmt(cy.L)}</td></tr></tfoot></table></div>
+      ${facts('ตัวเลขบอกอะไร',[`ค่าใช้จ่ายปี ${BE(cy.e)} รวม ${fmt(cy.int+cy.dep)} บาท เทียบกับค่าเช่าที่จ่าย ${fmt(cy.pay)} บาท ดอกเบี้ยอัตราคงที่ทำให้ค่าใช้จ่ายสูงในปีต้นและลดลงทุกปี`,
+        `ส่วนที่ถึงกำหนดภายในหนึ่งปี ${fmt(b.pv[0])} บาท คือเงินต้นที่ลดลงในสิบสองเดือนถัดไป ไม่ใช่ค่าเช่าทั้งงวด ${fmt(b.mlp[0])} บาท`,
+        x.lifeM<Math.round(val($('fLife'))*12)?'ไม่แน่นอนว่าจะได้กรรมสิทธิ์ จึงคิดค่าเสื่อมราคาตามอายุสัญญาซึ่งสั้นกว่าอายุการใช้ประโยชน์ (14.35)':'ใช้อายุการใช้ประโยชน์ เพราะค่อนข้างแน่นอนว่าจะได้กรรมสิทธิ์ หรืออายุสัญญาไม่สั้นกว่า (14.35)'])}
+      ${theory([['14.30','รับรู้ด้วยมูลค่ายุติธรรมหรือ PV แล้วแต่จำนวนใดต่ำกว่า อัตราตามนัยหรืออัตราเงินกู้ยืมส่วนเพิ่ม'],['14.31','ต้นทุนทางตรงเริ่มแรกของผู้เช่ารวมเป็นสินทรัพย์'],['14.32–14.33','ดอกเบี้ยอัตราคงที่ต่อยอดหนี้สินคงเหลือ ยอมให้ใช้วิธีประมาณ'],['14.34–14.35','ค่าเสื่อมราคาตามนโยบายเดียวกับสินทรัพย์ที่เป็นเจ้าของ'],['14.36–14.37','เปิดเผยมูลค่าสุทธิและจำนวนเงินขั้นต่ำตามช่วงเวลา']])}`;
+    if(typeof xCalc==='function')xCalc();
+  }
+
+  /* =========================================================
+     3 OPERATING LEASE STRAIGHT-LINE (14.38, 14.51–14.53)
+     ========================================================= */
+  const OS={off:['ตัวอย่างที่ 14.4',[[3,0],[21,60000],[12,66000]],'2025-01-01'],ex3:['อัตนัยข้อ 4',[[2,0],[22,30000]],'2025-01-01']};
+  let OR=OS.off[1].map(r=>r.slice());
+  function oLoad(k){const s=OS[k];OR=s[1].map(r=>r.slice());$('oStart').value=s[2];$('oYe').value='2025-12-31';$('oIdc').value=0;$('oTag').textContent='ข้อมูลตัวอย่าง: '+s[0];oRender()}
+  document.querySelectorAll('[data-o]').forEach(b=>b.addEventListener('click',()=>oLoad(b.dataset.o)));
+  function oRender(){$('oBody').innerHTML=OR.map((r,i)=>`<tr><td>ช่วงที่ ${i+1}</td><td><input class="num" type="number" data-o2="${i}" data-k="0" value="${r[0]}"></td><td><input class="num" type="number" data-o2="${i}" data-k="1" value="${r[1]}"></td><td><button class="del" data-odel="${i}" aria-label="ลบ">×</button></td></tr>`).join('');oCalc()}
+  $('oBody').addEventListener('input',e=>{const t=e.target;if(t.dataset.o2==null)return;OR[+t.dataset.o2][+t.dataset.k]=val(t);oCalc()});
+  $('oBody').addEventListener('click',e=>{const i=e.target.dataset.odel;if(i!=null){OR.splice(+i,1);oRender()}});
+  $('oAdd').addEventListener('click',()=>{OR.push([12,0]);oRender()});
+  ['oRole','oStart','oYe','oIdc'].forEach(id=>{$(id).addEventListener('input',oCalc);$(id).addEventListener('change',oCalc)});
+  function oCalc(){
+    const start=parseDate($('oStart').value)||new Date(2025,0,1),ye=parseDate($('oYe').value)||new Date(2025,11,31);const lessor=$('oRole').value==='lessor';
+    const mo=[];OR.forEach(([n,a])=>{for(let k=0;k<Math.max(0,Math.round(n));k++)mo.push(a)});const N=mo.length;if(!N){$('oOut').innerHTML='<p class="hint">กรอกอย่างน้อยหนึ่งช่วง</p>';return}
+    const tot=mo.reduce((s,v)=>s+v,0),sl=tot/N,idc=val($('oIdc'));const last=addD(addM(start,N),-1);
+    const FY=fyears(ye,start,last);let cum=0;
+    const yr=FY.map(([a,e])=>{let c=0,k=0;mo.forEach((v,j)=>{const d=addM(start,j);if(d>a&&d<=e){c+=v;k++}});const s=sl*k;cum+=s-c;return {e,c,s,k,cum,idc:idc*k/N}});
+    const y1=addM(ye,12),y5=addM(ye,60),fm=[0,0,0];mo.forEach((v,j)=>{const d=addM(start,j);if(d<=ye)return;if(d<=y1)fm[0]+=v;else if(d<=y5)fm[1]+=v;else fm[2]+=v});
+    const cy=yr.find(y=>y.e.getTime()===ye.getTime())||yr[0];
+    R.op={fm,cy,lessor,sl,tot,N};
+    const W=lessor?{x:'รายได้ค่าเช่า',acc:cy.cum>=0?'ลูกหนี้ค่าเช่าค้างรับ':'รายได้ค่าเช่ารับล่วงหน้า'}:{x:'ค่าเช่า',acc:cy.cum>=0?'ค่าเช่าค้างจ่าย':'ค่าเช่าจ่ายล่วงหน้า'};
+    const je=lessor?[{dr:true,acct:'เงินสด',amt:cy.c},{dr:true,acct:W.acc,amt:Math.max(0,cy.s-cy.c)},{dr:false,acct:'รายได้ค่าเช่า',amt:cy.s},{dr:false,acct:W.acc,amt:Math.max(0,cy.c-cy.s)}]
+      :[{dr:true,acct:'ค่าเช่า',amt:cy.s},{dr:true,acct:W.acc,amt:Math.max(0,cy.c-cy.s)},{dr:false,acct:'เงินสด',amt:cy.c},{dr:false,acct:W.acc,amt:Math.max(0,cy.s-cy.c)}];
+    $('oOut').innerHTML=`<h2>${lessor?'รายได้':'ค่าใช้จ่าย'}ค่าเช่าตามวิธีเส้นตรง</h2>
+      ${figs([['ค่าเช่ารวมตามสัญญา',tot],['เส้นตรงต่อเดือน',sl],[`${W.x}ปี ${BE(cy.e)}`,cy.s]])}
+      <div class="tbl"><table><thead><tr><th>ปี</th><th class="num">เดือน</th><th class="num">ตามสัญญา</th><th class="num">เส้นตรง</th><th class="num">${lessor?'ค้างรับสะสม':'ค้างจ่ายสะสม'}</th>${idc?'<th class="num">ตัด IDC</th>':''}</tr></thead><tbody>
+      ${yr.map(y=>`<tr><td>${BE(y.e)}</td><td class="num">${y.k}</td><td class="num">${fmt(y.c)}</td><td class="num">${fmt(y.s)}</td><td class="num">${fmt(y.cum)}</td>${idc?`<td class="num">${fmt(y.idc)}</td>`:''}</tr>`).join('')}</tbody></table></div>
+      ${jeAuto(`สรุปปี ${BE(cy.e)} (${lessor?'14.51–14.52':'14.38'})`,je,'')}
+      ${idc?jeAuto('ต้นทุนทางตรงเริ่มแรกของผู้ให้เช่า (14.53)',[{dr:true,acct:'ค่าใช้จ่ายในการให้เช่า',amt:cy.idc},{dr:false,acct:'ต้นทุนทางตรงเริ่มแรกที่รวมในสินทรัพย์ที่ให้เช่า',amt:cy.idc}],`รวมในมูลค่าตามบัญชี ${fmt(idc)} บาท ตัดตามเกณฑ์เดียวกับรายได้`):''}
+      <h3>ภาระในอนาคต ณ ${fmtD(ye)} (${lessor?'14.56.1':'14.39.1'})</h3>
+      <div class="tbl"><table><tbody>${BANDS.map((l,j)=>`<tr><td class="nw">${l}</td><td class="num">${fmt(fm[j])}</td></tr>`).join('')}</tbody><tfoot><tr><td>รวม</td><td class="num">${fmt(fm[0]+fm[1]+fm[2])}</td></tr></tfoot></table></div>
+      ${facts('ตัวเลขบอกอะไร',[`ช่วงปลอดค่าเช่าและค่าเช่าขั้นบันไดกระจายเท่ากันตลอด ${N} เดือน ทำให้${W.x}ปี ${BE(cy.e)} ต่างจากเงินตามสัญญา ${fmt(Math.abs(cy.s-cy.c))} บาท`,
+        'ค่าบริการ เช่น ค่าส่วนกลาง ค่าประกันภัย และค่าบำรุงรักษา ไม่รวมในการคำนวณนี้ (14.38, 14.52)',
+        lessor?'ผู้ให้เช่าแสดงสินทรัพย์ที่ให้เช่าตามลักษณะ และคิดค่าเสื่อมราคาตามนโยบายปกติ (14.50, 14.54)':'ผู้เช่าไม่รับรู้สินทรัพย์และหนี้สินของสัญญาเช่าดำเนินงาน แต่ต้องเปิดเผยภาระในอนาคตตามช่วงเวลา'])}
+      <div class="tax"><b>หลักภาษี</b> แนวการตีความ: ทางภาษีหักค่าเช่าที่ถึงกำหนดตามสัญญาในรอบระยะเวลาบัญชี จึงอาจต่างจากวิธีเส้นตรงทางบัญชีเป็นผลต่างชั่วคราว ค่าเช่าอสังหาริมทรัพย์ได้รับยกเว้นภาษีมูลค่าเพิ่ม (ม.81(1)(ต)) ผู้เช่าที่เป็นนิติบุคคลหักภาษี ณ ที่จ่ายร้อยละ 5 ของค่าเช่า ค่าบริการส่วนกลางเสียภาษีมูลค่าเพิ่มและหักร้อยละ 3 (ท.ป.4/2528)</div>
+      ${theory([['14.38','ผู้เช่ารับรู้ค่าเช่าตามวิธีเส้นตรง ไม่รวมค่าบริการ'],['14.39','เปิดเผยภาระในอนาคตตามช่วงเวลาและค่าเช่าที่รับรู้ในงวด'],['14.51–14.52','ผู้ให้เช่ารับรู้รายได้ตามวิธีเส้นตรงแม้การรับเงินไม่เป็นไปตามเกณฑ์นั้น'],['14.53','ต้นทุนทางตรงเริ่มแรกของผู้ให้เช่ารวมในมูลค่าตามบัญชีของสินทรัพย์']])}`;
+    if(typeof nCalc==='function')nCalc();
+  }
+  /* =========================================================
+     4 LESSOR FINANCE LEASE (14.40–14.49)
+     ========================================================= */
+  const SS={lsg:['ตัวอย่างที่ 14.5',{sMode:'std',sStart:'2025-01-01',sYe:'2025-12-31',sFv:1000000,sP:280000,sN:4,sM:1,sAdv:0,sRvg:0,sRvu:50000,sIdc:10000,sCost:750000,sMkt:8}],
+    dlr:['ตัวอย่างที่ 14.6',{sMode:'dlr',sStart:'2025-01-01',sYe:'2025-12-31',sFv:1000000,sP:280000,sN:4,sM:1,sAdv:0,sRvg:0,sRvu:50000,sIdc:15000,sCost:750000,sMkt:8}]};
+  function sLoad(k){const s=SS[k];Object.entries(s[1]).forEach(([id,v])=>$(id).value=v);$('sTag').textContent='ข้อมูลตัวอย่าง: '+s[0];sCalc()}
+  document.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>sLoad(b.dataset.s)));
+  ['sMode','sStart','sYe','sFv','sP','sN','sM','sAdv','sRvg','sRvu','sIdc','sCost','sMkt'].forEach(id=>{$(id).addEventListener('input',sCalc);$(id).addEventListener('change',sCalc)});
+  function sCalc(){
+    const start=parseDate($('sStart').value)||new Date(2025,0,1),ye=parseDate($('sYe').value)||new Date(2025,11,31);
+    const dlr=$('sMode').value==='dlr',fv=val($('sFv')),P=val($('sP')),n=Math.max(1,Math.round(val($('sN')))),m=+$('sM').value,adv=$('sAdv').value==='1',rvg=val($('sRvg')),rvu=val($('sRvu')),idc=val($('sIdc'));
+    const res=rvg+rvu,gross=n*P+res;let i,NI0,head='',sale=null;
+    if(!dlr){NI0=fv+idc;i=solve(j=>pvOf(P,n,j,adv,res),NI0)}
+    else{const im=val($('sMkt'))/100/m;const pvM=pvOf(P,n,im,adv,rvg),pvR=rvu/Math.pow(1+im,n);const rev=Math.min(fv,pvM);const cogs=val($('sCost'))-pvR;
+      NI0=rev+pvR;i=rev<pvM?solve(j=>pvOf(P,n,j,adv,res),NI0):im;sale={pvM,pvR,rev,cogs,gp:rev-cogs,im}}
+    const S=sched({start,P,n,m,adv,i,end:res,L0:NI0});const FY=fyears(ye,start,S.last);
+    const lastD=S.pays.length?S.pays[S.pays.length-1][0]:start;const rvIn=(a,e)=>lastD>a&&lastD<=e?rvu:0;
+    const yr=FY.map(([a,e])=>({e,inc:S.intTo(e)-S.intTo(a),rec:S.payTo(e)-S.payTo(a)-rvIn(a,e),NI:S.L(e)+(lastD<=e?rvu:0)}));
+    const Sm=sched({start,P,n,m,adv,i,end:rvg,L0:NI0-rvu/Math.pow(1+i,n)});
+    const cy=yr.find(y=>y.e.getTime()===ye.getTime())||yr[0];
+    const y1=addM(ye,12),y5=addM(ye,60);const gb=[0,0,0];Sm.pays.forEach(([d,a])=>{if(d<=ye)return;if(d<=y1)gb[0]+=a;else if(d<=y5)gb[1]+=a;else gb[2]+=a});
+    const pb=[Sm.L(ye)-Sm.L(y1),Sm.L(y1)-Sm.L(y5),Sm.L(y5)];const rvG=lastD>ye?rvu:0,rvP=S.L(ye)-Sm.L(ye),NIye=S.L(ye);const rvuPV=rvu/Math.pow(1+i,Math.max(0,(S.last-ye)/(365.25*86400000)*m));
+    if(dlr){head=`<h3>กำไรจากการขายของผู้ผลิตหรือผู้แทนจำหน่าย (14.46–14.48)</h3>
+      <div class="tbl"><table><tbody>
+      <tr><td>PV ค่าเช่าขั้นต่ำที่อัตราเชิงพาณิชย์ ${pct(sale.im*m,2)}</td><td class="num">${fmt(sale.pvM)}</td></tr>
+      <tr><td>รายได้จากการขาย = ต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV</td><td class="num">${fmt(sale.rev)}</td></tr>
+      <tr><td>ต้นทุนขาย = ต้นทุน − PV มูลค่าคงเหลือที่ไม่ได้รับการประกัน ${fmt(sale.pvR)}</td><td class="num">${fmt(sale.cogs)}</td></tr>
+      <tr><td><b>กำไรขั้นต้นจากการขาย</b></td><td class="num"><b>${fmt(sale.gp)}</b></td></tr>
+      <tr><td>ต้นทุนทางตรงเริ่มแรก เป็นค่าใช้จ่ายทันที (14.46)</td><td class="num">${fmt(idc)}</td></tr></tbody></table></div>
+      ${jeAuto('วันที่สัญญาเริ่มมีผล (14.48)',[{dr:true,acct:'ลูกหนี้ตามสัญญาเช่าเงินทุน (สุทธิ)',amt:NI0},{dr:true,acct:'ต้นทุนขาย',amt:sale.cogs},{dr:true,acct:'ค่าใช้จ่ายอื่น (ต้นทุนทางตรงเริ่มแรก)',amt:idc},{dr:false,acct:'รายได้จากการขาย',amt:sale.rev},{dr:false,acct:'สินค้าคงเหลือ',amt:val($('sCost'))},{dr:false,acct:'เงินสด',amt:idc}],'')}`}
+    else head=jeAuto('วันที่สัญญาเริ่มมีผล (14.40, 14.42)',[{dr:true,acct:'ลูกหนี้ตามสัญญาเช่าเงินทุน (เงินลงทุนขั้นต้น)',amt:gross},{dr:false,acct:'รายได้ทางการเงินรอการรับรู้',amt:gross-NI0},{dr:false,acct:'เงินสด (ราคาซื้อและต้นทุนทางตรงเริ่มแรก)',amt:NI0}],'');
+    $('sOut').innerHTML=`<h2>${dlr?'ผู้ผลิตหรือผู้แทนจำหน่าย':'ผู้ให้เช่าทั่วไป'}: เงินลงทุนในสัญญาเช่า</h2>
+      ${figs([[dlr?'อัตราที่ใช้ (% ต่อปี)':'อัตราดอกเบี้ยตามนัย (% ต่อปี)',i*m,true],['เงินลงทุนขั้นต้น',gross],['เงินลงทุนสุทธิเริ่มแรก',NI0]])}
+      ${head}
+      <h3>รายได้ทางการเงินรายปี (14.43)</h3>
+      <div class="tbl"><table><thead><tr><th>ปี</th><th class="num">รายได้ทางการเงิน</th><th class="num">เงินรับ</th><th class="num">เงินลงทุนสุทธิปลายปี</th></tr></thead><tbody>
+      ${yr.map(y=>`<tr><td>${BE(y.e)}</td><td class="num">${fmt(y.inc)}</td><td class="num">${fmt(y.rec)}</td><td class="num">${fmt(y.NI)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>รวม</td><td class="num">${fmt(yr.reduce((s,y)=>s+y.inc,0))}</td><td class="num">${fmt(yr.reduce((s,y)=>s+y.rec,0))}</td><td></td></tr></tfoot></table></div>
+      <p class="hint">เงินรับไม่รวมมูลค่าคงเหลือที่ไม่ได้รับการประกัน ${fmt(rvu)} บาท ซึ่งผู้ให้เช่าได้คืนในรูปสินทรัพย์เมื่อสิ้นสัญญา ยอดปลายปีสุดท้ายจึงเท่ามูลค่านี้ (แบบเดียวกับตัวอย่างที่ 14.5)</p>
+      ${jeAuto(`ปี ${BE(cy.e)}`,[{dr:true,acct:'เงินสด',amt:cy.rec},{dr:false,acct:'ลูกหนี้ตามสัญญาเช่าเงินทุน',amt:cy.rec},{dr:true,acct:'รายได้ทางการเงินรอการรับรู้',amt:cy.inc},{dr:false,acct:'รายได้ทางการเงิน',amt:cy.inc}],'ไม่รวมภาษีมูลค่าเพิ่มและภาษีที่ถูกหัก ณ ที่จ่าย')}
+      <h3>ข้อมูลที่ต้องเปิดเผย ณ ${fmtD(ye)} (14.49.1 14.49.3)</h3>
+      <div class="tbl"><table><thead><tr><th>ช่วง</th><th class="num">เงินลงทุนขั้นต้น</th><th class="num">รายได้รอการรับรู้</th><th class="num">เงินลงทุนสุทธิ</th></tr></thead><tbody>
+      ${BANDS.map((l,j)=>`<tr><td class="nw">${l}</td><td class="num">${fmt(gb[j])}</td><td class="num">${fmt(gb[j]-pb[j])}</td><td class="num">${fmt(pb[j])}</td></tr>`).join('')}</tbody>
+      <tr><td>รวมจำนวนเงินขั้นต่ำที่ลูกหนี้ต้องจ่าย (14.49.1)</td><td class="num">${fmt(gb[0]+gb[1]+gb[2])}</td><td class="num">${fmt(gb[0]+gb[1]+gb[2]-pb[0]-pb[1]-pb[2])}</td><td class="num">${fmt(pb[0]+pb[1]+pb[2])}</td></tr>
+      <tr><td>มูลค่าคงเหลือที่ไม่ได้รับการประกัน (14.49.3)</td><td class="num">${fmt(rvG)}</td><td class="num">${fmt(rvG-rvP)}</td><td class="num">${fmt(rvP)}</td></tr>
+      <tfoot><tr><td>เงินลงทุนรวม</td><td class="num">${fmt(gb[0]+gb[1]+gb[2]+rvG)}</td><td class="num">${fmt(gb[0]+gb[1]+gb[2]+rvG-NIye)}</td><td class="num">${fmt(NIye)}</td></tr></tfoot></table></div>
+      ${facts('ตัวเลขบอกอะไร',[dlr?`ถ้าคิดลดด้วยอัตราที่ต่ำเกินจริง PV จะสูงขึ้น รายได้จากการขายและกำไรวันแรกจะสูงเกินจริง ย่อหน้า 14.46 จึงให้ใช้อัตราเชิงพาณิชย์`:`อัตราตามนัย ${pct(i*m,4)} รวมผลของต้นทุนทางตรงเริ่มแรก ${fmt(idc)} บาทแล้ว ต้นทุนนี้จึงทยอยหักจากรายได้ทางการเงินตลอดอายุสัญญา (14.42)`,
+        `มูลค่าคงเหลือที่ไม่ได้รับการประกัน ${fmt(rvu)} บาท รวมในเงินลงทุนขั้นต้น ต้องทบทวนทุกงวด ถ้าลดลงให้ทบทวนการปันส่วนรายได้และรับรู้ส่วนลดลงทันที (14.44)`,
+        'ต้องเปิดเผยรายได้รอการรับรู้ มูลค่าคงเหลือที่ไม่ได้รับการประกัน ค่าเผื่อหนี้สงสัยจะสูญ ค่าเช่าที่อาจเกิดขึ้น และข้อตกลงสำคัญด้วย (14.49.2–14.49.6)'])}
+      ${theory([['14.15–14.17','เงินลงทุนขั้นต้น เงินลงทุนสุทธิ และรายได้ทางการเงินรอการรับรู้'],['14.18','อัตราตามนัยทำให้ PV เท่ามูลค่ายุติธรรมบวกต้นทุนทางตรงเริ่มแรกของผู้ให้เช่า'],['14.40–14.43','ลูกหนี้ด้วยเงินลงทุนสุทธิ รายได้อัตราผลตอบแทนคงที่'],['14.46–14.48','ผู้ผลิตหรือผู้แทนจำหน่าย กำไรจากการขาย อัตราเชิงพาณิชย์'],['14.49','การเปิดเผยข้อมูลของผู้ให้เช่า']])}`;
+  }
+
+  /* =========================================================
+     5 SALE AND LEASEBACK (14.58–14.64)
+     ========================================================= */
+  const BS={1:['ตัวอย่างที่ 14.7 กรณีที่ 1',{bType:'op',bCost:10000000,bAcc:2000000,bPrice:10000000,bFv:10000000,bN:5,bTax:8000000},false],
+    2:['ตัวอย่างที่ 14.7 กรณีที่ 2',{bType:'op',bCost:10000000,bAcc:2000000,bPrice:11000000,bFv:10000000,bN:5,bTax:8000000},false],
+    3:['ตัวอย่างที่ 14.7 กรณีที่ 3',{bType:'op',bCost:10000000,bAcc:2000000,bPrice:7500000,bFv:10000000,bN:5,bTax:8000000},true],
+    4:['ตัวอย่างที่ 14.7 กรณีที่ 4',{bType:'op',bCost:10000000,bAcc:2000000,bPrice:7600000,bFv:7600000,bN:5,bTax:8000000},false],
+    5:['ตัวอย่างที่ 14.7 กรณีที่ 5',{bType:'fin',bCost:10000000,bAcc:2000000,bPrice:11000000,bFv:11000000,bN:5,bTax:8000000},false],
+    ex4:['อัตนัยข้อ 6 (ก)',{bType:'op',bCost:6000000,bAcc:1800000,bPrice:6000000,bFv:5000000,bN:4,bTax:4200000},false]};
+  function bLoad(k){const s=BS[k];Object.entries(s[1]).forEach(([id,v])=>$(id).value=v);$('bComp').checked=s[2];$('bMkt').checked=true;$('bTag').textContent='ข้อมูลตัวอย่าง: '+s[0];bCalc()}
+  document.querySelectorAll('[data-b]').forEach(b=>b.addEventListener('click',()=>bLoad(b.dataset.b)));
+  ['bType','bCost','bAcc','bPrice','bFv','bN','bTax','bComp','bMkt'].forEach(id=>{$(id).addEventListener('input',bCalc);$(id).addEventListener('change',bCalc)});
+  function bCalc(){
+    const fin=$('bType').value==='fin',cost=val($('bCost')),acc=val($('bAcc')),ca=cost-acc,price=val($('bPrice')),fv=val($('bFv')),n=Math.max(1,val($('bN'))),comp=$('bComp').checked;
+    let wd=0,imm=0,def=0,ref='',why='';const eq=Math.abs(price-fv)<0.5;
+    if(fin){def=price-ca;ref='14.59–14.60';why='การเช่ากลับเป็นสัญญาเช่าเงินทุน ผู้ให้เช่าจัดหาเงินทุนโดยใช้สินทรัพย์เป็นหลักประกัน ส่วนที่ราคาขายต่างจากมูลค่าตามบัญชีรอการตัดบัญชีตลอดอายุสัญญา และไม่ต้องปรับผลต่างมูลค่ายุติธรรมตามย่อหน้า 14.63'}
+    else{let base=ca;if(fv<ca){wd=ca-fv;base=fv}
+      if(eq){imm=price-base;ref='14.61.1, 14.62';why='ราคาขายเท่ามูลค่ายุติธรรม เป็นการขายตามปกติ รับรู้กำไรหรือขาดทุนทันที'}
+      else if(price<fv){const g=price-base;if(g<0&&comp){def=g;ref='14.61.2';why='ราคาขายต่ำกว่ามูลค่ายุติธรรมและได้รับชดเชยด้วยค่าเช่าที่ต่ำกว่าตลาด ขาดทุนรอการตัดบัญชีตามสัดส่วนค่าเช่าตลอดระยะเวลาที่คาดว่าจะใช้ประโยชน์'}
+        else{imm=g;ref='14.61.2';why='ราคาขายต่ำกว่ามูลค่ายุติธรรม และไม่ได้รับชดเชยด้วยค่าเช่าที่ต่ำกว่าตลาด รับรู้กำไรหรือขาดทุนทันที'}}
+      else{imm=fv-base;def=price-fv;ref='14.61.3';why='ราคาขายสูงกว่ามูลค่ายุติธรรม ส่วนที่เกินรอการตัดบัญชีตลอดระยะเวลาที่คาดว่าจะใช้ประโยชน์ ส่วนถึงมูลค่ายุติธรรมรับรู้ทันที'}
+      if(wd)ref='14.63, '+ref}
+    const am=def/n,book1=-wd+imm+am;
+    const tPrice=$('bMkt').checked&&price<fv?fv:price,tGain=tPrice-val($('bTax')),diff=tGain-book1;
+    const lines=[{dr:true,acct:'เงินสด',amt:price},{dr:true,acct:'ค่าเสื่อมราคาสะสม',amt:acc},{dr:false,acct:'สินทรัพย์ (ราคาทุน)',amt:cost}];
+    const pl=-wd+imm;if(pl>=0)lines.push({dr:false,acct:'กำไรจากการขายสินทรัพย์',amt:pl});else lines.push({dr:true,acct:wd?'ขาดทุนจากการปรับมูลค่าและการขายสินทรัพย์':'ขาดทุนจากการขายสินทรัพย์',amt:-pl});
+    if(def>0)lines.push({dr:false,acct:'กำไรรอการตัดบัญชีจากการขายและเช่ากลับคืน',amt:def});if(def<0)lines.push({dr:true,acct:'ขาดทุนรอการตัดบัญชีจากการขายและเช่ากลับคืน',amt:-def});
+    $('bOut').innerHTML=`<h2>${fin?'เช่ากลับเป็นสัญญาเช่าเงินทุน':'เช่ากลับเป็นสัญญาเช่าดำเนินงาน'}</h2>
+      ${verdict('ok','ย่อหน้า '+ref,why)}
+      ${figs([['รับรู้ทันที',pl],['รอการตัดบัญชี',def],['ตัดบัญชีต่อปี',am]])}
+      ${wd?alertBox('warn',`มูลค่ายุติธรรมต่ำกว่ามูลค่าตามบัญชี ${fmt(wd)} บาท รับรู้เป็นขาดทุนทันทีตามย่อหน้า 14.63`):''}
+      ${jeAuto('วันที่ขาย',lines,'')}
+      ${def?`<p class="hint">แนวการตีความเรื่องการนำเสนอ: ${def>0?'กำไรรอการตัดบัญชีแสดงเป็นหนี้สินหมุนเวียนอื่นส่วนที่ตัดในหนึ่งปีถัดไป และหนี้สินไม่หมุนเวียนอื่นส่วนที่เหลือ':'ขาดทุนรอการตัดบัญชีแสดงเป็นสินทรัพย์ไม่หมุนเวียนอื่น'} มาตรฐานไม่ระบุบรรทัด</p>`:''}
+      ${def?jeAuto('ทุกสิ้นปี ตลอด '+fmt(n,0)+' ปี',def>0?[{dr:true,acct:'กำไรรอการตัดบัญชีจากการขายและเช่ากลับคืน',amt:am},{dr:false,acct:'รายได้อื่น (แบบ 2 รายการที่ 2)',amt:am}]:[{dr:true,acct:'ค่าใช้จ่ายอื่น (แบบ 2 รายการที่ 9 ตัดขาดทุนรอการตัดบัญชี)',amt:-am},{dr:false,acct:'ขาดทุนรอการตัดบัญชีจากการขายและเช่ากลับคืน',amt:-am}],''):''}
+      <h3>เทียบกับภาษีในปีที่ขาย</h3>
+      <div class="tbl"><table><tbody>
+      <tr><td>ราคาที่ใช้ทางภาษี${tPrice!==price?' (ราคาตลาดตาม ม.65 ทวิ (4))':''}</td><td class="num">${fmt(tPrice)}</td></tr>
+      <tr><td>หัก มูลค่าต้นทุนคงเหลือทางภาษี</td><td class="num">${fmt(val($('bTax')))}</td></tr>
+      <tr><td><b>กำไร (ขาดทุน) ทางภาษี</b></td><td class="num"><b>${fmt(tGain)}</b></td></tr>
+      <tr><td>ผลต่อกำไรทางบัญชีปีแรก (รับรู้ทันที + ตัดบัญชีปีแรก)</td><td class="num">${fmt(book1)}</td></tr>
+      <tr><td><b>${diff>=0?'บวก':'หัก'}ในการคำนวณกำไรสุทธิปีที่ขาย</b></td><td class="num"><b>${fmt(Math.abs(diff))}</b></td></tr></tbody></table></div>
+      ${facts('ตัวเลขบอกอะไร',['ทางภาษีถือเป็นการขายเสร็จเด็ดขาด รับรู้กำไรทั้งจำนวนในรอบที่ขาย ส่วนที่บัญชีรอตัดบัญชีจะหักออกในปีต่อไปตามจำนวนที่ตัดบัญชี',
+        price<fv?'ราคาขายต่ำกว่ามูลค่ายุติธรรม ต้องมีเหตุผลที่กฎหมายยอมรับและหลักฐาน มิฉะนั้นเจ้าพนักงานประเมินตามราคาตลาดได้':'ราคาขายไม่ต่ำกว่ามูลค่ายุติธรรม ความเสี่ยงประเมินราคาตลาดต่ำ',
+        'ค่าเช่ากลับคืนทางภาษีหักตามหลักสัญญาเช่า ผู้เช่าหักภาษี ณ ที่จ่ายร้อยละ 5 ตรวจภาษีธุรกิจเฉพาะหรืออากรแสตมป์ของการขายอสังหาริมทรัพย์ตามข้อเท็จจริง'])}
+      ${theory([['14.58','การขายและเช่ากลับคืน ราคาขายและค่าเช่าต่อรองพร้อมกัน'],['14.59–14.60','เช่ากลับเป็นเงินทุน ส่วนเกินรอการตัดบัญชี'],['14.61','เช่ากลับเป็นดำเนินงาน เทียบราคาขายกับมูลค่ายุติธรรม'],['14.63','มูลค่ายุติธรรมต่ำกว่ามูลค่าตามบัญชี รับรู้ขาดทุนทันที'],['14.64','เปิดเผยเงื่อนไขที่มีลักษณะเฉพาะ'],['ม.65 ทวิ (4)','ขายต่ำกว่าราคาตลาดโดยไม่มีเหตุผลที่กฎหมายยอมรับ ประเมินตามราคาตลาดได้']])}`;
+  }
+
+  /* =========================================================
+     6 TAX (legal form; cost basis per law)
+     ========================================================= */
+  const XS={a:['m','lease',false],b:['m','hp',true],car:['car','lease',true]};
+  document.querySelectorAll('[data-x]').forEach(b=>b.addEventListener('click',()=>{const s=XS[b.dataset.x];fLoad(s[0]);$('xForm').value=s[1];$('fOwn').checked=s[2];fCalc();$('xTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ '+({a:'14.8 (ก)',b:'14.8 (ข)',car:'14.9'})[b.dataset.x]}));
+  ['xForm','xCar','xVat','xRate'].forEach(id=>{$(id).addEventListener('input',xCalc);$(id).addEventListener('change',xCalc)});
+  function xCalc(){
+    const F=R.fin;if(!F||!$('xOut'))return;const x=F.x,S=x.S;const hp=$('xForm').value==='hp',car=$('xCar').value==='1',vat=val($('xVat'))/100;
+    const cap=36000*12/x.m;const FY=F.FY;let cumD=0;
+    const taxCost0=x.n*x.P+(x.end||0)+(x.idc||0),taxCost=car?Math.min(1000000,taxCost0):taxCost0,rate=Math.min(car?0.2:1,val($('xRate'))/100);
+    const rows=FY.map(([a,e],k)=>{const y=F.yr[k]||{int:0,dep:0};const rentPays=S.pays.filter(([d,amt],j)=>d>a&&d<=e&&!(x.end&&j===S.pays.length-1));
+      const rent=rentPays.reduce((s,[,v])=>s+v,0),vatX=car?r2(rent*vat):0;const book=y.int+y.dep+vatX;let tax=0,det='';
+      if(!hp){const ded=car?rentPays.reduce((s,[,v])=>s+Math.min(v*(1+vat),cap),0):rent;const am=depFY(x.idc||0,x.start,x.termM,a,e);tax=ded+am;det=`ค่าเช่า ${fmt(ded)}${am?` + ตัดจ่ายต้นทุนสิทธิการเช่า ${fmt(am)}`:''}`}
+      else{const months=Math.max(0,Math.min(mIdx(e)+1,mIdx(x.start)+1200)-Math.max(mIdx(x.start),mIdx(a)+1));const paid=S.payTo(e)+(x.idc||0);
+        const d=Math.max(0,Math.min(taxCost*rate*months/12,Math.min(taxCost,paid)-cumD));cumD+=d;tax=d;det=`ค่าเสื่อมราคา ${fmt(d)}`}
+      return {e,int:y.int,dep:y.dep,vatX,book,tax,det,add:book-tax,rent}});
+    const sum=f=>rows.reduce((s,r)=>s+f(r),0);const cy=rows.find(r=>r.e.getTime()===F.ye.getTime())||rows[0];
+    const perm=!hp&&car?S.pays.filter((_,j)=>!(x.end&&j===S.pays.length-1)).reduce((s,[,v])=>s+Math.max(0,v*(1+vat)-cap),0):0;
+    const wht=!hp?cy.rent*0.05:0;
+    $('xOut').innerHTML=`<h2>${hp?'เช่าซื้อ: ทรัพย์สินของผู้เช่าซื้อทางภาษี':'สัญญาเช่า / ลีสซิ่ง: หักค่าเช่าทางภาษี'}${car?' · รถยนต์นั่ง':''}</h2>
+      ${hp&&!F.x.own?alertBox('warn','เช่าซื้อโอนกรรมสิทธิ์เมื่อชำระครบ ควรเลือก "ค่อนข้างแน่นอนว่าจะได้กรรมสิทธิ์" ในแท็บ 2 เพื่อคิดค่าเสื่อมราคาตามอายุการใช้ประโยชน์ (14.35)'):''}
+      ${hp&&car?alertBox('warn','รถยนต์นั่ง: มูลค่าต้นทุนทางภาษีจำกัด 1,000,000 บาท อัตราไม่เกินร้อยละ 20 แอปไม่ได้รวมภาษีซื้อต้องห้ามของค่างวดเช่าซื้อ'):''}
+      ${figs([[`บัญชีปี ${BE(cy.e)}`,cy.book],[`ภาษีปี ${BE(cy.e)}`,cy.tax],['บวกกลับ (หักออก)',cy.add]])}
+      <div class="tbl"><table><thead><tr><th>ปี</th><th class="num">ค่าเสื่อมราคา</th><th class="num">ดอกเบี้ย</th>${car&&!hp?'<th class="num">ภาษีซื้อต้องห้าม</th>':''}<th class="num">บัญชีรวม</th><th class="num">ภาษี</th><th class="num">บวกกลับ</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td>${BE(r.e)}</td><td class="num">${fmt(r.dep)}</td><td class="num">${fmt(r.int)}</td>${car&&!hp?`<td class="num">${fmt(r.vatX)}</td>`:''}<td class="num">${fmt(r.book)}</td><td class="num">${fmt(r.tax)}</td><td class="num">${fmt(r.add)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>รวม</td><td class="num">${fmt(sum(r=>r.dep))}</td><td class="num">${fmt(sum(r=>r.int))}</td>${car&&!hp?`<td class="num">${fmt(sum(r=>r.vatX))}</td>`:''}<td class="num">${fmt(sum(r=>r.book))}</td><td class="num">${fmt(sum(r=>r.tax))}</td><td class="num">${fmt(sum(r=>r.add))}</td></tr></tfoot></table></div>
+      ${!hp?jeAuto(`จ่ายค่าเช่าปี ${BE(cy.e)} พร้อมภาษี`,[{dr:true,acct:'หนี้สินตามสัญญาเช่าเงินทุนและดอกเบี้ย',amt:cy.rent},{dr:true,acct:car?'ภาษีซื้อต้องห้าม (ค่าใช้จ่าย)':'ภาษีซื้อ',amt:cy.rent*vat},{dr:false,acct:'เงินสด',amt:cy.rent*(1+vat)-wht},{dr:false,acct:'ภาษีเงินได้หัก ณ ที่จ่ายค้างจ่าย (ร้อยละ 5)',amt:wht}],'ภาษีมูลค่าเพิ่มและภาษีหัก ณ ที่จ่ายคำนวณจากค่าเช่าไม่รวมภาษีมูลค่าเพิ่ม'):''}
+      ${facts('ตัวเลขบอกอะไร',[hp?`มูลค่าต้นทุนทางภาษี ${fmt(taxCost)} บาท คือราคาที่ต้องชำระทั้งหมดตามสัญญาเช่าซื้อ${x.idc?' บวกค่าธรรมเนียม (แนวการตีความ)':''} ค่าเสื่อมราคาสะสมไม่เกินค่าเช่าซื้อที่ต้องผ่อนชำระจนถึงรอบนั้น (คำสั่งกรมสรรพากรที่ ป.3/2527 ข้อ 7) ดอกเบี้ยตามบัญชีจึงบวกกลับ`:`ทางภาษีหักค่าเช่าที่ถึงกำหนดตามสัญญาในรอบระยะเวลาบัญชี (แนวการตีความ) ไม่หักค่าเสื่อมราคาและดอกเบี้ยตามบัญชี${x.idc?' แนวการตีความ: ค่าธรรมเนียมทำสัญญาถือเป็นต้นทุนสิทธิตามสัญญาเช่า ตัดตามอายุสัญญา':''}`,
+        perm?`ค่าเช่ารวมภาษีมูลค่าเพิ่มเกินเพดาน 36,000 บาทต่อเดือน ตลอดสัญญา ${fmt(perm)} บาท เป็นผลต่างถาวร (ม.65 ตรี (20) แนวการตีความ: นับภาษีซื้อต้องห้ามรวมในเพดาน) ยอดบวกกลับรวมในตาราง ${fmt(sum(r=>r.add))} บาท = ผลต่างถาวร ${fmt(perm)} บาท + ราคาสิทธิซื้อ ${fmt(sum(r=>r.add)-perm)} บาท ซึ่งเป็นต้นทุนรถยนต์ทางภาษีและหักค่าเสื่อมราคาในรอบบัญชีต่อไป จึงเป็นผลต่างชั่วคราว (แนวการตีความ)`:`ยอดรวมทั้งสัญญาบัญชี ${fmt(sum(r=>r.book))} กับภาษี ${fmt(sum(r=>r.tax))} ${Math.abs(sum(r=>r.add))<1?'เท่ากัน ผลต่างเป็นผลต่างชั่วคราว':'ต่างกันในส่วนที่ยังไม่ตัดหมดในงวดของสัญญา'}`,
+        'กิจการ NPAEs ไม่ต้องรับรู้ภาษีเงินได้รอการตัดบัญชี เว้นแต่เลือกตามย่อหน้า 15.2 และควรมีทะเบียนภาษีแยก'])}
+      <div class="tax"><b>หลักภาษี</b> ทางภาษีใช้รูปแบบทางกฎหมายของสัญญาและราคาทุนตามกฎหมาย ไม่ใช้การจัดประเภทตามบทที่ 14 ค่าเช่าทรัพย์สินที่จ่ายให้นิติบุคคลหัก ณ ที่จ่ายร้อยละ 5 (ม.3 เตรส และคำสั่งกรมสรรพากรที่ ท.ป.4/2528) ภาษีซื้อของรถยนต์นั่งเป็นภาษีซื้อต้องห้าม (ม.82/5 (6) ประกอบประกาศอธิบดีกรมสรรพากรเกี่ยวกับภาษีมูลค่าเพิ่ม ฉบับที่ 42) เพดานรถยนต์นั่งใช้กับรถยนต์นั่งหรือรถโดยสารไม่เกิน 10 ที่นั่ง ตรวจประเภทรถกับข้อหารือล่าสุดก่อนยื่นแบบ</div>
+      ${theory([['รูปแบบทางกฎหมาย','ลีสซิ่ง: หักค่าเช่าตามรอบบัญชี ไม่หักค่าเสื่อมราคาและดอกเบี้ยตามบัญชี ราคาซื้อเมื่อใช้สิทธิเป็นต้นทุนทรัพย์สิน (แนวการตีความ)'],['ป.3/2527 ข้อ 2 และข้อ 7','เช่าซื้อ: มูลค่าต้นทุนคือราคาที่ต้องชำระทั้งหมดตามสัญญา ค่าเสื่อมราคาสะสมไม่เกินค่าเช่าซื้อที่ต้องผ่อนชำระจนถึงรอบนั้น อัตราไม่เกินวิธีทางบัญชี'],['ม.65 ตรี (20)','รถยนต์นั่ง: ค่าเช่าเฉพาะส่วนไม่เกิน 36,000 บาทต่อเดือน (พ.ร.ฎ. ฉบับที่ 315 มาตรา 4 (2)) ต้นทุนหักค่าเสื่อมราคาเฉพาะส่วนไม่เกิน 1,000,000 บาท (มาตรา 4 (1)) อัตราไม่เกินร้อยละ 20 (พ.ร.ฎ. ฉบับที่ 145)'],['ม.82/5 (6)','ภาษีซื้อของรถยนต์นั่งเป็นภาษีซื้อต้องห้าม (ประกาศอธิบดีฯ ฉบับที่ 42)'],['15.1–15.2','NPAEs รับรู้ภาษีงวดปัจจุบัน เลือกภาษีเงินได้รอการตัดบัญชีได้']])}`;
+  }
+
+  /* =========================================================
+     7 DISCLOSURE (14.36, 14.39)
+     ========================================================= */
+  let NTXT='';
+  ['nCo','nOp'].forEach(id=>{$(id).addEventListener('input',nCalc);$(id).addEventListener('change',nCalc)});$('nCopy').addEventListener('click',()=>copyText(NTXT,'nCopied'));
+  function nCalc(){
+    const G=R.reg;if(!G||!$('nOut'))return;const T=G.T,co=$('nCo').value.trim()||'บริษัท',ye=G.ye;
+    const useOp=$('nOp').checked&&R.op&&!R.op.lessor;const om=[0,1,2].map(j=>T.om[j]+(useOp?R.op.fm[j]:0));const oex=T.oex+(useOp?R.op.cy.s:0);
+    const fm=T.fm[0]+T.fm[1]+T.fm[2];
+    const p1=`นโยบายการบัญชี: สัญญาเช่าที่โอนความเสี่ยงและผลตอบแทนของความเป็นเจ้าของเกือบทั้งหมดให้${co}จัดเป็นสัญญาเช่าเงินทุน รับรู้เป็นสินทรัพย์และหนี้สินด้วยมูลค่ายุติธรรมหรือมูลค่าปัจจุบันของจำนวนเงินขั้นต่ำที่ต้องจ่าย แล้วแต่จำนวนใดต่ำกว่า ค่าเช่าที่จ่ายแยกเป็นค่าใช้จ่ายทางการเงินและส่วนที่ลดหนี้สินให้อัตราดอกเบี้ยคงที่ สัญญาเช่าอื่นจัดเป็นสัญญาเช่าดำเนินงาน รับรู้ค่าเช่าเป็นค่าใช้จ่ายตามวิธีเส้นตรงตลอดอายุสัญญา`;
+    const p2=T.nF?`ณ วันที่ ${fmtD(ye)} สินทรัพย์ภายใต้สัญญาเช่าเงินทุนมีมูลค่าตามบัญชีสุทธิ ${fmt(T.nbv)} บาท จำนวนเงินขั้นต่ำที่ต้องจ่ายตามสัญญาเช่าเงินทุนรวม ${fmt(fm)} บาท หักค่าใช้จ่ายทางการเงินในอนาคต ${fmt(fm-T.L)} บาท มูลค่าปัจจุบัน ${fmt(T.L)} บาท (ไม่เกินหนึ่งปี ${fmt(T.fp[0])} บาท เกินหนึ่งปีแต่ไม่เกินห้าปี ${fmt(T.fp[1])} บาท${T.fp[2]?` เกินห้าปี ${fmt(T.fp[2])} บาท`:''}) (14.36)`:'';
+    const p3=`${co}มีภาระตามสัญญาเช่าดำเนินงานที่บอกเลิกไม่ได้ ไม่เกินหนึ่งปี ${fmt(om[0])} บาท เกินหนึ่งปีแต่ไม่เกินห้าปี ${fmt(om[1])} บาท${om[2]?` เกินห้าปี ${fmt(om[2])} บาท`:''} และรับรู้ค่าเช่าเป็นค่าใช้จ่ายในปี ${fmt(oex)} บาท (14.39)`;
+    NTXT=['สัญญาเช่า',p1,p2,p3].filter(Boolean).join('\n');const pw=T.nP?alertBox('warn',`ทะเบียนยังมีสัญญาที่ไม่ยืนยันประเภท ${T.nP} สัญญา ร่างหมายเหตุนี้ไม่รวมสัญญาเหล่านั้น ยืนยันในแท็บ 0 ก่อนคัดลอก`):'';
+    $('nOut').innerHTML=`<h2>ร่างหมายเหตุ</h2>${pw}${figs([['หนี้สินตามสัญญาเช่าเงินทุน',T.L],['มูลค่าสุทธิของสินทรัพย์',T.nbv],['ภาระสัญญาเช่าดำเนินงาน',om[0]+om[1]+om[2]]])}
+      <div class="note">${esc(p1)}</div>${p2?`<div class="note">${esc(p2)}</div>`:''}<div class="note">${esc(p3)}</div>
+      <h3>บรรทัดในงบการเงินตามแบบ 2 (แก้ไข 17 มี.ค. 2568) งบกำไรขาดทุนแบบจำแนกค่าใช้จ่ายตามธรรมชาติ</h3>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th>บรรทัด</th><th class="num">จำนวน</th></tr></thead><tbody>
+      <tr><td>สินทรัพย์ภายใต้สัญญาเช่าเงินทุน (สุทธิ)</td><td>2.10 ที่ดิน อาคารและอุปกรณ์ (อ. 2-4)</td><td class="num">${fmt(T.nbv)}</td></tr>
+      <tr><td>หนี้สินส่วนที่ถึงกำหนดชำระภายในหนึ่งปี</td><td>3.5 ส่วนของหนี้สินตามสัญญาเช่าเงินทุนที่ถึงกำหนดชำระภายในหนึ่งปี (อ. 2-5)</td><td class="num">${fmt(T.fp[0])}</td></tr>
+      <tr><td>หนี้สินส่วนที่เกินหนึ่งปี</td><td>4.2 หนี้สินตามสัญญาเช่าเงินทุน (อ. 2-6)</td><td class="num">${fmt(T.fp[1]+T.fp[2])}</td></tr>
+      <tr><td>ดอกเบี้ยตามสัญญาเช่าเงินทุน</td><td>12 ต้นทุนทางการเงิน (อ. 2-11)</td><td class="num">ดูแท็บ 2</td></tr>
+      <tr><td>ค่าเสื่อมราคาของสินทรัพย์ภายใต้สัญญาเช่าเงินทุน</td><td>7 ค่าเสื่อมราคาและค่าตัดจำหน่าย (อ. 2-10)</td><td class="num">ดูแท็บ 2</td></tr>
+      <tr><td>ตัดกำไร / ขาดทุนรอการตัดบัญชีจากการขายและเช่ากลับคืน</td><td>2 รายได้อื่น / 9 ค่าใช้จ่ายอื่น (อ. 2-10 2-11)</td><td class="num">ดูแท็บ 5</td></tr>
+      <tr><td>ผู้ให้เช่า: ลูกหนี้ตามสัญญาเช่า</td><td>1.3 ภายในหนึ่งปี (อ. 2-1) และ 2.6 ส่วนที่เกินหนึ่งปี (อ. 2-3)</td><td class="num">ดูแท็บ 4</td></tr>
+      <tr><td>ผู้ให้เช่า: รายได้ทางการเงินหรือรายได้ค่าเช่า</td><td>1 รายได้จากการขายหรือการให้บริการ (ธุรกิจหลัก) หรือ 2 รายได้อื่น (อ. 2-10)</td><td class="num">ดูแท็บ 3–4</td></tr></tbody></table></div>
+      ${theory([['14.36.1','มูลค่าตามบัญชีสุทธิของสินทรัพย์แต่ละประเภท'],['14.36.2','จำนวนเงินขั้นต่ำและมูลค่าปัจจุบันตามช่วงเวลา'],['14.39.1','ภาระสัญญาเช่าดำเนินงานตามช่วงเวลา'],['14.39.3','ค่าเช่าที่รับรู้สำหรับงวด']])}`;
+  }
+  gRender();kLoad('m');fLoad('m');oRender();sLoad('lsg');bLoad('2');
+  /* ---------- 8 QUIZ ---------- */
+  const QZ=[["LO 14.1", "จำ", "รายการใดรวมอยู่ในจำนวนเงินขั้นต่ำที่ผู้เช่าต้องจ่ายตามย่อหน้า 14.8", ["ก. ภาษีมูลค่าเพิ่มที่ผู้ให้เช่าเรียกเก็บพร้อมค่างวด", "ข. ค่าเช่าที่อาจเกิดขึ้นตามยอดขาย", "ค. มูลค่าคงเหลือที่ผู้เช่าประกันให้ผู้ให้เช่า", "ง. ค่าบำรุงรักษาที่รวมอยู่ในค่างวด"], 2, "ย่อหน้า 14.8.1 รวมมูลค่าคงเหลือที่ผู้เช่าหรือบุคคลที่เกี่ยวข้องประกัน ส่วนค่าเช่าที่อาจเกิดขึ้น ต้นทุนบริการ และภาษีที่ผู้ให้เช่าจ่ายและเรียกคืนจากผู้เช่าไม่รวม", "14.1"], ["LO 14.2", "เข้าใจ", "ตัวเลขร้อยละ 80 ในย่อหน้า 14.23.3 มีสถานะอย่างใด", ["ก. ตัวเลขประกอบที่มาตรฐานยกเป็นตัวอย่าง ข้อสรุปยังพิจารณาตามย่อหน้า 14.22 และ 14.24", "ข. เส้นตัด ถ้าต่ำกว่าร้อยละ 80 เป็นสัญญาเช่าดำเนินงานเสมอ", "ค. เกณฑ์ที่ใช้เฉพาะสัญญาเช่าที่ดิน", "ง. เกณฑ์ที่ใช้เฉพาะฝั่งผู้ให้เช่า"], 0, "ย่อหน้า 14.23.3 ขึ้นต้นด้วย \"เช่น\" และใช้คำว่า \"ประมาณอย่างน้อย\" ย่อหน้า 14.24 ยังให้จัดเป็นสัญญาเช่าดำเนินงานได้เมื่อมีลักษณะอื่นที่แน่ชัดว่าไม่ได้โอนความเสี่ยงและผลตอบแทน", "14.2"], ["LO 14.2", "วิเคราะห์", "เช่าที่ดินพร้อมอาคาร 30 ปี ไม่โอนกรรมสิทธิ์ มูลค่ายุติธรรมของสิทธิในที่ดินและในอาคารปันส่วนได้อย่างน่าเชื่อถือ ข้อใดถูก", ["ก. ทั้งสัญญาเป็นสัญญาเช่าเงินทุนเสมอ", "ข. ทั้งสัญญาเป็นสัญญาเช่าดำเนินงานเสมอ", "ค. ไม่ต้องแยกองค์ประกอบ ไม่ว่าส่วนที่ดินมีสาระสำคัญหรือไม่", "ง. ส่วนที่ดินเป็นสัญญาเช่าดำเนินงาน ส่วนอาคารจัดประเภทตามย่อหน้า 14.23–14.24"], 3, "ย่อหน้า 14.26–14.28 ให้แยกองค์ประกอบ ที่ดินมีอายุเชิงเศรษฐกิจไม่จำกัดและไม่โอนกรรมสิทธิ์จึงเป็นสัญญาเช่าดำเนินงาน อาคารจัดประเภทตามหลักทั่วไป ย่อหน้า 14.29 ยกเว้นเฉพาะเมื่อส่วนที่ดินไม่มีสาระสำคัญ", "14.3"], ["LO 14.3", "ประยุกต์ใช้", "มูลค่ายุติธรรมของสินทรัพย์ 1,000,000 บาท PV ของจำนวนเงินขั้นต่ำ 970,229.57 บาท ต้นทุนทางตรงเริ่มแรกของผู้เช่า 20,000 บาท ผู้เช่ารับรู้สินทรัพย์เริ่มแรกเท่าใด", ["ก. 1,000,000 บาท", "ข. 990,229.57 บาท", "ค. 1,020,000 บาท", "ง. 970,229.57 บาท"], 1, "ย่อหน้า 14.30 ใช้จำนวนที่ต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV คือ 970,229.57 บาท แล้วรวมต้นทุนทางตรงเริ่มแรกเข้าสินทรัพย์ (14.30–14.31) ได้ 990,229.57 บาท", "14.4"], ["LO 14.4", "ประยุกต์ใช้", "สัญญาเช่าดำเนินงาน 36 เดือน ปลอดค่าเช่า 3 เดือนแรก ค่าเช่ารวมตลอดสัญญา 2,052,000 บาท ค่าใช้จ่ายค่าเช่าต่อเดือนตามย่อหน้า 14.38 เท่าใด", ["ก. 60,000 บาท", "ข. 57,000 บาท", "ค. 62,181.82 บาท", "ง. 0 บาทในสามเดือนแรก"], 1, "ย่อหน้า 14.38 ให้รับรู้ตามวิธีเส้นตรงตลอดอายุสัญญา 2,052,000 ÷ 36 = 57,000 บาท รวมเดือนที่ปลอดค่าเช่าด้วย", "14.5"], ["LO 14.5", "วิเคราะห์", "ผู้ผลิตให้เช่าแบบสัญญาเช่าเงินทุนโดยโฆษณาอัตราดอกเบี้ยต่ำกว่าตลาด รายได้จากการขาย ณ วันเริ่มมีผลวัดอย่างไร", ["ก. ราคาป้ายเต็มจำนวน", "ข. PV ที่คิดลดด้วยอัตราที่โฆษณา", "ค. ต้นทุนผลิตบวกกำไรมาตรฐาน", "ง. ต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV ของจำนวนเงินขั้นต่ำที่คิดลดด้วยอัตราในท้องตลาด"], 3, "ย่อหน้า 14.46 และ 14.48 ให้ใช้อัตราเชิงพาณิชย์เมื่ออัตราที่ใช้ต่ำเกินจริง และรายได้จากการขายเป็นจำนวนที่ต่ำกว่าระหว่างมูลค่ายุติธรรมกับ PV ที่อัตราตลาด", "14.6"], ["LO 14.6", "วิเคราะห์", "ขายอาคารมูลค่าตามบัญชี 8,000,000 บาท ราคา 11,000,000 บาท มูลค่ายุติธรรม 10,000,000 บาท แล้วเช่ากลับแบบสัญญาเช่าดำเนินงาน ผู้ขายรับรู้กำไรทันทีเท่าใด", ["ก. 2,000,000 บาท", "ข. 3,000,000 บาท", "ค. 1,000,000 บาท", "ง. ไม่รับรู้ทันที"], 0, "ย่อหน้า 14.61.3 ให้ส่วนที่ราคาขายสูงกว่ามูลค่ายุติธรรม 1,000,000 บาทรอการตัดบัญชี ส่วนมูลค่ายุติธรรมเทียบมูลค่าตามบัญชีรับรู้ทันที 10,000,000 − 8,000,000 = 2,000,000 บาท", "14.7"], ["LO 14.7", "ประเมินค่า", "ผู้บริหารเสนอจัดสัญญาลีสซิ่งรถบรรทุกที่ PV ร้อยละ 97.6 ของมูลค่ายุติธรรมและมีสิทธิซื้อราคาต่ำมากเป็นสัญญาเช่าดำเนินงาน เพื่อให้อัตราส่วนหนี้สินผ่านเงื่อนไขเงินกู้ ข้อประเมินใดเหมาะสม", ["ก. ยอมรับได้ เพราะทางภาษีถือเป็นค่าเช่า", "ข. ยอมรับได้ เพราะอายุสัญญาต่ำกว่าร้อยละ 80 ของอายุเชิงเศรษฐกิจ", "ค. ไม่ยอมรับ ราคาสิทธิซื้อต่ำมาก PV เกือบเท่ามูลค่ายุติธรรม และไม่มีลักษณะหักล้างตาม 14.24 จึงเป็นสัญญาเช่าเงินทุน การจัดประเภทตามความต้องการด้านอัตราส่วนทำให้หนี้สินต่ำไป", "ง. ยอมรับได้ ถ้าเปิดเผยในหมายเหตุ"], 2, "ย่อหน้า 14.22 ให้จัดตามเนื้อหาของการโอนความเสี่ยงและผลตอบแทน การจัดประเภททางภาษีไม่เกี่ยว และหมายเหตุไม่แทนการรับรู้ที่ถูกต้อง", "14.9"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){
+    let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;
+      lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div><div class="fig"><div class="k">LO ที่บรรลุ</div><div class="v">${Object.values(lo).filter(x=>x.ok===x.n).length}/${Object.keys(lo).length}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  const goS=()=>{const m=(location.hash||'').match(/^#(S14\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+
+})();
+</script>
+</body></html>

@@ -1,0 +1,453 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 01 · เครื่องมือเริ่มใช้ NPAEs บทที่ 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="tl"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ชุดเครื่องมือประกอบตำรา การบัญชีตาม TFRS for NPAEs: หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565</span>
+  </div>
+    <style>
+  .tl{position:relative;margin:6px 0 0;padding-left:22px;border-left:3px solid var(--accent)}
+  .tl .ev{position:relative;margin:0 0 14px}
+  .tl .ev::before{content:"";position:absolute;left:-30px;top:6px;width:13px;height:13px;border-radius:50%;background:var(--accent)}
+  .tl .yr{font:600 15px var(--mono);color:var(--accent)}
+  .tl .src{font-size:13px;color:var(--muted)}
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  </style>
+  <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 1 ความเป็นมาและวัตถุประสงค์</div>
+      <h1>แอป 01 · เครื่องมือเริ่มใช้ TFRS for NPAEs</h1>
+      <p class="lede">ตรวจสถานะกิจการตามย่อหน้า 2.2 จัดทำทะเบียนทางเลือกทางบัญชีจากข้อเท็จจริงของกิจการ ร่างหมายเหตุนโยบายการบัญชี ทบทวนเส้นเวลาพัฒนาการของมาตรฐาน และทดสอบตนเองตาม LO ของบท</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>ย่อหน้า 1.1–1.4, 2.1–2.4, 28.1</b><br>ตำราบทที่ 1 หัวข้อ 1.8 · ฉบับ 16-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> ตรวจสถานะและทำทะเบียนทางเลือก → ร่างหมายเหตุ → ทบทวนเส้นเวลา → ทดสอบตนเอง</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="opt"><span class="n">0</span>สถานะและทะเบียนทางเลือก</button>
+    <button role="tab" aria-selected="false" data-tab="tl"><span class="n">1</span>เส้นเวลาพัฒนาการ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">2</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">3</span>เนื้อหาเสริม S1</button>
+  </nav>
+
+  <!-- 0 OPTIONS REGISTER -->
+  <div class="grid" data-pane="opt">
+    <section class="panel">
+      <h2>สถานะกิจการ (ย่อหน้า 2.2)</h2>
+      <p class="hint">ทำเครื่องหมายเมื่อกิจการเข้าลักษณะนั้น ถ้าเข้าข้อใดข้อหนึ่ง กิจการเป็นกิจการที่มีส่วนได้เสียสาธารณะ</p>
+      <span class="sample" id="oTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 1.1 บริษัท ตัวอย่างอุตสาหกรรม จำกัด</span>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" data-o="ex">ตัวอย่างที่ 1.1</button><button class="btn" data-o="case">กรณีศึกษา 1.1</button><button class="btn" data-o="ex4">โจทย์ข้อ 4</button><button class="btn" data-o="clr">ล้างทั้งหมด</button></div>
+      <div class="checks">
+        <label><input type="checkbox" id="p1"><span>มีตราสารทุนหรือตราสารหนี้ซื้อขายต่อประชาชน หรืออยู่ในกระบวนการยื่นงบการเงินเพื่อออกขายหลักทรัพย์ต่อประชาชน (2.2.1)</span></label>
+        <label><input type="checkbox" id="p2"><span>ธุรกิจหลักคือดูแลสินทรัพย์ของกลุ่มบุคคลภายนอกในวงกว้าง เช่น สถาบันการเงิน บริษัทประกันชีวิต บริษัทประกันวินาศภัย บริษัทหลักทรัพย์ กองทุนรวม ตลาดสินค้าเกษตรล่วงหน้าแห่งประเทศไทย (2.2.2)</span></label>
+        <label><input type="checkbox" id="p3"><span>เป็นบริษัทมหาชนตามกฎหมายว่าด้วยบริษัทมหาชน (2.2.3)</span></label>
+        <p class="hint" style="margin:2px 0 0">ข้อ 2.2.4 "กิจการอื่นที่จะกำหนดเพิ่มเติม" การค้นคว้าถึงพฤศจิกายน 2569 ไม่พบประกาศที่กำหนดกิจการเพิ่ม</p>
+      </div>
+      <h3>ข้อเท็จจริงของกิจการ</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="fPae"><span>ต้องการเลือกใช้ TFRS for PAEs ทุกฉบับโดยสมัครใจ (2.4)</span></label>
+        <label><input type="checkbox" id="fSub"><span>มีบริษัทย่อย</span></label>
+        <label><input type="checkbox" id="fOci"><span>ต้องการนำเสนองบกำไรขาดทุนเบ็ดเสร็จ (ทางเลือกตามย่อหน้า 4.14)</span></label>
+        <label><input type="checkbox" id="fPpe"><span>มีที่ดินหรืออาคารที่ราคาตลาดต่างจากราคาทุนมาก และผู้ใช้งบการเงินต้องการข้อมูลมูลค่า</span></label>
+        <label><input type="checkbox" id="fIp"><span>มีอสังหาริมทรัพย์ที่ถือไว้เพื่อให้เช่าหรือรอราคา</span></label>
+        <label><input type="checkbox" id="fIpFv"><span>ต้องการวัดอสังหาริมทรัพย์เพื่อการลงทุนด้วยมูลค่ายุติธรรม</span></label>
+        <label><input type="checkbox" id="fFx"><span>มีรายการหรือเงินกู้เงินตราต่างประเทศ</span></label>
+        <label><input type="checkbox" id="fFc"><span>รายได้และต้นทุนหลักเป็นเงินตราต่างประเทศ (พิจารณาสกุลเงินที่ใช้ในการดำเนินงาน)</span></label>
+        <label><input type="checkbox" id="fDt"><span>ต้องการรับรู้ภาษีเงินได้รอการตัดบัญชี</span></label>
+        <label><input type="checkbox" id="fAg"><span>มีสินทรัพย์ชีวภาพหรือผลิตผลทางการเกษตร (บทที่ 22)</span></label>
+        <label><input type="checkbox" id="fGr"><span>ได้รับเงินอุดหนุนจากรัฐบาล (บทที่ 23)</span></label>
+        <label><input type="checkbox" id="fDv"><span>มีอนุพันธ์ เช่น สัญญาซื้อขายเงินตราต่างประเทศล่วงหน้า (บทที่ 24)</span></label>
+        <label><input type="checkbox" id="fBc"><span>ซื้อธุรกิจหรือรวมธุรกิจ (บทที่ 25)</span></label>
+        <label><input type="checkbox" id="fMn"><span>สำรวจแหล่งทรัพยากรแร่ (บทที่ 26)</span></label>
+        <label><input type="checkbox" id="fSc"><span>มีข้อตกลงสัมปทานบริการกับรัฐ (บทที่ 27)</span></label>
+      </div>
+      <div class="fields" style="margin-top:10px">
+        <label class="f">ชื่อกิจการในร่างหมายเหตุ<input type="text" id="oCo" value="บริษัท"></label>
+        <label class="f">รอบบัญชีเริ่ม<input type="date" id="oStart" value="2025-01-01"></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="oOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 1 TIMELINE -->
+  <div class="grid" data-pane="tl" hidden>
+    <section class="panel">
+      <h2>เส้นเวลาพัฒนาการของมาตรฐาน (ตารางที่ 1-2)</h2>
+      <p class="hint">กดปุ่มกรองเพื่อดูเฉพาะเหตุการณ์ของไทยหรือของคณะกรรมการมาตรฐานการบัญชีระหว่างประเทศ (IASB) แต่ละรายการมีแหล่งอ้างอิงกำกับ</p>
+      <div class="row-actions" style="margin-bottom:10px"><button class="btn" data-t="all">ทั้งหมด</button><button class="btn" data-t="th">ประเทศไทย</button><button class="btn" data-t="iasb">IASB</button></div>
+      <div class="tl" id="tlBox"></div>
+    </section>
+  </div>
+
+  <!-- 2 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden>
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง</h2>
+      <p class="hint">ข้อสอบชุดเดียวกับแบบฝึกหัดท้ายบทส่วนที่ 1 ทุกข้อติดป้าย LO และระดับบลูม เลือกคำตอบแล้วดูผลทันที</p>
+      <div id="qBox"></div>
+      <div class="row-actions"><button class="btn" id="qReset">เริ่มใหม่</button></div>
+    </section>
+    <section class="panel voucher" id="qOut" aria-live="polite"></section>
+  </div>
+
+
+  <!-- 3 ONLINE SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden>
+    <section class="panel" style="grid-column:1/-1">
+      <h2>เนื้อหาเสริมออนไลน์ บทที่ 1</h2>
+      <p class="hint">ส่วนนี้ย้ายจากฉบับพิมพ์มาไว้ออนไลน์เพื่อลดจำนวนหน้า ในเล่มมีรหัส S1.1–S1.6 กำกับตรงจุดที่อ้างถึง เลือกรหัสด้านล่างเพื่อไปยังหัวข้อนั้น</p>
+      <div class="row-actions" style="margin-bottom:12px"><a class="btn" href="#S1.1">S1.1 เทียบฉบับ 2554–2565</a><a class="btn" href="#S1.2">S1.2 ลำดับการจัดทำ</a><a class="btn" href="#S1.3">S1.3 แผนที่ LO กับมาตรฐานการศึกษาระหว่างประเทศ ฉบับที่ 2 (IES 2)</a><a class="btn" href="#S1.4">S1.4 เฉลยแบบฝึกหัด</a><a class="btn" href="#S1.5">S1.5 แนวคำตอบกรณีศึกษา</a><a class="btn" href="#S1.6">S1.6 ทะเบียนทางเลือกครบทุกย่อหน้า</a></div>
+      <h3 id="S1.1">S1.1 เปรียบเทียบฉบับ 2554 กับฉบับปรับปรุง 2565 (อ้างจากหัวข้อ 1.5)</h3>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>ฉบับ 2554</th><th>ฉบับปรับปรุง 2565</th></tr></thead><tbody>
+      <tr><td>จำนวนบท</td><td>22 บท</td><td>28 บท (บทใหม่ 6 บท คือบทที่ 22–27)</td></tr>
+      <tr><td>เลขย่อหน้า</td><td>เรียงต่อเนื่องทั้งเล่ม 1–392</td><td>เลขบทนำหน้า เช่น 2.2, 14.23</td></tr>
+      <tr><td>นิยามกิจการที่ไม่มีส่วนได้เสียสาธารณะ</td><td>ย่อหน้า 6.1–6.4</td><td>ย่อหน้า 2.2.1–2.2.4 สาระเดียวกัน</td></tr>
+      <tr><td>ตัวอย่างกิจการที่ดูแลเงินลูกค้าแต่ยังเป็น NPAEs</td><td>ตัวแทนการท่องเที่ยว ตัวแทนหรือนายหน้าค้าอสังหาริมทรัพย์ (ย่อหน้า 7)</td><td>เพิ่มโรงรับจำนำ และบริษัทบริหารสินทรัพย์ที่เป็นบริษัทจำกัด (ย่อหน้า 2.3)</td></tr>
+      <tr><td>ทางเลือกใช้มาตรฐานชุดใหญ่</td><td>ใช้ TFRSs ทุกฉบับอย่างสม่ำเสมอ (ย่อหน้า 8)</td><td>ใช้ TFRS for PAEs ทุกฉบับอย่างสม่ำเสมอ (ย่อหน้า 2.4)</td></tr>
+      <tr><td>หลักการปรับปรุง</td><td>ไม่มี (ฉบับแรก)</td><td>สมบูรณ์ขึ้น คงความง่าย เพิ่มทางเลือก (ย่อหน้า 1.3)</td></tr>
+      <tr><td>วันถือปฏิบัติ</td><td>รอบที่เริ่มในหรือหลัง 1 มกราคม 2554 (ย่อหน้า 392)</td><td>รอบที่เริ่มในหรือหลัง 1 มกราคม 2566 (ย่อหน้า 28.1)</td></tr></tbody></table></div>
+      <h3 id="S1.2">S1.2 ลำดับการจัดทำฉบับปรับปรุง 2565 (อ้างจากหัวข้อ 1.7)</h3>
+      <div class="tbl"><table><thead><tr><th>ช่วงเวลา</th><th>กิจกรรม</th></tr></thead><tbody>
+      <tr><td>หลังปี 2554</td><td>สภาวิชาชีพบัญชีตั้งคณะอนุกรรมการศึกษาและปรับปรุงมาตรฐาน (ย่อหน้า 1.2 ไม่ระบุปี)</td></tr><tr><td>9 พ.ย. 2565</td><td>คณะกรรมการกำกับดูแลการประกอบวิชาชีพบัญชี ครั้งที่ 70 (4/2565) เห็นชอบ ให้ถือปฏิบัติกับรอบที่เริ่มในหรือหลัง 1 ม.ค. 2566 และอนุญาตให้ถือปฏิบัติก่อน</td></tr><tr><td>14 พ.ย. 2565</td><td>ประกาศสภาวิชาชีพบัญชี ที่ 48/2565</td></tr>
+      <tr><td>30 พ.ย. 2565</td><td>ประกาศในราชกิจจานุเบกษา เล่ม 139 ตอนพิเศษ 279 ง</td></tr><tr><td>1 ม.ค. 2566</td><td>วันเริ่มถือปฏิบัติ (ย่อหน้า 28.1)</td></tr><tr><td>26 มิ.ย. 2566</td><td>คณะกรรมการกำกับดูแลการประกอบวิชาชีพบัญชี ครั้งที่ 72 (2/2566) เห็นชอบประกาศที่ 34/2566 ยกเลิกประกาศที่ 13/2555 14/2555 และ 42/2563</td></tr></tbody></table></div>
+      <p class="hint">ตารางนี้แสดงเฉพาะเหตุการณ์ที่มีเอกสารเผยแพร่ยืนยัน คือ ย่อหน้า 1.2 และ 28.1 ของมาตรฐาน ประกาศในราชกิจจานุเบกษา และสรุปมติคณะกรรมการที่กรมพัฒนาธุรกิจการค้าเผยแพร่ ส่วนวันที่ลงนามและฉบับราชกิจจานุเบกษาของประกาศที่ 34/2566 ยังไม่ได้ตรวจกับต้นฉบับ</p>
+      <h3 id="S1.3">S1.3 แผนที่เชื่อม LO กับสมรรถนะ IES 2 (อ้างจากหน้าเปิดบท)</h3>
+      <div class="tbl"><table><thead><tr><th>รหัส</th><th>สมรรถนะด้านการบัญชีและการรายงานทางการเงิน</th><th>ระดับที่ IES คาดหวัง</th><th>ระดับที่บทฝึก</th></tr></thead><tbody>
+      <tr><td>LO 1.1–1.2</td><td>อธิบายบทบาทของมาตรฐานการรายงานทางการเงินและหน่วยงานกำหนดมาตรฐาน</td><td>พื้นฐาน</td><td>เข้าใจ</td></tr>
+      <tr><td>LO 1.3–1.5</td><td>ใช้มาตรฐานการรายงานทางการเงินกับรายการและเหตุการณ์ทางธุรกิจ</td><td>ขั้นสูง</td><td>ประยุกต์ใช้–วิเคราะห์</td></tr>
+      <tr><td>LO 1.6</td><td>ประเมินความเหมาะสมของนโยบายบัญชีที่ใช้จัดทำงบการเงิน</td><td>ขั้นสูง</td><td>ประเมินค่า</td></tr></tbody></table></div>
+      <h3 id="S1.4">S1.4 เฉลยแบบฝึกหัดท้ายบท</h3>
+      <p><b>ส่วนที่ 1:</b> ปรนัยข้อ 1. ค · 2. ข (ย่อหน้า 2.2.3) · 3. ข (ย่อหน้า 392 ฉบับ 2554) · 4. ข · 5. ข (ย่อหน้า 1.3.2) · 6. ค · 7. ข · 8. ค (ย่อหน้า 2.4) เหตุผลรายข้ออยู่ในแท็บ 2</p>
+      <p><b>ปรนัยข้อ 7:</b> การถือปฏิบัติกำหนดโดยย่อหน้า 28.1 คือรอบระยะเวลารายงานที่เริ่มในหรือหลัง 1 มกราคม 2566 รอบที่เริ่ม 1 เมษายน 2565 จึงยังใช้ฉบับ 2554 แม้ประกาศที่ 48/2565 ข้อ 2 ยกเลิกประกาศที่ 20/2554 ตั้งแต่วันประกาศในราชกิจจานุเบกษา (30 พฤศจิกายน 2565) ก็ตาม กิจการเลือกถือปฏิบัติก่อนได้ตามย่อหน้า 28.1</p>
+      <p><b>ส่วนที่ 2 โจทย์ปฏิบัติงาน</b></p>
+      <p><b>โจทย์ข้อ 1:</b> (ก) TFRS for NPAEs เกณฑ์ตามย่อหน้า 2.2 ไม่มีเรื่องขนาด หลักฐาน: หนังสือรับรองนิติบุคคล ทะเบียนผู้ถือหุ้น (ข) TFRS for PAEs เพราะเป็นบริษัทมหาชนจำกัด (ย่อหน้า 2.2.3) แม้หุ้นไม่ได้ซื้อขาย หลักฐาน: หนังสือรับรองบริษัทมหาชน (ค) TFRS for PAEs เพราะอยู่ในกระบวนการนำส่งงบการเงินต่อ ก.ล.ต. เพื่อเสนอขายหลักทรัพย์ต่อประชาชน (ย่อหน้า 2.2.1) ไม่ต้องรอให้หุ้นเริ่มซื้อขาย หลักฐาน: หนังสือยื่นต่อ ก.ล.ต. และมติคณะกรรมการ (ง) TFRS for NPAEs การยกเว้นการตรวจสอบเป็นเรื่องผู้สอบบัญชี ไม่เปลี่ยนมาตรฐานที่ใช้ หลักฐาน: หนังสือรับรองนิติบุคคลและข้อมูลที่ใช้ตรวจเกณฑ์ยกเว้น</p>
+      <p><b>โจทย์ข้อ 2:</b> (ก) สัญญาซื้อขายเงินตราต่างประเทศล่วงหน้า ใช้บทที่ 24 อนุพันธ์ (ข) เงินอุดหนุนจากรัฐเพื่อซื้อเครื่องจักร ใช้บทที่ 23 (ค) สุกรขุนเป็นสินทรัพย์ชีวภาพ ใช้บทที่ 22 เกษตรกรรม (ง) ซื้อกิจการพร้อมพนักงานและสัญญาเช่า พิจารณาว่าเป็นธุรกิจหรือไม่ตามบทที่ 25 ทั้งสี่เรื่องเป็นบทใหม่ตามหลักสมบูรณ์ขึ้น (ย่อหน้า 1.3.1) ก่อนปี 2566 ผู้ทำบัญชีต้องหาแนวทางเองหรืออ้างมาตรฐานชุดใหญ่ สิ่งที่ต้องเตรียม: สัญญาและข้อมูลมูลค่ายุติธรรมของอนุพันธ์ เงื่อนไขของเงินอุดหนุน ข้อมูลจำนวนและน้ำหนักสุกร และรายการสินทรัพย์และหนี้สินที่รับโอนพร้อมราคาที่จ่าย</p>
+      <p><b>โจทย์ข้อ 3:</b> (ก) รอบ 1 เมษายน 2566 – 31 มีนาคม 2567 เป็นรอบแรกที่เริ่มในหรือหลัง 1 มกราคม 2566 (ย่อหน้า 28.1) (ข) ขาดทุนจากการเปลี่ยนแปลงมูลค่ายุติธรรม 720 − 450 = 270 ล้านบาท รับรู้ในงบกำไรขาดทุน (ย่อหน้า 12.18) ส่วนของเจ้าของลดจาก 1,820 เหลือ 1,550 ล้านบาท หนี้สินต่อส่วนของเจ้าของ 2,400 ÷ 1,550 = 1.55 เท่า (จาก 1.32 เท่า) (ค) ทางภาษีใช้ราคาทุนตามมาตรา 65 ทวิ (2) บวกกลับขาดทุน 270 ล้านบาทในการคำนวณกำไรสุทธิ และหักค่าเสื่อมราคาตามราคาทุนแทน ส่วนผลต่าง 220 ล้านบาท ณ วันเปลี่ยนนโยบายปรับกำไรสะสมและไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) (ง) ข้อ 1.4.3: ธนาคารได้มูลค่าหลักประกันที่เป็นปัจจุบัน ข้อ 1.4.4: กำไรผันผวนตามราคาตลาด ผู้ใช้ที่เปรียบเทียบหลายปีต้องอ่านนโยบายในหมายเหตุ</p>
+      <p><b>โจทย์ข้อ 4:</b> ใช้แท็บ 0 ปุ่ม "โจทย์ข้อ 4" ทะเบียนควรมี (1) งบการเงินรวม บทที่ 4 เป็นทางเลือก ชั่งประโยชน์ของผู้ใช้กับต้นทุน (2) ที่ดิน บทที่ 10 เลือกวิธีตีราคาใหม่ถ้าผู้ใช้ต้องการข้อมูลมูลค่า ทางภาษีใช้ราคาทุน ส่วนที่ตีราคาเพิ่มไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) (3) งบกำไรขาดทุนเบ็ดเสร็จ บทที่ 4 เป็นทางเลือก (ย่อหน้า 4.14) แม้มีส่วนเกินทุนจากการตีราคา กิจการแสดงในงบการเปลี่ยนแปลงส่วนของเจ้าของได้ (ย่อหน้า 10.20) (4) สกุลเงินที่ใช้ในการดำเนินงาน บทที่ 21 ย่อหน้า 21.17–21.18 ถ้าสภาพแวดล้อมเศรษฐกิจหลักเป็นดอลลาร์สหรัฐ ตัวอย่างหมายเหตุ: "ที่ดินแสดงด้วยราคาที่ตีใหม่ซึ่งประเมินโดยผู้ประเมินราคาอิสระ บริษัทตีราคาใหม่เมื่อมูลค่ายุติธรรมต่างจากมูลค่าตามบัญชีอย่างมีสาระสำคัญ ส่วนที่ตีราคาเพิ่มแสดงเป็นส่วนเกินทุนจากการตีราคาสินทรัพย์ในส่วนของเจ้าของ"</p>
+      <h3 id="S1.5">S1.5 แนวคำตอบกรณีศึกษา 1.1 (สำหรับผู้สอน)</h3>
+      <p>ทาง (ข) เหมาะที่สุดในกรณีนี้ เพราะเป็นทางเลือกที่มาตรฐานเปิดไว้ (ย่อหน้า 1.3.3) ให้ข้อมูลมูลค่าที่ธนาคารใช้ได้ (1.4.3) และไม่ต้องรับภาระทั้งชุดของ TFRS for PAEs ซึ่งต้องใช้ทุกฉบับ (2.4) บริษัทต้องตีราคาใหม่เมื่อมูลค่ายุติธรรมต่างจากมูลค่าตามบัญชีอย่างมีสาระสำคัญ (ย่อหน้า 10.16) ส่วนเกินทุนจากการตีราคาสินทรัพย์เข้าส่วนของเจ้าของ (ย่อหน้า 10.20) และทางภาษีใช้ราคาทุนเท่านั้น ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) ทาง (ค) ต้นทุนต่ำสุด แต่ข้อมูลนอกงบการเงินมีน้ำหนักน้อยกว่าในสายตาผู้ให้กู้ ผู้ตอบควรชี้ว่าการเลือกทางเลือกควรสะท้อนเหตุผลทางเศรษฐกิจ ไม่ใช่เพื่อผ่านเกณฑ์อัตราส่วนเท่านั้น</p>
+          <h3 id="S1.6">S1.6 ทะเบียนทางเลือกทางบัญชีครบทุกย่อหน้า (อ้างจากหมายเหตุใต้ตารางที่ 1-4)</h3>
+      <div class="tbl"><table><thead><tr><th>ย่อหน้า</th><th>เรื่อง</th><th>ถ้อยคำในมาตรฐาน</th><th>ค่าเริ่มต้นถ้าไม่เลือก</th></tr></thead><tbody>
+      <tr><td>2.4</td><td>ใช้ TFRS for PAEs ทุกฉบับแทน</td><td>ต้องใช้ทุกฉบับอย่างสม่ำเสมอ</td><td>TFRS for NPAEs</td></tr>
+      <tr><td>4.2</td><td>งบกระแสเงินสด</td><td>ไม่บังคับ ถ้าจัดทำใช้ TAS 7</td><td>ไม่จัดทำ</td></tr>
+      <tr><td>4.4</td><td>งบการเงินระหว่างกาล</td><td>ไม่บังคับ ถ้าจัดทำเลือกรูปแบบตาม TAS 34 ได้</td><td>ไม่จัดทำ</td></tr>
+      <tr><td>4.13</td><td>การจัดประเภทค่าใช้จ่าย</td><td>เลือกตามหน้าที่หรือจำแนกค่าใช้จ่ายตามธรรมชาติตามดุลยพินิจของผู้บริหาร</td><td>ไม่มีค่าเริ่มต้น</td></tr>
+      <tr><td>4.14</td><td>งบกำไรขาดทุนเบ็ดเสร็จ</td><td>ไม่บังคับ</td><td>งบกำไรขาดทุน</td></tr>
+      <tr><td>4.21</td><td>ข้อมูลบุคคลหรือกิจการที่เกี่ยวข้องกัน</td><td>ไม่บังคับ ถ้าเปิดเผยใช้ TAS 24</td><td>ไม่เปิดเผย</td></tr>
+      <tr><td>4.22</td><td>ข้อมูลเครื่องมือทางการเงิน</td><td>ไม่บังคับ ถ้าเปิดเผยใช้ข้อกำหนดที่เกี่ยวข้องของ TFRS for PAEs</td><td>ไม่เปิดเผย</td></tr>
+      <tr><td>4.23</td><td>งบการเงินรวมหรือวิธีส่วนได้เสีย</td><td>ไม่บังคับ</td><td>ไม่จัดทำ แสดงเงินลงทุนตามบทที่ 9</td></tr>
+      <tr><td>8.9</td><td>วิธีคำนวณต้นทุนสินค้า</td><td>ราคาเจาะจง เข้าก่อนออกก่อน หรือถัวเฉลี่ย</td><td>ไม่มีค่าเริ่มต้น</td></tr>
+      <tr><td>10.12, 10.16</td><td>การวัดมูลค่าที่ดิน อาคารและอุปกรณ์</td><td>วิธีราคาทุนหรือวิธีตีราคาใหม่</td><td>วิธีราคาทุน</td></tr>
+      <tr><td>10.34</td><td>วิธีคิดค่าเสื่อมราคา</td><td>เลือกวิธีที่สะท้อนรูปแบบของประโยชน์เชิงเศรษฐกิจ</td><td>ไม่มีค่าเริ่มต้น</td></tr>
+      <tr><td>12.15, 12.18</td><td>อสังหาริมทรัพย์เพื่อการลงทุน</td><td>วิธีราคาทุนหรือวิธีมูลค่ายุติธรรม</td><td>วิธีราคาทุน</td></tr>
+      <tr><td>15.2</td><td>ภาษีเงินได้รอการตัดบัญชี</td><td>เลือกถือปฏิบัติตาม TAS 12</td><td>ภาษีงวดปัจจุบัน</td></tr>
+      <tr><td>19.4</td><td>รายได้จากการขายอสังหาริมทรัพย์</td><td>เลือกวิธีรับรู้ตามเงื่อนไขของรายได้</td><td>ไม่มีค่าเริ่มต้น</td></tr>
+      <tr><td>21.17–21.18</td><td>สกุลเงินที่ใช้ในการดำเนินงาน</td><td>สกุลอื่นที่ไม่ใช่เงินบาทได้ตามเงื่อนไข</td><td>เงินบาท</td></tr>
+      <tr><td>22.10</td><td>สินทรัพย์ชีวภาพและผลิตผลทางการเกษตร</td><td>วิธีราคาทุนหรือวิธีมูลค่ายุติธรรม</td><td>ไม่มีค่าเริ่มต้น</td></tr>
+      <tr><td>23.11</td><td>เงินอุดหนุนที่เกี่ยวกับสินทรัพย์</td><td>แสดงเป็นรายได้รอการรับรู้ หรือหักจากมูลค่าของสินทรัพย์</td><td>ไม่มีค่าเริ่มต้น</td></tr>
+      <tr><td>24.3</td><td>รายการอนุพันธ์</td><td>เปิดเผยในหมายเหตุ วิธีคงค้างอย่างง่าย รับรู้มูลค่ายุติธรรมเริ่มแรก หรือการบัญชีป้องกันความเสี่ยง</td><td>ไม่มีค่าเริ่มต้น</td></tr>
+      <tr><td>25.7</td><td>ได้มาซึ่งสินทรัพย์ที่เป็นหน่วยธุรกิจ</td><td>ซื้อสินทรัพย์ หรือรวมธุรกิจ (วิธีซื้อหรือวิธีภายใต้การควบคุมเดียวกัน)</td><td>ไม่มีค่าเริ่มต้น</td></tr>
+      <tr><td>27.1</td><td>ข้อตกลงสัมปทานบริการ</td><td>เลือกถือปฏิบัติตามบทนี้ทั้งบท</td><td>ไม่ถือปฏิบัติตามบทนี้</td></tr>
+      </tbody></table></div>
+      <p class="hint">ตารางนี้สรุปถ้อยคำทางเลือกจากตัวบท ชื่อย่อ TAS 7, TAS 12, TAS 24 และ TAS 34 หมายถึงมาตรฐานการบัญชี ฉบับที่ 7 งบกระแสเงินสด ฉบับที่ 12 ภาษีเงินได้ ฉบับที่ 24 การเปิดเผยข้อมูลเกี่ยวกับบุคคลหรือกิจการที่เกี่ยวข้องกัน และฉบับที่ 34 การรายงานทางการเงินระหว่างกาล ทางเลือกที่เลือกแล้วใช้อย่างสม่ำเสมอ (ย่อหน้า 5.8)</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ใช้ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 1 ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพ ข้อมูลที่กรอกไม่ถูกส่งออกจากเครื่องของคุณ</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 1.1 · กรณีศึกษา 1.1 · แบบฝึกหัดส่วนที่ 1</span>
+  </footer>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=2)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:d});
+  const pct=(x,d=2)=>isFinite(x)?(x*100).toFixed(d)+'%':'–';
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* ---------- shared renderers ---------- */
+  function je(title,lines,ref){
+    const rows=lines.map(l=>l.dr
+      ?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`
+      :`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,isPct])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${isPct?pct(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const facts=(title,items)=>`<div class="facts"><h4>${esc(title)}</h4><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  const theory=(items,open)=>`<details class="theory"${open?' open':''}><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes01tab',name)}catch(e){}
+  }
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='opt';
+  const h=(location.hash||'').slice(1);
+  if(names.includes(h)) start=h; else {try{const s=localStorage.getItem('npaes01tab'); if(names.includes(s)) start=s}catch(e){}}
+  show(start);
+
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-'||s==='–')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  const nz=v=>isFinite(v)?v:0;
+  function fmtD(d){return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`}
+  function parseDate(v){
+    if(v instanceof Date&&!isNaN(v)) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+    if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*86400000));return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}
+    const s=String(v||'').trim();if(!s) return null;
+    let m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if(m){let y=+m[1];if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[3])}
+    m=s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+    if(m){let y=+m[3];if(y<100)y+=y>50?2500:2000;if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[1])}
+    return null;
+  }
+  function parseCSV(text){
+    const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true; else if(ch===delim){row.push(f);f=''} else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''} else if(ch!=='\r') f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+  }
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{const x=$(okId);if(x)x.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,fb); else fb();}
+  const r2=x=>Math.round(x*100)/100;
+  function jeAuto(title,lines,ref){const L=lines.filter(l=>Math.abs(l.amt)>=0.005);if(!L.length)return '';
+    const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);return je(title,dr.concat(cr),ref)}
+  const alertBox=(cls,html)=>`<div class="alert ${cls}">${html}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const DAY=86400000;const days=(a,b)=>Math.max(0,Math.round((b-a)/DAY));
+  const yfrac=(a,b)=>Math.max(0,(b.getFullYear()-a.getFullYear())+(b.getMonth()-a.getMonth())/12+(b.getDate()-a.getDate())/365);
+  /* ============ 0 STATUS + OPTIONS REGISTER ============ */
+  const IDS=['p1','p2','p3','fPae','fSub','fOci','fPpe','fIp','fIpFv','fFx','fFc','fDt','fAg','fGr','fDv','fBc','fMn','fSc'];
+  const OS={ex:['ตัวอย่างที่ 1.1 บริษัท ตัวอย่างอุตสาหกรรม จำกัด',['fIp','fIpFv','fFx','fGr','fDv'],'บริษัท ตัวอย่างอุตสาหกรรม จำกัด'],
+    case:['กรณีศึกษา 1.1 บริษัท สยามวัสดุก่อสร้าง จำกัด (ทาง ข)',['fPpe','fOci'],'บริษัท สยามวัสดุก่อสร้าง จำกัด'],
+    ex4:['โจทย์ปฏิบัติงานข้อ 4',['fSub','fPpe','fOci','fFx','fFc'],'บริษัท'],clr:['ไม่มีข้อมูล',[],'บริษัท']};
+  function oLoad(k){const s=OS[k];IDS.forEach(id=>$(id).checked=s[1].includes(id));$('oCo').value=s[2];$('oTag').textContent='ข้อมูลตัวอย่าง: '+s[0];oCalc()}
+  document.querySelectorAll('[data-o]').forEach(b=>b.addEventListener('click',()=>oLoad(b.dataset.o)));
+  IDS.concat(['oCo','oStart']).forEach(id=>{$(id).addEventListener('change',oCalc);$(id).addEventListener('input',oCalc)});
+  let REG=[],NOTE='';
+  function oCalc(){
+    const c=id=>$(id).checked;const pae=c('p1')||c('p2')||c('p3');const co=$('oCo').value.trim()||'บริษัท';
+    const st=parseDate($('oStart').value)||new Date(2025,0,1);const ver=st>=new Date(2023,0,1)?'ฉบับปรับปรุง 2565':'ฉบับ 2554 (เว้นแต่เลือกถือปฏิบัติก่อน)';
+    REG=[];const add=(t,ch,choice,why,tax)=>REG.push([t,ch,choice,why,tax]);
+    if(pae){add('สถานะกิจการ','บทที่ 2','ใช้ TFRS for PAEs (บังคับ)','เข้าเกณฑ์ย่อหน้า 2.2','–')}
+    else if(c('fPae')){add('สถานะกิจการ','บทที่ 2','เลือกใช้ TFRS for PAEs ทุกฉบับ','ย่อหน้า 2.4 ต้องใช้ทุกฉบับอย่างสม่ำเสมอ','–')}
+    else{
+      add('สถานะกิจการ','บทที่ 2','ใช้ TFRS for NPAEs '+ver,'ไม่เข้าเกณฑ์ย่อหน้า 2.2 (28.1)','–');
+      add('งบกำไรขาดทุนเบ็ดเสร็จ','บทที่ 4 (4.14)',c('fOci')?'เลือกนำเสนองบกำไรขาดทุนเบ็ดเสร็จ':'นำเสนองบกำไรขาดทุน',c('fOci')?'ทางเลือกที่เพิ่มในฉบับปรับปรุง (1.3.3) มาตรฐานไม่บังคับ (4.14)':(c('fPpe')?'มาตรฐานไม่บังคับ (4.14) ส่วนเกินทุนจากการตีราคารับรู้ในส่วนของเจ้าของโดยตรงและแสดงในงบการเปลี่ยนแปลงส่วนของเจ้าของ (10.20)':'มาตรฐานไม่บังคับ (4.14)'),'–');
+      add('งบกระแสเงินสดและงบการเงินระหว่างกาล','บทที่ 4 (4.2, 4.4)','ไม่จัดทำ เว้นแต่ผู้ใช้งบการเงินต้องการ','ถ้าจัดทำงบกระแสเงินสดใช้ TAS 7 ถ้าจัดทำงบการเงินระหว่างกาลเลือกรูปแบบตาม TAS 34 ได้','–');
+      add('งบการเงินรวมหรือวิธีส่วนได้เสีย','บทที่ 4 (4.23)',c('fSub')?'พิจารณาจัดทำงบการเงินรวม (ทางเลือก)':'ไม่เกี่ยวข้อง',c('fSub')?'มีบริษัทย่อย ชั่งประโยชน์ของผู้ใช้กับต้นทุน (1.4.1)':'ไม่มีบริษัทย่อย','–');
+      add('ที่ดิน อาคารและอุปกรณ์','บทที่ 10',c('fPpe')?'วิธีตีราคาใหม่':'วิธีราคาทุน',c('fPpe')?'ผู้ใช้งบการเงินต้องการข้อมูลมูลค่า (1.4.3) ตีราคาใหม่เมื่อมูลค่ายุติธรรมต่างอย่างมีสาระสำคัญ (10.16)':'คงความง่าย (1.3.2)',c('fPpe')?'ภาษีใช้ราคาทุน (ม.65 ทวิ (2)–(3)) มีผลต่างทุกปี':'–');
+      if(c('fIp'))add('อสังหาริมทรัพย์เพื่อการลงทุน','บทที่ 12',c('fIpFv')?'วิธีมูลค่ายุติธรรม':'วิธีราคาทุน',c('fIpFv')?'ผู้ใช้ต้องการมูลค่าหลักประกัน (1.4.3) ผลต่างเข้ากำไรขาดทุน':'คงความง่าย (1.3.2)',c('fIpFv')?'ภาษีใช้ราคาทุน (ม.65 ทวิ (2)–(3)) มีผลต่างทุกปี':'–');
+      add('ภาษีเงินได้','บทที่ 15',c('fDt')?'รับรู้ภาษีเงินได้รอการตัดบัญชี':'รับรู้เฉพาะภาษีงวดปัจจุบัน',c('fDt')?'ผู้ใช้ต้องการภาระภาษีในอนาคต (15.2)':'ลดต้นทุนการจัดทำ (15.1)','ควรมีทะเบียนผลต่างภาษีทั้งสองกรณี');
+      if(c('fFx')||c('fFc'))add('สกุลเงิน','บทที่ 21',c('fFc')?'พิจารณาสกุลเงินที่ใช้ในการดำเนินงานที่ไม่ใช่เงินบาท':'สกุลเงินบาท',c('fFc')?'สภาพแวดล้อมเศรษฐกิจหลักเป็นสกุลอื่น (21.17–21.18; การเปลี่ยนผ่าน 28.5.10)':'รายได้และต้นทุนหลักเป็นเงินบาท','ผลต่างอัตราแลกเปลี่ยนตามมาตรา 65 ทวิ (5)');
+      [['fAg','เกษตรกรรม','บทที่ 22','ต้องเลือกวิธีราคาทุนหรือวิธีมูลค่ายุติธรรม (22.10)'],['fGr','เงินอุดหนุนจากรัฐบาล','บทที่ 23','เลือกวิธีแสดงเงินอุดหนุนที่เกี่ยวกับสินทรัพย์ 1 ใน 2 วิธี (23.11)'],['fDv','อนุพันธ์','บทที่ 24','ต้องเลือก 1 ใน 4 วิธี (24.3)'],['fBc','การรวมธุรกิจ','บทที่ 25','ถ้าได้มาซึ่งหน่วยธุรกิจ เลือกบันทึกเป็นการซื้อสินทรัพย์หรือการรวมธุรกิจ (25.7)'],['fMn','การสำรวจแหล่งทรัพยากรแร่','บทที่ 26','ศึกษาข้อกำหนดในบทที่ 26'],['fSc','ข้อตกลงสัมปทานบริการ','บทที่ 27','เลือกถือปฏิบัติตามบทนี้ทั้งบทได้ (27.1)']]
+        .forEach(([id,t,ch,opt])=>{if(c(id))add(t,ch+' (บทใหม่)',opt,'บทใหม่ครอบคลุมธุรกรรมนี้ (1.3.1)','พิจารณาใน'+ch)});
+    }
+    const nNew=REG.filter(r=>/บทใหม่/.test(r[1])).length,nTax=REG.filter(r=>/มีผลต่างทุกปี/.test(r[4])).length;
+    const pol=REG.filter(r=>!/ไม่เกี่ยวข้อง/.test(r[2])&&r[0]!=='สถานะกิจการ').map(r=>`${r[0]}: ${r[2]}`).join(' · ');
+    NOTE=pae||c('fPae')?`${co}จัดทำงบการเงินตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่มีส่วนได้เสียสาธารณะ (TFRS for PAEs)`:
+      `เกณฑ์การจัดทำงบการเงิน: ${co}จัดทำงบการเงินตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (ปรับปรุง 2565) ที่ออกโดยสภาวิชาชีพบัญชี นโยบายการบัญชีที่สำคัญที่เลือกตามทางเลือกในมาตรฐาน ได้แก่ ${pol}`;
+    $('oOut').innerHTML=`<h2>ผลการตรวจและทะเบียนทางเลือก</h2>
+      ${verdict(pae?'warn':'ok',pae?'กิจการที่มีส่วนได้เสียสาธารณะ':(c('fPae')?'NPAEs ที่เลือกใช้ TFRS for PAEs':'ใช้ TFRS for NPAEs'),pae?'เข้าเกณฑ์ย่อหน้า 2.2 ต้องใช้ TFRS for PAEs ทุกฉบับ ทะเบียนทางเลือกของ TFRS for NPAEs จึงไม่เกี่ยวข้อง':(c('fPae')?'ย่อหน้า 2.4 ต้องใช้ TFRS for PAEs ทุกฉบับอย่างสม่ำเสมอ เลือกเฉพาะบางเรื่องไม่ได้':'ไม่เข้าเกณฑ์ข้อใดในย่อหน้า 2.2 ฉบับที่ใช้ตามรอบบัญชี: '+ver))}
+      ${figs([['รายการในทะเบียน',REG.length],['ธุรกรรมที่ใช้บทใหม่',nNew],['ทางเลือกที่มีผลต่างภาษี',nTax]])}
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>บท</th><th>ทางเลือก</th><th>เหตุผล</th><th>ผลทางภาษี</th></tr></thead><tbody>${REG.map(r=>`<tr>${r.map(x=>`<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <div class="row-actions"><button class="btn" id="oCopy">คัดลอกทะเบียนไป Excel</button><span class="copied" id="oCopied" hidden>คัดลอกแล้ว</span><button class="btn primary" id="nCopy">คัดลอกร่างหมายเหตุ</button><span class="copied" id="nCopied" hidden>คัดลอกแล้ว</span></div>
+      <div class="note"><div class="cap">ร่างหมายเหตุนโยบายการบัญชี (บทที่ 4)</div>${esc(NOTE)}</div>
+      ${facts('ข้อเท็จจริงจากข้อมูลของกิจการ',[pae?'กิจการเข้าเกณฑ์กิจการที่มีส่วนได้เสียสาธารณะ ควรตรวจหลักฐาน เช่น หนังสือรับรองบริษัทมหาชนหรือใบอนุญาตประกอบธุรกิจ':`กิจการใช้ TFRS for NPAEs ได้ ทะเบียนนี้มี ${REG.length} เรื่อง ควรให้ผู้มีอำนาจอนุมัติและเก็บไว้กับแฟ้มนโยบายบัญชี`,
+        nNew?`มีธุรกรรม ${nNew} เรื่องที่ต้องใช้บทใหม่ ก่อนปี 2566 ผู้ทำบัญชีต้องหาแนวทางเอง ตอนนี้ใช้ข้อกำหนดในบทนั้นได้โดยตรง`:'ไม่มีธุรกรรมที่ต้องใช้บทใหม่',
+        nTax?`มีทางเลือก ${nTax} เรื่องที่ทำให้ตัวเลขบัญชีต่างจากภาษี ควรเปิดทะเบียนภาษีตั้งแต่ปีแรก`:'ทางเลือกที่เลือกไม่สร้างผลต่างภาษีถาวรจากการวัดมูลค่า',
+        'ทางเลือกทุกข้อควรใช้สม่ำเสมอ การเปลี่ยนภายหลังเป็นการเปลี่ยนนโยบายการบัญชีตามบทที่ 5'])}
+      ${theory([['1.3','หลักการปรับปรุง: สมบูรณ์ขึ้น คงความง่าย เพิ่มทางเลือก'],['1.4','วัตถุประสงค์ 4 ข้อ ใช้เป็นเหตุผลการเลือก'],['2.2','เกณฑ์กิจการที่มีส่วนได้เสียสาธารณะ'],['2.4','เลือกใช้ TFRS for PAEs ต้องใช้ทุกฉบับอย่างสม่ำเสมอ'],['28.1','ถือปฏิบัติกับรอบที่เริ่มในหรือหลัง 1 มกราคม 2566 อนุญาตให้ถือปฏิบัติก่อน']])}`;
+    $('oCopy').addEventListener('click',()=>copyText([['เรื่อง','บท','ทางเลือก','เหตุผล','ผลทางภาษี']].concat(REG).map(r=>r.join('\t')).join('\n'),'oCopied'));
+    $('nCopy').addEventListener('click',()=>copyText(NOTE,'nCopied'));
+  }
+  /* ============ 1 TIMELINE ============ */
+  const TL=[['ก่อน 2554','th','มาตรฐานชุดเดียวอ้างอิง IFRS ใช้กับทุกกิจการ สภาวิชาชีพบัญชีประกาศยกเว้นบางฉบับให้กิจการที่ไม่มีส่วนได้เสียสาธารณะ','TFRS for NPAEs ฉบับ 2554 ย่อหน้า 1, 3'],
+    ['2552 (2009)','iasb','IASB ออก IFRS for SMEs ฉบับแรก เดือนกรกฎาคม','IFRS Foundation'],
+    ['2554','th','ประกาศสภาวิชาชีพบัญชี ฉบับที่ 20/2554 (12 เม.ย. 2554) TFRS for NPAEs ฉบับแรก 22 บท ถือปฏิบัติ 1 มกราคม 2554','ราชกิจจานุเบกษา เล่ม 128 ตอนพิเศษ 53 ง (6 พ.ค. 2554)'],
+    ['2558 (2015)','iasb','IASB ปรับปรุง IFRS for SMEs ฉบับที่ 2','IFRS Foundation'],
+    ['2554–2563','th','ประกาศเพิ่มเติม 4 ฉบับ: 29/2554 คำอธิบายการปฏิบัติตามข้อกำหนด 13/2555 ข้อกำหนดเพิ่มเติม (รวมเรื่องงบการเงินระหว่างกาล) 14/2555 การปฏิบัติในช่วงเปลี่ยนแปลง และ 42/2563 การตีราคาใหม่ของที่ดิน อาคารและอุปกรณ์ และมูลค่ายุติธรรมของอสังหาริมทรัพย์เพื่อการลงทุน ฉบับปรับปรุง 2565 รวมสาระไว้ในเล่มเดียว','ย่อหน้า 1.3.2 และหน้ามาตรฐานของสภาวิชาชีพบัญชี'],
+    ['2559–2560','th','สภาวิชาชีพบัญชีเผยแพร่ร่าง TFRS for SMEs (1 สิงหาคม 2559 และ 26 เมษายน 2560) แล้วคณะกรรมการสภาวิชาชีพบัญชี ครั้งที่ 2/2560 มีมติวันที่ 5 กรกฎาคม 2560 ให้นำร่างกลับไปทบทวนเพื่อให้เหมาะกับสภาวะแวดล้อมของธุรกิจไทย ร่างนี้ไม่เคยประกาศในราชกิจจานุเบกษา','รายงานประจำปี 2560 สภาวิชาชีพบัญชี และ IFRS Foundation (2024)'],
+    ['2565','th','ประกาศที่ 48/2565 (14 พ.ย. 2565) TFRS for NPAEs ฉบับปรับปรุง 28 บท รวมบทใหม่ 6 บท','ตัวมาตรฐาน'],
+    ['2566','th','ฉบับปรับปรุงถือปฏิบัติกับรอบที่เริ่มในหรือหลัง 1 มกราคม 2566','ย่อหน้า 28.1'],
+    ['2566','th','ประกาศที่ 34/2566 ยกเลิกประกาศที่ 13/2555 14/2555 และ 42/2563 (คณะกรรมการกำกับดูแลการประกอบวิชาชีพบัญชีเห็นชอบ ครั้งที่ 72 วันที่ 26 มิถุนายน 2566) ส่วนประกาศที่ 29/2554 สิ้นผลเมื่อฉบับปรับปรุงมีผลใช้บังคับ','หน้ามาตรฐานของสภาวิชาชีพบัญชี และสรุปมติคณะกรรมการ'],
+    ['2568 (2025)','iasb','IASB ออก IFRS for SMEs ฉบับที่ 3 เดือนกุมภาพันธ์ ถือปฏิบัติ 1 มกราคม 2027','IFRS Foundation'],
+    ['2568','th','สภาวิชาชีพบัญชีเผยแพร่คำถาม-คำตอบเกี่ยวกับประเด็นในทางปฏิบัติของ TFRS for NPAEs (ปรับปรุง 2565) วันที่ 17 มีนาคม 2568 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)','สภาวิชาชีพบัญชี'],
+    ['2569','th','ถึงพฤศจิกายน 2569 ยังไม่มีร่างปรับปรุง TFRS for NPAEs ฉบับใหม่ ฉบับปรับปรุง 2565 ยังเป็นฉบับที่ใช้บังคับ','หน้ามาตรฐานของสภาวิชาชีพบัญชี (ปรับปรุงหน้าเว็บ 9 มิถุนายน 2569)']];
+  function tRender(f){$('tlBox').innerHTML=TL.filter(e=>f==='all'||e[1]===f).map(e=>`<div class="ev"><div class="yr">${esc(e[0])} <span class="pill ${e[1]==='th'?'ok':'warn'}">${e[1]==='th'?'ไทย':'IASB'}</span></div><div>${esc(e[2])}</div><div class="src">${esc(e[3])}</div></div>`).join('')}
+  document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>tRender(b.dataset.t)));
+  /* ============ 2 QUIZ ============ */
+  const QZ=[['LO 1.1','เข้าใจ','เกณฑ์ใดใช้แบ่งกิจการที่มีส่วนได้เสียสาธารณะออกจากกิจการที่ไม่มีส่วนได้เสียสาธารณะ',['รายได้ต่อปีเกิน 500 ล้านบาท','จำนวนพนักงาน','ความรับผิดชอบต่อสาธารณะ','ทุนจดทะเบียน'],2,'ย่อหน้า 2.2 ใช้ความรับผิดชอบต่อสาธารณะ ไม่ใช่ขนาด'],
+    ['LO 1.1','เข้าใจ','ข้อใดเป็นกิจการที่มีส่วนได้เสียสาธารณะ',['บริษัทจำกัดที่มีรายได้ 2,000 ล้านบาท','บริษัทมหาชนจำกัดที่ยังไม่จดทะเบียนในตลาดหลักทรัพย์','ตัวแทนการท่องเที่ยวที่รับเงินจากลูกค้า','ห้างหุ้นส่วนจำกัด'],1,'บริษัทมหาชนจำกัดเข้าเกณฑ์ 2.2.3 ส่วนตัวแทนการท่องเที่ยวเป็นตัวอย่างใน 2.3'],
+    ['LO 1.2','เข้าใจ','บริษัทจำกัดที่มีรอบบัญชีตามปีปฏิทินเริ่มใช้ TFRS for NPAEs ฉบับแรกได้กับรอบที่เริ่มในหรือหลังวันใด',['1 มกราคม 2552','1 มกราคม 2554','1 มกราคม 2560','1 มกราคม 2566'],1,'ย่อหน้า 392 ของฉบับ 2554'],
+    ['LO 1.2','เข้าใจ','ก่อนมี TFRS for NPAEs สภาวิชาชีพบัญชีลดภาระของกิจการขนาดกลางและขนาดย่อมด้วยวิธีใด',['ใช้ IFRS for SMEs','ประกาศยกเว้นการบังคับใช้มาตรฐานบางฉบับ','ให้ใช้หลักภาษีแทนมาตรฐาน','ไม่บังคับให้จัดทำงบการเงิน'],1,'ฉบับ 2554 ย่อหน้า 3'],
+    ['LO 1.3','วิเคราะห์','การรวมเรื่องการตีราคาใหม่ของที่ดิน อาคารและอุปกรณ์เข้ามาไว้ในฉบับปรับปรุง สอดคล้องกับหลักการข้อใดมากที่สุด',['สมบูรณ์ขึ้น','คงความง่าย และรวมประกาศเข้าไว้ในฉบับเดียว','ลดทางเลือก','สอดคล้องกับภาษี'],1,'ย่อหน้า 1.3.2 ยกตัวอย่างการตีราคาใหม่ไว้เอง'],
+    ['LO 1.3','วิเคราะห์','บทใดไม่ใช่บทใหม่ในฉบับปรับปรุง 2565',['อนุพันธ์','การรวมธุรกิจ','สัญญาเช่า','ข้อตกลงสัมปทานบริการ'],2,'สัญญาเช่าเป็นบทที่ 14 มีตั้งแต่ฉบับ 2554'],
+    ['LO 1.4','ประยุกต์ใช้','รอบบัญชี 1 เม.ย. 2565 – 31 มี.ค. 2566 และไม่ได้เลือกถือปฏิบัติก่อน ใช้ฉบับใด',['ฉบับปรับปรุง 2565','ฉบับ 2554','ฉบับใดก็ได้','TFRS for PAEs'],1,'รอบเริ่มก่อน 1 มกราคม 2566 (28.1)'],
+    ['LO 1.5','ประยุกต์ใช้','กิจการ NPAEs ต้องการใช้ข้อกำหนดเรื่องเครื่องมือทางการเงินของ TFRS for PAEs เพียงเรื่องเดียว ข้อใดถูกต้อง',['ทำได้ถ้าเปิดเผยในหมายเหตุ','ทำได้ถ้าผู้สอบบัญชียินยอม','ทำไม่ได้ ต้องเลือกใช้ TFRS for PAEs ทุกฉบับ','ทำได้เฉพาะปีแรก'],2,'ย่อหน้า 2.4 ให้เลือกใช้ TFRS for PAEs ได้เฉพาะทุกฉบับอย่างสม่ำเสมอ']];
+  let ANS={};
+  function qRender(){$('qBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} · [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}"${ANS[i]===j?' checked':''}><span>${'กขคง'[j]}. ${esc(o)}</span></label>`).join('')}<div class="fb" id="fb${i}"></div></div>`).join('');qCalc()}
+  $('qBox').addEventListener('change',e=>{const m=e.target.name&&e.target.name.match(/^q(\d+)$/);if(m){ANS[+m[1]]=+e.target.value;qCalc()}});
+  $('qReset').addEventListener('click',()=>{ANS={};qRender()});
+  function qCalc(){
+    let ok=0,done=0;const by={};
+    QZ.forEach((q,i)=>{by[q[0]]=by[q[0]]||[0,0];const fb=$('fb'+i);if(ANS[i]==null){fb.innerHTML='';return}done++;by[q[0]][1]++;
+      const r=ANS[i]===q[4];if(r){ok++;by[q[0]][0]++}fb.innerHTML=`<span class="${r?'ok-t':'bad-t'}">${r?'ถูก':'ยังไม่ถูก คำตอบคือ '+'กขคง'[q[4]]}</span> · ${esc(q[5])}`});
+    $('qOut').innerHTML=`<h2>ผลรายวัตถุประสงค์</h2>${figs([['ตอบแล้ว',done],['ถูก',ok],['ร้อยละ',done?ok/done:0,true]])}
+      <div class="tbl"><table><thead><tr><th>LO</th><th class="num">ถูก/ตอบ</th><th>หากยังไม่บรรลุ กลับไปอ่าน</th></tr></thead><tbody>${Object.entries(by).map(([k,[a,b]])=>`<tr><td>${k}</td><td class="num">${a}/${b}</td><td>${({'LO 1.1':'1.1','LO 1.2':'1.2','LO 1.3':'1.3–1.5','LO 1.4':'1.6–1.7','LO 1.5':'1.8'})[k]}</td></tr>`).join('')}</tbody></table></div>
+      ${facts('สิ่งที่ควรทำต่อ',[done<QZ.length?'ตอบให้ครบทุกข้อก่อนสรุปผล':(ok===QZ.length?'ผ่านทุกข้อ ทำกรณีศึกษา 1.1 ต่อเพื่อฝึก LO 1.6 ระดับประเมินค่า':'กลับไปอ่านหัวข้อตามตาราง แล้วทำข้อที่ผิดอีกครั้ง'),'LO 1.6 วัดด้วยกรณีศึกษาพร้อมเกณฑ์ให้คะแนน ไม่อยู่ในแบบทดสอบปรนัยนี้'])}`;
+  }
+  oLoad('ex');tRender('all');qRender();
+  const goS=()=>{const m=(location.hash||'').match(/^#(S1\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body></html>

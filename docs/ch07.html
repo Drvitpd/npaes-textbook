@@ -1,0 +1,1323 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 07 · เครื่องคำนวณค่าเผื่อหนี้สงสัยจะสูญ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+  <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 7 ลูกหนี้</div>
+      <h1>แอป 07 · เครื่องคำนวณค่าเผื่อหนี้สงสัยจะสูญ</h1>
+      <p class="lede">เลือกวิธีให้เหมาะกับโครงสร้างลูกหนี้และกลุ่มอุตสาหกรรม แล้วนำข้อมูลลูกหนี้ของกิจการเข้ามาหาอัตราร้อยละที่คาดว่าจะเก็บไม่ได้ คำนวณค่าเผื่อ และรับรายการบันทึกบัญชี หมายเหตุประกอบงบ ผลทางภาษี พร้อมทฤษฎีรองรับและคำอธิบายว่าตัวเลขของกิจการบอกอะไร</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 7 ย่อหน้า 7.1–7.9</b><br>ตำราบทที่ 7 · ฉบับปรับปรุง 16-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> เลือกวิธี → นำเข้ารายงานอายุ → ประเมินรายตัว → หาอัตราจากข้อมูล → ตารางจำแนกอายุ → ตัดจำหน่ายและหนี้สูญได้รับคืน → ภาษี → เปิดเผยข้อมูล</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" id="t-pick" aria-selected="false" data-tab="pick"><span class="n">▶</span>เลือกวิธี</button>
+    <button role="tab" id="t-imp" aria-selected="false" data-tab="imp"><span class="n">0</span>นำเข้ารายงานอายุ</button>
+    <button role="tab" id="t-spec" aria-selected="false" data-tab="spec"><span class="n">1</span>ประเมินรายตัว</button>
+    <button role="tab" id="t-rate" aria-selected="false" data-tab="rate"><span class="n">2</span>หาอัตราจากข้อมูล</button>
+    <button role="tab" id="t-aging" aria-selected="false" data-tab="aging"><span class="n">3</span>ตารางจำแนกอายุ</button>
+    <button role="tab" id="t-sales" aria-selected="false" data-tab="sales"><span class="n">4</span>ร้อยละของยอดขายเชื่อ</button>
+    <button role="tab" id="t-wo" aria-selected="false" data-tab="wo"><span class="n">5</span>ตัดจำหน่ายและได้รับคืน</button>
+    <button role="tab" id="t-tax" aria-selected="false" data-tab="tax"><span class="n">6</span>ภาษี</button>
+    <button role="tab" id="t-disc" aria-selected="false" data-tab="disc"><span class="n">7</span>เปิดเผยข้อมูล</button>
+    <button role="tab" id="t-quiz" aria-selected="false" data-tab="quiz"><span class="n">8</span>แบบทดสอบตนเอง</button>
+    <button role="tab" id="t-sup" aria-selected="false" data-tab="sup"><span class="n">9</span>เนื้อหาเสริม S7</button>
+  </nav>
+
+
+  <!-- PICK -->
+  <div class="grid" data-pane="pick" hidden>
+    <section class="panel">
+      <h2>เลือกวิธีประมาณค่าเผื่อ (ตารางที่ 7-2 และ 7-6)</h2>
+      <p class="hint">ตอบข้อมูลโครงสร้างลูกหนี้ แอปไล่ขั้นตอนเลือกวิธีหกขั้น และแสดงแนวทางของกลุ่มอุตสาหกรรมที่เลือก ทั้งหมดเป็นแนวการตีความ มาตรฐานกำหนดเพียงสามวิธีในย่อหน้า 7.5</p>
+      <span class="sample">ข้อมูลตัวอย่าง: บริษัท ค้าส่งตัวอย่าง จำกัด</span>
+      <div class="fields">
+        <label class="f">กลุ่มอุตสาหกรรม<select id="pkInd"><option value="ws">ค้าส่งและจัดจำหน่าย</option><option value="rt">ค้าปลีกและขายออนไลน์</option><option value="mf">ผลิตขายลูกค้ารายใหญ่ไม่กี่ราย</option><option value="cn">รับเหมาก่อสร้าง</option><option value="re">อสังหาริมทรัพย์</option><option value="ps">บริการวิชาชีพ เช่น สำนักงานบัญชี</option><option value="hp">โรงพยาบาลและคลินิก</option><option value="sc">โรงเรียนเอกชน</option><option value="ag">เกษตรและอาหาร</option><option value="ex">ส่งออก</option><option value="rp">กิจการที่เกี่ยวข้องกันและกรรมการ</option><option value="ot">อื่น ๆ</option></select></label>
+        <label class="f">จำนวนลูกหนี้ (ราย)<input class="num" type="number" min="1" id="pkN" value="120"></label>
+        <label class="f">ยอดของลูกหนี้ 5 รายแรก (% ของทั้งหมด)<input class="num" type="number" min="0" max="100" id="pkTop" value="35"></label>
+        <label class="f">ข้อมูลที่มี<select id="pkData"><option value="m">รายงานอายุรายเดือนอย่างน้อย 24 เดือน</option><option value="y">รายงานอายุสิ้นปีหลายปี</option><option value="c">หนี้สูญตามรุ่นยอดขาย</option><option value="n">ข้อมูลไม่พอ หรือกิจการใหม่</option></select></label>
+        <label class="f">หลักประกันหรือประกันสินเชื่อ<select id="pkColl"><option value="0">ไม่มี</option><option value="1">มีบางส่วน</option><option value="2">ครอบคลุมเกือบทั้งหมด</option></select></label>
+      </div>
+      <h3>คู่สัญญาที่มี</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="pkGov"><span>หน่วยงานรัฐ บริษัทประกัน หรือกองทุน</span></label>
+        <label><input type="checkbox" id="pkRel" checked><span>กิจการที่เกี่ยวข้องกันหรือกรรมการ</span></label>
+        <label><input type="checkbox" id="pkFx"><span>ลูกค้าต่างประเทศ</span></label>
+        <label><input type="checkbox" id="pkInt" checked><span>ต้องการรับรู้ค่าใช้จ่ายหนี้สงสัยจะสูญรายเดือน</span></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="pkOut" aria-live="polite"></section>
+  </div>
+  <!-- 0 IMPORT -->
+  <div class="grid" data-pane="imp" hidden>
+    <section class="panel">
+      <h2>นำเข้ารายงานอายุลูกหนี้</h2>
+      <p class="hint">เลือกไฟล์ Excel (.xlsx, .xls) หรือ CSV (ไฟล์ข้อความคั่นด้วยจุลภาค) ที่ส่งออกจากโปรแกรมบัญชี รับได้สองแบบ: <b>รายการใบแจ้งหนี้รายใบ</b> ที่มีวันครบกำหนดและยอดคงค้าง (แอปคำนวณอายุและจัดช่วงให้) หรือ <b>รายงานสรุปอายุรายลูกค้า</b> ที่แยกคอลัมน์ตามช่วงอายุแล้ว ไฟล์ถูกอ่านในเครื่องของคุณเท่านั้น ไม่ถูกส่งออกไปที่ใด</p>
+      <div class="fields">
+        <label class="f">ไฟล์รายงาน<input type="file" id="impFile" accept=".xlsx,.xls,.csv,.txt"></label><p class="hint" style="grid-column:1/-1;margin:0">ไฟล์ .xlsx ใช้ได้เมื่อเชื่อมต่ออินเทอร์เน็ต (แอปโหลดตัวอ่านไฟล์เมื่อเลือกไฟล์) เมื่อออฟไลน์ให้ใช้ CSV (UTF-8)</p>
+        <label class="f">วันสิ้นงวด (วันที่ของรายงาน)<input type="date" id="impDate" value="2025-12-31"></label>
+      </div>
+      <div class="row-actions">
+        <button class="btn" id="impSample">โหลดไฟล์ตัวอย่าง</button>
+        <button class="btn" id="impTpl">คัดลอกหัวตารางแม่แบบ</button><span class="copied" id="impTplOk" hidden>คัดลอกแล้ว วางใน Excel ได้</span>
+      </div>
+      <p class="hint" id="impStatus" style="margin-top:8px">ยังไม่ได้เลือกไฟล์ แสดงไฟล์ตัวอย่าง: รายการใบแจ้งหนี้ของบริษัทสมมติ ณ 31 ธ.ค. 2568</p>
+      <div class="checks" style="margin:6px 0 10px"><label><input type="checkbox" id="impAnon" checked><span><b>ปกปิดชื่อลูกค้า</b> แปลงชื่อเป็นรหัส (ลูกหนี้ 001, 002, …) ทันทีที่อ่านไฟล์ ก่อนคำนวณและแสดงผล ชื่อจริงไม่ปรากฏบนหน้าจอและไม่ถูกส่งต่อไปแท็บอื่น</span></label></div>
+      <div class="row-actions" id="impKeyWrap" style="margin-top:-4px" hidden><button class="btn" id="impKey">คัดลอกตารางจับคู่รหัสกับชื่อ</button><span class="copied" id="impKeyOk" hidden>คัดลอกแล้ว เก็บไว้ในไฟล์ของกิจการเอง</span></div>
+      <div id="impSheetWrap" hidden><label class="f">แผ่นงาน<select id="impSheet"></select></label></div>
+
+      <h3>จับคู่คอลัมน์</h3>
+      <p class="hint">แอปเดาคอลัมน์จากหัวตารางให้แล้ว ตรวจและแก้ได้</p>
+      <div class="fields">
+        <label class="f">แถวหัวตาราง<input class="num" type="number" min="1" id="impHdr" value="1"></label>
+        <label class="f">รูปแบบรายงาน<select id="impMode"><option value="inv">รายการใบแจ้งหนี้ (คำนวณอายุเอง)</option><option value="sum">สรุปอายุรายลูกค้า (มีคอลัมน์ช่วงอายุ)</option></select></label>
+      </div>
+      <div class="fields" style="margin-top:10px">
+        <label class="f">ชื่อลูกค้า<select id="mapCust"></select></label>
+        <label class="f" data-m="inv">วันครบกำหนด<select id="mapDue"></select></label>
+        <label class="f" data-m="inv">วันที่ใบแจ้งหนี้ (ถ้าไม่มีวันครบกำหนด)<select id="mapInv"></select></label>
+        <label class="f" data-m="inv">เครดิต (วัน)<select id="mapTerms"></select></label>
+        <label class="f" data-m="inv">ยอดคงค้าง<select id="mapAmt"></select></label>
+      </div>
+      <div data-m="sum" style="margin-top:10px"><div class="hint" style="margin-bottom:4px">คอลัมน์ช่วงอายุ เรียงจากใหม่ไปเก่า</div><div class="checks" id="mapBuckets"></div></div>
+
+      <h3>ช่วงอายุ (นับจากวันครบกำหนด)</h3>
+      <div class="fields">
+        <label class="f">ขอบบนของแต่ละช่วง (วัน)<input type="text" id="impBounds" value="30, 60, 90, 120"></label>
+        <label class="f">หน่วยเมื่อส่งต่อ<select id="impUnit"><option value="1">บาท</option><option value="1000" selected>พันบาท</option></select></label>
+        <label class="f">ยอดคุมลูกหนี้ในบัญชีแยกประเภท (บาท)<input class="num" type="number" id="impGL" value="7455400"></label>
+        <label class="f">ลูกหนี้รายใหญ่ที่ควรประเมินรายตัว (ราย)<input class="num" type="number" min="0" id="impTopN" value="3"></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="impOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 1 SPECIFIC -->
+  <div class="grid" data-pane="spec" hidden>
+    <section class="panel">
+      <h2>ประเมินลูกหนี้เป็นรายตัว</h2>
+      <p class="hint">คัดเลือกลูกหนี้รายใหญ่และรายที่มีข้อบ่งชี้ แล้วประมาณจำนวนที่คาดว่าจะได้รับ ค่าเผื่อ = ยอดหนี้ − เงินรับหลังวันสิ้นงวด − หลักประกันสุทธิ − ยอดที่คาดว่าจะได้รับตามแผนชำระ</p>
+      <span class="sample">ข้อมูลตัวอย่าง (พันบาท): หจก. ข. (ตัวอย่างที่ 7.3) และบริษัท จ. จำกัด ลูกหนี้รายใหญ่ที่ไม่พบข้อบ่งชี้</span>
+      <p class="hint">ใช้หน่วยเงินเดียวกับแท็บ 2 และแท็บ 3 ข้อมูลตัวอย่างทั้งชุดแสดงเป็นพันบาท</p>
+      <div class="tbl"><table style="min-width:760px">
+        <thead><tr><th>ลูกหนี้</th><th>ระดับ</th><th class="num">ยอดหนี้</th><th class="num">รับหลังสิ้นงวด</th><th class="num">หลักประกันสุทธิ</th><th class="num">ยอดตามแผน</th><th class="num">ได้ตามแผน %</th><th class="num">ค่าเผื่อ</th><th></th></tr></thead>
+        <tbody id="spBody"></tbody>
+        <tfoot><tr><td>รวม</td><td></td><td class="num" id="spTotal">0</td><td></td><td></td><td></td><td></td><td class="num" id="spAllow">0</td><td></td></tr></tfoot>
+      </table></div>
+      <div class="row-actions">
+        <button class="btn" id="spAdd">เพิ่มลูกหนี้</button>
+        <button class="btn" id="spReset">คืนค่าตัวอย่าง</button>
+      </div>
+      <h3>ระดับความเสี่ยง (แนวทางภายในของกิจการ ตามตาราง S7.3-1)</h3>
+      <div class="tbl"><table>
+        <tbody>
+          <tr><td><b>1 ปกติ</b></td><td>ชำระตามนัด ไม่มีข้อบ่งชี้ → ไม่ตั้งรายตัว กลับไปรวมในกลุ่มตามอายุ</td></tr>
+          <tr><td><b>2 เฝ้าระวัง</b></td><td>ชำระช้าแต่ติดต่อได้ → ไม่ตั้งรายตัว คงอยู่ในกลุ่ม ติดตามใกล้ชิด</td></tr>
+          <tr><td><b>3 ผิดนัด/ผ่อนผัน</b></td><td>ผิดนัด ขอผ่อนผัน เช็คคืน → ประมาณจากแผนชำระที่ทำได้จริงและหลักประกัน</td></tr>
+          <tr><td><b>4 ดำเนินคดี</b></td><td>ถูกฟ้อง หยุดกิจการ ติดต่อไม่ได้ → ประมาณจากทรัพย์สินที่บังคับคดีได้</td></tr>
+          <tr><td><b>5 ล้มละลาย/สูญ</b></td><td>ล้มละลาย ไม่มีทรัพย์สิน → ตั้งเกือบเต็มจำนวน หรือพิจารณาตัดจำหน่าย (ย่อหน้า 7.7)</td></tr>
+        </tbody></table></div>
+
+      <h3>แบบประเมินรายตัวหนึ่งหน้า (หัวข้อ 7.5)</h3>
+      <p class="hint">เกณฑ์คัดเลือก: ขนาด ข้อบ่งชี้ หรือไม่มีกลุ่มความเสี่ยงร่วม ค่าเผื่อรายตัว = ยอดคงค้าง − (เงินรับหลังวันสิ้นงวด + หลักประกันสุทธิ + แผนชำระที่ปฏิบัติได้จริง + ส่วนแบ่งจากคดี)</p>
+      <div class="fields">
+        <label class="f">ยอดลูกหนี้รวม (ใช้หาเกณฑ์ขนาด)<input class="num" type="number" min="0" id="fTot" value="6786"></label>
+        <label class="f">เกณฑ์ขนาด (% ของยอดรวม)<input class="num" type="number" min="0" max="100" step="0.5" id="fPct" value="5"></label>
+        <label class="f">รหัสลูกหนี้<input type="text" id="fCode" value="หจก. ข."></label>
+        <label class="f">ยอดคงค้าง<input class="num" type="number" min="0" id="fBal" value="50"></label>
+        <label class="f">เหตุที่คัดเลือก<select id="fWhy"><option value="i" selected>มีข้อบ่งชี้</option><option value="s">ขนาดถึงเกณฑ์</option><option value="g">ไม่มีกลุ่มความเสี่ยงร่วม</option></select></label>
+        <label class="f">ระดับความเสี่ยง (ตารางที่ 7-5)<select id="fLv"><option value="1">1 ปกติ</option><option value="2">2 เฝ้าระวัง</option><option value="3">3 ผิดนัดหรือผ่อนผัน</option><option value="4">4 ดำเนินคดี</option><option value="5" selected>5 ล้มละลายหรือสูญ</option></select></label>
+        <label class="f">เงินรับหลังวันสิ้นงวด<input class="num" type="number" min="0" id="fAft" value="0"></label>
+        <label class="f">หลักประกันสุทธิ<input class="num" type="number" min="0" id="fCol" value="0"></label>
+        <label class="f">แผนชำระที่ปฏิบัติได้จริง<input class="num" type="number" min="0" id="fPlan" value="0"></label>
+        <label class="f">ส่วนแบ่งที่คาดจากคดี<input class="num" type="number" min="0" id="fCase" value="10"></label>
+        <label class="f" style="grid-column:1/-1">หลักฐานอ้างอิง<input type="text" id="fEv" value="ข้อมูลคดีล้มละลายและรายงานทรัพย์สินของลูกหนี้"></label>
+      </div>
+      <div class="checks" style="margin-top:10px">
+        <label><input type="checkbox" id="fI1"><span>ผิดนัดหรือเช็คคืน</span></label>
+        <label><input type="checkbox" id="fI2"><span>ขอผ่อนผันหรือปรับโครงสร้างหนี้</span></label>
+        <label><input type="checkbox" id="fI3" checked><span>ถูกฟ้อง ฟื้นฟูกิจการ หรือล้มละลาย</span></label>
+        <label><input type="checkbox" id="fI4"><span>เลิกกิจการ ติดต่อไม่ได้ หรือโต้แย้งหนี้</span></label>
+        <label><input type="checkbox" id="fEx" checked><span>ตัดยอดนี้ออกจากฐานกลุ่มในแท็บ 3 แล้ว</span></label>
+      </div>
+      <div id="fOut" style="margin-top:12px"></div>
+      <h3>ยอดค่าเผื่อรายตัวก่อนปรับปรุง</h3>
+      <div class="fields"><label class="f">ด้านเครดิต (บาท)<input class="num" id="spPrior" type="number" min="0" step="1" value="0"></label></div>
+    </section>
+    <section class="panel voucher" id="spOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 2 RATE FINDER -->
+  <div class="grid" data-pane="rate" hidden>
+    <section class="panel">
+      <h2>หาอัตราจากข้อมูลจริงของกิจการ</h2>
+      <p class="hint">วางรายงานอายุลูกหนี้ ณ สิ้นเดือน ต่อเนื่องอย่างน้อย 13 เดือน คัดลอกจาก Excel ได้ทันที บรรทัดแรกเป็นหัวตาราง คอลัมน์แรกคือเดือน คอลัมน์สุดท้ายคือหนี้สูญที่ตัดจำหน่ายในเดือนนั้น คอลัมน์ระหว่างกลางคือยอดแต่ละช่วงอายุ เรียงจากใหม่ไปเก่า</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตาราง S7.2-1 บริษัท ค้าส่งตัวอย่าง จำกัด (พันบาท)</span>
+      <label class="f" for="rrData">ข้อมูลรายงานอายุรายเดือน</label>
+      <textarea id="rrData" spellcheck="false" aria-describedby="rrHint"></textarea>
+      <p class="hint" id="rrHint" style="margin-top:6px">ข้อมูลควรตัดลูกหนี้ที่ประเมินรายตัว (แท็บ 1) และหนี้สูญก้อนพิเศษออกแล้ว นับอายุจากวันครบกำหนด และช่วงอายุแต่ละช่วงกว้างเท่ากับระยะห่างของรายงาน (30 วันคู่กับรายเดือน)</p>
+      <div class="row-actions">
+        <button class="btn" id="rrReset">คืนค่าตัวอย่าง</button>
+        <button class="btn" id="rrClear">ล้างเพื่อวางข้อมูลของฉัน</button>
+      </div>
+      <div class="fields" style="margin-top:12px">
+        <label class="f">หนี้สูญได้รับคืนทั้งช่วงข้อมูล 12 การเปลี่ยน (เมื่อเลือกช่วงสั้นกว่า แอปเฉลี่ยตามจำนวนการเปลี่ยนให้)<input class="num" id="rrRec" type="number" min="0" step="1" value="10"></label>
+        <label class="f">ช่วงข้อมูลที่ใช้<select id="rrWin"><option value="0">ทั้งหมด</option><option value="12">12 การเปลี่ยนล่าสุด</option><option value="6">6 การเปลี่ยนล่าสุด</option><option value="3">3 การเปลี่ยนล่าสุด</option></select></label>
+        <label class="f">ทดสอบความอ่อนไหว ±%<input class="num" id="rrSens" type="number" min="0" max="100" step="5" value="20"></label>
+      </div>
+      <h3>ทดสอบย้อนหลัง (back-test)</h3>
+      <p class="hint">เทียบค่าเผื่อแบบกลุ่มที่ตั้งไว้ ณ วันสิ้นงวดก่อน กับหนี้สูญสุทธิที่เกิดจริงจากยอดลูกหนี้ ณ วันนั้น (ตัวอย่างที่ 7.4)</p>
+      <div class="fields">
+        <label class="f">ค่าเผื่อแบบกลุ่มที่ตั้งไว้ปีก่อน<input class="num" id="btSet" type="number" min="0" step="1" value="85"></label>
+        <label class="f">หนี้สูญสุทธิที่เกิดจริงภายหลัง<input class="num" id="btAct" type="number" min="0" step="1" value="102"></label>
+      </div>
+      <h3>อัตราสูญเสียตามช่วงอายุ (ใช้เมื่อมีเฉพาะรายงานสิ้นปี)</h3>
+      <p class="hint">กรอกยอดแต่ละช่วงอายุ ณ วันสิ้นงวดในอดีต กับหนี้สูญที่เกิดในที่สุดจากยอดนั้น ข้อมูลตัวอย่างมาจากตัวอย่างที่ 7.4 (ยอด ณ 31 ธ.ค. 2567)</p>
+      <div class="tbl"><table style="min-width:420px"><thead><tr><th>ช่วงอายุ</th><th class="num">ยอด ณ วันสิ้นงวดเดิม</th><th class="num">หนี้สูญที่เกิดภายหลัง</th><th class="num">อัตรา</th></tr></thead><tbody id="lrBody"></tbody></table></div>
+      <div id="lrOut" style="margin-top:10px"></div>
+    </section>
+    <section class="panel voucher" id="rrOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 3 AGING -->
+  <div class="grid" data-pane="aging" hidden>
+    <section class="panel">
+      <h2>ตารางจำแนกอายุลูกหนี้</h2>
+      <p class="hint">ฐานคำนวณ = ยอดตามช่วงอายุ − ยอดที่ประเมินรายตัวแล้ว ค่าเผื่อแบบกลุ่ม = ฐาน × อัตรา จากนั้นรวมค่าเผื่อรายตัวเป็นยอดเป้าหมาย แล้วปรับบัญชีค่าเผื่อเฉพาะส่วนต่าง</p>
+      <span class="sample" id="agSrc">ข้อมูลตัวอย่าง: ตัวอย่างที่ 7.2 บริษัท ค้าส่งตัวอย่าง จำกัด (พันบาท)</span>
+      <div class="tbl"><table style="min-width:560px">
+        <thead><tr><th>ช่วงอายุค้างชำระ</th><th class="num">ยอดลูกหนี้</th><th class="num">หักรายตัว</th><th class="num">อัตรา (%)</th><th class="num">ค่าเผื่อ</th><th></th></tr></thead>
+        <tbody id="agingBody"></tbody>
+        <tfoot><tr><td>รวมแบบกลุ่ม</td><td class="num" id="agTotal">0</td><td class="num" id="agSpecCol">0</td><td></td><td class="num" id="agAllow">0</td><td></td></tr></tfoot>
+      </table></div>
+      <div class="row-actions">
+        <button class="btn" id="agAdd">เพิ่มช่วงอายุ</button>
+        <button class="btn" id="agReset">คืนค่าตัวอย่าง</button>
+        <button class="btn" id="agCopy">คัดลอกตารางไป Excel</button><span class="copied" id="agCopied" hidden>คัดลอกแล้ว</span>
+      </div>
+      <h3>ค่าเผื่อรายตัวและยอดยกมา</h3>
+      <div class="fields">
+        <label class="f">ค่าเผื่อรายตัวที่รวมเข้ายอดเป้าหมาย<input class="num" id="agSpecAllow" type="number" min="0" step="0.01" value="40"></label>
+        <label class="f">ยอดค่าเผื่อก่อนปรับปรุง<input class="num" id="agPrior" type="number" min="0" step="0.01" value="85"></label>
+        <label class="f">ด้าน<select id="agPriorSide"><option value="cr">เครดิต (ปกติ)</option><option value="dr">เดบิต (ตัดหนี้สูญเกินค่าเผื่อ)</option></select></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="agOut" aria-live="polite"></section>
+  </div>
+
+  <!-- SALES -->
+  <div class="grid" data-pane="sales" hidden>
+    <section class="panel">
+      <h2>ร้อยละของยอดขายเชื่อสุทธิ</h2>
+      <p class="hint">กรอกประวัติอย่างน้อย 3 ปี เพื่อหาอัตราหนี้สูญแบบถ่วงน้ำหนัก แล้วนำไปคูณยอดขายเชื่อของงวด ค่าใช้จ่ายที่ได้บันทึกโดยตรง ไม่หักยอดค่าเผื่อยกมา</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 7.1 (พันบาท)</span>
+      <div class="tbl"><table style="min-width:520px">
+        <thead><tr><th>ปี</th><th class="num">ยอดขายเชื่อสุทธิ</th><th class="num">หนี้สูญตัดจำหน่าย</th><th class="num">ได้รับคืน</th><th class="num">อัตรา</th><th></th></tr></thead>
+        <tbody id="hsBody"></tbody>
+        <tfoot><tr><td>ถ่วงน้ำหนัก</td><td class="num" id="hsSales">0</td><td class="num" id="hsWO">0</td><td class="num" id="hsRec">0</td><td class="num" id="hsRate">0</td><td></td></tr></tfoot>
+      </table></div>
+      <div class="row-actions">
+        <button class="btn" id="hsAdd">เพิ่มปี</button>
+        <button class="btn" id="hsReset">คืนค่าตัวอย่าง</button>
+      </div>
+      <h3>คำนวณค่าใช้จ่ายของงวด</h3>
+      <div class="fields">
+        <label class="f">ยอดขายเชื่อสุทธิของงวด<input class="num" id="slSales" type="number" min="0" step="1" value="66000"></label>
+        <label class="f">อัตราที่ใช้ (%) <input class="num" id="slRate" type="number" min="0" step="0.01" value="0.41"></label>
+        <label class="f">ค่าเผื่อยกมา ด้านเครดิต<input class="num" id="slPrior" type="number" min="0" step="1" value="0"></label>
+      </div>
+      <div class="row-actions"><button class="btn primary" id="hsUse">ใช้อัตราจากประวัติ</button></div>
+      <h3>อัตราตามรุ่นยอดขาย (จับคู่ช่วงเวลา หัวข้อ 7.4)</h3>
+      <p class="hint">หนี้สูญสุทธิของแต่ละรุ่น คือหนี้สูญที่เกิดจากใบแจ้งหนี้ของยอดขายปีนั้น ไม่ใช่หนี้สูญที่ตัดจำหน่ายในปีนั้น ใช้เฉพาะรุ่นที่เก็บหนี้จนได้ข้อยุติแล้ว</p>
+      <div class="tbl"><table style="min-width:460px"><thead><tr><th>รุ่นปี</th><th class="num">ยอดขายเชื่อสุทธิ</th><th class="num">หนี้สูญสุทธิของรุ่น</th><th>ได้ข้อยุติ</th><th class="num">อัตรา</th></tr></thead><tbody id="chBody"></tbody></table></div>
+      <div class="fields" style="margin-top:10px">
+        <label class="f">ปรับเชิงคุณภาพ (จุดร้อยละ)<input class="num" type="number" step="0.01" id="chAdj" value="0"></label>
+        <label class="f">ยอดขายเชื่อสุทธิของงวด<input class="num" type="number" min="0" id="chSales" value="16000"></label>
+      </div>
+      <div id="chOut" style="margin-top:10px"></div>
+    </section>
+    <section class="panel voucher" id="slOut" aria-live="polite"></section>
+  </div>
+
+  <!-- TAX -->
+  <div class="grid" data-pane="tax" hidden>
+    <section class="panel">
+      <h2>ตรวจเงื่อนไขการตัดหนี้สูญทางภาษี</h2>
+      <p class="hint">คัดกรองเบื้องต้นตามตารางที่ 7-8 (กฎกระทรวง ฉบับที่ 186 แก้ไขโดยฉบับที่ 374) ก่อนตัดสินใจ ให้ตรวจเงื่อนไขฉบับเต็มในกฎกระทรวงอีกครั้ง</p>
+      <div class="fields"><label class="f">ยอดหนี้ของลูกหนี้รายนี้ (บาท)<input class="num" id="wdAmt" type="number" min="0" step="1" value="150000"></label></div>
+      <h3>หลักฐานและเหตุการณ์ที่มี</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="c-age" checked><span>หนี้ยังไม่ขาดอายุความ และมีหลักฐานที่ฟ้องลูกหนี้ได้ (ข้อ 3 (2))</span></label>
+        <label><input type="checkbox" id="c-track" checked><span>มีหลักฐานการติดตามทวงถามชัดแจ้ง (เงื่อนไขของข้อ 4 (1) ข้อ 5 (1) และข้อ 6)</span></label>
+        <label><input type="checkbox" id="c-cost" checked><span>ค่าใช้จ่ายในการฟ้องคดีไม่คุ้มกับหนี้ที่จะได้รับ</span></label>
+        <label><input type="checkbox" id="c-sued"><span>ฟ้องคดีแพ่งและศาลรับคำฟ้องแล้ว หรือยื่นคำขอรับชำระหนี้ในคดีล้มละลายแล้ว</span></label>
+        <label><input type="checkbox" id="c-dead"><span>ลูกหนี้ตายหรือสาบสูญและไม่มีทรัพย์สินจะชำระหนี้ หรือเลิกกิจการ และเจ้าหนี้ที่มีบุริมสิทธิมีหนี้เหนือทรัพย์สินทั้งหมด (ข้อ 4 (1) ใช้คู่กับการทวงถาม)</span></label>
+        <label><input type="checkbox" id="c-exec"><span>ฟ้องคดีแพ่งหรือยื่นคำขอเฉลี่ยหนี้ และมีหมายบังคับคดีกับรายงานการบังคับคดีครั้งแรกว่าไม่มีทรัพย์สินจะชำระ (ข้อ 4 (2))</span></label>
+        <label><input type="checkbox" id="c-bk"><span>คดีล้มละลาย: ศาลเห็นชอบการประนอมหนี้ หรือพิพากษาให้ล้มละลายและแบ่งทรัพย์ครั้งแรกหรือปิดคดีแล้ว (ข้อ 4 (3))</span></label>
+        <label><input type="checkbox" id="c-ok30"><span>กรรมการหรือหุ้นส่วนผู้จัดการอนุมัติการจำหน่ายภายใน 30 วันนับแต่วันสิ้นรอบระยะเวลาบัญชี (ข้อ 5)</span></label>
+        <label><input type="checkbox" id="c-dir"><span>ลูกหนี้เป็นหรือเคยเป็นกรรมการหรือหุ้นส่วนผู้จัดการของกิจการ (ข้อ 3 (1))</span></label>
+      </div>
+      <h2 style="margin-top:26px">กระทบยอดกำไรทางบัญชีกับกำไรทางภาษี</h2>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 7.7 บริษัท ค้าส่งตัวอย่าง จำกัด (บาท)</span>
+      <div class="fields">
+        <label class="f">กำไรทางบัญชีก่อนภาษี<input class="num" id="trProfit" type="number" step="1" value="3000000"></label>
+        <label class="f">ค่าใช้จ่ายหนี้สงสัยจะสูญที่ตั้งในงวด<input class="num" id="trAllow" type="number" min="0" step="1" value="299760"></label>
+        <label class="f">หนี้สูญที่เข้าเงื่อนไขภาษี (ตัดจากค่าเผื่อ)<input class="num" id="trWO" type="number" min="0" step="1" value="220000"></label>
+        <label class="f">หนี้สูญได้รับคืนที่เคยหักเป็นรายจ่ายและไม่อยู่ในรายได้ทางบัญชี (วิธีโอนกลับ)<input class="num" id="trRec" type="number" min="0" step="1" value="10000"></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="taxOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 5 WRITE-OFF & RECOVERY -->
+  <div class="grid" data-pane="wo" hidden>
+    <section class="panel">
+      <h2>ตัดจำหน่ายหนี้สูญและหนี้สูญได้รับคืน (7.7–7.8)</h2>
+      <p class="hint">ตัดจำหน่ายเมื่อลูกหนี้ครบกำหนดแล้วไม่ชำระ ทวงถามจนถึงที่สุดแล้ว และคาดได้ค่อนข้างแน่นอนว่าจะไม่ได้รับชำระ หนี้สูญได้รับคืนเลือกบันทึกได้สองวิธี และต้องเปิดเผยนโยบายที่เลือก</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 7.5 ปี 2569 (พันบาท) ตัดจำหน่าย 40 คงลูกหนี้ 10 รอการแบ่งทรัพย์ ได้รับส่วนแบ่ง 14</span>
+      <div class="fields">
+        <label class="f">ค่าเผื่อหนี้สงสัยจะสูญก่อนตัดจำหน่าย<input class="num" id="woAllow" type="number" min="0" step="0.01" value="134.76"></label>
+        <label class="f">ลูกหนี้ที่ตัดจำหน่าย<input class="num" id="woAmt" type="number" min="0" step="0.01" value="40"></label>
+        <label class="f">หนี้สูญได้รับคืน (ส่วนที่ตัดจำหน่ายไปแล้ว)<input class="num" id="woRec" type="number" min="0" step="0.01" value="4"></label>
+        <label class="f">รับชำระยอดลูกหนี้ที่คงไว้ (ไม่ใช่หนี้สูญได้รับคืน)<input class="num" id="woColl" type="number" min="0" step="0.01" value="10"></label>
+        <label class="f">นโยบายหนี้สูญได้รับคืน<select id="woMethod"><option value="rev">โอนกลับบัญชีลูกหนี้และค่าเผื่อ</option><option value="inc">รับรู้เป็นรายได้อื่น</option></select></label>
+      </div>
+      <div class="checks" style="margin-top:10px">
+        <label><input type="checkbox" id="woExh" checked><span>ทวงถามจนถึงที่สุดแล้ว และคาดได้ค่อนข้างแน่นอนว่าจะไม่ได้รับชำระ (7.7)</span></label>
+        <label><input type="checkbox" id="woTaxDed" checked><span>หนี้ที่ได้รับคืนเคยหักเป็นรายจ่ายทางภาษีแล้ว</span></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="woOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 7 DISCLOSURE -->
+  <div class="grid" data-pane="disc" hidden>
+    <section class="panel">
+      <h2>การนำเสนอและการเปิดเผยข้อมูล (7.3, 7.9)</h2>
+      <p class="hint">กรอกความเคลื่อนไหวของค่าเผื่อทั้งปี แอปคำนวณรายการปรับปรุงสิ้นปีจากยอดเป้าหมาย หนี้สงสัยจะสูญในงบ บรรทัดตามแบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566) และร่างหมายเหตุที่คัดลอกไปวางใน Word ได้</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 7.6 ปี 2568 (พันบาท)</span>
+      <div class="fields">
+        <label class="f">ค่าเผื่อต้นปี<input class="num" id="dOpen" type="number" step="0.01" value="85"></label>
+        <label class="f">หนี้สงสัยจะสูญระหว่างปี<input class="num" id="dProv" type="number" step="0.01" value="250"></label>
+        <label class="f">หนี้สูญตัดจำหน่าย (7.9.1)<input class="num" id="dWo" type="number" min="0" step="0.01" value="260"></label>
+        <label class="f">หนี้สูญได้รับคืน (7.9.2)<input class="num" id="dRec" type="number" min="0" step="0.01" value="10"></label>
+        <label class="f">นโยบายหนี้สูญได้รับคืน<select id="dMethod"><option value="rev">โอนกลับบัญชีลูกหนี้และค่าเผื่อ</option><option value="inc">รับรู้เป็นรายได้อื่น</option></select></label>
+        <label class="f">ยอดเป้าหมายสิ้นปี (จากแท็บ 3)<input class="num" id="dTarget" type="number" step="0.01" value="134.76"></label>
+        <label class="f">ลูกหนี้การค้า (ก่อนหักค่าเผื่อ)<input class="num" id="dTrade" type="number" step="0.01" value="6786"></label>
+        <label class="f">ลูกหนี้อื่น<input class="num" id="dOther" type="number" step="0.01" value="120"></label>
+        <label class="f">เงินให้กู้ยืมแก่กรรมการ (รายการ 1.5)<input class="num" id="dLoan" type="number" step="0.01" value="500"></label>
+        <label class="f">ลูกหนี้ที่ใช้เป็นหลักทรัพย์ค้ำประกัน (7.9.3)<input class="num" id="dColl" type="number" step="0.01" value="2000"></label>
+        <label class="f">ลักษณะการค้ำประกัน<input type="text" id="dCollTxt" value="วงเงินเบิกเกินบัญชีกับธนาคาร"></label>
+        <label class="f">หน่วยเงิน<input type="text" id="dUnit" value="พันบาท"></label>
+        <label class="f">ยอดกับกิจการที่เกี่ยวข้องกัน [แนะนำ]<input class="num" id="dRel" type="number" min="0" step="0.01" value="0"></label>
+        <label class="f" style="grid-column:1/-1">การเปลี่ยนแปลงประมาณการ (5.16) ถ้ามี<input type="text" id="dEst" value="" placeholder="เช่น ปรับอัตราช่วงเกิน 90 วันจากร้อยละ 40 เป็น 50 ทำให้หนี้สงสัยจะสูญเพิ่มขึ้น 12.00"></label>
+      </div>
+      <div class="checks" style="margin-top:8px"><label><input type="checkbox" id="dAge" checked><span>รวมตารางอายุจากแท็บ 3 ในร่างหมายเหตุ [แนะนำ]</span></label></div>
+      <div class="row-actions"><button class="btn" id="dPull">ดึงยอดจากแท็บ 3</button><button class="btn primary" id="dCopy">คัดลอกร่างหมายเหตุ</button><span class="copied" id="dCopied" hidden>คัดลอกแล้ว วางใน Word ได้</span></div>
+    </section>
+    <section class="panel voucher" id="dOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 8 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 9 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S7</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 7 ลิงก์ #S7.1 ถึง #S7.10 เปิดหัวข้อนั้นได้โดยตรง ตัวเลขใช้ข้อมูลชุดเดียวกับตำรา (บริษัท ค้าส่งตัวอย่าง จำกัด และบริษัท ตัวอย่างวัสดุ จำกัด ชื่อสมมติ)</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S7.1">S7.1</a><a class="btn" href="#S7.2">S7.2</a><a class="btn" href="#S7.3">S7.3</a><a class="btn" href="#S7.4">S7.4</a><a class="btn" href="#S7.5">S7.5</a><a class="btn" href="#S7.6">S7.6</a><a class="btn" href="#S7.7">S7.7</a><a class="btn" href="#S7.8">S7.8</a><a class="btn" href="#S7.9">S7.9</a><a class="btn" href="#S7.10">S7.10</a></div>
+<h3 id="S7.1">S7.1 ตารางจำแนกลูกหนี้ฉบับเต็ม</h3><p>ชื่อบรรทัดตามแบบ 2: 1.3 ลูกหนี้การค้าและลูกหนี้หมุนเวียนอื่น · 2.6 ลูกหนี้การค้าและลูกหนี้ไม่หมุนเวียนอื่น · 1.5 เงินให้กู้ยืมระยะสั้น · 2.7 เงินให้กู้ยืมระยะยาว</p><div class="tbl"><table><thead><tr><th>รายการ</th><th>ตามย่อหน้า 7.1</th><th>บรรทัดตามแบบ 2</th></tr></thead><tbody><tr><td>ลูกหนี้จากการขายสินค้าที่ส่งใบแจ้งหนี้แล้ว</td><td>ลูกหนี้การค้า (7.1.1)</td><td>1.3 หรือ 2.6 ตามกำหนดชำระ</td></tr><tr><td>ลูกหนี้จากการให้บริการตามปกติ</td><td>ลูกหนี้การค้า (7.1.1)</td><td>1.3 หรือ 2.6</td></tr><tr><td>ตั๋วเงินรับจากการขายสินค้าหรือบริการ</td><td>ลูกหนี้การค้า (7.1.1)</td><td>1.3 หรือ 2.6 (แยกในหมายเหตุถ้ามีสาระสำคัญ)</td></tr><tr><td>ลูกหนี้ตามสัญญาเช่า (ผู้ให้เช่า)</td><td>ลูกหนี้การค้า</td><td>1.3 หรือ 2.6 (แบบ 2 ยกเป็นตัวอย่าง) ดูบทที่ 14</td></tr><tr><td>รายได้ค้างรับ (นอกจากมูลค่างานที่เสร็จแต่ยังไม่เรียกเก็บ)</td><td>ลูกหนี้อื่น (7.1.2)</td><td>1.3 หรือ 2.6</td></tr><tr><td>ค่าใช้จ่ายจ่ายล่วงหน้า เงินทดรองจ่าย</td><td>แบบ 2 รวมไว้ในลูกหนี้อื่น</td><td>1.3 หรือ 2.6</td></tr><tr><td>เงินมัดจำค่าเช่าที่ได้คืนเมื่อสิ้นสัญญา</td><td>ลูกหนี้อื่น</td><td>1.3 ถ้าได้คืนภายใน 12 เดือน มิฉะนั้น 2.6</td></tr><tr><td>ภาษีมูลค่าเพิ่มค้างรับ ภาษีเงินได้ที่มีสิทธิขอคืน</td><td>ลูกหนี้อื่น</td><td>1.3 หรือ 2.6 (ลูกหนี้กรมสรรพากร)</td></tr><tr><td>เงินให้กู้ยืมแก่กรรมการ</td><td>ลูกหนี้อื่น (7.1.2)</td><td>1.5 หรือ 2.7 เงินให้กู้ยืม</td></tr><tr><td>เงินให้กู้ยืมแก่ลูกจ้าง</td><td>ลูกหนี้อื่น (7.1.2)</td><td>1.5 หรือ 2.7</td></tr><tr><td>เงินให้กู้ยืมแก่กิจการที่เกี่ยวข้องกัน</td><td>ลูกหนี้อื่น (เงินให้กู้ยืมอื่น)</td><td>1.5 หรือ 2.7</td></tr><tr><td>มูลค่างานที่เสร็จแต่ยังไม่ถึงกำหนดเรียกเก็บ</td><td>ไม่ใช่ลูกหนี้ตาม 7.1 ดูบทที่ 18 และ 20</td><td>1.4 หรือ 2.8</td></tr><tr><td>ค่าเผื่อหนี้สงสัยจะสูญ</td><td>บัญชีปรับมูลค่าลูกหนี้ (7.6)</td><td>หักจากบรรทัดของลูกหนี้ที่เกี่ยวข้อง</td></tr><tr><td>ลูกหนี้ที่โอนสิทธิเป็นหลักประกันเงินกู้</td><td>ยังเป็นลูกหนี้ของกิจการ</td><td>บรรทัดเดิม และเปิดเผยตาม 7.9.3</td></tr></tbody></table></div><h4>ส่วนลดการค้าและส่วนลดเงินสด</h4><p>ส่วนลดการค้าหักจากราคาขายตั้งแต่ต้น ลูกหนี้และรายได้บันทึกด้วยยอดสุทธิ ส่วนลดเงินสด เช่น เงื่อนไข 2/10, n/30 เป็นเรื่องการรับรู้รายได้ตามบทที่ 18 แนวการตีความ: ถ้าลูกค้าส่วนใหญ่ใช้สิทธิ การบันทึกลูกหนี้ด้วยยอดสุทธิจากส่วนลดที่คาดว่าจะใช้ทำให้ลูกหนี้ใกล้มูลค่าที่จะได้รับมากกว่า ถ้าส่วนลดไม่มีสาระสำคัญ ใช้ยอดเต็มแล้วบันทึกส่วนลดเมื่อลูกค้าใช้สิทธิได้</p><h3 id="S7.2">S7.2 วิธีหาอัตราฉบับเต็มและแผ่นงาน</h3><h4>ตาราง S7.2-1 รายงานอายุลูกหนี้ ณ สิ้นเดือน และหนี้สูญที่ตัดจำหน่ายในเดือน (บริษัท ค้าส่งตัวอย่าง จำกัด พันบาท)</h4><div class="tbl"><table><thead><tr><th>สิ้นเดือน</th><th class="num">ยังไม่ถึงกำหนด</th><th class="num">1–30</th><th class="num">31–60</th><th class="num">61–90</th><th class="num">91–120</th><th class="num">หนี้สูญ</th></tr></thead><tbody><tr><td>ธ.ค. 67</td><td class="num">5,000</td><td class="num">600</td><td class="num">180</td><td class="num">70</td><td class="num">35</td><td class="num">–</td></tr><tr><td>ม.ค. 68</td><td class="num">4,800</td><td class="num">610</td><td class="num">175</td><td class="num">72</td><td class="num">36</td><td class="num">20</td></tr><tr><td>ก.พ. 68</td><td class="num">4,900</td><td class="num">560</td><td class="num">185</td><td class="num">70</td><td class="num">37</td><td class="num">22</td></tr><tr><td>มี.ค. 68</td><td class="num">5,200</td><td class="num">600</td><td class="num">170</td><td class="num">75</td><td class="num">35</td><td class="num">21</td></tr><tr><td>เม.ย. 68</td><td class="num">5,100</td><td class="num">640</td><td class="num">180</td><td class="num">68</td><td class="num">38</td><td class="num">20</td></tr><tr><td>พ.ค. 68</td><td class="num">5,300</td><td class="num">610</td><td class="num">195</td><td class="num">72</td><td class="num">34</td><td class="num">23</td></tr><tr><td>มิ.ย. 68</td><td class="num">5,000</td><td class="num">650</td><td class="num">185</td><td class="num">78</td><td class="num">36</td><td class="num">21</td></tr><tr><td>ก.ค. 68</td><td class="num">4,900</td><td class="num">600</td><td class="num">195</td><td class="num">74</td><td class="num">39</td><td class="num">22</td></tr><tr><td>ส.ค. 68</td><td class="num">5,200</td><td class="num">590</td><td class="num">180</td><td class="num">78</td><td class="num">37</td><td class="num">23</td></tr><tr><td>ก.ย. 68</td><td class="num">5,400</td><td class="num">620</td><td class="num">175</td><td class="num">72</td><td class="num">39</td><td class="num">22</td></tr><tr><td>ต.ค. 68</td><td class="num">5,500</td><td class="num">650</td><td class="num">190</td><td class="num">70</td><td class="num">36</td><td class="num">24</td></tr><tr><td>พ.ย. 68</td><td class="num">5,600</td><td class="num">660</td><td class="num">195</td><td class="num">76</td><td class="num">35</td><td class="num">21</td></tr><tr><td>ธ.ค. 68</td><td class="num">5,800</td><td class="num">670</td><td class="num">200</td><td class="num">78</td><td class="num">38</td><td class="num">21</td></tr></tbody></table></div><p>ขั้นตอน: (1) ตัวเศษของการเลื่อนจากช่วง b ไป b+1 คือผลรวมยอดช่วง b+1 ตั้งแต่สิ้นเดือนมกราคมถึงธันวาคม 2568 (2) ตัวส่วนคือผลรวมยอดช่วง b ตั้งแต่สิ้นเดือนธันวาคม 2567 ถึงพฤศจิกายน 2568 (3) ช่วงสุดท้ายใช้หนี้สูญสุทธิ 260 − 10 = 250 หารด้วยผลรวมยอดช่วง 91–120 วันของเดือนก่อนหน้า 437 (4) คูณอัตราจากช่วงสุดท้ายย้อนขึ้นมาเป็นอัตราสะสม ผลอยู่ในตารางที่ 7-4 ของเล่ม</p><p>เงื่อนไขก่อนเริ่ม: นับอายุจากวันครบกำหนดชำระ ใช้ช่วงกว้างเท่าระยะห่างของรายงาน กำหนดจุดตัดหนี้สูญทางบัญชีให้ชัด (ตามย่อหน้า 7.7) กระทบยอดรายงานอายุกับบัญชีคุมทุกเดือน และตัดลูกหนี้ที่ประเมินรายตัวกับหนี้สูญก้อนพิเศษออกจากข้อมูล</p><h4>การตรวจทานด้วยวิธีอัตราสูญเสียอย่างง่าย</h4><p>นำหนี้สูญสุทธิ 250 หารด้วยยอดที่ไปถึงแต่ละช่วง (61,900 7,460 2,225 883 และ 440) ได้ร้อยละ 0.40 3.35 11.24 28.31 และ 56.82 ใกล้กับอัตราสะสมของวิธีอัตราการเลื่อนชั้น ถ้าต่างกันมาก ให้ตรวจข้อมูลและช่วงอายุ</p><h4>วิธีคำนวณที่ผิดซึ่งพบบ่อย</h4><ul><li>นำหนี้สูญทั้งปี 260 หารยอดช่วงสุดท้าย ณ สิ้นปี 38 ได้ร้อยละ 684 ไม่มีความหมาย เพราะตัวเศษเป็นยอดไหลทั้งปีแต่ตัวส่วนเป็นยอด ณ จุดเวลาเดียว</li><li>ใช้อัตราสำเร็จรูป 1 3 10 25 50 ได้ค่าเผื่อแบบกลุ่ม 119.10 พันบาท ยอดรวมดูใกล้เคียง แต่ลูกหนี้ที่ยังไม่ถึงกำหนดถูกตั้งสูงเกินราว 2.4 เท่า ส่วนสองช่วงท้ายถูกตั้งต่ำไปราวร้อยละ 13 (50 เทียบ 57.21 และ 25 เทียบ 28.77) และไม่มีหลักฐานรองรับ</li></ul><h4>การวิเคราะห์ตามรุ่นยอดขาย</h4><p>กิจการที่จับคู่การรับชำระกับใบแจ้งหนี้ได้ อาจติดตามยอดขายเชื่อของแต่ละเดือนว่าสูญในที่สุดเท่าใด อัตราของรุ่นเดือน m เท่ากับหนี้สูญสุทธิสะสมของใบแจ้งหนี้เดือนนั้นหารด้วยยอดขายเชื่อเดือนนั้น ถ้ารุ่นใหม่มียอดค้างหลังขายหนึ่งเดือนสูงกว่ารุ่นเก่าต่อเนื่อง เป็นสัญญาณให้ทบทวนอัตรา</p><h4>เมื่อกิจการมีข้อมูลน้อย</h4><ul><li>ลดจำนวนช่วงอายุเหลือสามช่วง หรือใช้วิธีร้อยละของยอดขายเชื่อจากหนี้สูญจริงสองถึงสามปีไปก่อน</li><li>สุ่มลูกค้าบางส่วนมาติดตามประวัติการชำระ</li><li>ใช้วิธีพิจารณารายตัวเมื่อมีลูกค้าน้อยราย</li><li>ใช้ดุลยพินิจของผู้บริหารที่มีเอกสารรองรับ พร้อมแผนเก็บรายงานอายุรายเดือนเพื่อใช้อัตราจากข้อมูลจริงในปีถัดไป</li></ul><h4>โครงสร้างแผ่นงาน</h4><div class="tbl"><table><thead><tr><th>แผ่นงาน</th><th>ข้อมูลหลัก</th><th>จุดควบคุม</th></tr></thead><tbody><tr><td>1 รายงานอายุรายเดือน</td><td>เดือน กลุ่มลูกค้า ยอดแต่ละช่วงอายุ</td><td>กระทบยอดกับบัญชีคุมทุกเดือน</td></tr><tr><td>2 ทะเบียนหนี้สูญ</td><td>ลูกหนี้ วันที่ ช่วงอายุก่อนตัด ยอดตัด ได้รับคืน รายตัวหรือกลุ่ม</td><td>แยกรายตัวและก้อนพิเศษ</td></tr><tr><td>3 ประเมินรายตัว</td><td>ระดับ เหตุการณ์ จำนวนที่คาดว่าจะได้รับ หลักฐาน</td><td>ผู้อนุมัติ</td></tr><tr><td>4 อัตราการเลื่อนชั้น</td><td>Σ ตัวเศษ Σ ตัวส่วน อัตรา</td><td>ช่วงข้อมูลคงที่</td></tr><tr><td>5 อัตราที่ใช้</td><td>อัตราสะสม การปรับและเหตุผล</td><td>บันทึกดุลยพินิจ</td></tr><tr><td>6 ค่าเผื่อ</td><td>ยอดสิ้นงวด หักรายตัว ฐาน อัตรา รายการปรับปรุง</td><td>เชื่อมกับรายการบัญชี</td></tr><tr><td>7 ทดสอบย้อนหลัง</td><td>ค่าเผื่อปีก่อน หนี้สูญจริง ผลต่าง</td><td>หลักฐานสำหรับผู้สอบบัญชี</td></tr></tbody></table></div><h3 id="S7.3">S7.3 การประเมินลูกหนี้รายตัวห้าขั้น</h3><ol><li>คัดเลือกลูกหนี้ด้วยเกณฑ์ขนาด (ลูกหนี้ที่มียอดสูงอย่างมีสาระสำคัญ ตามแนวคิดในย่อหน้า 3.13) และเกณฑ์ข้อบ่งชี้ (ผิดนัด เช็คคืน ขอผ่อนผัน ถูกฟ้อง หยุดกิจการ มีข้อพิพาท ติดต่อไม่ได้) เขียนเกณฑ์เป็นนโยบายและใช้สม่ำเสมอ</li><li>รวบรวมหลักฐาน: ประวัติการชำระ หนังสือทวงถาม ข้อตกลงผ่อนชำระ ข้อมูลฐานะของลูกหนี้ สถานะคดี หลักประกัน และเงินที่รับหลังวันสิ้นงวดจนถึงวันออกงบการเงิน (เหตุการณ์ที่ต้องปรับปรุง ย่อหน้า 17.3)</li><li>ประมาณจำนวนที่คาดว่าจะได้รับ = เงินรับหลังวันสิ้นงวด + มูลค่าหลักประกันสุทธิ + ยอดที่คาดว่าจะได้รับตามแผนชำระ ค่าเผื่อรายตัว = ยอดหนี้ − จำนวนที่คาดว่าจะได้รับ (7.5.3)</li><li>เชื่อมกับการคำนวณแบบกลุ่มโดยไม่นับซ้ำ ตัดยอดของลูกหนี้ที่ตั้งค่าเผื่อรายตัวออกจากฐานกลุ่ม ลูกหนี้รายใหญ่ที่ไม่พบข้อบ่งชี้ให้คงอยู่ในกลุ่มตามอายุ (7.5.2)</li><li>จัดทำแบบประเมินหนึ่งหน้าต่อหนึ่งราย และทบทวนทุกงวด เปรียบเทียบประมาณการเดิมกับเงินที่ได้รับจริง</li></ol><h4>ตาราง S7.3-1 ตัวอย่างโครงสร้างระดับความเสี่ยง (กิจการกำหนดช่วงร้อยละจากประสบการณ์ของตนเอง)</h4><div class="tbl"><table><thead><tr><th>ระดับ</th><th>สถานการณ์</th><th>หลักฐานที่ควรมี</th><th>แนวทางประมาณ</th></tr></thead><tbody><tr><td>1 ปกติ</td><td>ชำระตามนัด</td><td>ประวัติการชำระ</td><td>ไม่ตั้งรายตัว คงอยู่ในกลุ่ม</td></tr><tr><td>2 เฝ้าระวัง</td><td>ชำระช้าแต่ติดต่อได้</td><td>บันทึกการเจรจา</td><td>ไม่ตั้งรายตัว ติดตามใกล้ชิด</td></tr><tr><td>3 ผิดนัดหรือผ่อนผัน</td><td>ผิดนัด ขอผ่อนผัน เช็คคืน</td><td>ข้อตกลงผ่อนชำระ ฐานะการเงิน</td><td>ประมาณจากแผนชำระที่ทำได้จริงและหลักประกัน</td></tr><tr><td>4 ดำเนินคดี</td><td>ถูกฟ้อง หยุดกิจการ ติดต่อไม่ได้</td><td>เอกสารคดี ความเห็นทนายความ</td><td>ประมาณจากทรัพย์สินที่บังคับคดีได้</td></tr><tr><td>5 ล้มละลายหรือสูญ</td><td>ล้มละลาย ไม่มีทรัพย์สิน</td><td>คำสั่งศาล หลักฐานไม่มีทรัพย์สิน</td><td>ตั้งเกือบเต็มจำนวน หรือพิจารณาตัดจำหน่ายตาม 7.7</td></tr></tbody></table></div><h4>ตัวอย่างลูกหนี้ผิดนัดที่ผ่อนชำระ (กิจการอื่น หน่วยบาท)</h4><p>บริษัท ง. จำกัด ค้างชำระ 300,000 บาท ผิดนัดสองงวดและขอผ่อนผัน หลังวันสิ้นงวดก่อนออกงบการเงินได้รับชำระ 60,000 บาท ส่วนที่เหลือ 240,000 บาททำข้อตกลงผ่อนชำระภายในหกเดือน จากงบการเงินล่าสุดและประวัติการชำระ คาดว่าจะชำระตามแผนได้ราวร้อยละ 50 ไม่มีหลักประกัน</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">บาท</th></tr></thead><tbody><tr><td>ยอดหนี้ ณ วันสิ้นงวด</td><td class="num">300,000</td></tr><tr><td>หัก เงินรับหลังวันสิ้นงวด</td><td class="num">(60,000)</td></tr><tr><td>หัก ยอดที่คาดว่าจะได้รับตามแผน 240,000 × 50%</td><td class="num">(120,000)</td></tr><tr><td>ค่าเผื่อรายตัว</td><td class="num">120,000</td></tr></tbody></table></div><p>ยอด 300,000 บาทตัดออกจากฐานของตารางจำแนกอายุ และแนบข้อตกลงผ่อนชำระ หลักฐานการรับเงิน และเหตุผลของร้อยละ 50 ในแบบประเมิน</p><h3 id="S7.4">S7.4 การทดสอบย้อนหลังและความอ่อนไหว</h3><ol><li>เลือกยอดลูกหนี้ ณ วันสิ้นงวดก่อนแยกตามช่วงอายุ (ตัวอย่างที่ 7.4)</li><li>ติดตามว่ายอดเหล่านั้นได้รับชำระ ยังค้าง หรือตัดจำหน่ายเท่าใดภายในระยะเวลาที่ได้ข้อยุติ</li><li>เทียบหนี้สูญสุทธิที่เกิดจริงกับค่าเผื่อแบบกลุ่มที่ตั้งไว้</li><li>อธิบายผลต่าง: สภาพที่เปลี่ยนหลังวันสิ้นงวด (เปลี่ยนแปลงประมาณการ 5.15) หรือข้อมูลที่มีอยู่แล้วแต่ไม่ได้ใช้ (ข้อผิดพลาด บทที่ 5)</li><li>บันทึกผลและนำไปปรับวิธีหรือช่วงข้อมูลของปีถัดไป</li></ol><p>ตัวอย่างที่ 7.4 ตั้งไว้ 85 เกิดจริง 102 ต่ำไป 17 พันบาท ถ้าใช้อัตราสะสมปี 2568 กับยอด ณ ธันวาคม 2567 ได้ราว 102.7 แสดงว่าอัตราใหม่สะท้อนประสบการณ์ล่าสุดได้ดีกว่า การวิเคราะห์ความอ่อนไหว: ถ้าอัตราทุกช่วงเปลี่ยนร้อยละ 20 ค่าเผื่อแบบกลุ่ม 94.76 พันบาทจะเปลี่ยนราว 18.95 พันบาท ถ้าตั้งต่ำหรือสูงเกินผลจริงซ้ำหลายปีในทิศทางเดียว ผู้สอบบัญชีจะถือเป็นข้อบ่งชี้ความลำเอียงของผู้บริหารตามมาตรฐานการสอบบัญชี รหัส 540</p><h3 id="S7.5">S7.5 ภาษีหนี้สูญฉบับเต็ม</h3><h4>แผนผังตัดสิน</h4><ol><li>ข้อ 3: หนี้จากการประกอบกิจการ ไม่ใช่หนี้ของผู้เป็นหรือเคยเป็นกรรมการหรือหุ้นส่วนผู้จัดการ ไม่ขาดอายุความ และมีหลักฐานฟ้องได้ ถ้าไม่ผ่าน หักไม่ได้</li><li>ดูยอดหนี้ต่อราย ไม่เกิน 200,000 บาท ใช้ข้อ 6 ได้ (ทวงถามมีหลักฐาน และฟ้องไม่คุ้ม)</li><li>ไม่เกิน 2,000,000 บาท ใช้ข้อ 5: ทำตามข้อ 4 (1) หรือศาลรับคำฟ้องหรือคำขอแล้ว กรณีหลังต้องอนุมัติภายใน 30 วันนับแต่วันสิ้นรอบระยะเวลาบัญชี และถือเป็นรายจ่ายในรอบที่ศาลรับ (ข้อ 7)</li><li>เกิน 2,000,000 บาท ใช้ข้อ 4 กรณีใดกรณีหนึ่ง: (1) ติดตามทวงถามให้ชำระหนี้แล้วมีหลักฐาน และ (ก) ลูกหนี้ตายหรือสาบสูญและไม่มีทรัพย์สินจะชำระหนี้ หรือ (ข) ลูกหนี้เลิกกิจการ และเจ้าหนี้ที่มีบุริมสิทธิมีหนี้เหนือทรัพย์สินทั้งหมดของลูกหนี้ (2) ฟ้องคดีแพ่งหรือยื่นคำขอเฉลี่ยหนี้ จนมีหมายบังคับคดีและรายงานการบังคับคดีครั้งแรกว่าไม่มีทรัพย์สินจะชำระหนี้ (3) ฟ้องหรือยื่นคำขอรับชำระหนี้ในคดีล้มละลาย และศาลเห็นชอบการประนอมหนี้ หรือพิพากษาให้ล้มละลายและแบ่งทรัพย์ครั้งแรกหรือปิดคดีแล้ว การทวงถามเป็นเงื่อนไขของกรณี (1) เท่านั้น</li><li>หนี้ที่ยังไม่ครบเงื่อนไขบันทึกในทะเบียนภาษี และหักในรอบที่ครบเงื่อนไข</li></ol><div class="tbl"><table><thead><tr><th>หนี้ต่อราย</th><th>ข้อเท็จจริง</th><th>ผลทางภาษี</th></tr></thead><tbody><tr><td>150,000</td><td>ทวงถามสามครั้งมีหลักฐาน ค่าทนายและค่าฟ้องสูงกว่าที่คาดว่าจะได้รับ</td><td>หักได้ตามข้อ 6</td></tr><tr><td>1,500,000</td><td>ฟ้องคดีแพ่ง ศาลรับฟ้องเดือนพฤศจิกายน กรรมการอนุมัติภายใน 30 วันหลังสิ้นปี</td><td>หักได้ตามข้อ 5 (2) ในรอบที่ศาลรับ</td></tr><tr><td>3,000,000</td><td>ฟ้องคดีแพ่ง ศาลรับฟ้อง ยังไม่มีรายงานการบังคับคดี</td><td>ยังหักไม่ได้ รอกรณีใดกรณีหนึ่งของข้อ 4 เช่น รายงานการบังคับคดีครั้งแรกตามข้อ 4 (2)</td></tr></tbody></table></div><h4>หนี้สูญได้รับคืน</h4><p>หนี้สูญที่จำหน่ายและหักเป็นรายจ่ายแล้ว ถ้าได้รับชำระภายหลัง ให้รวมเป็นรายได้ในรอบที่ได้รับ (มาตรา 65 ทวิ (9)) ถ้ากิจการบันทึกด้วยวิธีโอนกลับตามย่อหน้า 7.8 จะไม่มีรายได้ในบัญชี จึงต้องบวกในกระดาษทำการภาษี</p><h4>กรณีเฉพาะ</h4><p>กฎกระทรวง ฉบับที่ 186 ข้อ 6 ทวิ เป็นต้นไปกำหนดกรณีเฉพาะ เช่น การปลดหนี้ของสถาบันการเงินตามหลักเกณฑ์ของธนาคารแห่งประเทศไทย การปลดหนี้ตามแผนฟื้นฟูกิจการที่ศาลเห็นชอบ และการปลดหนี้ตามการปรับโครงสร้างหนี้ในช่วงเวลาที่กำหนด ตรวจถ้อยคำฉบับปัจจุบันก่อนใช้</p><h4>ภาษีมูลค่าเพิ่ม</h4><p>มาตรา 82/11 แห่งประมวลรัษฎากร ให้ผู้ประกอบการจดทะเบียนนำภาษีขายที่คำนวณจากหนี้สูญมาหักออกจากภาษีขายในเดือนภาษีที่จำหน่ายหนี้สูญ ตามประกาศอธิบดีกรมสรรพากรเกี่ยวกับภาษีมูลค่าเพิ่ม (ฉบับที่ 85) แก้ไขโดยฉบับที่ 242 (15 พฤศจิกายน 2564) รายละเอียดอยู่ใน S7.10 ข้อ ข. การปฏิบัติเมื่อได้รับชำระหนี้ที่หักภาษีขายไปแล้ว ยังไม่พบหลักฐานทางการที่ยืนยัน ให้ตรวจกับกรมสรรพากรก่อนใช้</p><h3 id="S7.6">S7.6 การโอนสิทธิในลูกหนี้ การขายลดตั๋วเงิน และเงินให้กู้ไม่มีดอกเบี้ย (แนวการตีความ)</h3><p>บทที่ 7 ไม่มีข้อกำหนดเรื่องการโอนสิทธิในลูกหนี้ ตัวอย่างนี้ใช้นิยามสินทรัพย์และหนี้สินในกรอบแนวคิด (5.5.2) และแบบ 2 รายการ 3.1 ซึ่งจัดการขายหรือขายช่วงลดตั๋วเงินกับสถาบันการเงินเป็นหนี้สินหมุนเวียน หน่วยบาท</p><h4>ก. โอนโดยไม่มีสิทธิไล่เบี้ย</h4><p>บริษัทโอนลูกหนี้ 500,000 บาท ผู้รับโอนคิดค่าธรรมเนียมร้อยละ 5 และรับความเสี่ยงที่ลูกหนี้ไม่ชำระทั้งหมด</p><p><b>วันโอน</b></p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">475,000</td><td class="num"></td></tr><tr><td>เดบิต ขาดทุนจากการโอนสิทธิในลูกหนี้</td><td class="num">25,000</td><td class="num"></td></tr><tr><td>    เครดิต ลูกหนี้การค้า</td><td class="num"></td><td class="num">500,000</td></tr></tbody></table></div><h4>ข. โอนโดยมีสิทธิไล่เบี้ย</h4><p>บริษัทโอนลูกหนี้ 500,000 บาท ผู้รับโอนคิดค่าธรรมเนียมร้อยละ 5 หักเงินประกันร้อยละ 10 และไล่เบี้ยคืนจากบริษัทได้ถ้าลูกหนี้ไม่ชำระ บริษัทยังรับความเสี่ยงของลูกหนี้ จึงคงลูกหนี้ไว้และรับรู้เงินที่ได้รับเป็นหนี้สิน</p><p><b>วันโอน</b></p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">425,000</td><td class="num"></td></tr><tr><td>เดบิต ลูกหนี้อื่น – เงินประกันที่ผู้รับโอนหักไว้</td><td class="num">50,000</td><td class="num"></td></tr><tr><td>เดบิต ต้นทุนทางการเงินรอตัดบัญชี</td><td class="num">25,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินกู้ยืมระยะสั้นจากสถาบันการเงิน</td><td class="num"></td><td class="num">500,000</td></tr></tbody></table></div><p><b>เมื่อลูกหนี้ชำระผู้รับโอนครบ (ตัดต้นทุนทางการเงินตามระยะเวลาที่ได้ใช้เงิน)</b></p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินกู้ยืมระยะสั้นจากสถาบันการเงิน</td><td class="num">500,000</td><td class="num"></td></tr><tr><td>    เครดิต ลูกหนี้การค้า</td><td class="num"></td><td class="num">500,000</td></tr><tr><td>เดบิต เงินสด</td><td class="num">50,000</td><td class="num"></td></tr><tr><td>    เครดิต ลูกหนี้อื่น – เงินประกันที่ผู้รับโอนหักไว้</td><td class="num"></td><td class="num">50,000</td></tr><tr><td>เดบิต ต้นทุนทางการเงิน</td><td class="num">25,000</td><td class="num"></td></tr><tr><td>    เครดิต ต้นทุนทางการเงินรอตัดบัญชี</td><td class="num"></td><td class="num">25,000</td></tr></tbody></table></div><h4>ค. เงินให้กู้ยืมแก่บริษัทย่อยโดยไม่มีดอกเบี้ย</h4><p>บริษัทให้บริษัทย่อยกู้ 100,000 บาท 1 มกราคม 25X1 ไม่มีดอกเบี้ย ชำระคืนทั้งจำนวน 31 ธันวาคม 25X3 อัตราตลาดร้อยละ 6 บทที่ 7 ไม่ได้ให้คิดลดลูกหนี้ ทางเลือกแรกคือบันทึกด้วยจำนวนตามสัญญา 100,000 บาท และเปิดเผยเงื่อนไขไม่มีดอกเบี้ยในหมายเหตุ</p><p>ถ้ากิจการกำหนดนโยบายคิดลด ลำดับตามย่อหน้า 5.5 เป็นดังนี้ ไม่มีข้อกำหนดในมาตรฐานนี้ที่ใช้กับเรื่องเดียวกันหรือคล้ายกันได้โดยตรง (5.5.1) จึงใช้นิยามสินทรัพย์ในกรอบแนวคิด (5.5.2) เงินให้กู้ยืมเป็นสินทรัพย์เท่ากับประโยชน์เชิงเศรษฐกิจที่คาดว่าจะได้รับ คือมูลค่าปัจจุบัน 100,000 ÷ 1.06³ = 83,961.93 บาท ส่วนต่าง 16,038.07 บาทไม่เป็นสิทธิเรียกร้องเงินสด แนวการตีความของเนื้อหาเสริมนี้รับรู้ส่วนต่างเป็นค่าใช้จ่ายในรายการ 9 ค่าใช้จ่ายอื่น</p><p><b>1 มกราคม 25X1</b></p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินให้กู้ยืมแก่บริษัทย่อย</td><td class="num">100,000.00</td><td class="num"></td></tr><tr><td>เดบิต ค่าใช้จ่ายจากการให้กู้ยืมโดยไม่มีดอกเบี้ย (รายการ 9)</td><td class="num">16,038.07</td><td class="num"></td></tr><tr><td>    เครดิต ส่วนลดเงินให้กู้ยืม</td><td class="num"></td><td class="num">16,038.07</td></tr><tr><td>    เครดิต เงินสด</td><td class="num"></td><td class="num">100,000.00</td></tr></tbody></table></div><p>ทางเลือกที่ถือส่วนต่างเป็นส่วนหนึ่งของเงินลงทุนในบริษัทย่อยมาจากแนวปฏิบัติของมาตรฐานการรายงานทางการเงินฉบับเต็ม ใช้ได้ผ่านย่อหน้า 5.5.3 เท่านั้น ถ้ากิจการเลือกทางนี้ ให้เปิดเผยนโยบายและเหตุผล และใช้สม่ำเสมอ (5.8)</p><div class="tbl"><table><thead><tr><th>วันที่</th><th class="num">ยอดต้นงวด</th><th class="num">ดอกเบี้ยรับร้อยละ 6</th><th class="num">ยอดปลายงวด</th></tr></thead><tbody><tr><td>31 ธ.ค. 25X1</td><td class="num">83,961.93</td><td class="num">5,037.72</td><td class="num">88,999.65</td></tr><tr><td>31 ธ.ค. 25X2</td><td class="num">88,999.65</td><td class="num">5,339.98</td><td class="num">94,339.63</td></tr><tr><td>31 ธ.ค. 25X3</td><td class="num">94,339.63</td><td class="num">5,660.37</td><td class="num">100,000.00</td></tr></tbody></table></div><p>ทุกสิ้นปีบันทึกเดบิต ส่วนลดเงินให้กู้ยืม เครดิต ดอกเบี้ยรับ (รายการ 2 รายได้อื่น) ทางภาษี การให้กู้ยืมโดยไม่มีดอกเบี้ยอาจถูกเจ้าพนักงานประเมินดอกเบี้ยตามราคาตลาดตามมาตรา 65 ทวิ (4) ถ้าไม่มีเหตุผลรองรับตามที่กฎหมายกำหนด</p><h3 id="S7.7">S7.7 แม่แบบหมายเหตุและรายการตรวจสอบก่อนปิดบัญชี</h3><p>นโยบายการบัญชี: ลูกหนี้แสดงด้วยมูลค่าที่จะได้รับหลังหักค่าเผื่อหนี้สงสัยจะสูญ บริษัทประมาณค่าเผื่อด้วย [วิธีที่ใช้] ซึ่งอัตรามาจากประสบการณ์การเก็บหนี้ของบริษัท ร่วมกับการพิจารณาลูกหนี้ที่มีข้อบ่งชี้เป็นรายตัว หนี้สูญได้รับคืนบันทึกโดย [โอนกลับบัญชีลูกหนี้และค่าเผื่อ / รับรู้เป็นรายได้อื่น]</p><div class="tbl"><table><thead><tr><th>ความเคลื่อนไหวของค่าเผื่อ</th><th>จำนวน</th></tr></thead><tbody><tr><td>ยอดต้นปี</td><td>…</td></tr><tr><td>บวก หนี้สงสัยจะสูญ</td><td>…</td></tr><tr><td>หัก หนี้สูญตัดจำหน่าย (7.9.1)</td><td>…</td></tr><tr><td>บวก หนี้สูญได้รับคืนที่โอนกลับ (7.9.2)</td><td>…</td></tr><tr><td>ยอดสิ้นปี</td><td>…</td></tr></tbody></table></div><p>ลูกหนี้ที่ใช้เป็นหลักทรัพย์ค้ำประกัน (7.9.3): จำนวน … ลักษณะการค้ำประกัน … และหนี้สินที่ค้ำประกัน …</p><h4>รายการตรวจสอบก่อนปิดบัญชี</h4><ol><li>รายงานอายุลูกหนี้กระทบยอดกับบัญชีคุมแล้ว</li><li>นับอายุจากวันครบกำหนด ช่วงอายุกว้างเท่าความถี่ของรายงาน</li><li>อัตรามาจากข้อมูลของกิจการ มีแผ่นงานแสดงที่มา ไม่ใช่อัตราสำเร็จรูป</li><li>ใช้หนี้สูญสุทธิ ไม่ปนการรับคืนสินค้าหรือส่วนลด</li><li>ลูกหนี้รายตัวตัดออกจากฐานกลุ่ม และหนี้สูญก้อนพิเศษตัดออกจากข้อมูลในอดีต</li><li>การปรับอัตรามีหลักฐาน ณ วันสิ้นงวดและผู้อนุมัติ</li><li>บันทึกเฉพาะส่วนต่างระหว่างยอดเป้าหมายกับยอดคงเหลือ</li><li>ตัดจำหน่ายตามย่อหน้า 7.7 ไม่ใช่ตามเงื่อนไขภาษี</li><li>เงินให้กู้ยืมแก่กรรมการและกิจการที่เกี่ยวข้องแยกบรรทัด 1.5 หรือ 2.7</li><li>ทดสอบย้อนหลังและวิเคราะห์ความอ่อนไหวแล้ว</li><li>หมายเหตุเปิดเผยข้อมูลตามย่อหน้า 7.9 และนโยบายตาม 7.8</li><li>กระดาษทำการภาษีบวกกลับหนี้สงสัยจะสูญ หักหนี้สูญที่เข้าเงื่อนไข และติดตามหนี้ที่ยังไม่ครบเงื่อนไข</li></ol><h3 id="S7.8">S7.8 แนวคำตอบกรณีศึกษาและเฉลยแบบฝึกหัด</h3><h4>กรณีศึกษา 7.1</h4><div class="tbl"><table><thead><tr><th>ช่วงอายุ</th><th class="num">ยอด</th><th class="num">อัตรา</th><th class="num">ค่าเผื่อ</th></tr></thead><tbody><tr><td>ยังไม่ถึงกำหนด</td><td class="num">5,000,000</td><td class="num">0.5%</td><td class="num">25,000</td></tr><tr><td>เกิน 1–30 วัน</td><td class="num">1,800,000</td><td class="num">3%</td><td class="num">54,000</td></tr><tr><td>เกิน 31–90 วัน</td><td class="num">800,000</td><td class="num">12%</td><td class="num">96,000</td></tr><tr><td>เกิน 90 วัน</td><td class="num">400,000</td><td class="num">40%</td><td class="num">160,000</td></tr><tr><td>รวม</td><td class="num">8,000,000</td><td class="num"></td><td class="num">335,000</td></tr></tbody></table></div><p>(ก) รายการปรับปรุง เดบิต หนี้สงสัยจะสูญ 215,000 เครดิต ค่าเผื่อหนี้สงสัยจะสูญ 215,000 บาท (335,000 − 120,000) ข้อเสนอ (1) ลดค่าเผื่อช่วงเกิน 90 วันเหลือ 80,000 ยอดเป้าหมาย 255,000 กำไรสูงไป 80,000 บาท โดยไม่มีหลักฐานว่าสภาพ ณ วันสิ้นงวดเปลี่ยน ขัด 3.11.1 และ 3.14 การเปลี่ยนอัตราเป็นการเปลี่ยนแปลงประมาณการ (5.15) ที่ควรมีข้อมูลรองรับ ถ้าประเมินร้าน ค. เป็นรายตัวตามข้อ (ค) ให้หัก 150,000 ออกจากฐานกลุ่มเกิน 90 วันก่อน ค่าเผื่อกลุ่มช่วงนี้เหลือ 250,000 × 40% = 100,000 แล้วบวกค่าเผื่อรายตัวของร้าน ค. ตามหลักฐาน</p><p>(ข) เดบิต เงินให้กู้ยืมแก่กรรมการ 1,000,000 เครดิต ลูกหนี้การค้า 1,000,000 แสดงในรายการ 1.5 เงินให้กู้ยืมระยะสั้น (หรือ 2.7 ถ้าเกิน 12 เดือน) เป็นลูกหนี้อื่นตาม 7.1.2 และเปิดเผยลักษณะความสัมพันธ์และเงื่อนไข (แนวการตีความ บทที่ 7 ไม่ได้กำหนดการเปิดเผยรายการกับบุคคลที่เกี่ยวข้องกันไว้) ลูกหนี้การค้าสุทธิ 8,000,000 − 335,000 = 7,665,000 บาท</p><p>(ค) ทางบัญชียังไม่เข้า 7.7 เพราะยังไม่ได้ทวงถามจนถึงที่สุดและร้านยังเปิดกิจการ ให้ประเมินรายตัวตาม 7.5.3 ถ้ามีข้อบ่งชี้ แล้วตัดยอดออกจากฐานกลุ่ม ทางภาษีหนี้ 150,000 บาทใช้ข้อ 6 ได้เมื่อทวงถามแล้วมีหลักฐานและการฟ้องไม่คุ้ม หนังสือทวงถามครั้งเดียวยังเป็นหลักฐานที่อ่อน และต้องผ่านข้อ 3 ด้วย</p><p>(ง) ข้อเสนอทั้งสามทำให้ทุนหมุนเวียนและกำไรสูงเกินจริงต่อธนาคาร ผู้ทำบัญชีควรเสนอให้คงอัตราจากข้อมูล ติดตามข้อมูลการเก็บหนี้ใหม่ก่อนปรับ และเปิดเผยรายการกับกรรมการ</p><h4>ส่วนที่ 1</h4><ol><li>ข · ย่อหน้า 7.1.2 ยกลูกหนี้และเงินให้กู้ยืมแก่กรรมการและลูกจ้างเป็นตัวอย่างลูกหนี้อื่น ส่วนตัวเลือกที่เหลือเป็นลูกหนี้การค้าตาม 7.1.1 ในงบตามแบบ 2 เงินให้กู้แก่กรรมการแสดงในรายการ 1.5 เงินให้กู้ยืมระยะสั้น (หัวข้อ 7.1)</li><li>ค · ย่อหน้า 7.2 ใช้มูลค่ายุติธรรมของสิ่งตอบแทนกับลูกหนี้การค้าที่เกิดจากธุรกรรมระหว่างบุคคลหรือกิจการที่เกี่ยวข้องกัน ข้อความนี้ไม่ได้กำหนดเกณฑ์สำหรับลูกหนี้ทุกราย (หัวข้อ 7.2)</li><li>ก · วิธีจำแนกอายุให้ยอดเป้าหมายของบัญชีค่าเผื่อ รายการปรับปรุงคือส่วนต่าง 134.76 − 85.00 = 49.76 พันบาท (ตัวอย่างที่ 7.2) (หัวข้อ 7.3)</li><li>ค · ลูกหนี้กระจุกตัวและมีลูกค้าเพียง 4 ราย ข้อมูลกลุ่มไม่พอหาอัตราที่เชื่อถือได้ วิธีรายตัวตาม 7.5.3 จึงเหมาะ และใช้รายงานอายุติดตามการชำระ ตัวเลือก ก ไม่ทดสอบยอดคงเหลือ ตัวเลือก ข ใช้อัตรากลุ่มกับลูกค้าน้อยราย ตัวเลือก ง เป็นอัตราสำเร็จรูปที่ไม่ได้มาจากข้อมูลของกิจการ (หัวข้อ 7.3 และ 7.6)</li><li>ค · ย่อหน้า 7.5.2 ให้ใช้อัตราสูงขึ้นตามอายุหนี้ ร่วมกับหลักตัวแทนอันเที่ยงธรรม (3.11.1) และความระมัดระวัง (3.14) อัตราจึงมาจากข้อมูลของกิจการ แนวการตีความของบทนี้ไม่ใช้อัตราสำเร็จรูปและไม่ใช้เกณฑ์ภาษีเป็นจุดสูญเสียทางบัญชี (หัวข้อ 7.4)</li><li>ก · ย่อหน้า 7.8 ให้เลือกได้สองวิธีและต้องเปิดเผยนโยบายการบัญชีสำหรับหนี้สูญได้รับคืน (หัวข้อ 7.7)</li><li>ง · หนี้ไม่เกิน 200,000 บาทต่อราย เมื่อเข้าข้อ 3 และติดตามทวงถามแล้วมีหลักฐาน และการฟ้องไม่คุ้ม จำหน่ายได้ตามข้อ 6 (แก้ไขโดยฉบับที่ 374) ตัวเลือก ข เป็นกรณีหนึ่งในข้อ 4 (2) ของหนี้เกิน 2,000,000 บาท (หัวข้อ 7.8)</li><li>ข · ย่อหน้า 3.11.1 และ 3.14 ไม่ให้ประมาณการลำเอียงทั้งสูงหรือต่ำเกินไป การเปลี่ยนอัตราเป็นการเปลี่ยนแปลงประมาณการ (5.15) ที่ควรมีหลักฐานรองรับ การเปิดเผยหรือผลทางภาษีไม่ทำให้ประมาณการที่ไม่มีหลักฐานเป็นที่ยอมรับ (กรณีศึกษา 7.1)</li></ol><h4>ส่วนที่ 2 โจทย์ปฏิบัติงาน</h4><ol><li>ลูกหนี้จากการขายสินค้า 900,000 บาท (950,000 − 50,000) ลูกหนี้การค้า (7.1.1) รายการ 1.3 บันทึกด้วยจำนวนตามใบแจ้งหนี้สุทธิจากส่วนลดการค้า (แนวการตีความ) และวัดภายหลังด้วยมูลค่าที่จะได้รับ (7.3) · ลูกหนี้การค้าบริษัทที่เกี่ยวข้องกัน 200,000 บาท ลูกหนี้การค้า รายการ 1.3 วัดด้วยมูลค่ายุติธรรมของสิ่งตอบแทนที่ค้างรับ ซึ่งเท่ากับราคาขายลูกค้าทั่วไป (7.2) และเปิดเผยความสัมพันธ์ในหมายเหตุ (แนวการตีความ) · ตั๋วเงินรับครบกำหนด 18 เดือน 300,000 บาท ลูกหนี้การค้า (7.1.1) รายการ 2.6 (7.3) · เงินมัดจำค่าเช่า 50,000 บาท ลูกหนี้อื่น ได้คืนเกิน 12 เดือนนับจากวันสิ้นงวด รายการ 2.6 · เงินให้กู้ยืมแก่ลูกจ้าง 40,000 บาท ลูกหนี้อื่น (7.1.2) รายการ 1.5 (7.3) · ดอกเบี้ยค้างรับ 1,200 บาท ลูกหนี้อื่น (รายได้ค้างรับ) รายการ 1.3 รับรู้ตามบทที่ 18 (7.4) · ยอดรวม: รายการ 1.3 = 900,000 + 200,000 + 1,200 = 1,101,200 บาท รายการ 2.6 = 300,000 + 50,000 = 350,000 บาท รายการ 1.5 = 40,000 บาท</li><li>(ก) แบบประเมินรายตัว หจก. ต.: ยอดคงค้าง 50,000 บาท เหตุที่คัดเลือก มีข้อบ่งชี้ (ขอผ่อนผัน) ระดับ 3 ผิดนัดหรือผ่อนผัน เงินรับหลังวันสิ้นงวด 10,000 บาท แผนชำระที่ปฏิบัติได้จริง 15,000 บาท ไม่มีหลักประกัน ค่าเผื่อรายตัว 50,000 − 10,000 − 15,000 = 25,000 บาท และตัดยอด 50,000 ออกจากฐานกลุ่ม ฐานเกิน 60 วันเหลือ 150,000 บาท ยอดเป้าหมาย 1,400,000 × 2% + 400,000 × 8% + 150,000 × 30% + 25,000 = 28,000 + 32,000 + 45,000 + 25,000 = 130,000 บาท บันทึกเดบิต หนี้สงสัยจะสูญ 105,000 เครดิต ค่าเผื่อหนี้สงสัยจะสูญ 105,000 บาท (130,000 − 25,000) (ข) โรงพยาบาล: แยกกลุ่มตามผู้จ่ายเงิน (ตารางที่ 7-2 ขั้น 1 และคำถามข้อ 2 ของหัวข้อ 7.6) กองทุนของรัฐและบริษัทประกันประเมินรายตัวตามสัญญาและประวัติการจ่าย ส่วนที่ไม่ได้รับเพราะเงื่อนไขอัตราหรือการปรับอัตราย้อนหลังบันทึกเป็นรายการปรับรายได้ตามบทที่ 18 ไม่ใช่หนี้สงสัยจะสูญ ผู้ป่วยชำระเองมีจำนวนมาก ใช้อัตราตามอายุจากข้อมูลของโรงพยาบาล · ผู้รับเหมาก่อสร้าง: ประเมินรายตัวตามโครงการ แยกภาครัฐกับเอกชน ลูกหนี้ภาครัฐมีความเสี่ยงเรื่องจังหวะเวลาและการตรวจรับงานมากกว่าความเสี่ยงล้มละลาย เงินประกันผลงานที่ยังไม่ถึงกำหนดไม่นับเป็นยอดค้างชำระ และจัดเป็นรายการ 2.6 ถ้าจะได้รับเกิน 12 เดือน งานที่เสร็จแต่ยังไม่ถึงกำหนดเรียกเก็บแสดงในรายการ 1.4 หรือ 2.8 ไม่อยู่ในตารางอายุ (บทที่ 20) · แบบฝึกเพิ่มเติม: อัตราการเลื่อนชั้นจาก S7.2 หกการเปลี่ยนล่าสุด ได้อัตราสะสม 0.42% 3.47% 11.53% 28.83% 57.66% และค่าเผื่อแบบกลุ่มราว 94.89 พันบาท (แท็บ 2)</li><li>(ก) วิธีโอนกลับ: 2569 เดบิต ค่าเผื่อหนี้สงสัยจะสูญ 30,000 เครดิต ลูกหนี้ 30,000 · 2570 เดบิต ลูกหนี้ 12,000 เครดิต ค่าเผื่อหนี้สงสัยจะสูญ 12,000 และเดบิต เงินสด 12,000 เครดิต ลูกหนี้ 12,000 · วิธีรายได้อื่น: 2569 บันทึกเหมือนวิธีแรก 2570 เดบิต เงินสด 12,000 เครดิต หนี้สูญได้รับคืน 12,000 · หมายเหตุ: [ต้องเปิดเผย 7.8] นโยบายที่เลือก [ต้องเปิดเผย 7.9.1] หนี้สูญตัดจำหน่ายปี 2569 30,000 บาท [ต้องเปิดเผย 7.9.2] หนี้สูญได้รับคืนปี 2570 12,000 บาท [แนะนำ] ความเคลื่อนไหวของค่าเผื่อทั้งปี (ข) กำไรทางบัญชีก่อนภาษี 2,000,000 บวก หนี้สงสัยจะสูญ 150,000 (รายจ่ายต้องห้ามตามมาตรา 65 ตรี (1)) หัก หนี้สูญที่เข้าเงื่อนไขกฎกระทรวง ฉบับที่ 186 จำนวน 60,000 (ตัดจากค่าเผื่อ จึงไม่อยู่ในกำไรทางบัญชี) บวก หนี้สูญได้รับคืน 5,000 (วิธีโอนกลับไม่มีรายได้ในบัญชี แต่ทางภาษีเป็นรายได้ตามมาตรา 65 ทวิ (9)) กำไรสุทธิทางภาษี 2,095,000 บาท</li><li>ผลต่าง 102 − 85 = 17 พันบาท (ราวร้อยละ 20) ถ้าข้อมูลที่ทำให้ผลจริงต่างไปเกิดหลังวันสิ้นงวดเดิม เป็นการเปลี่ยนแปลงประมาณการ (5.15) รับรู้ในงวดปัจจุบัน ไม่แก้ไขย้อนหลัง ข้อเสนอ (1) ใช้ได้เฉพาะเมื่อพบว่าข้อมูลมีอยู่แล้ว ณ วันสิ้นงวดเดิมแต่ผู้บริหารไม่ใช้ ซึ่งเป็นข้อผิดพลาดที่แก้ไขย้อนหลังตามบทที่ 5 ข้อเสนอ (2) ยอมรับไม่ได้ ยอดขายที่ดีขึ้นไม่ใช่หลักฐานว่าความสามารถชำระหนี้ของลูกหนี้ดีขึ้น (3.11.1 3.14) และอัตราสะสมในตารางที่ 7-4 ใช้กับยอด ณ ธันวาคม 2567 ได้ราว 102.7 พันบาท ใกล้ผลจริง การตั้งต่ำกว่าผลจริงซ้ำเป็นข้อบ่งชี้ความลำเอียง บันทึกถึงผู้บริหารเสนอให้ใช้อัตราจากข้อมูลล่าสุด เขียนนโยบายช่วงข้อมูลไว้และใช้สม่ำเสมอ (5.8) ทดสอบย้อนหลังทุกปี วิเคราะห์ความอ่อนไหว (อัตราทุกช่วงเปลี่ยนร้อยละ 20 ค่าเผื่อแบบกลุ่มเปลี่ยนราว 18.95 พันบาท) และเก็บหลักฐานทุกครั้งที่เปลี่ยนอัตรา</li></ol><h3 id="S7.9">S7.9 แนวทางรายอุตสาหกรรมฉบับเต็ม</h3><p>ตารางนี้ขยายตารางที่ 7-6 ทั้งหมดเป็นแนวการตีความ ใช้คำถามสี่ข้อในหัวข้อ 7.6 กับข้อเท็จจริงของกิจการก่อนทุกครั้ง วิธีที่เหมาะสมและข้อบ่งชี้ของแต่ละกลุ่มดูได้ในแท็บเลือกวิธี</p><div class="tbl"><table><thead><tr><th>กลุ่ม</th><th>หลักประกันที่พบบ่อย</th><th>ข้อผิดพลาดที่พบบ่อย</th><th>การเปิดเผยที่ควรเน้น</th></tr></thead><tbody><tr><td>ค้าส่งและจัดจำหน่าย</td><td>เช็คลงวันที่ล่วงหน้า หนังสือค้ำประกันธนาคาร การค้ำประกันส่วนตัว</td><td>ใช้ร้อยละของยอดขายหลายปีโดยไม่ทดสอบยอดสิ้นปี นับอายุจากวันที่ใบแจ้งหนี้แทนวันครบกำหนด ไม่ปรับอายุเมื่อชำระบางส่วน</td><td>ตารางอายุ ความเคลื่อนไหวของค่าเผื่อ ลูกหนี้ที่โอนสิทธิเป็นหลักประกัน (7.9.3)</td></tr><tr><td>ค้าปลีกและขายออนไลน์</td><td>เงินประกันที่แพลตฟอร์มกันไว้ สิทธิในสินค้าที่ขายผ่อน</td><td>ตั้งค่าเผื่อแทนการบันทึกค่าธรรมเนียมหรือการคืนสินค้า (บทที่ 18) รวมลูกหนี้ผ่อนชำระกับเงินรอรับจากบัตร</td><td>แยกลูกหนี้แพลตฟอร์ม นโยบายการคืนสินค้า</td></tr><tr><td>ผลิตขายลูกค้ารายใหญ่ไม่กี่ราย</td><td>ประกันสินเชื่อการค้า การขายลดลูกหนี้ (factoring)</td><td>ใช้ตารางอายุกับลูกค้าเพียงไม่กี่ราย ไม่แยกการหักเงินจากใบแจ้งหนี้ออกจากหนี้สงสัยจะสูญ ไม่เปิดเผยการกระจุกตัว</td><td>การกระจุกตัว ยอดกับกิจการในกลุ่ม ลูกหนี้ที่ขายลดแบบมีสิทธิไล่เบี้ย (7.9.3)</td></tr><tr><td>รับเหมาก่อสร้าง</td><td>หนังสือค้ำประกัน สิทธิตามสัญญา</td><td>หักกลบเงินประกันผลงานรับกับเงินประกันผลงานจ่ายผู้รับเหมาช่วง (4.6) ไม่ประเมินลูกหนี้ภาครัฐเลย นับเงินประกันผลงานที่ยังไม่ถึงกำหนดเป็นยอดค้าง</td><td>แยกรายการ 1.3 จาก 1.4 หรือ 2.8 เงินประกันผลงานตามกำหนดได้คืน (บทที่ 20)</td></tr><tr><td>อสังหาริมทรัพย์</td><td>สิทธิในทรัพย์ เงินดาวน์ที่ริบได้ตามสัญญา</td><td>บันทึกเงินดาวน์ค้างรับเป็นลูกหนี้ทั้งที่ยังไม่มีสิทธิเรียกร้อง ไม่จัดลูกหนี้ผ่อนเกิน 12 เดือนเป็นรายการไม่หมุนเวียน</td><td>นโยบายรายได้ (บทที่ 19) ลูกหนี้ไม่หมุนเวียน 2.6</td></tr><tr><td>บริการวิชาชีพ เช่น สำนักงานบัญชี</td><td>เงินมัดจำค่าบริการ</td><td>ไม่ตั้งค่าเผื่อลูกค้าที่จดเลิกแล้ว รับรู้รายได้ต่อเนื่องจากลูกค้าที่ไม่ชำระมานาน (บทที่ 18)</td><td>นโยบายหยุดให้บริการ งานที่ยังไม่เรียกเก็บ</td></tr><tr><td>โรงพยาบาลและคลินิก</td><td>สัญญากับผู้จ่ายเงิน เงินมัดจำของผู้ป่วย</td><td>ใช้อัตราเดียวกับผู้จ่ายเงินทุกประเภท ตั้งหนี้สงสัยจะสูญสำหรับส่วนที่กองทุนไม่จ่ายเพราะเงื่อนไขอัตรา แทนการปรับรายได้</td><td>ส่วนผสมของผู้จ่ายเงิน แยกการปรับรายได้ออกจากหนี้สงสัยจะสูญ</td></tr><tr><td>โรงเรียนเอกชน</td><td>ไม่มีหลักประกันทางบัญชี การระงับผลการเรียนไม่ใช่หลักประกัน</td><td>รวมเงินอุดหนุนค้างรับจากรัฐกับลูกหนี้ผู้ปกครอง ไม่ตัดจำหน่ายลูกหนี้ของนักเรียนที่ลาออกนานแล้ว</td><td>แยกเงินอุดหนุนค้างรับ (บทที่ 23)</td></tr><tr><td>เกษตรและอาหาร</td><td>ประกันการส่งออก L/C</td><td>ใช้อัตราเดียวกับลูกค้าในประเทศและต่างประเทศที่มีประกัน คำนวณอัตราจากฤดูกาลเดียว</td><td>ยอดที่มีประกันคุ้มครอง ระยะเวลาให้สินเชื่อของคู่ค้ารายใหญ่</td></tr><tr><td>ส่งออก</td><td>ประกันการส่งออก L/C ที่ธนาคารยืนยัน</td><td>นับผลต่างจากอัตราแลกเปลี่ยนเป็นหนี้สงสัยจะสูญ ไม่เปิดเผยยอดที่มีประกันคุ้มครอง</td><td>ยอดแยกสกุลเงิน ยอดที่มีประกันคุ้มครอง (บทที่ 21)</td></tr><tr><td>กิจการที่เกี่ยวข้องกันและกรรมการ</td><td>มักไม่มี</td><td>แสดงเงินให้กู้ยืมแก่กรรมการในลูกหนี้การค้า ไม่ประเมินบริษัทในเครือที่ขาดทุนสะสม จัดเป็นหมุนเวียนทั้งที่ไม่เคยชำระ</td><td>แยกในหมายเหตุ เงื่อนไขดอกเบี้ย รายการ 1.5 หรือ 2.7</td></tr></tbody></table></div><h4>หมายเหตุเพิ่มเติม</h4><ul><li>ธุรกิจเช่าซื้อและลีสซิ่งรถยนต์และรถจักรยานยนต์ที่มิใช่สถาบันการเงินอยู่ภายใต้การกำกับของธนาคารแห่งประเทศไทยตั้งแต่ปี 2569 ควรตรวจหลักเกณฑ์ที่เกี่ยวข้องก่อนใช้แนวทางในตารางนี้ ส่วนสหกรณ์ใช้แนวปฏิบัติของกรมตรวจบัญชีสหกรณ์ ซึ่งอยู่นอกขอบเขตของบทนี้</li><li>หลักเกณฑ์ระยะเวลาการให้สินเชื่อการค้าของคณะกรรมการการแข่งขันทางการค้า (มีผล 2 พฤศจิกายน 2569) กำหนดกรอบ 30 วันสำหรับสินค้าเกษตรและ 45 วันสำหรับสินค้าและบริการทั่วไปที่คู่ค้ารายใหญ่ชำระแก่วิสาหกิจขนาดกลางและขนาดย่อม (SME) ยอดที่ค้างเกินกรอบนี้เป็นข้อบ่งชี้ที่ควรติดตาม</li><li>ส่วนที่ผู้จ่ายเงินไม่จ่ายเพราะเงื่อนไขอัตรา ค่าธรรมเนียม หรือการคืนสินค้า เป็นรายการปรับรายได้ตามบทที่ 18 ผลต่างจากอัตราแลกเปลี่ยนเป็นของบทที่ 21 ทั้งสองรายการไม่ใช่หนี้สงสัยจะสูญ</li></ul>
+<h3 id="S7.10">S7.10 ที่มาของย่อหน้า 7.8 ภาษีมูลค่าเพิ่มของหนี้สูญ และระยะเวลาการให้สินเชื่อการค้า</h3>
+<h4>ก. ทางเลือกบันทึกหนี้สูญได้รับคืน: ฉบับ 2554 เทียบฉบับปรับปรุง 2565</h4>
+<div class="tbl"><table><thead><tr><th>ประเด็น</th><th>ฉบับ 2554 (ประกาศ 20/2554)</th><th>ฉบับปรับปรุง 2565 (ประกาศ 48/2565)</th></tr></thead><tbody>
+<tr><td>หนี้สูญได้รับคืน</td><td>ย่อหน้า 84: โอนกลับบัญชีลูกหนี้และค่าเผื่อหนี้สงสัยจะสูญ วิธีเดียว</td><td>ย่อหน้า 7.8: เลือกโอนกลับ หรือรับรู้เป็นรายได้อื่น และเปิดเผยนโยบายที่เลือก</td></tr>
+<tr><td>ที่มาของทางเลือก</td><td>ไม่มี</td><td>นำประกาศสภาวิชาชีพบัญชี ที่ 13/2555 เข้ามารวม (เอกสารประกอบการอบรม 9 ธันวาคม 2565 สไลด์ที่ 33)</td></tr>
+<tr><td>ถ้อยคำ</td><td>การตัดรายการ</td><td>การเลิกรับรู้รายการ (สไลด์ที่ 12–13)</td></tr>
+</tbody></table></div>
+<p>ตัวอย่างตามแนวสไลด์ที่ 34–36 (หน่วยบาท): ลูกหนี้ 2,000 ตัดจำหน่ายแล้ว ต่อมาได้รับคืน 200 วิธีโอนกลับ: Dr ลูกหนี้ 200 Cr ค่าเผื่อหนี้สงสัยจะสูญ 200 แล้ว Dr เงินสด 200 Cr ลูกหนี้ 200 ค่าใช้จ่ายหนี้สงสัยจะสูญของงวดสุทธิ 1,800 วิธีรายได้อื่น: Dr เงินสด 200 Cr รายได้อื่น 200 ค่าใช้จ่าย 2,000 และรายได้อื่น 200 กำไรสุทธิเท่ากันทั้งสองวิธี ต่างกันที่บรรทัดในงบกำไรขาดทุน เอกสารประกอบการอบรมไม่ถือเป็นส่วนหนึ่งของมาตรฐาน</p>
+<h4>ข. ภาษีมูลค่าเพิ่มของหนี้สูญ (มาตรา 82/11)</h4>
+<div class="tbl"><table><thead><tr><th>ประเด็น</th><th>หลักเกณฑ์</th><th>ที่มา</th></tr></thead><tbody>
+<tr><td>เวลาที่หัก</td><td>เดือนภาษีที่จำหน่ายหนี้สูญ</td><td>มาตรา 82/11 ประกาศอธิบดีฯ ฉบับที่ 85</td></tr>
+<tr><td>จำนวนที่หัก</td><td>หนี้สูญ × อัตราภาษี ÷ (100 + อัตราภาษี) เช่น 107,000 × 7/107 = 7,000 บาท</td><td>ประกาศอธิบดีฯ ฉบับที่ 85</td></tr>
+<tr><td>เกณฑ์จำนวนหนี้</td><td>2,000,000 บาท และ 200,000 บาท แบบเดียวกับกฎกระทรวง ฉบับที่ 186</td><td>แก้ไขโดยฉบับที่ 242 (15 พ.ย. 2564)</td></tr>
+<tr><td>เงื่อนไข</td><td>นำมูลค่าไปคำนวณภาษีขายแล้ว ออกใบกำกับภาษีแล้ว ลูกหนี้ไม่ใช่ผู้ประกอบการจดทะเบียน</td><td>ประกาศอธิบดีฯ ฉบับที่ 85</td></tr>
+<tr><td>ข้อยกเว้น</td><td>หนี้ของผู้เป็นหรือเคยเป็นกรรมการหรือหุ้นส่วนผู้จัดการ</td><td>ประกาศอธิบดีฯ ฉบับที่ 85</td></tr>
+<tr><td>การให้บริการ</td><td>ยังไม่ได้รับชำระ ความรับผิดในภาษีมูลค่าเพิ่มยังไม่เกิด (มาตรา 78/1) จึงไม่มีภาษีขายให้หัก</td><td>หนังสือตอบข้อหารือ กค 0706/7311</td></tr>
+<tr><td>ได้รับชำระภายหลัง</td><td>ยังไม่พบหลักฐานทางการ ตรวจกับกรมสรรพากรก่อนปฏิบัติ</td><td>ยังไม่ยืนยัน</td></tr>
+</tbody></table></div>
+<p>หนี้สูญทางภาษีเงินได้นิติบุคคลใช้กฎกระทรวง ฉบับที่ 186 แก้ไขโดยฉบับที่ 374 (ราชกิจจานุเบกษา เล่ม 138 ตอนที่ 29 ก วันที่ 29 เมษายน 2564) ใช้กับการจำหน่ายหนี้สูญในรอบระยะเวลาบัญชีที่เริ่มในหรือหลังวันที่ 1 มกราคม 2563 หนังสือตอบข้อหารือ กค 0702/638 ตอบว่าหนี้เกิน 2 ล้านบาทใช้ทางใดทางหนึ่งในข้อ 4 ก็ได้</p>
+<h4>ค. ระยะเวลาการให้สินเชื่อการค้า (credit term) ฉบับปรับปรุง 2569</h4>
+<div class="tbl"><table><thead><tr><th>ประเด็น</th><th>สาระ</th></tr></thead><tbody>
+<tr><td>ประกาศ</td><td>ประกาศคณะกรรมการการแข่งขันทางการค้า เรื่อง การปฏิบัติทางการค้าที่เป็นธรรมเกี่ยวกับระยะเวลาการให้สินเชื่อการค้า ระหว่างผู้ประกอบธุรกิจขนาดใหญ่หรือผู้ประกอบธุรกิจค้าส่งค้าปลีกขนาดใหญ่ กับผู้ประกอบธุรกิจขนาดกลางและขนาดย่อม</td></tr>
+<tr><td>วันที่</td><td>ราชกิจจานุเบกษา 2 ตุลาคม 2569 มีผล 2 พฤศจิกายน 2569 (บางสำนักข่าวระบุ 3 พฤศจิกายน)</td></tr>
+<tr><td>ผู้มีหน้าที่</td><td>ผู้ซื้อรายใหญ่ คือผู้มีรายได้ในประเทศในรอบปีบัญชีก่อนตั้งแต่ 500 ล้านบาท</td></tr>
+<tr><td>ผู้ขายที่คุ้มครอง</td><td>ภาคการผลิต การจ้างงานไม่เกิน 200 คนและรายได้ไม่เกิน 500 ล้านบาท ภาคบริการ ค้าส่ง ค้าปลีก ไม่เกิน 100 คนและ 300 ล้านบาท</td></tr>
+<tr><td>ระยะเวลา</td><td>ไม่เกิน 45 วันทั่วไป ไม่เกิน 30 วันสำหรับสินค้าเกษตรหรือผลิตภัณฑ์เกษตรแปรรูปขั้นต้น นับจากวันส่งมอบสินค้าหรือบริการและเอกสารครบถ้วน</td></tr>
+<tr><td>ผลต่อ NPAEs ผู้ขาย</td><td>ใช้เป็นวันครบกำหนดในการจัดกลุ่มอายุลูกหนี้ (แท็บ 0 และแท็บ 3) และใช้ยอดค้างเกินกรอบเป็นข้อบ่งชี้ (แนวการตีความ)</td></tr>
+</tbody></table></div>
+<p>ตัวบทได้จากข่าวที่ถอดประกาศ (ฐานเศรษฐกิจ 6 และ 24 ตุลาคม 2569) ยังไม่ได้ตรวจกับฉบับราชกิจจานุเบกษาโดยตรง</p>
+<h4>ง. ประกันสินเชื่อการค้าและการเปรียบเทียบเพื่อการศึกษา</h4>
+<ul><li>ยังไม่พบแนวปฏิบัติทางการของไทยเรื่องประกันสินเชื่อการค้า แนวการตีความ: ไม่นำสิทธิเรียกร้องจากผู้รับประกันไปหักกลบกับลูกหนี้หรือค่าเผื่อ (ย่อหน้า 4.6) รับรู้สิทธิเรียกร้องเมื่อเข้าเงื่อนไขตามกรอบแนวคิด (3.18.1) หรือเปิดเผยเป็นสินทรัพย์ที่อาจเกิดขึ้นตามบทที่ 16</li>
+<li>มาตรฐานการรายงานทางการเงินระหว่างประเทศสำหรับกิจการขนาดกลางและขนาดย่อม (International Financial Reporting Standard for Small and Medium-sized Entities) ฉบับที่ 3 ยังคงรับรู้ผลขาดทุนเมื่อมีหลักฐานว่าเกิดขึ้นแล้ว ใกล้เคียงกับแนวทางของบทที่ 7 เพื่อการศึกษา ไม่ใช่ข้อกำหนด</li>
+<li>ผู้สอบบัญชี: มาตรฐานการสอบบัญชี รหัส 540 (ปรับปรุง) ย่อหน้า 14 สอบทานผลของประมาณการงวดก่อน (ใช้คู่กับการทดสอบย้อนหลังในแท็บ 2) ย่อหน้า 32 ข้อบ่งชี้ความลำเอียงของผู้บริหาร มาตรฐานการสอบบัญชีที่ประกาศปรับปรุงเดือนมิถุนายน 2569 ไม่ได้แก้ไขรหัส 540</li></ul>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 7 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์เท่านั้น ข้อมูลที่กรอกไม่ถูกส่งออกจากเครื่อง ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพหรือคำปรึกษาภาษี</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 7.1–7.7 และตารางที่ 7-1 ถึง 7-4 ในตำรา · สภาวิชาชีพบัญชีไม่ได้ออกตัวอย่างประกอบความเข้าใจสำหรับบทที่ 7</span>
+  </footer>
+</div>
+
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=2)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:d});
+  const pct=(x,d=2)=>isFinite(x)?(x*100).toFixed(d)+'%':'–';
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* ---------- shared renderers ---------- */
+  function je(title,lines,ref){
+    const rows=lines.map(l=>l.dr
+      ?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`
+      :`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  function adjust(required,prior){
+    const diff=required-prior;
+    if(Math.abs(diff)<0.005) return {diff:0,html:`<div class="why">ยอดค่าเผื่อคงเหลือเท่ากับยอดเป้าหมายแล้ว จึงไม่ต้องบันทึกรายการปรับปรุง</div>`};
+    if(diff>0) return {diff,html:je('รายการปรับปรุง ณ วันสิ้นงวด',[{dr:1,acct:'หนี้สงสัยจะสูญ',amt:diff},{dr:0,acct:'ค่าเผื่อหนี้สงสัยจะสูญ',amt:diff}],'ย่อหน้า 7.6')};
+    return {diff,html:je('รายการกลับรายการค่าเผื่อส่วนเกิน',[{dr:1,acct:'ค่าเผื่อหนี้สงสัยจะสูญ',amt:-diff},{dr:0,acct:'หนี้สงสัยจะสูญ (กลับรายการ)',amt:-diff}],'เปลี่ยนแปลงประมาณการ ย่อหน้า 5.15')};
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,isPct])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${isPct?pct(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const facts=(title,items)=>`<div class="facts"><h4>${esc(title)}</h4><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  const theory=(items,open)=>`<details class="theory"${open?' open':''}><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  function taxBox(expense){
+    if(expense<=0) return `<div class="tax"><b>ผลทางภาษี</b> การกลับรายการค่าเผื่อที่เคยบวกกลับเป็นรายจ่ายต้องห้ามแล้ว โดยทั่วไปนำมาหักออกในการคำนวณกำไรสุทธิทางภาษีเพื่อไม่ให้เสียภาษีซ้ำ ให้ตรวจกับกระดาษทำการภาษีของงวดก่อน</div>`;
+    return `<div class="tax"><b>ผลทางภาษี</b> ค่าใช้จ่ายหนี้สงสัยจะสูญ ${fmt(expense)} เป็นเงินสำรองซึ่งเป็นรายจ่ายต้องห้ามตามมาตรา 65 ตรี (1) ให้บวกกลับในการคำนวณกำไรสุทธิทางภาษี แต่ทางบัญชียังต้องตั้งครบ NPAEs ไม่ต้องรับรู้ภาษีเงินได้รอการตัดบัญชีจากผลต่างนี้</div>`;
+  }
+
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes7tab',name)}catch(e){}
+  }
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='pick';
+  const h=(location.hash||'').slice(1);
+  if(names.includes(h)) start=h; else {try{const s=localStorage.getItem('npaes7tab'); if(names.includes(s)) start=s}catch(e){}}
+  show(start);
+
+
+  /* =========================================================
+     PICK METHOD (ตารางที่ 7-2 และ 7-6)
+     ========================================================= */
+  const IND=[["ws", "ค้าส่งและจัดจำหน่าย", "ลูกค้าจำนวนมาก เครดิต 30–90 วัน", "วิธีผสม: อัตราตามอายุกับส่วนใหญ่ รายตัวกับรายใหญ่ และร้อยละของยอดขายเชื่อระหว่างปี", "เช็คคืน ขอยืดเครดิตซ้ำ ค้างเกิน 90 วัน", "เช็คลงวันที่ล่วงหน้า หนังสือค้ำประกันธนาคาร การค้ำประกันส่วนตัว", "ใช้ร้อยละของยอดขายหลายปีโดยไม่ทดสอบยอดสิ้นปี นับอายุจากวันที่ใบแจ้งหนี้แทนวันครบกำหนด ไม่ปรับอายุเมื่อชำระบางส่วน", "ตารางอายุ ความเคลื่อนไหวของค่าเผื่อ ลูกหนี้ที่โอนสิทธิเป็นหลักประกัน (7.9.3)"], ["rt", "ค้าปลีกและขายออนไลน์", "เงินรอรับจากบัตร คิวอาร์ และแพลตฟอร์ม ลูกหนี้ผ่อนชำระ", "แพลตฟอร์ม: กระทบยอดและประเมินรายตัว · ผ่อนชำระ: อัตราตามจำนวนงวดที่ค้าง", "แพลตฟอร์มระงับการจ่าย การปฏิเสธรายการผิดปกติ ผ่อนค้างเกิน 3 งวด", "เงินประกันที่แพลตฟอร์มกันไว้ สิทธิในสินค้าที่ขายผ่อน", "ตั้งค่าเผื่อแทนการบันทึกค่าธรรมเนียมหรือการคืนสินค้า (บทที่ 18) รวมลูกหนี้ผ่อนชำระกับเงินรอรับจากบัตร", "แยกลูกหนี้แพลตฟอร์ม นโยบายการคืนสินค้า"], ["mf", "ผลิตขายลูกค้ารายใหญ่ไม่กี่ราย", "ลูกหนี้กระจุกตัว ยอดต่อรายสูง", "รายตัวเป็นหลัก (7.5.3) ใช้รายงานอายุเพื่อติดตาม", "ลูกค้าถูกลดอันดับเครดิต ข้อพิพาทคุณภาพ การหักเงินจากใบแจ้งหนี้", "ประกันสินเชื่อการค้า การขายลดลูกหนี้ (factoring)", "ใช้ตารางอายุกับลูกค้าเพียงไม่กี่ราย ไม่แยกการหักเงินจากใบแจ้งหนี้ออกจากหนี้สงสัยจะสูญ ไม่เปิดเผยการกระจุกตัว", "การกระจุกตัว ยอดกับกิจการในกลุ่ม ลูกหนี้ที่ขายลดแบบมีสิทธิไล่เบี้ย (7.9.3)"], ["cn", "รับเหมาก่อสร้าง", "ลูกหนี้งวดงาน เงินประกันผลงาน งานที่เสร็จแต่ยังไม่เรียกเก็บ คู่สัญญาภาครัฐและเอกชน", "รายตัวตามโครงการ แยกภาครัฐกับเอกชน", "งานถูกระงับ ข้อพิพาทงานเพิ่มลด ค่าปรับ", "หนังสือค้ำประกัน สิทธิตามสัญญา", "หักกลบเงินประกันผลงานรับกับเงินประกันผลงานจ่ายผู้รับเหมาช่วง (4.6) ไม่ประเมินลูกหนี้ภาครัฐเลย นับเงินประกันผลงานที่ยังไม่ถึงกำหนดเป็นยอดค้าง", "แยกรายการ 1.3 จาก 1.4 หรือ 2.8 เงินประกันผลงานตามกำหนดได้คืน (บทที่ 20)"], ["re", "อสังหาริมทรัพย์", "เงินดาวน์และค่างวดค้างรับ ผ่อนตรงกับโครงการ", "รายตัวร่วมกับจำนวนงวดที่ค้าง", "ขาดผ่อน ธนาคารปฏิเสธสินเชื่อ", "สิทธิในทรัพย์ เงินดาวน์ที่ริบได้ตามสัญญา", "บันทึกเงินดาวน์ค้างรับเป็นลูกหนี้ทั้งที่ยังไม่มีสิทธิเรียกร้อง ไม่จัดลูกหนี้ผ่อนเกิน 12 เดือนเป็นรายการไม่หมุนเวียน", "นโยบายรายได้ (บทที่ 19) ลูกหนี้ไม่หมุนเวียน 2.6"], ["ps", "บริการวิชาชีพ เช่น สำนักงานบัญชี", "ลูกค้า SME จำนวนมาก ค่าบริการรายเดือนยอดเล็ก", "อัตราสูญเสียตามช่วงอายุ ร่วมกับรายตัวเมื่อลูกค้าเลิกกิจการ", "ค้างเกิน 3 เดือน ลูกค้าจดทะเบียนเลิก", "เงินมัดจำค่าบริการ", "ไม่ตั้งค่าเผื่อลูกค้าที่จดเลิกแล้ว รับรู้รายได้ต่อเนื่องจากลูกค้าที่ไม่ชำระมานาน (บทที่ 18)", "นโยบายหยุดให้บริการ งานที่ยังไม่เรียกเก็บ"], ["hp", "โรงพยาบาลและคลินิก", "กองทุนของรัฐ บริษัทประกัน คู่สัญญา และผู้ป่วยชำระเอง", "แยกกลุ่มตามผู้จ่ายเงิน: กองทุนและบริษัทประกันประเมินรายตัว ผู้ป่วยใช้อัตราตามอายุ", "การปรับอัตราจ่ายย้อนหลัง การเรียกเก็บถูกปฏิเสธ", "สัญญากับผู้จ่ายเงิน เงินมัดจำของผู้ป่วย", "ใช้อัตราเดียวกับผู้จ่ายเงินทุกประเภท ตั้งหนี้สงสัยจะสูญสำหรับส่วนที่กองทุนไม่จ่ายเพราะเงื่อนไขอัตรา แทนการปรับรายได้", "ส่วนผสมของผู้จ่ายเงิน แยกการปรับรายได้ออกจากหนี้สงสัยจะสูญ"], ["sc", "โรงเรียนเอกชน", "ค่าเล่าเรียนค้างรับยอดเล็ก เงินอุดหนุนจากรัฐ", "อัตราตามจำนวนภาคเรียนที่ค้าง", "ค้างข้ามภาค นักเรียนลาออก", "ไม่มีหลักประกันทางบัญชี การระงับผลการเรียนไม่ใช่หลักประกัน", "รวมเงินอุดหนุนค้างรับจากรัฐกับลูกหนี้ผู้ปกครอง ไม่ตัดจำหน่ายลูกหนี้ของนักเรียนที่ลาออกนานแล้ว", "แยกเงินอุดหนุนค้างรับ (บทที่ 23)"], ["ag", "เกษตรและอาหาร", "ยอดผันผวนตามฤดูกาล ลูกค้าโรงงานและผู้ส่งออก", "รายตัวสำหรับรายใหญ่และต่างประเทศ อัตราตามอายุสำหรับในประเทศ", "ราคาสินค้าเกษตรลดลงแรง ผู้ซื้อปฏิเสธสินค้า", "ประกันการส่งออก L/C", "ใช้อัตราเดียวกับลูกค้าในประเทศและต่างประเทศที่มีประกัน คำนวณอัตราจากฤดูกาลเดียว", "ยอดที่มีประกันคุ้มครอง ระยะเวลาให้สินเชื่อของคู่ค้ารายใหญ่"], ["ex", "ส่งออก", "O/A D/A D/P และ L/C ในสกุลเงินต่างประเทศ", "รายตัวต่อผู้ซื้อ ตั้งค่าเผื่อเฉพาะส่วนที่ประกันการส่งออกไม่คุ้มครอง", "ผู้ซื้อผิดนัด ประเทศผู้ซื้อจำกัดการโอนเงิน", "ประกันการส่งออก L/C ที่ธนาคารยืนยัน", "นับผลต่างจากอัตราแลกเปลี่ยนเป็นหนี้สงสัยจะสูญ ไม่เปิดเผยยอดที่มีประกันคุ้มครอง", "ยอดแยกสกุลเงิน ยอดที่มีประกันคุ้มครอง (บทที่ 21)"], ["rp", "กิจการที่เกี่ยวข้องกันและกรรมการ", "ยอดสูง ไม่มีหลักประกัน ไม่มีกำหนดชำระ", "รายตัวทุกครั้ง", "ผู้กู้ขาดทุนสะสม ส่วนของเจ้าของติดลบ ไม่เคยชำระ", "มักไม่มี", "แสดงเงินให้กู้ยืมแก่กรรมการในลูกหนี้การค้า ไม่ประเมินบริษัทในเครือที่ขาดทุนสะสม จัดเป็นหมุนเวียนทั้งที่ไม่เคยชำระ", "แยกในหมายเหตุ เงื่อนไขดอกเบี้ย รายการ 1.5 หรือ 2.7"], ["ot", "อื่น ๆ", "ตอบคำถามสี่ข้อด้านซ้าย", "ตามผลของขั้น 1–6", "ตามตารางที่ 7-5", "ตามข้อเท็จจริงของกิจการ", "ใช้อัตราสำเร็จรูป ไม่ตัดยอดรายตัวออกจากฐานกลุ่ม", "ตามตารางที่ 7-7"]];
+  function pkCalc(){
+    const r=IND.find(x=>x[0]===$('pkInd').value)||IND[0];
+    const n=val($('pkN')),top=val($('pkTop')),dat=$('pkData').value,col=$('pkColl').value,gov=$('pkGov').checked,rel=$('pkRel').checked,fx=$('pkFx').checked,itm=$('pkInt').checked;
+    const conc=top>=50||n<=10;
+    const S=[];
+    const indiv=[];if(conc)indiv.push('ลูกหนี้รายใหญ่ที่รวมกันเกินครึ่ง');if(gov)indiv.push('หน่วยงานรัฐ บริษัทประกัน และกองทุน (แยกกลุ่ม)');if(rel)indiv.push('กิจการที่เกี่ยวข้องกันและกรรมการ');if(fx)indiv.push('ลูกค้าต่างประเทศ เฉพาะส่วนที่ประกันไม่คุ้มครอง');indiv.push('ลูกหนี้ที่มีข้อบ่งชี้ทุกราย');
+    S.push([1,'คัดแยกรายตัว',true,'ประเมินตาม 7.5.3: '+indiv.join(' · ')+' แล้วตัดยอดที่ตั้งค่าเผื่อรายตัวออกจากฐานกลุ่ม (แท็บ 1)']);
+    let grp;
+    if(n<=10){grp='ลูกค้าน้อยราย ไม่จำเป็นต้องมีฐานกลุ่ม ประเมินทุกรายเป็นรายตัว';}
+    else if(dat==='m'){grp='อัตราการเลื่อนชั้นอายุจากรายงานรายเดือน (แท็บ 2 ส่วนบน) ตรวจทานด้วยอัตราสูญเสียตามช่วงอายุ';}
+    else if(dat==='y'){grp='อัตราสูญเสียตามช่วงอายุจากรายงานสิ้นปีหลายปี (แท็บ 2 ส่วนล่าง)';}
+    else if(dat==='c'){grp='อัตราตามรุ่นยอดขายสำหรับระหว่างปี (แท็บ 4) และเริ่มเก็บรายงานอายุเพื่อใช้วิธีจำแนกอายุสิ้นปี';}
+    else grp='ยังไม่มีข้อมูลพอ ไปขั้น 3';
+    S.push([2,'ความพร้อมของข้อมูล',dat!=='n'&&n>10,grp]);
+    S.push([3,'ข้อมูลไม่พอ',dat==='n','ประเมินรายตัวทุกรายที่ค้างเกินกำหนด ใช้อัตราตามดุลยพินิจพร้อมบันทึกเหตุผล และเริ่มเก็บรายงานอายุกับทะเบียนหนี้สูญตั้งแต่ปีนี้']);
+    S.push([4,'การกระจุกตัว',true,conc?`ลูกหนี้ 5 รายแรก ${fmt(top,0)}% หรือมีลูกหนี้ ${fmt(n,0)} ราย ให้น้ำหนักกับวิธีรายตัว และเปิดเผยการกระจุกตัว [แนะนำ]`:`ลูกหนี้ 5 รายแรก ${fmt(top,0)}% ลูกค้ากระจาย ให้น้ำหนักกับวิธีกลุ่มตามอายุ`]);
+    S.push([5,'ระหว่างปี',itm,itm?'ใช้ร้อยละของยอดขายเชื่อสุทธิรับรู้ค่าใช้จ่ายรายเดือน (แท็บ 4) แล้วปรับยอดสิ้นปีให้เท่ากับผลของขั้น 1–3 (แท็บ 3)':'รับรู้ค่าใช้จ่ายเมื่อปรับยอดสิ้นงวด']);
+    S.push([6,'ทดสอบและบันทึก',true,'ทดสอบย้อนหลังทุกปี (แท็บ 2) บันทึกเหตุผลการปรับอัตรา เปิดเผยนโยบาย (4.19) และใช้สม่ำเสมอ (5.8)']);
+    const W=[];
+    if(conc&&dat!=='n'&&n<=10)W.push('ลูกค้า 10 รายหรือน้อยกว่า ตารางอายุที่ใช้อัตรากลุ่มไม่มีความหมายทางสถิติ ใช้วิธีรายตัวและใช้รายงานอายุเพื่อติดตามเท่านั้น');
+    if(col!=='0')W.push(`มีหลักประกัน${col==='2'?'เกือบทั้งหมด':'บางส่วน'} ตั้งค่าเผื่อเฉพาะส่วนที่หลักประกันไม่คุ้มครอง และเก็บหลักฐานมูลค่าหลักประกันหักต้นทุนในการบังคับ`);
+    if(gov)W.push('ส่วนที่หน่วยงานรัฐ บริษัทประกัน หรือกองทุนไม่จ่ายเพราะเงื่อนไขอัตรา เป็นรายการปรับรายได้ตามบทที่ 18 ไม่ใช่หนี้สงสัยจะสูญ');
+    if(fx)W.push('ประเมินลูกหนี้ต่างประเทศในสกุลเงินเดิม ผลต่างจากอัตราแลกเปลี่ยนรับรู้ตามบทที่ 21 ไม่ใช่หนี้สงสัยจะสูญ');
+    const main=n<=10||conc?'รายตัวเป็นหลัก':(dat==='n'?'รายตัวร่วมกับอัตราตามดุลยพินิจ':'วิธีผสม รายตัว + อัตราตามอายุ');
+    $('pkOut').innerHTML=`<h2>ผลการเลือกวิธี</h2>
+      <div class="figs"><div class="fig"><div class="k">วิธีหลัก</div><div class="v" style="font-size:16px">${esc(main)}</div></div><div class="fig"><div class="k">ระหว่างปี</div><div class="v" style="font-size:16px">${itm?'ร้อยละของยอดขายเชื่อ':'ไม่ใช้'}</div></div><div class="fig"><div class="k">กลุ่ม</div><div class="v" style="font-size:16px">${esc(r[1])}</div></div></div>
+      ${W.length?`<div class="alert warn">${W.join('<br>')}</div>`:''}
+      <ol class="steps">${S.map(([k,t,hit,res])=>`<li class="${hit?'hit':'skip'}"><span class="no">${k}</span><div><b>${esc(t)}</b><div class="r">${esc(res)}</div></div></li>`).join('')}</ol>
+      <h3>แนวทางของกลุ่ม ${esc(r[1])} (ตารางที่ 7-6 และ S7.9)</h3>
+      <div class="tbl"><table><tbody>
+        <tr><td style="width:34%">ลักษณะลูกหนี้</td><td>${esc(r[2])}</td></tr>
+        <tr><td>วิธีที่เหมาะสม</td><td>${esc(r[3])}</td></tr>
+        <tr><td>ข้อบ่งชี้ที่ควรประเมินรายตัว</td><td>${esc(r[4])}</td></tr>
+        <tr><td>หลักประกันที่พบบ่อย</td><td>${esc(r[5])}</td></tr>
+        <tr><td>ข้อผิดพลาดที่พบบ่อย</td><td>${esc(r[6])}</td></tr>
+        <tr><td>การเปิดเผยที่ควรเน้น</td><td>${esc(r[7])}</td></tr>
+      </tbody></table></div>
+      <div class="row-actions"><button class="btn" data-go="spec">ไปแท็บ 1 ประเมินรายตัว</button><button class="btn" data-go="rate">ไปแท็บ 2 หาอัตรา</button><button class="btn" data-go="sales">ไปแท็บ 4 ร้อยละของยอดขาย</button><button class="btn" data-go="disc">ไปแท็บ 7 เปิดเผยข้อมูล</button></div>
+      ${theory([['7.5','มาตรฐานกำหนดสามวิธี ไม่กำหนดอัตรา ช่วงข้อมูล หรือเกณฑ์คัดเลือกลูกหนี้รายตัว'],['3.11.1 3.14 3.15','อัตราต้องเป็นตัวแทนอันเที่ยงธรรม ไม่ลำเอียงสูงหรือต่ำ และคุ้มกับต้นทุนในการจัดทำ'],['5.8 5.15','ใช้วิธีสม่ำเสมอ การเปลี่ยนอัตราเป็นการเปลี่ยนแปลงประมาณการ'],['แนวการตีความ','เกณฑ์ 24 เดือน และเกณฑ์ 5 รายแรกเกินครึ่ง เป็นข้อเสนอของตำรา ไม่ใช่เกณฑ์ของมาตรฐาน']])}`;
+    $('pkOut').querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.go)));
+  }
+  ['pkInd','pkN','pkTop','pkData','pkColl','pkGov','pkRel','pkFx','pkInt'].forEach(id=>{$(id).addEventListener('input',pkCalc);$(id).addEventListener('change',pkCalc)});
+  pkCalc();
+  /* =========================================================
+     1 SPECIFIC IDENTIFICATION
+     ========================================================= */
+  const LV=['','1 ปกติ','2 เฝ้าระวัง','3 ผิดนัด/ผ่อนผัน','4 ดำเนินคดี','5 ล้มละลาย/สูญ'];
+  const EVID={3:'ข้อตกลงผ่อนชำระ ประวัติการชำระ และข้อมูลฐานะการเงินของลูกหนี้',4:'เอกสารคดี ความเห็นทนายความ และข้อมูลทรัพย์สินที่บังคับคดีได้',5:'คำสั่งศาลหรือหลักฐานว่าไม่มีทรัพย์สิน และหลักฐานการทวงถามถึงที่สุด'};
+  const SP_SAMPLE=[
+    {n:'หจก. ข.',l:5,b:50,r:0,c:10,p:0,q:0},
+    {n:'บริษัท จ. จำกัด (รายใหญ่)',l:1,b:800,r:0,c:0,p:0,q:0}];
+  let sp=SP_SAMPLE.map(o=>({...o}));
+  const spAllowOf=o=>o.l<=2?0:Math.max(0,o.b-o.r-o.c-o.p*o.q/100);
+  function spRender(){
+    $('spBody').innerHTML=sp.map((o,i)=>`<tr>
+      <td><input type="text" id="sp-n-${i}" value="${esc(o.n)}" aria-label="ชื่อลูกหนี้"></td>
+      <td style="min-width:130px"><select class="lvl" id="sp-l-${i}" aria-label="ระดับ">${[1,2,3,4,5].map(k=>`<option value="${k}"${o.l===k?' selected':''}>${LV[k]}</option>`).join('')}</select></td>
+      <td><input class="num" type="number" min="0" id="sp-b-${i}" value="${o.b}" aria-label="ยอดหนี้"></td>
+      <td><input class="num" type="number" min="0" id="sp-r-${i}" value="${o.r}" aria-label="รับหลังสิ้นงวด"></td>
+      <td><input class="num" type="number" min="0" id="sp-c-${i}" value="${o.c}" aria-label="หลักประกันสุทธิ"></td>
+      <td><input class="num" type="number" min="0" id="sp-p-${i}" value="${o.p}" aria-label="ยอดตามแผนชำระ"></td>
+      <td style="width:84px"><input class="num" type="number" min="0" max="100" id="sp-q-${i}" value="${o.q}" aria-label="ร้อยละที่คาดว่าได้ตามแผน"></td>
+      <td class="num" id="sp-x-${i}"></td>
+      <td><button class="del" data-i="${i}" aria-label="ลบ">×</button></td></tr>`).join('');
+    sp.forEach((o,i)=>{
+      $('sp-n-'+i).addEventListener('input',e=>{o.n=e.target.value;spCalc()});
+      $('sp-l-'+i).addEventListener('change',e=>{o.l=+e.target.value;spCalc()});
+      ['b','r','c','p','q'].forEach(k=>$(`sp-${k}-${i}`).addEventListener('input',e=>{o[k]=val(e.target);spCalc()}));
+    });
+    $('spBody').querySelectorAll('.del').forEach(b=>b.addEventListener('click',()=>{sp.splice(+b.dataset.i,1);spRender()}));
+    spCalc();
+  }
+  function spCalc(){
+    let tot=0,al=0,excl=0;const issues=[],fl=[];
+    sp.forEach((o,i)=>{
+      const x=spAllowOf(o);tot+=o.b;al+=x;if(o.l>=3)excl+=o.b;
+      const c=$('sp-x-'+i); if(c) c.textContent=o.l<=2?'รวมกลุ่ม':fmt(x);
+      if(o.r+o.c+o.p>o.b+0.5) issues.push(`${esc(o.n)}: เงินรับ หลักประกัน และยอดตามแผนรวมกันเกินยอดหนี้ ให้ตรวจตัวเลข`);
+      if(o.l>=3) fl.push(`<b>${esc(o.n)}</b> ระดับ ${LV[o.l]} ยอดหนี้ ${fmt(o.b)} คาดว่าจะได้รับ ${fmt(o.b-x)} (${pct(o.b?(o.b-x)/o.b:0,0)}) ตั้งค่าเผื่อ ${fmt(x)} · หลักฐานที่ต้องแนบ: ${EVID[o.l]}`);
+      else fl.push(`<b>${esc(o.n)}</b> ระดับ ${LV[o.l]} ไม่พบข้อบ่งชี้รายตัว ยอด ${fmt(o.b)} ควรกลับไปรวมในตารางจำแนกอายุ เพราะยังมีผลขาดทุนระดับกลุ่มที่ระบุรายตัวไม่ได้`);
+      if(o.l===5&&o.r+o.c+o.p*o.q/100>o.b*0.5) issues.push(`${esc(o.n)}: ระดับ 5 แต่คาดว่าจะได้รับเกินครึ่ง ระดับกับจำนวนที่คาดว่าจะได้รับอาจไม่สอดคล้องกัน`);
+      if(o.l>=3&&o.l<=4&&o.r===0&&o.c===0&&o.p===0) issues.push(`${esc(o.n)}: ไม่มีจำนวนที่คาดว่าจะได้รับเลย ค่าเผื่อจึงเต็มจำนวน ให้ตรวจว่าตั้งใจเช่นนั้นหรือยังไม่ได้กรอกข้อมูล`);
+    });
+    $('spTotal').textContent=fmt(tot);$('spAllow').textContent=fmt(al);
+    const p=val($('spPrior'));const a=adjust(al,p);
+    $('spOut').innerHTML=`<h2>ผลการประเมินรายตัว</h2>
+      ${figs([['ค่าเผื่อรายตัว',al],['ตัดออกจากฐานกลุ่ม',excl],['ส่งต่อให้ตารางอายุ',al]])}
+      ${issues.length?`<div class="alert warn">${issues.join('<br>')}</div>`:''}
+      ${facts('ข้อเท็จจริงจากข้อมูลที่กรอก',fl.concat([`ยอด ${fmt(excl)} ของลูกหนี้ระดับ 3–5 ควรหักออกจากช่วงอายุที่ลูกหนี้เหล่านั้นอยู่ในแท็บตารางจำแนกอายุ (คอลัมน์ "หักรายตัว") เพื่อไม่ให้นับผลขาดทุนซ้ำ`]))}
+      <div class="row-actions"><button class="btn primary" id="spSend">ส่งค่าเผื่อรายตัวไปตารางอายุ</button><span class="copied" id="spSent" hidden>ส่งแล้ว ไปที่แท็บ 3 เพื่อกรอกยอดหักรายตัวตามช่วงอายุ</span></div>
+      ${theory([
+        ['NPAEs 7.5','วิธีพิจารณาเป็นรายตัวประเมินจากความสามารถในการชำระหนี้ของลูกหนี้และจำนวนเงินที่คาดว่าจะได้รับชำระ ไม่ใช่อัตราสถิติ'],
+        ['S7.3','ข้อบ่งชี้รายตัวทั้งภายใน (ผิดนัด ปัญหาการเงิน ปรับโครงสร้างหนี้) และภายนอก (ภาวะอุตสาหกรรม มูลค่าหลักประกันลดลง) เป็นเกณฑ์คัดเลือกลูกหนี้'],
+        ['7.5.3, 3.13','ลูกหนี้ที่มีนัยสำคัญพิจารณาเป็นแต่ละรายจากความสามารถในการชำระและจำนวนที่คาดว่าจะได้รับ ส่วนที่เหลือใช้วิธีจำแนกตามอายุ (7.5.2)'],
+        ['7.5.2','ลูกหนี้ที่ประเมินรายตัวแล้วไม่พบปัญหายังมีโอกาสไม่ชำระตามอายุหนี้ จึงนำกลับไปรวมกลุ่มตามช่วงอายุ'],
+        ['เหตุการณ์ภายหลัง','เงินที่รับชำระหลังวันสิ้นงวดก่อนออกงบการเงินเป็นหลักฐานยืนยันสภาพ ณ วันสิ้นงวด (เชื่อมโยงบทที่ 17)'],
+        ['หลักความระมัดระวัง 3.14','ใช้ความระมัดระวังได้ แต่ไม่อนุญาตให้ตั้งค่าเผื่อสูงเกินโดยเจตนา จำนวนที่คาดว่าจะได้รับจึงต้องเป็นประมาณการที่ดีที่สุดพร้อมหลักฐาน'],
+        ['TSA 540','ผู้สอบบัญชีประเมินวิธีการ ข้อสมมติ และข้อมูลที่ใช้ แบบประเมินรายตัวหนึ่งหน้าต่อหนึ่งรายพร้อมผู้อนุมัติคือหลักฐานหลัก']])}
+      ${a.html}${taxBox(a.diff)}`;
+    $('spSend').addEventListener('click',()=>{$('agSpecAllow').value=Math.round(al*100)/100;agCalc();$('spSent').hidden=false;setTimeout(()=>{const e=$('spSent');if(e)e.hidden=true},3000)});
+  }
+  $('spAdd').addEventListener('click',()=>{sp.push({n:'ลูกหนี้ใหม่',l:3,b:0,r:0,c:0,p:0,q:0});spRender()});
+  $('spReset').addEventListener('click',()=>{sp=SP_SAMPLE.map(o=>({...o}));$('spPrior').value=0;spRender()});
+  $('spPrior').addEventListener('input',spCalc);
+  /* ---------- one-page individual assessment ---------- */
+  let FTXT='';
+  function fCalc(){
+    const tot=val($('fTot')),pc=val($('fPct')),thr=tot*pc/100,b=val($('fBal')),lv=+$('fLv').value;
+    const rec=val($('fAft'))+val($('fCol'))+val($('fPlan'))+val($('fCase'));
+    const al=lv<=2?0:Math.max(0,b-rec);
+    const inds=[['fI1','ผิดนัดหรือเช็คคืน'],['fI2','ขอผ่อนผันหรือปรับโครงสร้างหนี้'],['fI3','ถูกฟ้อง ฟื้นฟูกิจการ หรือล้มละลาย'],['fI4','เลิกกิจการ ติดต่อไม่ได้ หรือโต้แย้งหนี้']].filter(([id])=>$(id).checked).map(x=>x[1]);
+    const why={i:'มีข้อบ่งชี้',s:'ขนาดถึงเกณฑ์',g:'ไม่มีกลุ่มความเสี่ยงร่วม'}[$('fWhy').value];
+    const W=[];
+    if(lv<=2&&inds.length)W.push('มีข้อบ่งชี้แต่จัดระดับ 1–2 ตรวจระดับความเสี่ยงอีกครั้ง');
+    if(lv<=2)W.push('ระดับ 1–2 ไม่ตั้งค่าเผื่อรายตัว ให้คงยอดนี้ไว้ในฐานกลุ่มตามอายุ');
+    if(lv>=3&&!$('fEx').checked)W.push('ยังไม่ได้ตัดยอดออกจากฐานกลุ่ม ค่าเผื่อจะนับซ้ำ');
+    if(lv>=3&&!$('fEv').value.trim())W.push('ยังไม่ได้ระบุหลักฐานอ้างอิง');
+    if(rec>b)W.push('จำนวนที่คาดว่าจะได้รับเกินยอดคงค้าง ตรวจตัวเลขอีกครั้ง');
+    const big=sp.filter(o=>o.b>=thr).map(o=>o.n);
+    FTXT=['แบบประเมินลูกหนี้รายตัว (หัวข้อ 7.5)',`ลูกหนี้: ${$('fCode').value} ยอดคงค้าง ${fmt(b)}`,`เหตุที่คัดเลือก: ${why} (เกณฑ์ขนาด ${fmt(pc)}% ของ ${fmt(tot)} = ${fmt(thr)})`,`ข้อบ่งชี้: ${inds.join(' · ')||'ไม่พบ'}`,`ระดับความเสี่ยง: ${$('fLv').selectedOptions[0].text}`,`จำนวนที่คาดว่าจะได้รับ: เงินรับหลังวันสิ้นงวด ${fmt(val($('fAft')))} หลักประกันสุทธิ ${fmt(val($('fCol')))} แผนชำระ ${fmt(val($('fPlan')))} ส่วนแบ่งจากคดี ${fmt(val($('fCase')))} รวม ${fmt(rec)}`,`ค่าเผื่อรายตัว: ${fmt(al)}`,`หลักฐานอ้างอิง: ${$('fEv').value}`,`ตัดยอดออกจากฐานกลุ่ม: ${$('fEx').checked?'ตัดแล้ว':'ยังไม่ตัด'}`,'ผู้จัดทำ ............ ผู้อนุมัติ ............ วันที่ ............'].join('\n');
+    $('fOut').innerHTML=`${figs([['เกณฑ์ขนาด',thr],['จำนวนที่คาดว่าจะได้รับ',rec],['ค่าเผื่อรายตัว',al]])}
+      ${W.length?`<div class="alert warn">${W.join('<br>')}</div>`:''}
+      ${facts('ลูกหนี้ในตารางด้านบนที่ยอดถึงเกณฑ์ขนาด',[big.length?big.map(esc).join(' · '):'ไม่มี'])}
+      <pre class="memo">${esc(FTXT)}</pre>
+      <div class="row-actions"><button class="btn" id="fCopy">คัดลอกแบบประเมิน</button><span class="copied" id="fCopied" hidden>คัดลอกแล้ว</span></div>`;
+    $('fCopy').addEventListener('click',()=>{const done=()=>{$('fCopied').hidden=false;setTimeout(()=>{const e=$('fCopied');if(e)e.hidden=true},1800)};const fb=()=>{const ta=document.createElement('textarea');ta.value=FTXT;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(FTXT).then(done,fb);else fb()});
+  }
+  ['fTot','fPct','fCode','fBal','fWhy','fLv','fAft','fCol','fPlan','fCase','fEv','fI1','fI2','fI3','fI4','fEx'].forEach(id=>{$(id).addEventListener('input',fCalc);$(id).addEventListener('change',fCalc)});
+  fCalc();
+
+
+  /* =========================================================
+     2 RATE FINDER (roll-rate)
+     ========================================================= */
+  const RR_SAMPLE=`เดือน\tยังไม่ถึงกำหนด\tเกิน 1–30\t31–60\t61–90\t91–120\tหนี้สูญ
+ธ.ค. 67\t5000\t600\t180\t70\t35\t0
+ม.ค. 68\t4800\t610\t175\t72\t36\t20
+ก.พ. 68\t4900\t560\t185\t70\t37\t22
+มี.ค. 68\t5200\t600\t170\t75\t35\t21
+เม.ย. 68\t5100\t640\t180\t68\t38\t20
+พ.ค. 68\t5300\t610\t195\t72\t34\t23
+มิ.ย. 68\t5000\t650\t185\t78\t36\t21
+ก.ค. 68\t4900\t600\t195\t74\t39\t22
+ส.ค. 68\t5200\t590\t180\t78\t37\t23
+ก.ย. 68\t5400\t620\t175\t72\t39\t22
+ต.ค. 68\t5500\t650\t190\t70\t36\t24
+พ.ย. 68\t5600\t660\t195\t76\t35\t21
+ธ.ค. 68\t5800\t670\t200\t78\t38\t21`;
+  $('rrData').value=RR_SAMPLE;
+  let lastRR=null;
+
+  function num(s){s=String(s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-'||s==='–')return 0;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  function parse(text){
+    const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    const split=l=>l.includes('\t')?l.split('\t'):l.split(/\s*[,;]\s*|\s{2,}/);
+    if(!lines.length) return {err:'ยังไม่มีข้อมูล ให้วางรายงานอายุลูกหนี้รายเดือน'};
+    let rows=lines.map(split);let header=null;
+    if(rows[0].slice(1).some(c=>isNaN(num(c)))){header=rows[0];rows=rows.slice(1)}
+    const w=Math.max(...rows.map(r=>r.length));
+    if(w<4) return {err:'ต้องมีอย่างน้อย 4 คอลัมน์: เดือน ช่วงอายุอย่างน้อย 2 ช่วง และหนี้สูญ'};
+    const bad=[];
+    const data=rows.map((r,i)=>{const vals=r.slice(1).map(num);while(vals.length<w-1)vals.push(0);if(vals.some(v=>isNaN(v))) bad.push(i+1+(header?1:0));return {m:r[0],v:vals.slice(0,w-2),wo:vals[w-2]}});
+    if(bad.length) return {err:`อ่านตัวเลขไม่ได้ที่บรรทัด ${bad.join(', ')} ให้ตรวจว่าไม่มีข้อความปนในช่องตัวเลข`};
+    if(data.length<2) return {err:'ต้องมีอย่างน้อย 2 เดือนจึงจะคำนวณการเลื่อนชั้นได้'};
+    const nb=w-2;
+    const labels=header?header.slice(1,1+nb).map(s=>s.trim()||'ช่วง'):Array.from({length:nb},(_,i)=>i===0?'ยังไม่ถึงกำหนด':'ช่วง '+i);
+    return {data,labels,nb};
+  }
+  function roll(data,nb,win,recTotal){
+    const T=data.length,allTr=T-1,k=win>0?Math.min(win,allTr):allTr,from=T-k;
+    const numr=Array(nb).fill(0),den=Array(nb).fill(0);let wo=0;
+    for(let t=from;t<T;t++){
+      for(let b=0;b<nb-1;b++){numr[b]+=data[t].v[b+1];den[b]+=data[t-1].v[b]}
+      den[nb-1]+=data[t-1].v[nb-1];wo+=data[t].wo;
+    }
+    const rec=recTotal*k/allTr;
+    numr[nb-1]=wo-rec;
+    const r=numr.map((x,b)=>den[b]>0?x/den[b]:NaN);
+    const cum=Array(nb);let acc=1;for(let b=nb-1;b>=0;b--){acc*=r[b];cum[b]=acc}
+    const reach=[den[0]].concat(numr.slice(0,nb-1));
+    const simple=reach.map(x=>x>0?(wo-rec)/x:NaN);
+    return {numr,den,r,cum,reach,simple,wo,rec,k,from};
+  }
+  function monthly(data,nb){
+    const out=[];for(let t=1;t<data.length;t++){const row=[];for(let b=0;b<nb-1;b++)row.push(data[t-1].v[b]>0?data[t].v[b+1]/data[t-1].v[b]:NaN);row.push(data[t-1].v[nb-1]>0?data[t].wo/data[t-1].v[nb-1]:NaN);out.push({m:data[t].m,row})}
+    return out;
+  }
+  function barChart(labels,vals){
+    const W=520,H=210,pl=8,pr=8,pt=22,pb=44,n=vals.length,bw=(W-pl-pr)/n;
+    const mx=Math.max(...vals.filter(isFinite),0.0001);const top=Math.ceil(mx*10)/10||0.1;
+    let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="อัตราสูญเสียสะสมตามช่วงอายุ">`;
+    [0,0.5,1].forEach(f=>{const y=pt+(H-pt-pb)*(1-f);s+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="var(--rule)" stroke-width="1"/><text x="${W-pr}" y="${y-3}" text-anchor="end">${(top*f*100).toFixed(0)}%</text>`});
+    vals.forEach((v,i)=>{const hh=isFinite(v)?(H-pt-pb)*v/top:0;const x=pl+i*bw+bw*0.18,w=bw*0.64,y=H-pb-hh;
+      s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(hh,1)}" rx="3" fill="var(--accent)" opacity="${0.45+0.55*(i+1)/n}"/>`;
+      s+=`<text class="val" x="${x+w/2}" y="${y-5}" text-anchor="middle">${pct(v)}</text>`;
+      s+=`<text class="lab" x="${x+w/2}" y="${H-pb+16}" text-anchor="middle">${esc(labels[i].length>12?labels[i].slice(0,11)+'…':labels[i])}</text>`});
+    return `<div class="chart">${s}</svg></div>`;
+  }
+  function rrCalc(){
+    const P=parse($('rrData').value);
+    if(P.err){$('rrOut').innerHTML=`<h2>ผลการวิเคราะห์</h2><div class="alert bad">${esc(P.err)}</div>`;lastRR=null;return}
+    const {data,labels,nb}=P;const win=+$('rrWin').value;const rec=val($('rrRec'));
+    const R=roll(data,nb,win,rec);const R3=data.length>=4?roll(data,nb,3,rec):null;
+    const M=monthly(data,nb);const last=data[data.length-1];
+    const allow=last.v.reduce((s,x,b)=>s+x*(isFinite(R.cum[b])?R.cum[b]:0),0);
+    const sens=val($('rrSens'))/100;
+    lastRR={labels,cum:R.cum,last:last.v,m:last.m};
+    // warnings
+    const W=[];
+    if(data.length<13) W.push(`มีข้อมูล ${data.length} เดือน (${data.length-1} การเปลี่ยน) ต่ำกว่าขั้นต่ำ 12 การเปลี่ยน อัตราอาจยังไม่สะท้อนรอบธุรกิจ (หลักการร่วมข้อ 3)`);
+    R.r.forEach((x,b)=>{if(x>1)W.push(`อัตราการเลื่อนชั้นของช่วง "${esc(labels[b])}" เกิน 100% มักเกิดจากช่วงอายุกว้างไม่เท่ากับระยะห่างของรายงาน หรือมีลูกหนี้ใหม่เข้ามากลางช่วง ให้ตรวจข้อมูล`); if(!isFinite(x))W.push(`ช่วง "${esc(labels[b])}" ไม่มียอดในเดือนก่อนหน้า จึงคำนวณอัตราไม่ได้`)});
+    if(R.numr[nb-1]<0) W.push('หนี้สูญได้รับคืนมากกว่าหนี้สูญที่ตัดจำหน่าย ให้ตรวจว่ากรอกยอดได้รับคืนถูกช่วงเวลา');
+    if(win>0&&win<12) W.push(`ใช้เพียง ${R.k} การเปลี่ยน เหมาะสำหรับดูแนวโน้มล่าสุด ไม่ควรใช้เป็นอัตราหลักโดยไม่มีเหตุผลรองรับ`);
+    // facts
+    const F=[];
+    F.push(`ใช้ข้อมูล ${R.k} การเปลี่ยน ตั้งแต่ ${esc(data[R.from-1].m)} ถึง ${esc(last.m)} หนี้สูญตัดจำหน่าย ${fmt(R.wo)} หักได้รับคืน ${fmt(R.rec)} เหลือหนี้สูญสุทธิ ${fmt(R.wo-R.rec)}`);
+    F.push(`ค่าเผื่อแบบกลุ่ม ${fmt(allow)} คำนวณจากยอดทั้งหมด ณ ${esc(last.m)} หากยอดนี้รวมลูกหนี้ที่ประเมินรายตัวไว้ ให้หักออกในแท็บ 3 ก่อน (ตัวอย่างที่ 7.2 ตารางที่ 7-3 หัก หจก. ข. 50 แล้วได้ 94.76 บวกค่าเผื่อรายตัว 40 เป็น 134.76)`);
+    F.push(`ลูกหนี้ "${esc(labels[0])}" ราว ${pct(R.r[0],1)} ไม่ได้รับชำระตามกำหนดและเลื่อนไปค้างช่วงถัดไปในเดือนต่อมา ที่เหลือราว ${pct(1-R.r[0],1)} ได้รับชำระ`);
+    let worst=0;for(let b=1;b<nb;b++) if(R.r[b]>R.r[worst]) worst=b;
+    F.push(`จุดที่การเก็บหนี้ยากที่สุดคือช่วง "${esc(labels[worst])}" ซึ่ง ${pct(R.r[worst],1)} ${worst===nb-1?'กลายเป็นหนี้สูญสุทธิ':'ไม่ได้รับชำระและไหลต่อไปช่วงถัดไป'} ฝ่ายติดตามหนี้ควรเร่งทวงถามก่อนลูกหนี้ไหลเข้าช่วงนี้`);
+    const mid=Math.max(0,nb-3);
+    F.push(`ลูกหนี้ 100 บาทในช่วง "${esc(labels[mid])}" ตามประสบการณ์ของกิจการจะสูญประมาณ ${fmt(R.cum[mid]*100)} บาท ขณะที่ลูกหนี้ที่ยังไม่ถึงกำหนด 100 บาท จะสูญประมาณ ${fmt(R.cum[0]*100)} บาท อัตราจึงเพิ่มตามอายุอย่างสม่ำเสมอตามที่ย่อหน้า 7.5 คาดไว้`);
+    let trendTxt='',trendCls='';
+    if(R3){
+      const ups=[],downs=[];
+      R3.r.forEach((x,b)=>{const base=R.r[b];if(isFinite(x)&&isFinite(base)&&base>0){const ch=(x-base)/base;if(ch>0.2)ups.push(`${esc(labels[b])} (${pct(base,1)} → ${pct(x,1)})`);if(ch<-0.2)downs.push(`${esc(labels[b])} (${pct(base,1)} → ${pct(x,1)})`)}});
+      if(ups.length){trendCls='warn';trendTxt=`3 เดือนล่าสุด อัตราการเลื่อนชั้นสูงกว่าค่าเฉลี่ยเกิน 20% ที่ช่วง ${ups.join(', ')} เป็นข้อเท็จจริงที่เกิดขึ้นแล้ว ณ วันสิ้นงวด ผู้บริหารควรสอบหาสาเหตุ หากพิสูจน์ได้ว่าสภาพเปลี่ยนจริง (เช่น ลูกค้ากลุ่มหนึ่งชำระแย่ลง) จึงปรับอัตราเฉพาะช่วงนั้นพร้อมบันทึกเหตุผลและผู้อนุมัติ`}
+      else if(downs.length){trendCls='ok';trendTxt=`3 เดือนล่าสุด อัตราการเลื่อนชั้นต่ำกว่าค่าเฉลี่ยเกิน 20% ที่ช่วง ${downs.join(', ')} การเก็บหนี้ดีขึ้น แต่ไม่ควรลดอัตราทันทีจากข้อมูลเพียง 3 เดือน ให้ติดตามต่อและทดสอบย้อนหลังก่อน`}
+      else {trendCls='ok';trendTxt='3 เดือนล่าสุด อัตราการเลื่อนชั้นทุกช่วงอยู่ในระดับใกล้เคียงค่าเฉลี่ย (ต่างไม่เกิน 20%) ยังไม่มีหลักฐานให้ปรับอัตรา'}
+    }
+    const maxGap=Math.max(...R.cum.map((c,b)=>isFinite(c)&&isFinite(R.simple[b])&&c>0?Math.abs(c-R.simple[b])/c:0));
+    F.push(`ตรวจทานด้วยวิธีหนี้สูญ ÷ ยอดที่ไปถึงช่วงอายุ ผลต่างจากวิธีอัตราการเลื่อนชั้นสูงสุด ${pct(maxGap,1)} ${maxGap<0.1?'ถือว่าสอดคล้องกัน ข้อมูลมีความต่อเนื่อง':'ค่อนข้างมาก อาจเกิดการเปลี่ยนแปลงของยอดลูกหนี้หรือนโยบายเครดิตในช่วงข้อมูล ควรสอบทานเพิ่ม'}`);
+    // backtest
+    const btSet=val($('btSet')),btAct=val($('btAct'));
+    const first=data[0].v.reduce((s,x,b)=>s+x*(isFinite(R.cum[b])?R.cum[b]:0),0);
+    const gap=btSet>0?(btAct-btSet)/btSet:0;
+    const bcls=Math.abs(gap)<=0.1?'ok':Math.abs(gap)<=0.25?'warn':'bad';
+    const btText=btSet&&btAct?`ค่าเผื่อที่ตั้งไว้ ${fmt(btSet)} เทียบกับหนี้สูญสุทธิที่เกิดจริง ${fmt(btAct)} ${gap>0?'ตั้งต่ำไป':'ตั้งสูงไป'} ${fmt(Math.abs(btAct-btSet))} (${pct(Math.abs(gap),0)}) · ถ้าใช้อัตราชุดนี้กับยอดลูกหนี้ ณ ${esc(data[0].m)} จะได้ ${fmt(first)} ${Math.abs(first-btAct)<Math.abs(btSet-btAct)?'ใกล้ผลจริงกว่าอัตราเดิม แสดงว่าอัตราใหม่สะท้อนประสบการณ์ได้ดีกว่า':'ไม่ได้ใกล้ผลจริงกว่าอัตราเดิม'} ผลต่างนี้เป็นการเปลี่ยนแปลงประมาณการ (ย่อหน้า 5.15) เว้นแต่ผู้บริหารละเลยข้อมูลที่มีอยู่ในขณะนั้น หากตั้งต่ำกว่าผลจริงซ้ำหลายปี ผู้สอบบัญชีจะถือเป็นข้อบ่งชี้ความลำเอียง`:'กรอกค่าเผื่อที่ตั้งไว้ปีก่อนและหนี้สูญที่เกิดจริงเพื่อทดสอบย้อนหลัง';
+
+    const rateRows=labels.map((L,b)=>`<tr><td>${esc(L)} → ${b<nb-1?esc(labels[b+1]):'หนี้สูญสุทธิ'}</td><td class="num">${fmt(R.numr[b])}</td><td class="num">${fmt(R.den[b])}</td><td class="num">${pct(R.r[b])}</td></tr>`).join('');
+    const cumRows=labels.map((L,b)=>`<tr><td>${esc(L)}</td><td class="num">${pct(R.cum[b])}</td><td class="num">${pct(R.simple[b])}</td><td class="num">${fmt(last.v[b])}</td><td class="num">${fmt(last.v[b]*(R.cum[b]||0))}</td></tr>`).join('');
+    const heatHead=`<tr><th>เดือน</th>${labels.map((L,b)=>`<th class="num">${esc(L.length>8?L.slice(0,8)+'…':L)}${b===nb-1?' → สูญ':' →'}</th>`).join('')}</tr>`;
+    const heatRows=M.map((mm,ti)=>`<tr${ti+1<R.from?' style="opacity:.55"':''}><td>${esc(mm.m)}</td>${mm.row.map((x,b)=>{const base=R.r[b];const c=!isFinite(x)||!isFinite(base)||base<=0?'h0':x>base*1.2?'h2':x>base*1.05?'h1':'h0';return `<td class="num ${c}">${pct(x,1)}</td>`}).join('')}</tr>`).join('');
+
+    $('rrOut').innerHTML=`<h2>ผลการวิเคราะห์</h2>
+      ${figs([['ค่าเผื่อแบบกลุ่ม ณ '+last.m,allow],['อัตรา "'+labels[0]+'"',R.cum[0],true],['อัตราช่วงเก่าสุด',R.cum[nb-1],true]])}
+      ${W.length?`<div class="alert warn"><b>ตรวจข้อมูล</b><br>${W.join('<br>')}</div>`:''}
+      <h3 style="margin:4px 0 0">อัตราสูญเสียสะสมตามช่วงอายุ</h3>
+      ${barChart(labels,R.cum)}
+      ${facts('ข้อเท็จจริงจากข้อมูลของกิจการ',F)}
+      ${trendTxt?`<div class="verdict ${trendCls}"><h4>แนวโน้ม 3 เดือนล่าสุด</h4><div>${trendTxt}</div></div>`:''}
+      <div class="row-actions"><button class="btn primary" id="rrUse">ใช้อัตราและยอด ${esc(last.m)} ในตารางอายุ</button><span class="copied" id="rrUsed" hidden>ส่งแล้ว ไปที่แท็บ 3</span></div>
+      <h3>ตาราง ก อัตราการเลื่อนชั้น (ถ่วงน้ำหนัก)</h3>
+      <div class="tbl"><table><thead><tr><th>การเลื่อนชั้น</th><th class="num">Σ ตัวเศษ</th><th class="num">Σ ตัวส่วน</th><th class="num">อัตรา</th></tr></thead><tbody>${rateRows}</tbody></table></div>
+      <h3>ตาราง ข อัตราสะสม ตรวจทาน และค่าเผื่อ</h3>
+      <div class="tbl"><table><thead><tr><th>ช่วงอายุ</th><th class="num">อัตราสะสม</th><th class="num">ตรวจทาน</th><th class="num">ยอด ${esc(last.m)}</th><th class="num">ค่าเผื่อ</th></tr></thead><tbody>${cumRows}</tbody><tfoot><tr><td>รวม</td><td></td><td></td><td class="num">${fmt(last.v.reduce((a,b)=>a+b,0))}</td><td class="num">${fmt(allow)}</td></tr></tfoot></table></div><p class="hint">ค่าเผื่อในตารางนี้ใช้อัตราไม่ปัดเศษกับยอดทุกช่วง ณ เดือนล่าสุด ซึ่งยังรวมลูกหนี้ที่ประเมินรายตัว (ข้อมูลตัวอย่างรวม หจก. ข. 50) จึงต่างจากตารางที่ 7-3 ในตำราที่ใช้อัตราปัดสองตำแหน่งและหักรายตัวออกแล้ว ยอดเป้าหมายให้ใช้แท็บ 3</p>
+      <h3>ตาราง ค อัตรารายเดือน (สีแสดงเดือนที่สูงกว่าค่าเฉลี่ย)</h3>
+      <div class="tbl"><table class="heat">${heatHead}<tbody>${heatRows}</tbody></table></div>
+      <div class="legend"><span><i style="background:var(--heat0)"></i>ใกล้หรือต่ำกว่าค่าเฉลี่ย</span><span><i style="background:var(--heat1)"></i>สูงกว่า 5–20%</span><span><i style="background:var(--heat2)"></i>สูงกว่าเกิน 20%</span>${R.from>1?'<span>แถวจางอยู่นอกช่วงข้อมูลที่เลือก</span>':''}</div>
+      <div class="verdict ${btSet&&btAct?bcls:'warn'}"><h4>ทดสอบย้อนหลัง</h4><div>${btText}</div></div>
+      <div class="why"><b>ความอ่อนไหว</b> หากอัตราทุกช่วงเปลี่ยน ±${fmt(sens*100,0)}% ค่าเผื่อแบบกลุ่มจะอยู่ระหว่าง ${fmt(allow*(1-sens))} ถึง ${fmt(allow*(1+sens))} (เปลี่ยน ±${fmt(allow*sens)}) ใช้อธิบายความไม่แน่นอนของประมาณการต่อผู้บริหารและผู้สอบบัญชี</div>
+      ${theory([
+        ['NPAEs 7.5','กำหนดวิธีจำแนกอายุและวางหลักว่าลูกหนี้ที่ค้างนานกว่าใช้อัตราที่สูงกว่า แต่ไม่ได้กำหนดวิธีหาอัตรา กิจการจึงต้องสร้างวิธีที่มีเหตุผลและใช้สม่ำเสมอ'],
+        ['ประสบการณ์ในอดีต','ตำราบัญชีขั้นกลาง (Kieso et al.) อธิบายว่าอัตราของแต่ละช่วงอายุประมาณจากประสบการณ์หนี้สูญของกิจการ และพิจารณาการเปลี่ยนนโยบายเครดิตและภาวะธุรกิจประกอบ'],
+        ['ห่วงโซ่มาร์คอฟ','อัตราการเลื่อนชั้นคือความน่าจะเป็นที่ยอดในช่วงหนึ่งจะไหลไปช่วงถัดไปในหนึ่งงวด โอกาสที่จะสูญในที่สุดจึงเท่ากับผลคูณของความน่าจะเป็นทุกขั้นจนถึงจุดตัดหนี้สูญ'],
+        ['ถัวเฉลี่ยถ่วงน้ำหนัก','รวมตัวเศษหารด้วยรวมตัวส่วน ให้เดือนที่มียอดมากมีน้ำหนักมากตามจริง ลดความผันผวนจากเดือนที่มียอดน้อย'],
+        ['NPAEs 7.7–7.8','จุดสูญเสียทางบัญชีคือเมื่อทวงถามถึงที่สุดและคาดได้ค่อนข้างแน่นอนว่าไม่ได้รับชำระ และต้องหักหนี้สูญได้รับคืน จึงใช้หนี้สูญสุทธิ ไม่ใช่เกณฑ์ตัดหนี้สูญทางภาษี'],
+        ['7.5.2','ลูกหนี้กลุ่มที่ค้างชำระนานใช้อัตราสูงกว่า เพราะมีโอกาสไม่ชำระหนี้มากกว่า อัตราของแต่ละช่วงอายุมาจากประสบการณ์ของกิจการ (3.11.1, 3.14)'],
+        ['3.14','ใช้ความระมัดระวังในการประมาณการภายใต้ความไม่แน่นอน ปรับอัตราได้เมื่อมีหลักฐานว่าสภาพ ณ วันสิ้นงวดต่างจากอดีต ไม่ปรับด้วยการพยากรณ์เศรษฐกิจล้วน ๆ'],
+        ['NPAEs 3.14, 5.15','ห้ามตั้งค่าเผื่อสูงเกินโดยเจตนา และการเปลี่ยนอัตราเป็นการเปลี่ยนแปลงประมาณการ รับรู้ทันทีเป็นต้นไป'],
+        ['TSA 540','ผู้สอบบัญชีสอบทานผลของประมาณการงวดก่อน และประเมินความเกี่ยวข้อง ความน่าเชื่อถือของข้อมูล รวมทั้งข้อบ่งชี้ความลำเอียงของผู้บริหาร กิจการจึงควรทำ back-test และวิเคราะห์ความอ่อนไหวเอง']],true)}`;
+    $('rrUse').addEventListener('click',()=>{
+      ag=labels.map((L,b)=>[L,Math.round(last.v[b]*100)/100,0,Math.round((R.cum[b]||0)*10000)/100]);
+      $('agSrc').textContent=`อัตราจากแท็บ 2 · ยอด ณ ${last.m} · กรอกคอลัมน์หักรายตัวตามช่วงอายุ`;$('agPrior').value=0;agRender();
+      $('rrUsed').hidden=false;setTimeout(()=>{const e=$('rrUsed');if(e)e.hidden=true},3000);
+    });
+  }
+  $('rrReset').addEventListener('click',()=>{$('rrData').value=RR_SAMPLE;$('rrRec').value=10;$('rrWin').value='0';$('btSet').value=85;$('btAct').value=102;rrCalc()});
+  $('rrClear').addEventListener('click',()=>{$('rrData').value='เดือน\tยังไม่ถึงกำหนด\tเกิน 1–30\t31–60\t61–90\t91–120\tหนี้สูญ\n';$('rrRec').value=0;$('btSet').value=0;$('btAct').value=0;$('rrData').focus();rrCalc()});
+  ['rrData','rrRec','rrWin','rrSens','btSet','btAct'].forEach(id=>$(id).addEventListener('input',rrCalc));
+  /* ---------- loss rate by bucket ---------- */
+  const LR=[['ยังไม่ถึงกำหนด',5000,23],['เกิน 1–30 วัน',600,20],['เกิน 31–60 วัน',180,21],['เกิน 61–90 วัน',70,22],['เกิน 91–120 วัน',35,20]];
+  function lrRender(){
+    $('lrBody').innerHTML=LR.map((r,i)=>`<tr><td>${esc(r[0])}</td><td><input class="num" type="number" min="0" id="lr-a-${i}" value="${r[1]}" aria-label="ยอด"></td><td><input class="num" type="number" min="0" id="lr-l-${i}" value="${r[2]}" aria-label="หนี้สูญ"></td><td class="num" id="lr-x-${i}"></td></tr>`).join('');
+    LR.forEach((r,i)=>{$('lr-a-'+i).addEventListener('input',e=>{r[1]=val(e.target);lrCalc()});$('lr-l-'+i).addEventListener('input',e=>{r[2]=val(e.target);lrCalc()})});
+    lrCalc();
+  }
+  function lrCalc(){
+    const W=[];let A=0,L=0;
+    LR.forEach((r,i)=>{const x=r[1]?r[2]/r[1]:NaN;$('lr-x-'+i).textContent=pct(x);A+=r[1];L+=r[2];if(i>0&&r[1]&&LR[i-1][1]&&x<LR[i-1][2]/LR[i-1][1])W.push(`อัตราช่วง "${r[0]}" ต่ำกว่าช่วงก่อนหน้า ข้อมูลวันสิ้นงวดเดียวอาจยังไม่พอ ให้เฉลี่ยหลายวันสิ้นงวด`)});
+    $('lrOut').innerHTML=`${W.length?`<div class="alert warn">${W.join('<br>')}</div>`:''}${facts('อ่านผล',[`หนี้สูญรวมจากยอด ${fmt(A)} เท่ากับ ${fmt(L)} (ก่อนหักหนี้สูญได้รับคืน)`,'อัตราชุดนี้เป็นของวันสิ้นงวดเดียว ให้เฉลี่ยหลายวันสิ้นงวด แล้วใช้ตรวจทานอัตราการเลื่อนชั้นด้านบน (ตารางที่ 7-4)','ตัดลูกหนี้ที่ประเมินรายตัวออกจากข้อมูลก่อนคำนวณ'])}`;
+  }
+  lrRender();
+
+
+  /* =========================================================
+     3 AGING
+     ========================================================= */
+  const AG_SAMPLE=[['ยังไม่ถึงกำหนด',5800,0,0.42],['เกิน 1–30 วัน',670,0,3.47],['เกิน 31–60 วัน',200,0,11.52],['เกิน 61–90 วัน',78,30,28.77],['เกิน 91–120 วัน',38,20,57.21]];
+  let ag=AG_SAMPLE.map(r=>r.slice());
+  function agRender(){
+    $('agingBody').innerHTML=ag.map((r,i)=>`<tr>
+      <td><input type="text" id="ag-n-${i}" value="${esc(r[0])}" aria-label="ช่วงอายุ"></td>
+      <td><input class="num" type="number" min="0" id="ag-a-${i}" value="${r[1]}" aria-label="ยอดลูกหนี้"></td>
+      <td><input class="num" type="number" min="0" id="ag-s-${i}" value="${r[2]}" aria-label="หักรายตัว"></td>
+      <td style="width:92px"><input class="num" type="number" min="0" max="100" step="0.01" id="ag-r-${i}" value="${r[3]}" aria-label="อัตรา"></td>
+      <td class="num" id="ag-x-${i}"></td>
+      <td><button class="del" data-i="${i}" aria-label="ลบแถว">×</button></td></tr>`).join('');
+    ag.forEach((r,i)=>{
+      $('ag-n-'+i).addEventListener('input',e=>{ag[i][0]=e.target.value;agCalc()});
+      $('ag-a-'+i).addEventListener('input',e=>{ag[i][1]=val(e.target);agCalc()});
+      $('ag-s-'+i).addEventListener('input',e=>{ag[i][2]=val(e.target);agCalc()});
+      $('ag-r-'+i).addEventListener('input',e=>{ag[i][3]=val(e.target);agCalc()});
+    });
+    $('agingBody').querySelectorAll('.del').forEach(b=>b.addEventListener('click',()=>{ag.splice(+b.dataset.i,1);agRender()}));
+    agCalc();
+  }
+  function agCalc(){
+    let tot=0,sx=0,al=0;const W=[];
+    ag.forEach((r,i)=>{const base=Math.max(0,r[1]-r[2]);const x=base*r[3]/100;tot+=r[1];sx+=r[2];al+=x;const c=$('ag-x-'+i);if(c)c.textContent=fmt(x);
+      if(r[2]>r[1])W.push(`ช่วง "${esc(r[0])}" หักรายตัวมากกว่ายอดของช่วง`);
+      if(i>0&&r[3]<ag[i-1][3])W.push(`อัตราช่วง "${esc(r[0])}" ต่ำกว่าช่วงก่อนหน้า ขัดกับหลักที่ลูกหนี้ค้างนานกว่าควรใช้อัตราสูงกว่า (ย่อหน้า 7.5)`)});
+    $('agTotal').textContent=fmt(tot);$('agSpecCol').textContent=fmt(sx);$('agAllow').textContent=fmt(al);
+    const spA=val($('agSpecAllow'));const target=al+spA;
+    const p=val($('agPrior'))*($('agPriorSide').value==='dr'?-1:1);
+    const a=adjust(target,p);
+    if(ag.length&&ag.every(r=>r[3]===0)) W.push('ยังไม่มีอัตราร้อยละ ให้หาอัตราจากข้อมูลในแท็บ 2 แล้วกดส่งมาที่ตารางนี้');
+    const roundRates=ag.length>1&&ag.some(r=>r[3]>0)&&ag.every(r=>Number.isInteger(r[3])&&[0,1,2,3,5,10,15,20,25,30,40,50,75,100].includes(r[3]));
+    const worst=ag.length?ag.reduce((m,r)=>(r[1]-r[2])*r[3]>(m[1]-m[2])*m[3]?r:m,ag[0]):null;
+    const F=[`ฐานคำนวณแบบกลุ่ม ${fmt(tot-sx)} (ลูกหนี้รวม ${fmt(tot)} หักยอดที่ประเมินรายตัว ${fmt(sx)}) ได้ค่าเผื่อแบบกลุ่ม ${fmt(al)} คิดเป็น ${pct(tot-sx?al/(tot-sx):0)} ของฐาน`];
+    if(worst&&al>0) F.push(`ช่วง "${esc(worst[0])}" ก่อค่าเผื่อมากที่สุด ${pct(((worst[1]-worst[2])*worst[3]/100)/al,1)} ของค่าเผื่อแบบกลุ่ม อัตราของช่วงนี้จึงมีผลต่อกำไรมากที่สุดและควรมีหลักฐานรองรับดีที่สุด`);
+    F.push(`ยอดเป้าหมายของบัญชีค่าเผื่อ = แบบกลุ่ม ${fmt(al)} + รายตัว ${fmt(spA)} = ${fmt(target)} เมื่อเทียบกับยอดยกมา ${fmt(Math.abs(p))} ด้าน${p>=0?'เครดิต':'เดบิต'} จึง${a.diff>=0?'บันทึกเพิ่ม':'กลับรายการ'} ${fmt(Math.abs(a.diff))}`);
+    if(sx===0&&spA===0) F.push('ยังไม่มีลูกหนี้ประเมินรายตัว หากมีลูกหนี้รายใหญ่หรือรายที่มีข้อบ่งชี้ ให้ประเมินในแท็บ 1 ก่อน');
+    if(roundRates) W.push('อัตราทุกช่วงเป็นตัวเลขกลม หากเป็นอัตราที่ใช้จริงของกิจการ ควรแสดงที่มาจากข้อมูลได้ มิฉะนั้นอาจเป็นอัตราสำเร็จรูปที่ผู้สอบบัญชีไม่ยอมรับ ให้หาอัตราจากข้อมูลจริงในแท็บ 2 (กล่องข้อควรระวัง 7.5)');
+    $('agOut').innerHTML=`<h2>ผลการคำนวณ</h2>
+      ${figs([['ยอดเป้าหมายค่าเผื่อ',target],['บันทึกในงวด',a.diff],['ลูกหนี้การค้าสุทธิ',tot-target]])}
+      ${W.length?`<div class="alert warn">${W.join('<br>')}</div>`:''}
+      ${facts('ข้อเท็จจริงจากข้อมูลที่กรอก',F)}
+      ${a.html}
+      <div class="note"><div class="cap">ตัวอย่างหมายเหตุประกอบงบการเงิน · ลูกหนี้การค้า (ย่อหน้า 7.9)</div>
+      ลูกหนี้การค้า ณ วันสิ้นงวด ${fmt(tot)} หักค่าเผื่อหนี้สงสัยจะสูญ ${fmt(target)} คงเหลือลูกหนี้การค้าสุทธิ ${fmt(tot-target)} กิจการพิจารณาค่าเผื่อของลูกหนี้รายใหญ่และรายที่มีข้อบ่งชี้เป็นรายตัว สำหรับลูกหนี้ส่วนที่เหลือประมาณค่าเผื่อโดยวิธีจำแนกอายุ ตามอัตราร้อยละที่คำนวณจากประสบการณ์หนี้สูญสุทธิของกิจการ และทบทวนอัตราทุกงวด ในระหว่างงวดมีหนี้สูญที่ตัดจำหน่ายและหนี้สูญได้รับคืนตามที่แสดงในหมายเหตุ</div>
+      ${theory([
+        ['NPAEs 7.3','ลูกหนี้วัดมูลค่าภายหลังด้วยมูลค่าที่จะได้รับ คือมูลค่าหลังหักค่าเผื่อหนี้สงสัยจะสูญ'],
+        ['NPAEs 7.5','วิธีจำแนกอายุเป็นแนวทางงบฐานะการเงิน ผลที่ได้คือยอดคงเหลือเป้าหมายของค่าเผื่อ ไม่ใช่จำนวนที่บันทึก'],
+        ['ไม่นับซ้ำ','ลูกหนี้ที่ตั้งค่าเผื่อรายตัวควรหักออกจากฐานกลุ่ม (หัวข้อ 7.5 และ S7.3)'],
+        ['NPAEs 7.9','เปิดเผยหนี้สูญที่ตัดจำหน่ายและหนี้สูญได้รับคืนของงวด']])}
+      ${taxBox(a.diff)}`;
+  }
+  $('agAdd').addEventListener('click',()=>{ag.push(['ช่วงใหม่',0,0,0]);agRender()});
+  $('agReset').addEventListener('click',()=>{ag=AG_SAMPLE.map(r=>r.slice());$('agPrior').value=85;$('agPriorSide').value='cr';$('agSpecAllow').value=40;$('agSrc').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 7.2 บริษัท ค้าส่งตัวอย่าง จำกัด (พันบาท)';agRender()});
+  ['agPrior','agPriorSide','agSpecAllow'].forEach(id=>$(id).addEventListener('input',agCalc));
+  $('agCopy').addEventListener('click',()=>{
+    const t=[['ช่วงอายุ','ยอดลูกหนี้','หักรายตัว','อัตรา %','ค่าเผื่อ'].join('\t')].concat(ag.map(r=>[r[0],r[1],r[2],r[3],Math.max(0,r[1]-r[2])*r[3]/100].join('\t'))).join('\n');
+    const done=()=>{$('agCopied').hidden=false;setTimeout(()=>$('agCopied').hidden=true,1800)};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,fb); else fb();
+  });
+
+  /* =========================================================
+     SALES (% of credit sales)
+     ========================================================= */
+  const HS_SAMPLE=[['2566',58000,230,0],['2567',61000,270,0],['2568',64000,260,10]];
+  let hs=HS_SAMPLE.map(r=>r.slice());let hsRate=0;
+  function hsRender(){
+    $('hsBody').innerHTML=hs.map((r,i)=>`<tr>
+      <td style="width:90px"><input type="text" id="hs-y-${i}" value="${esc(r[0])}" aria-label="ปี"></td>
+      <td><input class="num" type="number" min="0" id="hs-s-${i}" value="${r[1]}" aria-label="ยอดขายเชื่อ"></td>
+      <td><input class="num" type="number" min="0" id="hs-w-${i}" value="${r[2]}" aria-label="หนี้สูญ"></td>
+      <td><input class="num" type="number" min="0" id="hs-r-${i}" value="${r[3]}" aria-label="ได้รับคืน"></td>
+      <td class="num" id="hs-x-${i}"></td>
+      <td><button class="del" data-i="${i}" aria-label="ลบ">×</button></td></tr>`).join('');
+    hs.forEach((r,i)=>{
+      $('hs-y-'+i).addEventListener('input',e=>{r[0]=e.target.value;slCalc()});
+      [['s',1],['w',2],['r',3]].forEach(([k,j])=>$(`hs-${k}-${i}`).addEventListener('input',e=>{r[j]=val(e.target);slCalc()}));
+    });
+    $('hsBody').querySelectorAll('.del').forEach(b=>b.addEventListener('click',()=>{hs.splice(+b.dataset.i,1);hsRender()}));
+    slCalc();
+  }
+  function slCalc(){
+    let S=0,Wo=0,Rc=0;const yr=[];
+    hs.forEach((r,i)=>{S+=r[1];Wo+=r[2];Rc+=r[3];const x=r[1]?(r[2]-r[3])/r[1]:NaN;yr.push(x);const c=$('hs-x-'+i);if(c)c.textContent=pct(x)});
+    hsRate=S?(Wo-Rc)/S:0;
+    $('hsSales').textContent=fmt(S);$('hsWO').textContent=fmt(Wo);$('hsRec').textContent=fmt(Rc);$('hsRate').textContent=pct(hsRate);
+    const s=val($('slSales')),r=val($('slRate')),p=val($('slPrior'));
+    const exp=s*r/100,end=p+exp;
+    const fin=yr.filter(isFinite);const mn=Math.min(...fin),mx=Math.max(...fin);
+    const F=[];const W=[];
+    if(hs.length<3) W.push(`มีประวัติ ${hs.length} ปี ควรใช้อย่างน้อย 3 ปีเพื่อลดผลของความล่าช้าระหว่างยอดขายกับหนี้สูญ`);
+    if(fin.length) F.push(`อัตรารายปีอยู่ระหว่าง ${pct(mn)} ถึง ${pct(mx)} อัตราถ่วงน้ำหนัก ${pct(hsRate)} ${mx-mn>hsRate*0.5?'ผันผวนมาก ควรตรวจหาหนี้สูญก้อนพิเศษที่ควรตัดออก':'ค่อนข้างคงที่ จึงใช้เป็นตัวแทนประสบการณ์ได้'}`);
+    if(fin.length>=2){const d=fin[fin.length-1]-fin[0];F.push(`ปีล่าสุดเทียบกับปีแรก อัตรา${d>0?'เพิ่มขึ้น':'ลดลง'} ${pct(Math.abs(d))} ${d>0.001?'หากเป็นผลจากการผ่อนนโยบายเครดิตที่ยังใช้อยู่ อาจมีหลักฐานให้ปรับอัตราขึ้น':'ยังไม่มีหลักฐานให้ปรับอัตราขึ้น'}`)}
+    if(Math.abs(r-hsRate*100)>0.005) F.push(`อัตราที่ใช้ ${fmt(r)}% ต่างจากอัตราจากประวัติ ${pct(hsRate)} ควรบันทึกเหตุผลของการปรับไว้ (หัวข้อ 7.4)`);
+    F.push(`ค่าใช้จ่ายของงวด = ${fmt(s)} × ${fmt(r)}% = ${fmt(exp)} บันทึกโดยตรง ค่าเผื่อคงเหลือหลังปรับปรุงจะเป็น ${fmt(end)} ให้ทดสอบยอดนี้กับผลจากตารางจำแนกอายุทุกสิ้นปี`);
+    $('slOut').innerHTML=`<h2>ผลการคำนวณ</h2>
+      ${figs([['อัตราจากประวัติ',hsRate,true],['ค่าใช้จ่ายของงวด',exp],['ค่าเผื่อหลังปรับปรุง',end]])}
+      ${W.length?`<div class="alert warn">${W.join('<br>')}</div>`:''}
+      ${facts('ข้อเท็จจริงจากข้อมูลที่กรอก',F)}
+      ${exp>0?je('รายการปรับปรุง ณ วันสิ้นงวด',[{dr:1,acct:'หนี้สงสัยจะสูญ',amt:exp},{dr:0,acct:'ค่าเผื่อหนี้สงสัยจะสูญ',amt:exp}],'ย่อหน้า 7.5.1 7.6'):''}
+      ${theory([
+        ['NPAEs 7.5','วิธีร้อยละของยอดขายเชื่อเป็นแนวทางงบกำไรขาดทุน ยึดหลักการจับคู่ค่าใช้จ่ายกับรายได้ของงวด ผลที่ได้คือค่าใช้จ่าย ไม่ใช่ยอดคงเหลือ'],
+        ['ความล่าช้า','หนี้สูญที่ตัดในปีนี้มักมาจากยอดขายของปีก่อน การรวมข้อมูลหลายปีแล้วหารแบบถ่วงน้ำหนักช่วยลดการจับคู่ผิดปี'],
+        ['หนี้สูญสุทธิ','ใช้หนี้สูญที่ตัดจำหน่ายหักหนี้สูญได้รับคืน (ย่อหน้า 7.8) และตัดหนี้สูญก้อนพิเศษกับลูกหนี้รายตัวออก'],
+        ['ข้อจำกัด','วิธีนี้ไม่ดูยอดคงเหลือ ค่าเผื่อสะสมอาจสูงหรือต่ำเกินจริง จึงต้องทดสอบด้วยตารางจำแนกอายุทุกสิ้นปี']])}
+      ${taxBox(exp)}`;
+  }
+  $('hsAdd').addEventListener('click',()=>{hs.push(['ปีใหม่',0,0,0]);hsRender()});
+  $('hsReset').addEventListener('click',()=>{hs=HS_SAMPLE.map(r=>r.slice());$('slSales').value=66000;$('slRate').value=0.41;$('slPrior').value=0;hsRender()});
+  $('hsUse').addEventListener('click',()=>{$('slRate').value=Math.round(hsRate*10000)/100;slCalc()});
+  ['slSales','slRate','slPrior'].forEach(id=>$(id).addEventListener('input',slCalc));
+  /* ---------- cohort rate ---------- */
+  const CH=[['2565',10000,180,true],['2566',12000,204,true],['2567',15000,240,true]];
+  function chRender(){
+    $('chBody').innerHTML=CH.map((r,i)=>`<tr><td>${esc(r[0])}</td><td><input class="num" type="number" min="0" id="ch-s-${i}" value="${r[1]}" aria-label="ยอดขาย"></td><td><input class="num" type="number" min="0" id="ch-l-${i}" value="${r[2]}" aria-label="หนี้สูญ"></td><td><input type="checkbox" id="ch-d-${i}"${r[3]?' checked':''} aria-label="ได้ข้อยุติ"></td><td class="num" id="ch-x-${i}"></td></tr>`).join('');
+    CH.forEach((r,i)=>{$('ch-s-'+i).addEventListener('input',e=>{r[1]=val(e.target);chCalc()});$('ch-l-'+i).addEventListener('input',e=>{r[2]=val(e.target);chCalc()});$('ch-d-'+i).addEventListener('change',e=>{r[3]=e.target.checked;chCalc()})});
+    chCalc();
+  }
+  let chRate=0;
+  function chCalc(){
+    let S=0,L=0,k=0,sum=0;CH.forEach((r,i)=>{const x=r[1]?r[2]/r[1]:NaN;$('ch-x-'+i).textContent=pct(x);if(r[3]&&r[1]){S+=r[1];L+=r[2];k++;sum+=x}});
+    const wr=S?L/S:0,sr=k?sum/k:0;chRate=wr+val($('chAdj'))/100;const ex=val($('chSales'))*chRate;
+    $('chOut').innerHTML=`${figs([['อัตราถ่วงน้ำหนัก',wr,true],['อัตราที่ใช้หลังปรับ',chRate,true],['ค่าใช้จ่ายของงวด',ex]])}${facts('อ่านผล',[`ถ่วงน้ำหนัก ${fmt(L)} ÷ ${fmt(S)} = ${pct(wr)} ค่าเฉลี่ยอย่างง่าย ${pct(sr)}`,'ถ้าหารหนี้สูญที่ตัดจำหน่ายในปีด้วยยอดขายปีเดียวกันขณะยอดขายโต อัตราจะต่ำกว่าความจริง','การปรับเชิงคุณภาพต้องมีหลักฐาน ณ วันสิ้นงวดและบันทึกเหตุผล'])}<div class="row-actions"><button class="btn" id="chUse">ส่งอัตรานี้ไปช่องอัตราที่ใช้</button></div>`;
+    $('chUse').addEventListener('click',()=>{$('slRate').value=Math.round(chRate*10000)/100;$('slSales').value=val($('chSales'));slCalc()});
+  }
+  ['chAdj','chSales'].forEach(id=>$(id).addEventListener('input',chCalc));
+  chRender();
+
+
+  /* =========================================================
+     4 TAX
+     ========================================================= */
+  function taxCalc(){
+    const amt=val($('wdAmt'));const c=id=>$('c-'+id).checked;
+    let tier,ok;const miss=[];
+    if(!c('age'))miss.push('หนี้ที่ยังไม่ขาดอายุความและมีหลักฐานฟ้องได้ (ข้อ 3 (2))');
+    const r41=c('track')&&c('dead'),r5court=(c('sued')||c('exec')||c('bk'))&&c('ok30');
+    if(amt>2000000){tier='เกิน 2,000,000 บาท (ข้อ 4)';ok=r41||c('exec')||c('bk');
+      if(!ok){if(c('dead')&&!c('track'))miss.push('หลักฐานการติดตามทวงถาม (เงื่อนไขของข้อ 4 (1))');
+        else miss.push('กรณีใดกรณีหนึ่งของข้อ 4: (1) ทวงถามแล้วมีหลักฐาน และลูกหนี้ตาย สาบสูญ หรือเลิกกิจการโดยเจ้าหนี้บุริมสิทธิมีหนี้เหนือทรัพย์สิน (2) รายงานการบังคับคดีครั้งแรกว่าไม่มีทรัพย์สิน (3) คดีล้มละลายที่ศาลเห็นชอบการประนอมหนี้ หรือพิพากษาให้ล้มละลายและแบ่งทรัพย์ครั้งแรกหรือปิดคดีแล้ว (ศาลรับฟ้องอย่างเดียวยังไม่พอ)');}}
+    else if(amt>200000){tier='ไม่เกิน 2,000,000 บาท (ข้อ 5)';const viaCourt=c('sued')||c('exec')||c('bk');ok=(c('track')&&c('dead'))||(viaCourt&&c('ok30'));
+      if(!(c('track')&&c('dead'))&&!viaCourt)miss.push('การฟ้องคดีแพ่งหรือยื่นคำขอรับชำระหนี้ที่ศาลรับแล้ว หรือหลักฐานตามข้อ 4 (1)');
+      if(viaCourt&&!c('ok30'))miss.push('การอนุมัติของกรรมการหรือหุ้นส่วนผู้จัดการภายใน 30 วันนับแต่วันสิ้นรอบระยะเวลาบัญชี');}
+    else{tier='ไม่เกิน 200,000 บาท (ข้อ 6)';ok=(c('track')&&c('cost'))||r41||r5court;
+      if(!ok){if(!c('track'))miss.push('หลักฐานการติดตามทวงถาม');if(c('track')&&!c('cost'))miss.push('เหตุผลว่าการฟ้องคดีไม่คุ้มค่าใช้จ่าย');
+        if((c('sued')||c('exec')||c('bk'))&&!c('ok30'))miss.push('หรือการอนุมัติภายใน 30 วันตามข้อ 5 กรณีอาศัยการฟ้องหรือยื่นคำขอ');}}
+    ok=ok&&c('age');
+    let cls,head,body;
+    if(c('dir')){cls='bad';head='จำหน่ายเป็นหนี้สูญทางภาษีไม่ได้';body='หนี้ที่ผู้เป็นหรือเคยเป็นกรรมการหรือหุ้นส่วนผู้จัดการเป็นลูกหนี้ ไม่เข้าข้อ 3 (1) ของกฎกระทรวง ฉบับที่ 186 ทางบัญชียังตั้งค่าเผื่อและตัดจำหน่ายตามย่อหน้า 7.5–7.7 ได้ตามข้อเท็จจริง'}
+    else if(ok){cls='ok';head='เข้าเงื่อนไขเบื้องต้น';body=`หนี้ ${fmt(amt)} บาท อยู่ในชั้น${tier} และมีหลักฐานตามที่ชั้นนี้กำหนด หักเป็นรายจ่ายในรอบที่จำหน่าย${amt<=2000000&&!(amt<=200000&&c('track')&&c('cost'))&&!r41&&(c('sued')||c('exec')||c('bk'))?' กรณีอาศัยการฟ้องหรือยื่นคำขอ ถือเป็นรายจ่ายในรอบที่ศาลรับ (ข้อ 7)':''} ตรวจถ้อยคำฉบับเต็มก่อนใช้จริง`}
+    else{cls='warn';head='ยังไม่เข้าเงื่อนไข';body=`หนี้ ${fmt(amt)} บาท อยู่ในชั้น${tier} ยังขาด: ${miss.join(' และ ')} ระหว่างนี้ทางบัญชีตั้งค่าเผื่อหรือตัดจำหน่ายได้ตามย่อหน้า 7.5–7.7 แต่ทางภาษียังหักไม่ได้ ให้บันทึกในทะเบียนภาษี`}
+    const pr=val($('trProfit')),ta=val($('trAllow')),wo=val($('trWO')),rc=val($('trRec'));
+    $('taxOut').innerHTML=`<h2>ผลการตรวจ</h2>
+      <div class="verdict ${cls}"><h4><span class="pill ${cls}">${esc(tier)}</span> ${head}</h4><div>${body}</div></div>
+      <h3>กระดาษทำการกระทบยอด (ตัวอย่างที่ 7.7)</h3>
+      <div class="tbl"><table><tbody>
+        <tr><td>กำไรทางบัญชีก่อนภาษี</td><td class="num">${fmt(pr)}</td></tr>
+        <tr><td>บวก หนี้สงสัยจะสูญ (รายจ่ายต้องห้าม มาตรา 65 ตรี (1))</td><td class="num">${fmt(ta)}</td></tr>
+        <tr><td>หัก หนี้สูญที่จำหน่ายตามกฎกระทรวง ฉบับที่ 186 (มาตรา 65 ทวิ (9))</td><td class="num">(${fmt(wo)})</td></tr>
+        <tr><td>บวก หนี้สูญได้รับคืนที่เคยหักเป็นรายจ่าย (มาตรา 65 ทวิ (9))</td><td class="num">${fmt(rc)}</td></tr>
+      </tbody><tfoot><tr><td>กำไรสุทธิทางภาษี</td><td class="num">${fmt(pr+ta-wo+rc)}</td></tr></tfoot></table></div>
+      ${facts('ข้อเท็จจริงที่ควรเข้าใจ',[
+        'จุดสูญเสียทางบัญชี (ย่อหน้า 7.7) มักมาก่อนจุดที่เข้าเงื่อนไขภาษี ผลต่างจึงเป็นเรื่องจังหวะเวลา หนี้ที่ตัดจำหน่ายแล้วแต่ยังไม่ครบเงื่อนไขให้บันทึกในทะเบียนภาษีและหักในรอบที่ครบ',
+        'ถ้าบันทึกหนี้สูญได้รับคืนเป็นรายได้อื่น รายได้อยู่ในกำไรทางบัญชีแล้ว ไม่ต้องบวกซ้ำ ให้ใส่ 0 ในช่องหนี้สูญได้รับคืน',
+        'ไม่ตั้งค่าเผื่อเพราะหักภาษีไม่ได้ เป็นข้อผิดพลาด หน้าที่ทางบัญชีกับทางภาษีแยกจากกัน'])}
+      ${theory([
+        ['มาตรา 65 ตรี (1)','เงินกันไว้เป็นทุนสำรองต่าง ๆ รวมทั้งค่าเผื่อหนี้สงสัยจะสูญของกิจการทั่วไป เป็นรายจ่ายต้องห้าม'],
+        ['มาตรา 65 ทวิ (9)','จำหน่ายหนี้สูญได้ตามกฎกระทรวง หนี้สูญที่หักแล้วถ้าได้รับชำระภายหลังเป็นรายได้ในรอบที่ได้รับ'],
+        ['กฎกระทรวง 186 ข้อ 3–7','ข้อ 3 หนี้ทุกจำนวน ข้อ 4 เกิน 2,000,000 บาท ข้อ 5 ไม่เกิน 2,000,000 บาท ข้อ 6 ไม่เกิน 200,000 บาท ข้อ 7 รอบที่หักเป็นรายจ่าย (แก้ไขโดยฉบับที่ 374 ใช้กับรอบบัญชีที่เริ่มในหรือหลัง 1 มกราคม 2563)'],
+        ['15.1–15.2','รับรู้ภาษีเงินได้ของงวดปัจจุบัน และเลือกรับรู้ภาษีเงินได้รอการตัดบัญชีได้ ถ้าไม่เลือก ผลต่างแสดงเฉพาะในกระดาษทำการภาษี']])}`;
+  }
+  ['wdAmt','trProfit','trAllow','trWO','trRec'].forEach(id=>$(id).addEventListener('input',taxCalc));
+  document.querySelectorAll('.checks input').forEach(el=>el.addEventListener('change',taxCalc));
+
+  /* =========================================================
+     0 IMPORT AGING REPORT
+     ========================================================= */
+  const IMP={rows:[],sheets:null,wb:null,source:'sample'};
+  const TPL='เลขที่ใบแจ้งหนี้\tลูกค้า\tวันที่ใบแจ้งหนี้\tวันครบกำหนด\tยอดคงค้าง';
+  function sampleRows(){
+    const C=['บริษัท สยามวัสดุ จำกัด','หจก. ข.','บริษัท ง. จำกัด','บริษัท จ. จำกัด','ร้าน ช่างไทยการช่าง','บริษัท บ้านดีโฮม จำกัด','หจก. รุ่งเรืองก่อสร้าง','บริษัท อีสานค้าวัสดุ จำกัด','ร้าน เจริญพาณิชย์','บริษัท ภูเก็ตบิลด์ จำกัด','หจก. นครชัยค้าไม้','บริษัท ศรีราชาซัพพลาย จำกัด'];
+    const out=[TPL.split('\t')];let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+    const base=new Date(2025,11,31);let n=1;
+    const add=(c,daysPastDue,amt)=>{const due=new Date(base);due.setDate(due.getDate()-daysPastDue);const inv=new Date(due);inv.setDate(inv.getDate()-30);
+      out.push(['INV-'+String(n++).padStart(4,'0'),C[c],fmtD(inv),fmtD(due),amt])};
+    for(let i=0;i<46;i++){const c=Math.floor(rnd()*C.length);const r=rnd();const d=r<0.72?-Math.floor(rnd()*30):r<0.86?Math.floor(rnd()*30)+1:r<0.94?Math.floor(rnd()*30)+31:Math.floor(rnd()*30)+61;add(c,d,Math.round((40000+rnd()*190000)/100)*100)}
+    add(3,-10,800000);add(1,75,30000);add(1,100,20000);add(2,45,180000);add(2,80,120000);add(10,135,18500);
+    out.push(['RV-0091','บริษัท บ้านดีโฮม จำกัด','',fmtD(new Date(2025,11,20)),-25000]);
+    out.push(['INV-0999','ร้าน ช่างไทยการช่าง','','',15000]);
+    return out;
+  }
+  function fmtD(d){return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`}
+  function parseDate(v){
+    if(v instanceof Date&&!isNaN(v)) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+    if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*86400000));return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}
+    const s=String(v||'').trim();if(!s) return null;
+    let m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if(m){let y=+m[1];if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[3])}
+    m=s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+    if(m){let y=+m[3];if(y<100)y+=y>50?2500:2000;if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[1])}
+    return null;
+  }
+  function parseCSV(text){
+    const delim=text.split('\n')[0].includes('\t')?'\t':(text.split('\n')[0].split(';').length>text.split('\n')[0].split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true; else if(ch===delim){row.push(f);f=''} else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''} else if(ch!=='\r') f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+  }
+  const ROLE=[['cust',/ลูกค้า|ลูกหนี้|ชื่อ|customer|debtor|name/i],['due',/ครบกำหนด|due/i],['terms',/เครดิต|term/i],['inv',/วันที่|date/i],['amt',/คงค้าง|คงเหลือ|ยอด|balance|amount|outstanding|จำนวนเงิน/i]];
+  const BUCKETRX=/ยังไม่ถึง|ไม่ถึงกำหนด|current|not\s*due|\d+\s*[-–]\s*\d+|เกิน|over|>\s*\d+|\+/i;
+  function headers(){const h=IMP.rows[(+$('impHdr').value||1)-1]||[];return h.map((x,i)=>String(x||'').trim()||('คอลัมน์ '+(i+1)))}
+  function fillMaps(guess){
+    const H=headers();const opt=sel=>`<option value="-1">— ไม่มี —</option>`+H.map((x,i)=>`<option value="${i}">${esc(x)}</option>`).join('');
+    ['mapCust','mapDue','mapInv','mapTerms','mapAmt'].forEach(id=>$(id).innerHTML=opt());
+    const used=new Set();const g={};
+    ROLE.forEach(([r,rx])=>{const i=H.findIndex((x,k)=>!used.has(k)&&rx.test(x)&&!(r==='amt'&&BUCKETRX.test(x)&&!/คงค้าง|balance|outstanding/i.test(x))&&!(r==='inv'&&/ครบกำหนด|due/i.test(x)));if(i>=0){g[r]=i;used.add(i)}});
+    const bk=H.map((x,i)=>i).filter(i=>!used.has(i)&&BUCKETRX.test(H[i]));
+    if(guess){$('mapCust').value=g.cust??-1;$('mapDue').value=g.due??-1;$('mapInv').value=g.inv??-1;$('mapTerms').value=g.terms??-1;$('mapAmt').value=g.amt??-1;
+      $('impMode').value=(g.due===undefined&&g.inv===undefined&&bk.length>=2)?'sum':'inv'}
+    $('mapBuckets').innerHTML=H.map((x,i)=>`<label><input type="checkbox" class="bkc" value="${i}"${bk.includes(i)?' checked':''}><span>${esc(x)}</span></label>`).join('');
+    $('mapBuckets').querySelectorAll('input').forEach(el=>el.addEventListener('change',impCalc));
+    modeVis();
+  }
+  function modeVis(){const m=$('impMode').value;document.querySelectorAll('[data-pane="imp"] [data-m]').forEach(el=>el.hidden=el.dataset.m!==m)}
+  function bounds(){return $('impBounds').value.split(/[,\s]+/).map(Number).filter(x=>x>0).sort((a,b)=>a-b)}
+  function bucketLabels(B){const L=['ยังไม่ถึงกำหนด'];let lo=1;B.forEach(b=>{L.push(`เกิน ${lo}–${b}`);lo=b+1});L.push(`เกิน ${B[B.length-1]}`);return L}
+  let lastImp=null;const ANON={map:new Map()};
+  function alias(name){if(!$('impAnon').checked)return name;if(!ANON.map.has(name))ANON.map.set(name,'ลูกหนี้ '+String(ANON.map.size+1).padStart(3,'0'));return ANON.map.get(name)}
+  function impCalc(){
+    const out=$('impOut');
+    if(!IMP.rows.length){out.innerHTML='<h2>ผลการนำเข้า</h2><div class="alert warn">ยังไม่มีข้อมูล ให้เลือกไฟล์หรือโหลดไฟล์ตัวอย่าง</div>';return}
+    ANON.map=new Map();const hi=(+$('impHdr').value||1)-1;const data=IMP.rows.slice(hi+1);const mode=$('impMode').value;
+    const rd=parseDate($('impDate').value);const unit=+$('impUnit').value;
+    const ci=+$('mapCust').value;const W=[];const issues={noDue:[],credit:[],future:0,bad:[]};
+    let labels,tot,cust={};
+    if(mode==='inv'){
+      const B=bounds();if(!B.length){out.innerHTML='<div class="alert bad">กรอกขอบบนของช่วงอายุอย่างน้อยหนึ่งค่า เช่น 30, 60, 90</div>';return}
+      labels=bucketLabels(B);tot=Array(labels.length).fill(0);
+      const di=+$('mapDue').value,ii=+$('mapInv').value,ti=+$('mapTerms').value,ai=+$('mapAmt').value;
+      if(ai<0){out.innerHTML='<h2>ผลการนำเข้า</h2><div class="alert bad">ยังไม่ได้เลือกคอลัมน์ยอดคงค้าง</div>';return}
+      if(!rd){out.innerHTML='<h2>ผลการนำเข้า</h2><div class="alert bad">ระบุวันสิ้นงวด</div>';return}
+      data.forEach((r,k)=>{
+        const a=typeof r[ai]==='number'?r[ai]:num(r[ai]);const name=alias(ci>=0?String(r[ci]||'(ไม่ระบุชื่อ)').trim():'(ไม่ระบุชื่อ)');
+        if(isNaN(a)){issues.bad.push(k+hi+2);return} if(a===0) return;
+        if(a<0){issues.credit.push(`${esc(name)} ${fmt(a)}`);return}
+        let due=di>=0?parseDate(r[di]):null;
+        if(!due&&ii>=0){const inv=parseDate(r[ii]);const tm=ti>=0?num(r[ti]):NaN;if(inv&&isFinite(tm)){due=new Date(inv);due.setDate(due.getDate()+tm)}}
+        if(!due){issues.noDue.push(`${esc(name)} ${fmt(a)} (แถว ${k+hi+2})`);return}
+        const d=Math.floor((rd-due)/86400000);
+        let b=0;if(d>0){b=B.findIndex(x=>d<=x)+1;if(b===0)b=B.length+1}
+        tot[b]+=a;const c=cust[name]||(cust[name]={n:name,t:0,b:Array(labels.length).fill(0)});c.t+=a;c.b[b]+=a;
+      });
+    }else{
+      const cols=[...document.querySelectorAll('.bkc:checked')].map(e=>+e.value);
+      if(cols.length<2){out.innerHTML='<h2>ผลการนำเข้า</h2><div class="alert bad">เลือกคอลัมน์ช่วงอายุอย่างน้อย 2 คอลัมน์</div>';return}
+      const H=headers();labels=cols.map(i=>H[i]);tot=Array(cols.length).fill(0);
+      data.forEach((r,k)=>{const raw=ci>=0?String(r[ci]||'').trim():'';if(/^(รวม|total|ยอดรวม)/i.test(raw))return;const name=raw?alias(raw):'';
+        const v=cols.map(i=>typeof r[i]==='number'?r[i]:num(r[i]));if(v.some(isNaN)){issues.bad.push(k+hi+2);return}
+        const s=v.reduce((a,b)=>a+b,0);if(s===0)return;if(s<0){issues.credit.push(`${esc(name||'(ไม่ระบุชื่อ)')} ${fmt(s)}`);return}
+        v.forEach((x,b)=>tot[b]+=x);const c=cust[name||'(ไม่ระบุชื่อ)']||(cust[name||'(ไม่ระบุชื่อ)']={n:name||'(ไม่ระบุชื่อ)',t:0,b:Array(cols.length).fill(0)});c.t+=s;v.forEach((x,b)=>c.b[b]+=x)});
+    }
+    const sum=tot.reduce((a,b)=>a+b,0);const credit=issues.credit.reduce((s,x)=>s+num(x.split(' ').pop()),0);
+    const custs=Object.values(cust).sort((a,b)=>b.t-a.t);const nb=labels.length;
+    const gl=val($('impGL'));const noDueAmt=issues.noDue.reduce((s,x)=>s+num(x.split(' (')[0].split(' ').pop()),0);
+    const diffGL=gl?gl-(sum+credit+noDueAmt):0;
+    const topN=Math.max(0,Math.round(val($('impTopN'))));
+    const oldIdx=nb>=3?nb-2:nb-1;
+    const old=custs.filter(c=>c.b.slice(oldIdx).reduce((a,b)=>a+b,0)>0);
+    const cand=[...new Map([...custs.slice(0,topN).map(c=>[c.n,{c,why:'รายใหญ่'}]),...old.map(c=>[c.n,{c,why:'ค้างนาน'}])]).values()];
+    lastImp={labels,tot,unit,cand,rd,oldIdx};
+    if(issues.bad.length) W.push(`อ่านยอดไม่ได้ ${issues.bad.length} แถว (แถว ${issues.bad.slice(0,8).join(', ')}${issues.bad.length>8?' …':''}) ให้ตรวจว่าเลือกคอลัมน์ยอดถูกต้อง`);
+    if(issues.noDue.length) W.push(`ไม่มีวันครบกำหนด ${issues.noDue.length} รายการ รวม ${fmt(noDueAmt)} ยังไม่ถูกจัดช่วงอายุ: ${issues.noDue.slice(0,4).join(', ')} ให้แก้ในโปรแกรมบัญชีหรือเลือกคอลัมน์วันที่ใบแจ้งหนี้กับเครดิต`);
+    if(issues.credit.length) W.push(`ลูกหนี้ยอดติดลบ ${issues.credit.length} ราย รวม ${fmt(credit)} (${issues.credit.slice(0,3).join(', ')}) มักเป็นเงินรับล่วงหน้าหรือใบลดหนี้ ไม่นำมาหักจากช่วงอายุ ควรจัดประเภทเป็นหนี้สินในงบฐานะการเงิน`);
+    if(gl&&Math.abs(diffGL)>0.5) W.push(`ยอดในรายงานรวมทุกรายการ ${fmt(sum+credit+noDueAmt)} ไม่เท่ายอดคุมในบัญชีแยกประเภท ${fmt(gl)} ต่างกัน ${fmt(diffGL)} ควรกระทบยอดให้ได้ก่อนใช้รายงานนี้คำนวณค่าเผื่อ`);
+    const share=custs.length&&sum?custs.slice(0,topN).reduce((s,c)=>s+c.t,0)/sum:0;
+    const F=[`รายงาน ณ ${rd?fmtD(rd):'–'} มีลูกหนี้ยอดบวก ${custs.length} ราย รวม ${fmt(sum)} บาท จัดช่วงอายุได้ ${labels.length} ช่วง${mode==='inv'?' โดยนับวันค้างจากวันครบกำหนด ไม่ใช่วันที่ใบแจ้งหนี้':''}`,
+      !gl?'ยังไม่ได้กรอกยอดคุมลูกหนี้ในบัญชีแยกประเภท ให้กรอกเพื่อกระทบยอดความครบถ้วนของรายงานก่อนใช้':'',
+      `ยอดที่ยังไม่ถึงกำหนด ${pct(sum?tot[0]/sum:0,1)} และเกินกำหนดแล้ว ${pct(sum?1-tot[0]/sum:0,1)} ของลูกหนี้ ส่วนที่ค้างตั้งแต่ช่วง "${esc(labels[oldIdx])}" ขึ้นไปมี ${fmt(tot.slice(oldIdx).reduce((a,b)=>a+b,0))}`,
+      topN?`ลูกหนี้ ${topN} รายแรกรวมกันเป็น ${pct(share,1)} ของยอดทั้งหมด ${share>0.4?'กระจุกตัวสูง ความเสี่ยงด้านเครดิตขึ้นกับลูกค้าไม่กี่ราย จึงควรประเมินรายตัว':'ไม่กระจุกตัวมาก'}`:'',
+      cand.length?`ควรประเมินรายตัว ${cand.length} ราย (รายใหญ่ ${Math.min(topN,custs.length)} ราย และรายที่มียอดค้างนาน ${old.length} ราย) ยอดของรายที่ระดับ 3–5 ต้องหักออกจากฐานคำนวณแบบกลุ่ม`:'',
+      tot[nb-1]>0&&mode==='inv'?`ยอดในช่วงเก่าสุด "${esc(labels[nb-1])}" ${fmt(tot[nb-1])} ควรพิจารณาว่าทวงถามถึงที่สุดแล้วหรือไม่ หากใช่ต้องตัดจำหน่ายตามย่อหน้า 7.7 แทนการคงไว้ในลูกหนี้`:''].filter(Boolean);
+    const rows=labels.map((L,b)=>`<tr><td>${esc(L)}</td><td class="num">${fmt(tot[b])}</td><td class="num">${pct(sum?tot[b]/sum:0,1)}</td><td class="num">${fmt(tot[b]/unit)}</td></tr>`).join('');
+    const custRows=custs.slice(0,15).map(c=>`<tr><td>${esc(c.n)}${cand.some(x=>x.c===c)?' <span class="pill warn">ประเมินรายตัว</span>':''}</td><td class="num">${fmt(c.t)}</td>${c.b.map(x=>`<td class="num">${x?fmt(x):''}</td>`).join('')}</tr>`).join('');
+    out.innerHTML=`<h2>ผลการนำเข้า</h2>
+      ${figs([['ลูกหนี้ยอดบวก (บาท)',sum],['เกินกำหนดแล้ว',sum?1-tot[0]/sum:0,true],['ควรประเมินรายตัว (ราย)',cand.length]])}
+      ${W.length?`<div class="alert warn"><b>ตรวจข้อมูลก่อนใช้</b><br>${W.join('<br>')}</div>`:(gl?'<div class="verdict ok"><h4>กระทบยอดผ่าน</h4><div>ยอดรวมในรายงานเท่ากับยอดคุมในบัญชีแยกประเภท</div></div>':'')}
+      <h3 style="margin:0">ยอดตามช่วงอายุ</h3>
+      <div class="tbl"><table><thead><tr><th>ช่วงอายุ</th><th class="num">บาท</th><th class="num">สัดส่วน</th><th class="num">ส่งต่อ (${unit===1000?'พันบาท':'บาท'})</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>รวม</td><td class="num">${fmt(sum)}</td><td class="num">100%</td><td class="num">${fmt(sum/unit)}</td></tr></tfoot></table></div>
+      ${facts('ข้อเท็จจริงจากรายงานของกิจการ',F)}
+      <div class="row-actions">
+        <button class="btn primary" id="impToAg">ส่งยอดไปตารางอายุ (แท็บ 3)</button>
+        <button class="btn" id="impToSp">ส่งรายที่ควรประเมินไปแท็บ 1</button>
+        <button class="btn" id="impToRr">เพิ่มเป็นเดือนล่าสุดในแท็บ 2</button>
+      </div>
+      <span class="copied" id="impMsg" hidden></span>
+      <h3>ลูกหนี้รายใหญ่ 15 รายแรก (บาท)</h3>
+      <div class="tbl"><table style="min-width:${360+90*nb}px"><thead><tr><th>ลูกค้า</th><th class="num">รวม</th>${labels.map(L=>`<th class="num">${esc(L)}</th>`).join('')}</tr></thead><tbody>${custRows}</tbody></table></div>
+      ${theory([
+        ['หัวข้อ 7.4','นับอายุจากวันครบกำหนดชำระ และใช้ช่วงอายุเดียวกันทุกเดือน วิธีอัตราการเลื่อนชั้นใช้ได้เมื่อความกว้างของช่วงเท่ากับระยะห่างของรายงานเมื่อนำไปหาอัตราการเลื่อนชั้น'],
+        ['ความครบถ้วนของข้อมูล','รายงานอายุลูกหนี้ควรกระทบยอดกับบัญชีคุมก่อนใช้ ผู้ตรวจสอบของ PCAOB พบข้อบกพร่องบ่อยในเรื่องการไม่ทดสอบความถูกต้องและครบถ้วนของรายงานที่ระบบจัดทำ'],
+        ['TSA 540','ผู้สอบบัญชีประเมินความเกี่ยวข้องและความน่าเชื่อถือของข้อมูลที่ใช้ทำประมาณการ รายงานที่กระทบยอดแล้วพร้อมรายการผิดปกติที่อธิบายได้คือหลักฐานสำคัญ'],
+        ['7.5.3, 3.13','ลูกหนี้ที่มีนัยสำคัญพิจารณาเป็นแต่ละราย แอปจึงคัดรายใหญ่และรายที่ค้างนานส่งไปแท็บ 1'],
+        ['การแสดงรายการ','ลูกหนี้ยอดติดลบไม่ใช่สินทรัพย์ ควรจัดประเภทเป็นเงินรับล่วงหน้าหรือหนี้สินอื่น ไม่นำไปหักลดยอดลูกหนี้รายอื่น'],
+        ['NPAEs 7.7','ยอดที่ทวงถามถึงที่สุดแล้วและคาดได้ค่อนข้างแน่นอนว่าไม่ได้รับชำระ ต้องตัดจำหน่าย ไม่ใช่คงไว้ในช่วงอายุเก่าสุด'],
+        ['การรักษาความลับ','ชื่อลูกค้าและยอดหนี้เป็นข้อมูลที่ผู้ประกอบวิชาชีพบัญชีต้องรักษาความลับตามจรรยาบรรณ แอปประมวลผลในเบราว์เซอร์เท่านั้น และปกปิดชื่อเป็นรหัสก่อนแสดงผล การคำนวณค่าเผื่อไม่ต้องใช้ชื่อจริง']])}`;
+    $('impKeyWrap').hidden=!($('impAnon').checked&&ANON.map.size);
+    if($('impAnon').checked) out.querySelector('.figs').insertAdjacentHTML('afterend',`<div class="verdict ok"><h4>ปกปิดชื่อแล้ว</h4><div>แปลงชื่อลูกค้า ${ANON.map.size} รายเป็นรหัส ผลทุกส่วนและข้อมูลที่ส่งต่อใช้รหัสเท่านั้น ตารางจับคู่รหัสกับชื่ออยู่ในหน้านี้ชั่วคราวและหายไปเมื่อปิดหน้า</div></div>`);
+    const msg=t=>{const e=$('impMsg');e.textContent=t;e.hidden=false;setTimeout(()=>{const x=$('impMsg');if(x)x.hidden=true},3500)};
+    $('impToAg').addEventListener('click',()=>{
+      const keep=ag.length===nb?ag.map(r=>r[3]):null;
+      ag=labels.map((L,b)=>[L,Math.round(tot[b]/unit*100)/100,0,keep?keep[b]:0]);
+      $('agSrc').textContent=`นำเข้าจากรายงาน ณ ${fmtD(rd||new Date())} · ${keep?'คงอัตราเดิม':'ใส่อัตราจากแท็บ 2'}`;$('agPrior').value=0;agRender();
+      msg(keep?'ส่งแล้ว คงอัตราเดิมในแท็บ 3':'ส่งแล้ว จำนวนช่วงอายุเปลี่ยน ให้ใส่อัตราจากแท็บ 2');});
+    $('impToSp').addEventListener('click',()=>{
+      sp=cand.map(({c,why})=>({n:c.n,l:why==='ค้างนาน'?3:1,b:Math.round(c.t/unit*100)/100,r:0,c:0,p:0,q:0}));spRender();
+      msg(`ส่ง ${cand.length} รายไปแท็บ 1 แล้ว ระดับที่ใส่ให้เป็นค่าเริ่มต้น ต้องประเมินตามหลักฐานจริง`);});
+    $('impToRr').addEventListener('click',()=>{
+      const P=parse($('rrData').value);const m=rd?`${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][rd.getMonth()]} ${String(rd.getFullYear()+543).slice(2)}`:'เดือนใหม่';
+      let v=tot.map(x=>Math.round(x/unit*100)/100);let note='';
+      if(!P.err&&P.nb!==v.length){if(v.length===P.nb+1){v[v.length-2]+=v.pop();note=' รวมช่วงเก่าสุดเข้าช่วงก่อนหน้าเพื่อให้ตรงกับแท็บ 2'}else{msg(`แท็บ 2 มี ${P.nb} ช่วงอายุ แต่รายงานมี ${v.length} ช่วง ให้ปรับขอบช่วงอายุให้ตรงกันก่อน`);return}}
+      const lines=$('rrData').value.replace(/\s+$/,'').split('\n');const nl=[m,...v.map(x=>Math.round(x*100)/100),0].join('\t');const rep=lines[lines.length-1].split('\t')[0].trim()===m;
+      if(rep){lines[lines.length-1]=nl;note+=' (แทนแถวเดือนเดียวกันที่มีอยู่)'}else lines.push(nl);$('rrData').value=lines.join('\n');rrCalc();
+      msg(`เพิ่มเดือน ${m} ในแท็บ 2 แล้ว${note} อย่าลืมกรอกหนี้สูญสุทธิของเดือนในคอลัมน์สุดท้าย`);});
+  }
+  function loadRows(rows,label){IMP.rows=rows.map(r=>r.map(c=>c==null?'':c));$('impHdr').value=detectHdr(IMP.rows);fillMaps(true);$('impStatus').textContent=label;impCalc()}
+  function detectHdr(rows){for(let i=0;i<Math.min(rows.length,15);i++){const r=rows[i];const txt=r.filter(c=>typeof c==='string'&&c.trim()&&isNaN(num(c))).length;if(txt>=2&&ROLE.some(([,rx])=>r.some(c=>rx.test(String(c)))))return i+1}return 1}
+  $('impFile').addEventListener('change',e=>{
+    const f=e.target.files[0];if(!f)return;$('impGL').value='';const ext=f.name.split('.').pop().toLowerCase();
+    const rdr=new FileReader();
+    if(ext==='csv'||ext==='txt'){rdr.onload=()=>{loadRows(parseCSV(String(rdr.result).replace(/^﻿/,'')),`นำเข้า ${f.name}`);$('impSheetWrap').hidden=true};rdr.readAsText(f,'utf-8');return}
+    if(typeof XLSX==='undefined'){$('impStatus').textContent='กำลังโหลดตัวอ่านไฟล์ Excel (ใช้ได้เมื่อเชื่อมต่ออินเทอร์เน็ต)…';
+      const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      sc.onload=()=>{e.target.dispatchEvent(new Event('change'))};
+      sc.onerror=()=>{$('impStatus').textContent='ออฟไลน์อยู่ จึงอ่านไฟล์ .xlsx ไม่ได้ ให้บันทึกเป็น CSV (UTF-8) แล้วนำเข้าอีกครั้ง'};
+      document.head.appendChild(sc);return}
+    rdr.onload=()=>{try{
+      const wb=XLSX.read(new Uint8Array(rdr.result),{type:'array',cellDates:true});IMP.wb=wb;
+      $('impSheet').innerHTML=wb.SheetNames.map((n,i)=>`<option value="${i}">${esc(n)}</option>`).join('');$('impSheetWrap').hidden=wb.SheetNames.length<2;
+      const sh=wb.Sheets[wb.SheetNames[0]];loadRows(XLSX.utils.sheet_to_json(sh,{header:1,raw:true,defval:''}),`นำเข้า ${f.name} · แผ่นงาน ${wb.SheetNames[0]}`);
+    }catch(err){$('impStatus').textContent='เปิดไฟล์นี้ไม่ได้ ให้ตรวจว่าเป็นไฟล์ Excel หรือบันทึกเป็น CSV แล้วลองใหม่'}};
+    rdr.readAsArrayBuffer(f);
+  });
+  $('impSheet').addEventListener('change',()=>{const n=IMP.wb.SheetNames[+$('impSheet').value];loadRows(XLSX.utils.sheet_to_json(IMP.wb.Sheets[n],{header:1,raw:true,defval:''}),`แผ่นงาน ${n}`)});
+  $('impSample').addEventListener('click',()=>{$('impFile').value='';$('impDate').value='2025-12-31';$('impGL').value=7455400;loadRows(sampleRows(),'ไฟล์ตัวอย่าง: รายการใบแจ้งหนี้ของบริษัทสมมติ ณ 31 ธ.ค. 2568')});
+  $('impTpl').addEventListener('click',()=>{const done=()=>{$('impTplOk').hidden=false;setTimeout(()=>{const e=$('impTplOk');if(e)e.hidden=true},2000)};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(TPL).then(done,()=>{}); });
+  $('impHdr').addEventListener('input',()=>{fillMaps(true);impCalc()});
+  $('impAnon').addEventListener('change',impCalc);
+  $('impKey').addEventListener('click',()=>{const t=['รหัส\tชื่อลูกค้า'].concat([...ANON.map].map(([n,c])=>c+'\t'+n)).join('\n');const ok=()=>{$('impKeyOk').hidden=false;setTimeout(()=>{const e=$('impKeyOk');if(e)e.hidden=true},2500)};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,()=>{});});
+  $('impMode').addEventListener('change',()=>{modeVis();impCalc()});
+  ['mapCust','mapDue','mapInv','mapTerms','mapAmt','impBounds','impUnit','impGL','impTopN','impDate'].forEach(id=>$(id).addEventListener('input',impCalc));
+  ['mapCust','mapDue','mapInv','mapTerms','mapAmt','impUnit'].forEach(id=>$(id).addEventListener('change',impCalc));
+
+  spRender();rrCalc();agRender();hsRender();taxCalc();loadRows(sampleRows(),'ยังไม่ได้เลือกไฟล์ แสดงไฟล์ตัวอย่าง: รายการใบแจ้งหนี้ของบริษัทสมมติ ณ 31 ธ.ค. 2568');
+
+  const alertBox=(cls,html)=>`<div class="alert ${cls}">${html}</div>`;
+  /* =========================================================
+     5 WRITE-OFF & RECOVERY (7.7–7.8)
+     ========================================================= */
+  function woCalc(){
+    const al=val($('woAllow')),wa=val($('woAmt')),rc=val($('woRec')),co=val($('woColl')),m=$('woMethod').value,exh=$('woExh').checked,td=$('woTaxDed').checked;
+    const after=al-wa+(m==='rev'?rc:0);const W=[];
+    if(!exh) W.push('ยังไม่ครบเงื่อนไขย่อหน้า 7.7 ให้คงลูกหนี้ไว้และพิจารณาค่าเผื่อรายตัวตามย่อหน้า 7.5.3 แทนการตัดจำหน่าย');
+    if(wa>al+0.005) W.push(`ยอดตัดจำหน่าย ${fmt(wa)} สูงกว่าค่าเผื่อ ${fmt(al)} ค่าเผื่อจะติดลบ แสดงว่าค่าเผื่อที่ตั้งไว้ต่ำไป ให้ทบทวนอัตราและทดสอบย้อนหลัง (หัวข้อ 7.4)`);
+    const L1=exh?je('ตัดจำหน่ายหนี้สูญ (ย่อหน้า 7.7)',[{dr:1,acct:'ค่าเผื่อหนี้สงสัยจะสูญ',amt:wa},{dr:0,acct:'ลูกหนี้การค้า',amt:wa}],'ไม่กระทบกำไรของงวดถ้าค่าเผื่อพอ'):'';
+    const L2=rc>0?(m==='rev'?je('หนี้สูญได้รับคืน วิธีโอนกลับ (ย่อหน้า 7.8)',[{dr:1,acct:'ลูกหนี้การค้า',amt:rc},{dr:0,acct:'ค่าเผื่อหนี้สงสัยจะสูญ',amt:rc},{dr:1,acct:'เงินสด',amt:rc+co},{dr:0,acct:'ลูกหนี้การค้า',amt:rc+co}],co>0?`นโยบายที่ต้องเปิดเผย · เงินสด ${fmt(rc+co)} รวมรับชำระยอดที่คงไว้ ${fmt(co)}`:'นโยบายที่ต้องเปิดเผย'):je('หนี้สูญได้รับคืน วิธีรายได้อื่น (ย่อหน้า 7.8)',[{dr:1,acct:'เงินสด',amt:rc+co}].concat(co>0?[{dr:0,acct:'ลูกหนี้การค้า',amt:co}]:[]).concat([{dr:0,acct:'หนี้สูญได้รับคืน (รายการ 2 รายได้อื่น)',amt:rc}]),'นโยบายที่ต้องเปิดเผย')):(co>0?je('รับชำระยอดลูกหนี้ที่คงไว้',[{dr:1,acct:'เงินสด',amt:co},{dr:0,acct:'ลูกหนี้การค้า',amt:co}],'ไม่ใช่หนี้สูญได้รับคืน'):'');
+    $('woOut').innerHTML=`<h2>ผลการบันทึก</h2>
+      ${figs([['ตัดจำหน่าย',exh?wa:0],['หนี้สูญได้รับคืน',rc],['ค่าเผื่อหลังรายการ',exh?after:al+(m==='rev'?rc:0)]])}
+      ${W.length?`<div class="alert warn">${W.join('<br>')}</div>`:''}
+      ${L1}${L2}
+      ${facts('ตัวเลขบอกอะไร',[
+        m==='rev'?'วิธีโอนกลับทำให้ค่าเผื่อเพิ่มขึ้นตามจำนวนที่ได้รับคืน รายการปรับปรุงสิ้นปีด้วยวิธีจำแนกอายุจะน้อยลงเท่ากัน กำไรรวมของปีจึงเท่ากับวิธีรายได้อื่น ต่างกันที่บรรทัดที่แสดง':'วิธีรายได้อื่นแสดงจำนวนที่ได้รับคืนในรายการ 2 รายได้อื่น (แนวการตีความ เพราะแบบ 2 ไม่ได้ระบุชื่อรายการ) ค่าเผื่อไม่เปลี่ยน',
+        td&&rc>0?`ทางภาษี หนี้สูญที่เคยหักเป็นรายจ่ายแล้ว ${fmt(rc)} เป็นรายได้ในรอบที่ได้รับ (มาตรา 65 ทวิ (9))${m==='rev'?' วิธีโอนกลับไม่มีรายได้ในบัญชี จึงต้องบวกในกระดาษทำการภาษี (แท็บ 6)':' รายได้อยู่ในกำไรทางบัญชีแล้ว'}`:'หนี้ที่ได้รับคืนไม่เคยหักเป็นรายจ่ายทางภาษี จึงไม่เป็นรายได้ซ้ำทางภาษี',
+        'เปิดเผยมูลค่าหนี้สูญที่ตัดจำหน่ายและหนี้สูญได้รับคืนของงวด และนโยบายที่เลือก (7.8 7.9.1 7.9.2) ดูแท็บ 7'])}
+      ${theory([['7.7','จำหน่ายลูกหนี้ออกจากบัญชีและปรับลดค่าเผื่อเมื่อทวงถามถึงที่สุดและคาดได้ค่อนข้างแน่นอนว่าจะไม่ได้รับชำระ'],['7.8','โอนกลับบัญชีลูกหนี้และค่าเผื่อแล้วบันทึกรับชำระ หรือบันทึกเป็นรายได้อื่น และเปิดเผยนโยบาย'],['7.9','เปิดเผยหนี้สูญที่ตัดจำหน่าย หนี้สูญได้รับคืน และลูกหนี้ที่ใช้เป็นหลักทรัพย์ค้ำประกัน']])}`;
+  }
+  ['woAllow','woAmt','woRec','woColl','woMethod','woExh','woTaxDed'].forEach(id=>{$(id).addEventListener('input',woCalc);$(id).addEventListener('change',woCalc)});
+
+  /* =========================================================
+     7 DISCLOSURE (7.3, 7.9)
+     ========================================================= */
+  let DTXT='';
+  function dCalc(){
+    const o=val($('dOpen')),pv=val($('dProv')),w=val($('dWo')),rc=val($('dRec')),m=$('dMethod').value,tg=val($('dTarget'));
+    const pre=o+pv-w+(m==='rev'?rc:0),adj=tg-pre,exp=pv+adj,tr=val($('dTrade')),ot=val($('dOther')),ln=val($('dLoan')),cl=val($('dColl')),u=$('dUnit').value.trim()||'บาท';
+    const net=tr-tg;
+    const p1='[ต้องเปิดเผย 4.19 และ 7.8] นโยบายการบัญชี: ลูกหนี้แสดงด้วยมูลค่าที่จะได้รับหลังหักค่าเผื่อหนี้สงสัยจะสูญ บริษัทประมาณค่าเผื่อด้วยวิธีร้อยละของยอดขายเชื่อสุทธิระหว่างปี และปรับยอด ณ วันสิ้นปีด้วยวิธีจำแนกอายุลูกหนี้ ซึ่งอัตรามาจากประสบการณ์การเก็บหนี้ของบริษัท ร่วมกับการพิจารณาลูกหนี้ที่มีข้อบ่งชี้เป็นรายตัว หนี้สูญได้รับคืน'+(m==='rev'?'บันทึกโดยโอนกลับบัญชีลูกหนี้และค่าเผื่อหนี้สงสัยจะสูญ':'รับรู้เป็นรายได้อื่น');
+    const p2=`[รายการย่อ แบบ 2] ลูกหนี้การค้า ${fmt(tr)} หักค่าเผื่อหนี้สงสัยจะสูญ (${fmt(tg)}) ลูกหนี้การค้าสุทธิ ${fmt(net)} ลูกหนี้อื่น ${fmt(ot)} รวมลูกหนี้การค้าและลูกหนี้หมุนเวียนอื่น (รายการ 1.3) ${fmt(net+ot)} ${u}${ln?` เงินให้กู้ยืมแก่กรรมการ ${fmt(ln)} ${u} แสดงในรายการเงินให้กู้ยืมระยะสั้น`:''}`;
+    const p3=`[ต้องเปิดเผย 7.9] ในปีนี้บริษัทตัดจำหน่ายหนี้สูญ ${fmt(w)} ${u} และได้รับหนี้สูญคืน ${fmt(rc)} ${u}${cl?` ลูกหนี้การค้าจำนวน ${fmt(cl)} ${u}โอนสิทธิเรียกร้องเป็นหลักทรัพย์ค้ำประกัน${$('dCollTxt').value.trim()}`:''}`;
+    const rl=val($('dRel')),es=$('dEst').value.trim();
+    const p4=$('dAge').checked&&ag.length?`[แนะนำ] ลูกหนี้การค้าจำแนกตามอายุ (${u}): `+ag.map(r=>`${r[0]} ${fmt(r[1])}`).join(' ')+` รวม ${fmt(ag.reduce((a,r)=>a+r[1],0))}`:'';
+    const p5=rl?`[แนะนำ] ลูกหนี้การค้ากับกิจการที่เกี่ยวข้องกัน ${fmt(rl)} ${u} รวมอยู่ในลูกหนี้การค้าข้างต้น`:'';
+    const p6=es?`[ต้องเปิดเผย 5.16] การเปลี่ยนแปลงประมาณการ: ${es}`:'';
+    const PX=[p4,p5,p6].filter(Boolean);
+    DTXT=['ลูกหนี้การค้าและลูกหนี้หมุนเวียนอื่น',p1,p2,p3].concat(PX).join('\n');
+    $('dOut').innerHTML=`<h2>ความเคลื่อนไหวของค่าเผื่อและร่างหมายเหตุ</h2>
+      ${figs([['รายการปรับปรุงสิ้นปี',adj],['หนี้สงสัยจะสูญในงบ',exp],['ลูกหนี้การค้าสุทธิ',net]])}
+      ${adj<0?alertBox('warn',`ยอดก่อนปรับปรุงสูงกว่ายอดเป้าหมาย บันทึกเดบิต ค่าเผื่อหนี้สงสัยจะสูญ ${fmt(-adj)} เครดิต หนี้สงสัยจะสูญ (กลับรายการ) เป็นการเปลี่ยนแปลงประมาณการ (5.15)`):''}
+      <div class="tbl"><table><tbody>
+        <tr><td>ยอดต้นปี</td><td class="num">${fmt(o)}</td></tr><tr><td>บวก หนี้สงสัยจะสูญระหว่างปี</td><td class="num">${fmt(pv)}</td></tr>
+        <tr><td>หัก หนี้สูญตัดจำหน่าย (7.9.1)</td><td class="num">(${fmt(w)})</td></tr>${m==='rev'?`<tr><td>บวก หนี้สูญได้รับคืน โอนกลับ (7.9.2)</td><td class="num">${fmt(rc)}</td></tr>`:''}
+        <tr><td>ยอดก่อนปรับปรุงสิ้นปี</td><td class="num">${fmt(pre)}</td></tr><tr><td>${adj>=0?'บวก':'หัก'} รายการปรับปรุงสิ้นปี</td><td class="num">${fmt(adj)}</td></tr>
+      </tbody><tfoot><tr><td>ยอดสิ้นปี</td><td class="num">${fmt(tg)}</td></tr></tfoot></table></div>
+      <h3>บรรทัดตามแบบ 2</h3>
+      <div class="tbl"><table><tbody>
+        <tr><td>1.3 ลูกหนี้การค้าและลูกหนี้หมุนเวียนอื่น (สุทธิ)</td><td class="num">${fmt(net+ot)}</td></tr>
+        <tr><td>1.5 เงินให้กู้ยืมระยะสั้น (กรรมการ)</td><td class="num">${fmt(ln)}</td></tr>
+        <tr><td>9 ค่าใช้จ่ายอื่น: หนี้สงสัยจะสูญ (แนวการตีความ)</td><td class="num">${fmt(exp)}</td></tr>
+        ${m==='inc'?`<tr><td>2 รายได้อื่น: หนี้สูญได้รับคืน (แนวการตีความ)</td><td class="num">${fmt(rc)}</td></tr>`:''}
+      </tbody></table></div>
+      <div class="note">${esc(p1)}</div><div class="note">${esc(p2)}</div><div class="note">${esc(p3)}</div>${PX.map(x=>`<div class="note">${esc(x)}</div>`).join('')}<div class="hint">ป้าย [ต้องเปิดเผย] คือข้อกำหนดของมาตรฐาน [รายการย่อ] คือข้อกำหนดของกรมพัฒนาธุรกิจการค้า [แนะนำ] คือการเปิดเผยเพิ่มเติมตามแนวการตีความ (ตารางที่ 7-7)</div>
+      ${theory([['7.3','แสดงลูกหนี้ด้วยมูลค่าที่จะได้รับหลังหักค่าเผื่อหนี้สงสัยจะสูญ'],['7.6','รับรู้หนี้สงสัยจะสูญเป็นค่าใช้จ่ายคู่กับค่าเผื่อ'],['7.8','เปิดเผยนโยบายการบันทึกหนี้สูญได้รับคืน'],['7.9','หนี้สูญที่ตัดจำหน่าย หนี้สูญได้รับคืน และลูกหนี้ที่ใช้เป็นหลักทรัพย์ค้ำประกัน'],['แบบ 2','1.3 ลูกหนี้ 1.5 เงินให้กู้ยืมระยะสั้น งบกำไรขาดทุนแบบจำแนกค่าใช้จ่ายตามธรรมชาติ รายการ 2 และ 9'],['5.16','เปิดเผยลักษณะและจำนวนเงินของการเปลี่ยนแปลงประมาณการ'],['4.20–4.22','ไม่บังคับข้อมูลกิจการที่เกี่ยวข้องกันและเครื่องมือทางการเงิน ข้อมูลที่ติดป้ายแนะนำเป็นรายละเอียดของรายการลูกหนี้ตาม 4.19 (แนวการตีความ)']])}`;
+  }
+  ['dOpen','dProv','dWo','dRec','dMethod','dTarget','dTrade','dOther','dLoan','dColl','dCollTxt','dUnit','dRel','dEst','dAge'].forEach(id=>{$(id).addEventListener('input',dCalc);$(id).addEventListener('change',dCalc)});
+  $('dPull').addEventListener('click',()=>{const t=parseFloat(String($('agAllow').textContent).replace(/,/g,''))||0;$('dTarget').value=Math.round((t+val($('agSpecAllow')))*100)/100;dCalc()});
+  $('dCopy').addEventListener('click',()=>{const done=()=>{$('dCopied').hidden=false;setTimeout(()=>{const e=$('dCopied');if(e)e.hidden=true},2000)};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=DTXT;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(DTXT).then(done,fb);else fb()});
+  woCalc();dCalc();
+  /* ---------- 8 QUIZ ---------- */
+  const QZ=[["LO 7.1", "เข้าใจ", "ตามย่อหน้า 7.1.2 รายการใดเป็นลูกหนี้อื่น", ["ก. ลูกหนี้จากการขายสินค้าที่ส่งใบแจ้งหนี้แล้ว", "ข. เงินให้กู้ยืมแก่กรรมการและลูกจ้าง", "ค. ตั๋วเงินรับจากการขายสินค้า", "ง. ลูกหนี้จากการให้บริการตามปกติ"], 1, "ย่อหน้า 7.1.2 ยกลูกหนี้และเงินให้กู้ยืมแก่กรรมการและลูกจ้างเป็นตัวอย่างลูกหนี้อื่น ส่วนตัวเลือกที่เหลือเป็นลูกหนี้การค้าตาม 7.1.1 ในงบตามแบบ 2 เงินให้กู้แก่กรรมการแสดงในรายการ 1.5 เงินให้กู้ยืมระยะสั้น", "7.1"], ["LO 7.2", "เข้าใจ", "ย่อหน้า 7.2 ให้ใช้มูลค่ายุติธรรมของสิ่งตอบแทนที่ได้รับหรือค้างรับเป็นเกณฑ์กำหนดมูลค่าลูกหนี้ใด", ["ก. ลูกหนี้ทุกรายเมื่อเริ่มแรก", "ข. ลูกหนี้ที่ครบกำหนดเกินหนึ่งปี", "ค. ลูกหนี้การค้าที่เกิดจากธุรกรรมกับบุคคลหรือกิจการที่เกี่ยวข้องกัน", "ง. ลูกหนี้เงินตราต่างประเทศ"], 2, "ย่อหน้า 7.2 ใช้มูลค่ายุติธรรมของสิ่งตอบแทนกับลูกหนี้การค้าที่เกิดจากธุรกรรมระหว่างบุคคลหรือกิจการที่เกี่ยวข้องกัน ข้อความนี้ไม่ได้กำหนดเกณฑ์สำหรับลูกหนี้ทุกราย", "7.2"], ["LO 7.3", "ประยุกต์ใช้", "ยอดเป้าหมายของค่าเผื่อหนี้สงสัยจะสูญตามวิธีจำแนกอายุคือ 134.76 พันบาท ยอดคงเหลือด้านเครดิตก่อนปรับปรุง 85.00 พันบาท รายการปรับปรุงคือข้อใด", ["ก. หนี้สงสัยจะสูญ 49.76 พันบาท", "ข. หนี้สงสัยจะสูญ 134.76 พันบาท", "ค. หนี้สงสัยจะสูญ 219.76 พันบาท", "ง. หนี้สงสัยจะสูญ 85.00 พันบาท"], 0, "วิธีจำแนกอายุให้ยอดเป้าหมายของบัญชีค่าเผื่อ รายการปรับปรุงคือส่วนต่าง 134.76 − 85.00 = 49.76 พันบาท (ตัวอย่างที่ 7.2)", "7.3"], ["LO 7.3", "ประยุกต์ใช้", "บริษัทผู้ผลิตชิ้นส่วนขายให้ลูกค้า 4 ราย ลูกหนี้สองรายใหญ่สุดรวมกันเป็นร้อยละ 70 ของลูกหนี้ทั้งหมด และมีประวัติหนี้สูญน้อยมาก วิธีประมาณค่าเผื่อข้อใดเหมาะสมที่สุด", ["ก. วิธีร้อยละของยอดขายเชื่อสุทธิเพียงวิธีเดียว", "ข. อัตราตามช่วงอายุที่คำนวณจากหนี้สูญในอดีตของลูกค้าทั้ง 4 ราย", "ค. พิจารณาลูกหนี้เป็นแต่ละราย และใช้รายงานอายุเพื่อติดตามการชำระ", "ง. อัตราสำรองตามเกณฑ์จัดชั้นหนี้ของธนาคารแห่งประเทศไทย"], 2, "ลูกหนี้กระจุกตัวและมีลูกค้าเพียง 4 ราย ข้อมูลกลุ่มไม่พอหาอัตราที่เชื่อถือได้ วิธีรายตัวตาม 7.5.3 จึงเหมาะ (ตารางที่ 7-2 ขั้น 1 และ 4) ตัวเลือก ก ไม่ทดสอบยอดคงเหลือ ตัวเลือก ข ใช้อัตรากลุ่มกับลูกค้าน้อยราย ตัวเลือก ง เป็นอัตราสำเร็จรูปที่ไม่ได้มาจากข้อมูลของกิจการ", "7.3 7.6"], ["LO 7.4", "วิเคราะห์", "อัตราร้อยละที่ใช้กับลูกหนี้แต่ละช่วงอายุควรมาจากที่ใด", ["ก. อัตรา 1 5 10 25 และ 50 ที่สำนักงานบัญชีใช้กันทั่วไป", "ข. อัตราที่ทำให้กำไรเป็นไปตามเป้าหมาย", "ค. ประสบการณ์การเก็บหนี้ของกิจการเอง และปรับเมื่อมีหลักฐานว่าสภาพ ณ วันสิ้นงวดต่างจากอดีต", "ง. เงื่อนไขการตัดหนี้สูญตามกฎกระทรวง ฉบับที่ 186"], 2, "ย่อหน้า 7.5.2 ให้ใช้อัตราสูงขึ้นตามอายุหนี้ ร่วมกับหลักตัวแทนอันเที่ยงธรรม (3.11.1) และความระมัดระวัง (3.14) อัตราจึงมาจากข้อมูลของกิจการ แนวการตีความของบทนี้ไม่ใช้อัตราสำเร็จรูปและไม่ใช้เกณฑ์ภาษีเป็นจุดสูญเสียทางบัญชี", "7.4–7.5"], ["LO 7.5", "ประยุกต์ใช้", "ลูกหนี้ที่ตัดจำหน่ายแล้วกลับมาชำระ 10 พันบาท ข้อใดถูกต้องตามย่อหน้า 7.8", ["ก. เลือกโอนกลับบัญชีลูกหนี้และค่าเผื่อแล้วบันทึกรับชำระ หรือบันทึกเป็นรายได้อื่น และเปิดเผยนโยบายที่เลือก", "ข. บันทึกเป็นรายได้อื่นได้วิธีเดียว", "ค. ปรับกำไรสะสมต้นงวด", "ง. บันทึกลดค่าใช้จ่ายหนี้สงสัยจะสูญของงวดเท่านั้น"], 0, "ย่อหน้า 7.8 ให้เลือกได้สองวิธีและต้องเปิดเผยนโยบายการบัญชีสำหรับหนี้สูญได้รับคืน", "7.7"], ["LO 7.6", "วิเคราะห์", "หนี้ 150,000 บาทของลูกค้าที่ไม่ใช่กรรมการ หนี้ยังไม่ขาดอายุความ มีหลักฐานการทวงถาม และการฟ้องไม่คุ้มค่าใช้จ่าย ทางภาษีข้อใดถูก", ["ก. ตัดเป็นหนี้สูญได้เมื่อศาลพิพากษาเท่านั้น", "ข. ต้องมีรายงานการบังคับคดีครั้งแรกว่าไม่มีทรัพย์สิน", "ค. เป็นเงินสำรองตามมาตรา 65 ตรี (1) หักไม่ได้", "ง. จำหน่ายเป็นหนี้สูญได้ตามกฎกระทรวง ฉบับที่ 186 ข้อ 6"], 3, "หนี้ไม่เกิน 200,000 บาทต่อราย เมื่อเข้าข้อ 3 และติดตามทวงถามแล้วมีหลักฐาน และการฟ้องไม่คุ้ม จำหน่ายได้ตามข้อ 6 (แก้ไขโดยฉบับที่ 374) ตัวเลือก ข เป็นกรณีหนึ่งในข้อ 4 (2) ของหนี้เกิน 2,000,000 บาท", "7.8"], ["LO 7.7", "ประเมินค่า", "ผู้บริหารเสนอลดอัตราของลูกหนี้ค้างเกิน 90 วันจากร้อยละ 40 เหลือร้อยละ 20 ก่อนยื่นขอสินเชื่อ โดยอ้างว่าเศรษฐกิจกำลังฟื้นตัว แต่ไม่มีข้อมูลการเก็บหนี้ใหม่รองรับ ข้อใดเหมาะสม", ["ก. ยอมรับได้เพราะเป็นดุลยพินิจของผู้บริหาร", "ข. ไม่ยอมรับ การปรับอัตราควรมีหลักฐานว่าสภาพ ณ วันสิ้นงวดเปลี่ยนไป ตามหลักตัวแทนอันเที่ยงธรรมและความระมัดระวัง", "ค. ยอมรับได้ถ้าเปิดเผยหนี้สูญตามย่อหน้า 7.9", "ง. ยอมรับได้เพราะทางภาษีบวกกลับค่าเผื่ออยู่แล้ว"], 1, "ย่อหน้า 3.11.1 และ 3.14 ไม่ให้ประมาณการลำเอียงทั้งสูงหรือต่ำเกินไป การเปลี่ยนอัตราเป็นการเปลี่ยนแปลงประมาณการ (5.15) ที่ควรมีหลักฐานรองรับ การเปิดเผยหรือผลทางภาษีไม่ทำให้ประมาณการที่ไม่มีหลักฐานเป็นที่ยอมรับ", "กรณีศึกษา 7.1"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){
+    let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;
+      lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่าน '+(/^\d/.test(lo[k].sec)?'หัวข้อ ':'')+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div><div class="fig"><div class="k">LO ที่บรรลุ</div><div class="v">${Object.values(lo).filter(x=>x.ok===x.n).length}/${Object.keys(lo).length}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  const goS=()=>{const m=(location.hash||'').match(/^#(S7\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+
+})();
+</script>
+</body></html>

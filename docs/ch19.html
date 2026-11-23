@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แอป 19 · กระดาษทำการรายได้อสังหาริมทรัพย์</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+<style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head>
+<body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div>
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 19 การรับรู้รายได้จากการขายอสังหาริมทรัพย์</div>
+      <h1>แอป 19 · กระดาษทำการรายได้อสังหาริมทรัพย์</h1>
+      <p class="lede">ตรวจเงื่อนไขรายสัญญาตามย่อหน้า 19.3 และ 19.5 คำนวณรายได้สามวิธีโดยไม่รวมต้นทุนที่ดินเมื่อวัดอัตราส่วนของงาน ตรวจเพดานและการหยุดรับรู้ บันทึกเงินรับล่วงหน้า คำนวณภาษีเมื่อโอน และร่างหมายเหตุตามย่อหน้า 19.9</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 19 ย่อหน้า 19.1–19.9</b><br>ตำราบทที่ 19 · ฉบับ 19-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> ตรวจเงื่อนไข · เลือกวิธี · คำนวณ · ตรวจการผิดนัด · ภาษี · ร่างหมายเหตุ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="cond"><span class="n">0</span>ตรวจเงื่อนไข</button>
+    <button role="tab" aria-selected="false" data-tab="full"><span class="n">1</span>รับรู้ทั้งจำนวน</button>
+    <button role="tab" aria-selected="false" data-tab="poc"><span class="n">2</span>อัตราส่วนของงาน</button>
+    <button role="tab" aria-selected="false" data-tab="inst"><span class="n">3</span>เงินค่างวด</button>
+    <button role="tab" aria-selected="false" data-tab="def"><span class="n">4</span>ผิดนัดและหยุดรับรู้</button>
+    <button role="tab" aria-selected="false" data-tab="dep"><span class="n">5</span>เงินรับล่วงหน้า</button>
+    <button role="tab" aria-selected="false" data-tab="tax"><span class="n">6</span>ภาษี</button>
+    <button role="tab" aria-selected="false" data-tab="note"><span class="n">7</span>ร่างหมายเหตุ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">8</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">9</span>เนื้อหาเสริม S19</button>
+  </nav>
+
+  <div class="grid" data-pane="cond" style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ตรวจเงื่อนไขรายสัญญา (19.3, 19.5)</h2>
+      <p class="hint">ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น ไม่ส่งออกจากเครื่อง กรอกตัวเลขและตอบทุกข้อตามหลักฐานของสัญญา แอปแสดงผลเมื่อตอบครบเท่านั้น และไม่ประเมินหลักฐานแทนผู้ใช้</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 19.2 ณ 31 ธันวาคม 2568</span>
+      <div class="fields"><label class="f">ประเภทการขาย (19.2)<select id="cType"><option value="land">ขายที่ดิน</option><option value="house" selected>ขายที่ดินพร้อมสิ่งปลูกสร้าง</option><option value="condo">ขายอาคารชุด</option></select></label><label class="f">อาคารชุด: พื้นที่ที่ทำสัญญาต่อพื้นที่ที่เปิดขายหรือเปิดจอง (ร้อยละ)<input class="num" type="number" id="cArea" value="46"></label><label class="f">เงินวางเริ่มแรกและค่างวดที่ผู้ซื้อชำระแล้ว (ร้อยละของราคาขาย)<input class="num" type="number" id="cPaid" value="25"></label><label class="f">งานขั้นตอนเบื้องต้นที่วิศวกรหรือสถาปนิกรับรอง (ร้อยละ)<input class="num" type="number" id="cInit" value="30"></label><label class="f">ผู้ซื้อพ้นระยะเวลาบอกเลิกและเรียกเงินคืนแล้ว (19.5.2)<select id="c2"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ผู้ซื้อและผู้ขายเป็นอิสระต่อกันหรือเป็นธุรกิจปกติ (19.5.3)<select id="c3"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ผู้ขายเก็บเงินได้ตามสัญญา (19.5.5)<select id="c5"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ผู้ขายมีความสามารถทางการเงินดี (19.5.7)<select id="c7"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">การก่อสร้างก้าวหน้าไปด้วยดี (19.5.8)<select id="c8"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ประมาณเงินรับรวมและต้นทุนทั้งหมดได้อย่างมีหลักเกณฑ์ (19.5.9)<select id="c9"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">จดทะเบียนโอนกรรมสิทธิ์และโอนความเสี่ยงและผลประโยชน์ที่มีนัยสำคัญแล้ว ที่ดินพัฒนาเสร็จ (19.3.8)<select id="cR"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label></div>
+      <div id="cOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="full" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>รับรู้ทั้งจำนวน (19.4.1)</h2>
+      <p class="hint">ใช้เมื่อเงื่อนไขของการขายครบและโอนความเสี่ยงแล้ว ถ้ายังไม่โอน เงินที่ได้รับเป็นเงินรับล่วงหน้า (ย่อหน้า 19.8) แอปแสดงผลเมื่อเลือกสถานะการโอนแล้ว</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 19.1</span>
+      <div class="fields"><label class="f">ราคาขาย (บาท)<input class="num" type="number" id="fPrice" value="3000000"></label><label class="f">ต้นทุนที่ดินและงานพัฒนาของแปลงที่ขาย (บาท)<input class="num" type="number" id="fCost" value="1800000"></label><label class="f">เงินที่ได้รับสะสม (บาท)<input class="num" type="number" id="fRecv" value="3000000"></label><label class="f">จดทะเบียนโอนกรรมสิทธิ์และโอนความเสี่ยงแล้วในงวดนี้<select id="fTr"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label></div>
+      <div id="fOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="poc" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>อัตราส่วนของงานที่ทำเสร็จ (19.6)</h2>
+      <p class="hint">อัตราส่วนเทียบต้นทุนการก่อสร้างที่เกิดสะสมกับประมาณการต้นทุนการก่อสร้างทั้งสิ้น ไม่รวมต้นทุนที่ดิน (19.6.1.1) ต้นทุนของอสังหาริมทรัพย์ที่ขายใช้อัตราส่วนเดียวกันกับต้นทุนรวมที่รวมที่ดิน <span class="pill warn">แนวการตีความ</span></p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 19.2 ปี 2568</span>
+      <div class="fields"><label class="f">ราคาขาย (บาท)<input class="num" type="number" id="aPrice" value="5000000"></label><label class="f">ต้นทุนที่ดิน (บาท)<input class="num" type="number" id="aLand" value="1500000"></label><label class="f">ประมาณการต้นทุนก่อสร้างทั้งสิ้น (บาท)<input class="num" type="number" id="aEst" value="2500000"></label><label class="f">ต้นทุนก่อสร้างที่เกิดสะสม (บาท)<input class="num" type="number" id="aCost" value="1000000"></label><label class="f">รายได้ที่รับรู้งวดก่อนสะสม (บาท)<input class="num" type="number" id="aPrevR" value="0"></label><label class="f">ต้นทุนที่รับรู้งวดก่อนสะสม (บาท)<input class="num" type="number" id="aPrevC" value="0"></label><label class="f">ค่างวดที่ถึงกำหนดและได้รับชำระแล้วสะสม (บาท)<input class="num" type="number" id="aDue" value="1250000"></label></div>
+      <div id="aOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="inst" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เงินค่างวดที่ถึงกำหนดชำระ (19.7)</h2>
+      <p class="hint">รับรู้รายได้ตามค่างวดที่ถึงกำหนด ไม่เกินอัตราส่วนของงานที่ทำเสร็จ (19.7.2) ต้นทุนคำนวณด้วยอัตรากำไรขั้นต้น (19.7.1) กำไรขั้นต้นสะสมใช้ประมาณการล่าสุด (5.15)</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 19.2 ปี 2568</span>
+      <div class="fields"><label class="f">ราคาขาย (บาท)<input class="num" type="number" id="bPrice" value="5000000"></label><label class="f">ประมาณการต้นทุนรวม รวมที่ดิน (บาท)<input class="num" type="number" id="bTC" value="4000000"></label><label class="f">ค่างวดที่ถึงกำหนดและได้รับชำระแล้วสะสม (บาท)<input class="num" type="number" id="bDue" value="1250000"></label><label class="f">อัตราส่วนของงานที่ทำเสร็จ (ร้อยละ)<input class="num" type="number" id="bPoc" value="40"></label><label class="f">รายได้ที่รับรู้งวดก่อนสะสม (บาท)<input class="num" type="number" id="bPrevR" value="0"></label><label class="f">กำไรขั้นต้นที่รับรู้งวดก่อนสะสม (บาท)<input class="num" type="number" id="bPrevD" value="0"></label></div>
+      <div id="bOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="def" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>การผิดนัดและการหยุดรับรู้ (19.6.2, 19.7.3, 19.7.5)</h2>
+      <p class="hint">เลือกวิธีที่กิจการใช้ก่อน แอปแสดงผลเมื่อเลือกวิธีแล้ว วิธีอัตราส่วนของงานหยุดเมื่อผิดนัดเกินกว่า 3 งวดติดต่อกันและอัตราส่วนของงานสูงกว่าค่างวดที่ถึงกำหนด วิธีเงินค่างวดหยุดเมื่อผิดนัดเกินกว่า 3 งวดติดต่อกัน</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 19.4</span>
+      <div class="fields"><label class="f">วิธีที่ใช้<select id="dMeth"><option value="">– เลือก –</option><option value="poc">อัตราส่วนของงานที่ทำเสร็จ</option><option value="inst">เงินค่างวดที่ถึงกำหนดชำระ</option></select></label><label class="f">จำนวนงวดที่ผิดนัดติดต่อกัน<input class="num" type="number" id="dMiss" value="4"></label><label class="f">อัตราส่วนของงานที่ทำเสร็จ (ร้อยละ)<input class="num" type="number" id="dPoc" value="70"></label><label class="f">ค่างวดที่ถึงกำหนดชำระสะสม (ร้อยละของราคา)<input class="num" type="number" id="dDue" value="31"></label><label class="f"><span><input type="checkbox" id="dEarly"> ผู้ซื้อชำระส่วนที่เหลือก่อนกำหนดหรือได้เงินกู้แหล่งอื่น การก่อสร้างเสร็จ และโอนความเสี่ยงแล้ว (19.7.5 ข้อของวิธีเงินค่างวด)</span></label></div>
+      <div id="dOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="dep" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เงินมัดจำ เงินรับล่วงหน้า และเงินริบ (ย่อหน้า 19.8)</h2>
+      <p class="hint">เงินที่ได้รับจากสัญญาที่ยังไม่เข้าเงื่อนไขเป็นหนี้สิน บันทึกเฉพาะเงินที่ได้รับแล้ว เงินริบจากการยกเลิกสัญญาเป็นรายได้อื่น <span class="pill warn">แนวการตีความ</span> แอปแสดงผลเมื่อเลือกประเภทการขายแล้ว</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 19.5</span>
+      <div class="fields"><label class="f">ประเภท<select id="kType"><option value="" selected>– เลือก –</option><option value="condo">อาคารชุด</option><option value="house">บ้านหรือที่ดิน</option></select></label><label class="f">พื้นที่ที่เปิดขายหรือเปิดจอง (ตร.ม.)<input class="num" type="number" id="kArea" value="10000"></label><label class="f">พื้นที่ที่ทำสัญญาแล้ว (ตร.ม.)<input class="num" type="number" id="kSold" value="3000"></label><label class="f">เงินจองและเงินทำสัญญาที่ได้รับ (บาท)<input class="num" type="number" id="kRecv" value="2000000"></label><label class="f">เงินที่ริบจากการยกเลิกสัญญา (บาท)<input class="num" type="number" id="kForf" value="0"></label></div>
+      <div id="kOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="tax" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ภาษีเมื่อโอนและการกระทบยอด</h2>
+      <p class="hint">ภาษีหัก ณ ที่จ่ายตาม ม.69 ตรี และภาษีธุรกิจเฉพาะตาม ม.91/2 (6) และคำสั่ง ป.82/2542 ข้อ 6 ใช้ราคาขายหรือราคาประเมินทุนทรัพย์ แล้วแต่อย่างใดสูงกว่า อากรแสตมป์ได้รับยกเว้นเมื่อเสียภาษีธุรกิจเฉพาะ ค่าธรรมเนียมการจดทะเบียนโอนใช้อัตราปกติ ช่องปกปิดชื่อเปิดไว้โดยค่าเริ่มต้น</p>
+      <span class="sample">ข้อมูลตัวอย่าง: ตัวอย่างที่ 19.1 และการกระทบยอดตัวอย่างที่ 19.2 ปี 2568</span>
+      <div class="fields"><label class="f">ชื่อโครงการหรือกิจการ<input type="text" id="xName" value="บริษัท ตัวอย่างพัฒนาที่ดิน จำกัด"></label><label class="f"><span><input type="checkbox" id="xAnon" checked> ปกปิดชื่อ (ระบบแปลงชื่อก่อนคำนวณ ข้อมูลไม่ออกนอกเครื่อง)</span></label><label class="f">ราคาขายตามสัญญา (บาท)<input class="num" type="number" id="xPrice" value="3000000"></label><label class="f">ราคาประเมินทุนทรัพย์ (บาท)<input class="num" type="number" id="xAssess" value="2400000"></label><label class="f">วิธีทางภาษีตาม ท.ป.1/2528 ข้อ 3.7<select id="xMeth"><option value="1" selected>(1) ทั้งจำนวนเมื่อจดทะเบียนโอน</option><option value="2">(2) อัตราส่วนของงานที่ทำเสร็จ</option><option value="3">(3) ตามงวดที่ถึงกำหนดชำระ</option></select></label><label class="f">กำไรขั้นต้นทางบัญชีของงวด (บาท)<input class="num" type="number" id="xBookD" value="400000"></label><label class="f">กำไรขั้นต้นทางภาษีของงวด (บาท)<input class="num" type="number" id="xTaxD" value="0"></label></div>
+      <div id="xOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="note" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ร่างหมายเหตุ (19.9)</h2>
+      <p class="hint">ร่างนโยบายการบัญชีตามวิธีที่เลือก ช่องปกปิดชื่อเปิดไว้โดยค่าเริ่มต้น คัดลอกแล้ววางใน Word ได้</p>
+      
+      <div class="fields"><label class="f">ชื่อกิจการ<input type="text" id="nName" value="บริษัท ตัวอย่างพัฒนาที่ดิน จำกัด"></label><label class="f"><span><input type="checkbox" id="nAnon" checked> ปกปิดชื่อกิจการ</span></label><label class="f">วิธีรับรู้รายได้ (19.9.1)<select id="nMeth"><option value="poc" selected>อัตราส่วนของงานที่ทำเสร็จ</option><option value="inst">เงินค่างวดที่ถึงกำหนดชำระ</option><option value="full">รับรู้ทั้งจำนวนเมื่อโอนกรรมสิทธิ์</option></select></label><label class="f">วิธีกำหนดอัตราส่วนของงาน (19.9.2)<select id="nBasis"><option value="cost" selected>ต้นทุนการก่อสร้าง (19.6.1.1)</option><option value="survey">สำรวจเนื้องาน (19.6.1.2)</option><option value="phys">สำรวจทางกายภาพ (19.6.1.3)</option></select></label><label class="f">เงินรับล่วงหน้าจากผู้ซื้อ ณ วันสิ้นงวด (บาท)<input class="num" type="number" id="nAdv" value="250000"></label><label class="f">จำนวนสัญญาที่หยุดรับรู้รายได้<input class="num" type="number" id="nStop" value="0"></label><div class="row-actions"><button class="btn primary" id="nCopy">คัดลอกร่าง</button><span class="copied" id="nOk" hidden>คัดลอกแล้ว</span></div></div>
+      <div id="nOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 9 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S19</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 19 ลิงก์ #S19.1 ถึง #S19.9 เปิดหัวข้อนั้นได้โดยตรง ตัวเลขตรงกับตัวอย่างในตำรา</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S19.1">S19.1</a><a class="btn" href="#S19.2">S19.2</a><a class="btn" href="#S19.3">S19.3</a><a class="btn" href="#S19.4">S19.4</a><a class="btn" href="#S19.5">S19.5</a><a class="btn" href="#S19.6">S19.6</a><a class="btn" href="#S19.7">S19.7</a><a class="btn" href="#S19.8">S19.8</a><a class="btn" href="#S19.9">S19.9</a></div>
+<h3 id="S19.1">S19.1 ตารางตรวจเงื่อนไขตามย่อหน้า 19.3 และ 19.5 พร้อมหลักฐาน</h3><p>ใช้ตารางนี้กับทุกสัญญาก่อนเลือกวิธีรับรู้รายได้ และทบทวนซ้ำทุกวันสิ้นงวด ถ้าข้อใดไม่ผ่าน วิธีอัตราส่วนของงานที่ทำเสร็จและวิธีเงินค่างวดใช้ไม่ได้ และเงินที่ได้รับบันทึกเป็นเงินมัดจำหรือเงินรับล่วงหน้า (19.4 วรรคท้าย, ย่อหน้า 19.8)</p><div class="tbl"><table><thead><tr><th>เงื่อนไข</th><th>ย่อหน้า</th><th>เกณฑ์ในมาตรฐาน</th><th>หลักฐานที่ใช้ทดสอบ</th></tr></thead><tbody><tr><td>การขายเกิดขึ้นแล้ว</td><td>19.3.1, 19.5.1</td><td>ทำสัญญาจะซื้อจะขายและผู้ซื้อชำระราคาตามสัญญาแล้ว อาคารชุดขายได้ไม่น้อยกว่าร้อยละ 40 ของพื้นที่ที่เปิดขายหรือเปิดจอง</td><td>สัญญาจะซื้อจะขาย ใบเสร็จ ทะเบียนพื้นที่ที่เปิดขายและที่ทำสัญญา</td></tr><tr><td>ผู้ซื้อไม่มีสิทธิเรียกเงินคืน</td><td>19.3.2, 19.5.2</td><td>สิ้นสุดระยะเวลาบอกเลิกสัญญาและเรียกเงินคืนตามสัญญาแล้ว</td><td>ข้อสัญญาเรื่องสิทธิบอกเลิก วันที่ครบกำหนด</td></tr><tr><td>ผู้ซื้อและผู้ขายเป็นอิสระต่อกัน</td><td>19.5.3</td><td>เป็นอิสระต่อกันหรือเป็นการดำเนินธุรกิจตามปกติ</td><td>ทะเบียนผู้ถือหุ้นและกรรมการ ราคาเทียบผู้ซื้อรายอื่น</td></tr><tr><td>เงินที่ผู้ซื้อชำระมากพอ</td><td>19.3.3, 19.5.4</td><td>เงินวางเริ่มแรกและค่างวดที่ชำระแล้วไม่น้อยกว่าร้อยละ 20 ของราคาขายตามสัญญา</td><td>บัญชีย่อยลูกหนี้รายสัญญา</td></tr><tr><td>ผู้ขายเก็บเงินได้ตามสัญญา</td><td>19.3.4, 19.5.5</td><td>ประเมินจากฐานะเครดิต ราคาขายต่อ หรือประสบการณ์โครงการก่อนที่มีลักษณะเดียวกัน ร้อยละ 20 อาจใช้เป็นเกณฑ์หนึ่ง</td><td>ประวัติการชำระ การอนุมัติสินเชื่อของธนาคาร</td></tr><tr><td>งานผ่านขั้นตอนเบื้องต้น</td><td>19.3.5, 19.5.6</td><td>ไม่น้อยกว่าร้อยละ 10 ของงานก่อสร้างตามโครงการที่เสนอขาย รับรองโดยวิศวกรหรือสถาปนิกของโครงการ</td><td>หนังสือรับรองความก้าวหน้า</td></tr><tr><td>ผู้ขายมีความสามารถทางการเงิน</td><td>19.3.6, 19.5.7</td><td>จัดหาเงินทุนหรือหลักประกันเพื่อทำงานให้เสร็จตามสัญญา</td><td>สัญญาวงเงินกู้ประจำโครงการ ประมาณการกระแสเงินสด</td></tr><tr><td>งานก่อสร้างก้าวหน้าไปด้วยดี</td><td>19.3.7, 19.5.8</td><td>มีเครื่องชี้ว่างานเสร็จตามแผน ไม่มีสิ่งบ่งชี้ว่างานจะหยุดชะงัก</td><td>รายงานความก้าวหน้า ใบอนุญาต สัญญาผู้รับเหมา</td></tr><tr><td>ประมาณเงินรับรวมและต้นทุนรวมได้</td><td>19.5.9</td><td>ประมาณได้อย่างมีหลักเกณฑ์ ปรับปรุงต้นทุนที่ประมาณการอย่างน้อยปีละครั้ง</td><td>งบประมาณโครงการ บันทึกการทบทวนประมาณการ</td></tr><tr><td>โอนความเสี่ยงและผลประโยชน์ที่มีนัยสำคัญ</td><td>19.3.8</td><td>ผู้ขายไม่ยังคงเก็บความเสี่ยงส่วนใหญ่ เช่น ไม่มีสัญญาซื้อคืน การขายที่ดินต้องพัฒนาเสร็จและไม่มีพันธะที่ต้องทำต่อ</td><td>สัญญาประกอบทั้งหมด ข้อตกลงซื้อคืนหรือรับประกันผลตอบแทน</td></tr></tbody></table></div><p>ตารางข้างต้นจัดรวมเงื่อนไขของย่อหน้า 19.3 และ 19.5 ไว้ในแถวเดียวกันเพื่อใช้งาน การจับคู่เป็นแนวการตีความของตำรา ถ้อยคำของแต่ละย่อหน้าให้ยึดตามมาตรฐาน</p><h3 id="S19.2">S19.2 การเปลี่ยนประมาณการต้นทุนและต้นทุนการกู้ยืมของโครงการ</h3><p>ตัวอย่างที่ 19.2 ปี 2569 ประมาณการต้นทุนก่อสร้างเพิ่มจาก 2,500,000 บาท เป็น 2,700,000 บาท เป็นการเปลี่ยนแปลงประมาณการทางบัญชี กิจการรับรู้ผลด้วยวิธีเปลี่ยนทันทีเป็นต้นไป ในงวดปัจจุบันและงวดอนาคตที่ได้รับผลกระทบ (5.15) ไม่ย้อนปรับรายได้ปี 2568 และเปิดเผยลักษณะและจำนวนเงินของผลกระทบ (5.16)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">ประมาณการเดิม</th><th class="num">ประมาณการใหม่</th></tr></thead><tbody><tr><td>ต้นทุนรวม (ที่ดิน + ก่อสร้าง)</td><td class="num">4,000,000</td><td class="num">4,200,000</td></tr><tr><td>กำไรขั้นต้นรวมของสัญญา (ราคาขายหักต้นทุนรวม)</td><td class="num">1,000,000</td><td class="num">800,000</td></tr><tr><td>อัตรากำไรขั้นต้น (19.7.1)</td><td class="num">20%</td><td class="num">16%</td></tr><tr><td>กำไรขั้นต้นที่รับรู้ปี 2568 (วิธีอัตราส่วนของงานที่ทำเสร็จ)</td><td class="num">400,000</td><td class="num">ไม่ย้อนปรับ</td></tr><tr><td>กำไรขั้นต้นที่รับรู้ปี 2569</td><td class="num">–</td><td class="num">400,000</td></tr></tbody></table></div><p>ผลของการเปลี่ยนประมาณการต่อปี 2569 เทียบกับประมาณการเดิม: ต้นทุนเพิ่ม 200,000 บาท ทำให้กำไรขั้นต้นปี 2569 เหลือ 400,000 บาท แทน 600,000 บาท ถ้าต้นทุนรวมใหม่สูงกว่าราคาขาย กิจการทดสอบมูลค่าสุทธิที่จะได้รับของต้นทุนโครงการที่อยู่ในสินค้าคงเหลือตามย่อหน้า 8.4 และรับรู้ส่วนที่ราคาทุนสูงกว่ามูลค่าสุทธิที่จะได้รับตามบทที่ 8</p><p>ต้นทุนการกู้ยืม: ย่อหน้า 13.3 ยก &quot;สินค้าที่ต้องใช้ระยะเวลานานในการแปลงสภาพให้พร้อมที่จะขาย&quot; เป็นสินทรัพย์ที่เข้าเงื่อนไข โครงการที่ต้องก่อสร้างก่อนขายจึงเป็นสินทรัพย์ที่เข้าเงื่อนไข และกิจการต้องรวมต้นทุนการกู้ยืมที่เกี่ยวข้องโดยตรงเป็นส่วนหนึ่งของราคาทุนของโครงการ (13.4) เมื่อเข้าเงื่อนไขของย่อหน้า 13.5 ต้นทุนการกู้ยืมที่รวมไว้อยู่ในต้นทุนรวมที่ใช้คำนวณกำไรขั้นต้น แนวการตีความของตำรา: ไม่นำต้นทุนการกู้ยืมไปรวมในต้นทุนการก่อสร้างที่ใช้วัดอัตราส่วนของงานที่ทำเสร็จตาม 19.6.1.1 เพราะ 19.6.1.1 เทียบต้นทุนการก่อสร้าง</p><h3 id="S19.3">S19.3 ตัวอย่างที่ 19.2 ฉบับเต็มทั้งสามวิธี</h3><p>ข้อเท็จจริง: ราคาขาย 5,000,000 บาท ต้นทุนที่ดิน 1,500,000 บาท ประมาณการต้นทุนก่อสร้างเดิม 2,500,000 บาท ปี 2568 เกิดต้นทุนก่อสร้าง 1,000,000 บาท ผู้ซื้อชำระสะสม 1,250,000 บาท ปี 2569 ก่อสร้างเสร็จด้วยต้นทุน 2,700,000 บาท โอนกรรมสิทธิ์ 30 กันยายน 2569 และรับชำระส่วนที่เหลือ 3,750,000 บาท</p><div class="tbl"><table><thead><tr><th>วิธี</th><th class="num">รายได้ 2568</th><th class="num">ต้นทุน 2568</th><th class="num">รายได้ 2569</th><th class="num">ต้นทุน 2569</th><th class="num">รวมกำไรขั้นต้น</th></tr></thead><tbody><tr><td>รับรู้ทั้งจำนวน (19.4.1)</td><td class="num">0</td><td class="num">0</td><td class="num">5,000,000</td><td class="num">4,200,000</td><td class="num">800,000</td></tr><tr><td>อัตราส่วนของงานที่ทำเสร็จ (19.4.2)</td><td class="num">2,000,000</td><td class="num">1,600,000</td><td class="num">3,000,000</td><td class="num">2,600,000</td><td class="num">800,000</td></tr><tr><td>เงินค่างวดที่ถึงกำหนดชำระ (19.4.3)</td><td class="num">1,250,000</td><td class="num">1,000,000</td><td class="num">3,750,000</td><td class="num">3,200,000</td><td class="num">800,000</td></tr></tbody></table></div><h4>วิธีอัตราส่วนของงานที่ทำเสร็จ ปี 2568</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต สินค้าคงเหลือ – ต้นทุนระหว่างพัฒนา</td><td class="num">1,000,000</td><td class="num"></td></tr><tr><td>    เครดิต เจ้าหนี้ผู้รับเหมา</td><td class="num"></td><td class="num">1,000,000</td></tr><tr><td>เดบิต เงินสด</td><td class="num">1,250,000</td><td class="num"></td></tr><tr><td>เดบิต รายได้ที่ยังไม่ถึงกำหนดชำระ (ลูกหนี้อื่น)</td><td class="num">750,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากการขายอสังหาริมทรัพย์</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>เดบิต ต้นทุนของอสังหาริมทรัพย์ที่ขาย</td><td class="num">1,600,000</td><td class="num"></td></tr><tr><td>    เครดิต สินค้าคงเหลือ – ที่ดินและต้นทุนระหว่างพัฒนา</td><td class="num"></td><td class="num">1,600,000</td></tr></tbody></table></div><p>ยอดคงเหลือ 31 ธันวาคม 2568: สินค้าคงเหลือ 900,000 บาท (แบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566) รายการ 1.6) รายได้ที่ยังไม่ถึงกำหนดชำระ 750,000 บาท (รายการ 1.3 ลูกหนี้อื่น) (แนวการตีความ)</p><h4>วิธีเงินค่างวดที่ถึงกำหนดชำระ ปี 2568</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต สินค้าคงเหลือ – ต้นทุนระหว่างพัฒนา</td><td class="num">1,000,000</td><td class="num"></td></tr><tr><td>    เครดิต เจ้าหนี้ผู้รับเหมา</td><td class="num"></td><td class="num">1,000,000</td></tr><tr><td>เดบิต เงินสด</td><td class="num">1,250,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากการขายอสังหาริมทรัพย์</td><td class="num"></td><td class="num">1,250,000</td></tr><tr><td>เดบิต ต้นทุนของอสังหาริมทรัพย์ที่ขาย</td><td class="num">1,000,000</td><td class="num"></td></tr><tr><td>    เครดิต สินค้าคงเหลือ – ที่ดินและต้นทุนระหว่างพัฒนา</td><td class="num"></td><td class="num">1,000,000</td></tr></tbody></table></div><p>ค่างวดที่ถึงกำหนด 1,250,000 บาทได้รับชำระครบ ต้นทุน = 1,250,000 × (1 − ร้อยละ 20) ปี 2569 อัตรากำไรขั้นต้นใหม่ร้อยละ 16 กำไรขั้นต้นสะสม 800,000 บาท หักที่รับรู้แล้ว 250,000 บาท = 550,000 บาท</p><h4>วิธีรับรู้ทั้งจำนวน ปี 2568</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">1,250,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินรับล่วงหน้าและเงินมัดจำจากผู้ซื้อ</td><td class="num"></td><td class="num">1,250,000</td></tr></tbody></table></div><p>ปี 2569 เมื่อโอนกรรมสิทธิ์ โอนเงินรับล่วงหน้า 1,250,000 บาทเป็นรายได้พร้อมส่วนที่รับชำระ รวมรายได้ 5,000,000 บาท ต้นทุน 4,200,000 บาท เงินรับล่วงหน้าแสดงในแบบ 2 รายการ 3.3 (แนวการตีความ)</p><h3 id="S19.4">S19.4 เพดานตามย่อหน้า 19.7.2 การหยุดรับรู้รายได้ และย่อหน้า 19.7.5</h3><div class="tbl"><table><thead><tr><th>สถานการณ์</th><th>วิธีอัตราส่วนของงานที่ทำเสร็จ</th><th>วิธีเงินค่างวดที่ถึงกำหนดชำระ</th></tr></thead><tbody><tr><td>ค่างวดที่ถึงกำหนดสูงกว่าอัตราส่วนของงาน</td><td>รายได้ตามอัตราส่วนของงาน เงินที่รับเกินเป็นเงินรับล่วงหน้า (ผลตามวิธี)</td><td>รับรู้ไม่เกินอัตราส่วนของงานที่ทำเสร็จ ส่วนที่เกินเป็นเงินรับล่วงหน้า (19.7.2)</td></tr><tr><td>ผิดนัดเกินกว่า 3 งวดติดต่อกัน</td><td>หยุดรับรู้ทันทีเมื่ออัตราส่วนของงานสูงกว่าค่างวดที่ถึงกำหนดชำระ (19.6.2)</td><td>หยุดรับรู้ทันที (19.7.3)</td></tr><tr><td>ค่าเผื่อหนี้สงสัยจะสูญ</td><td>ตั้งตามความเหมาะสม (19.6.3) ประมาณตามบทที่ 7</td><td>ตั้งตามความเหมาะสม (19.7.4) ประมาณตามบทที่ 7</td></tr><tr><td>ผู้ซื้อชำระส่วนที่เหลือก่อนกำหนดหรือได้เงินกู้แหล่งอื่น ก่อสร้างเสร็จ และโอนความเสี่ยงแล้ว</td><td>ย่อหน้า 19.7.5 เป็นข้อของวิธีเงินค่างวด แนวการตีความของตำรา: วิธีอัตราส่วนของงานรับรู้รายได้ส่วนที่เหลือเมื่องานเสร็จร้อยละ 100</td><td>รับรู้จำนวนเงินดังกล่าวเป็นรายได้ทั้งจำนวนในงวดนั้น (19.7.5)</td></tr></tbody></table></div><p>ตัวอย่างที่ 19.3: ค่างวดถึงกำหนดและชำระแล้ว 2,250,000 บาท (ร้อยละ 45) อัตราส่วนของงานร้อยละ 40 รับรู้รายได้ 2,000,000 บาท ต้นทุน 1,600,000 บาท เงินรับล่วงหน้า 250,000 บาท</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">2,250,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากการขายอสังหาริมทรัพย์</td><td class="num"></td><td class="num">2,000,000</td></tr><tr><td>    เครดิต เงินรับล่วงหน้าจากผู้ซื้อ (ส่วนที่เกินงานที่ทำเสร็จ)</td><td class="num"></td><td class="num">250,000</td></tr></tbody></table></div><p>ตัวอย่างที่ 19.4: สัญญากำหนดค่างวดรายเดือน 75,000 บาทตั้งแต่มกราคม 2569 ผู้ซื้อผิดนัด 4 งวดติดต่อกัน (มกราคมถึงเมษายน 2569) ค่างวดที่ถึงกำหนดชำระสะสม 1,550,000 บาท (ร้อยละ 31) อัตราส่วนของงานร้อยละ 70 กิจการหยุดรับรู้รายได้ ณ วันที่ผิดนัดงวดที่ 4 (30 เมษายน 2569) ต้นทุนก่อสร้างที่เกิดหลังจากนั้นคงอยู่ในสินค้าคงเหลือ ยอดเสี่ยงที่ใช้ประเมินค่าเผื่อหนี้สงสัยจะสูญ (19.6.3) คือ ค่างวดค้างชำระ 300,000 บาท บวกรายได้ที่ยังไม่ถึงกำหนดชำระส่วนที่เหลือ 450,000 บาท รวม 750,000 บาท (เมื่อค่างวด 300,000 บาทถึงกำหนด รายได้ที่ยังไม่ถึงกำหนดชำระลดจาก 750,000 บาทเหลือ 450,000 บาท จึงไม่นับซ้ำ) ค่าเผื่อประมาณตามบทที่ 7 (7.3, 7.5–7.6) แนวการตีความของตำรา: การหยุดรับรู้ไม่กลับรายการรายได้ที่รับรู้แล้ว และมาตรฐานไม่ได้กำหนดว่าจะกลับมารับรู้ต่อเมื่อใด ตำราเสนอให้ประเมินใหม่เมื่อผู้ซื้อชำระค่างวดที่ค้างครบและเงื่อนไข 19.5 ยังครบ และบันทึกเหตุผลไว้</p><h3 id="S19.5">S19.5 เงินมัดจำ การยกเลิกสัญญา และเงินริบ</h3><p>ตัวอย่างที่ 19.5: อาคารชุดพื้นที่เปิดขาย 10,000 ตารางเมตร ทำสัญญาแล้ว 3,000 ตารางเมตร (ร้อยละ 30) ต่ำกว่าร้อยละ 40 ตาม 19.5.1 เงินจองและเงินทำสัญญา 2,000,000 บาท บันทึกเป็นเงินมัดจำหรือเงินรับล่วงหน้า (ย่อหน้า 19.8)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินสด</td><td class="num">2,000,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินรับล่วงหน้าและเงินมัดจำจากผู้ซื้อ</td><td class="num"></td><td class="num">2,000,000</td></tr></tbody></table></div><p>ปีต่อมาทำสัญญาได้ 4,600 ตารางเมตร (ร้อยละ 46) เงื่อนไข 19.5.1 ผ่าน กิจการทดสอบเงื่อนไขข้ออื่นรายสัญญาต่อ สัญญาที่ผ่านครบใช้วิธีที่เลือกได้ตั้งแต่งวดนั้น สัญญาที่ยังไม่ผ่านคงเป็นเงินรับล่วงหน้า</p><p>การยกเลิกสัญญา: ผู้ซื้อรายหนึ่งยกเลิกและสัญญาให้ผู้ขายริบเงิน 120,000 บาท แนวการตีความของตำรา: ตัดเงินรับล่วงหน้าและรับรู้เงินที่ริบเป็นรายได้อื่น (แบบ 2 งบกำไรขาดทุนรายการ 2) เพราะไม่ใช่สิ่งตอบแทนจากการขายอสังหาริมทรัพย์ ถ้าสัญญานั้นเคยรับรู้รายได้ตามวิธีทยอยรับรู้ กิจการกลับรายการรายได้และต้นทุนส่วนที่เกี่ยวข้องตามข้อเท็จจริงใหม่ และนำห้องชุดกลับเป็นสินค้าคงเหลือ</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เงินรับล่วงหน้าและเงินมัดจำจากผู้ซื้อ</td><td class="num">120,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้อื่น – เงินริบจากการยกเลิกสัญญา</td><td class="num"></td><td class="num">120,000</td></tr></tbody></table></div><p>แนวการตีความของตำรา: ทางภาษีเงินได้นิติบุคคล เงินที่ริบเป็นรายได้ตามเกณฑ์สิทธิ (ม.65 วรรคสอง แห่งประมวลรัษฎากร) ในรอบระยะเวลาบัญชีที่สิทธิริบเงินเกิดขึ้นตามสัญญา</p><h3 id="S19.6">S19.6 ภาษีของการขายอสังหาริมทรัพย์และการกระทบยอดบัญชีกับภาษี</h3><div class="tbl"><table><thead><tr><th>เรื่อง</th><th>สาระ</th><th>แหล่ง</th></tr></thead><tbody><tr><td>ภาษีเงินได้นิติบุคคล</td><td>คำสั่งกรมสรรพากร ที่ ท.ป.1/2528 ข้อ 3.7 แก้ไขโดย ท.ป.228/2557 ลงวันที่ 11 กันยายน 2557 ใช้กับรอบบัญชีที่เริ่มในหรือหลังวันที่ 1 มกราคม 2557 และแก้ไขโดย ท.ป.262/2559 (ใช้บังคับ 31 สิงหาคม 2559) ให้กิจการที่ไม่มีส่วนได้เสียสาธารณะเลือกคำนวณรายได้และรายจ่าย (1) ทั้งจำนวนเมื่อจดทะเบียนโอนกรรมสิทธิ์ (2) ตามอัตราส่วนของงานที่ทำเสร็จ หรือ (3) ตามงวดที่ถึงกำหนดชำระด้วยวิธีกำไรขั้นต้น เลือก (2) หรือ (3) แล้วใช้ตลอดไปสำหรับอสังหาริมทรัพย์ประเภทนั้น เว้นแต่อธิบดีอนุมัติ</td><td>rd.go.th/3480.html, rd.go.th/53594.html</td></tr><tr><td>ภาษีธุรกิจเฉพาะ</td><td>การขายอสังหาริมทรัพย์เป็นทางค้าหรือหากำไรตาม ม.91/2 (6) และพระราชกฤษฎีกา ฉบับที่ 342 (พ.ศ. 2541) คำสั่ง ป.82/2542 (15 กุมภาพันธ์ 2542) ข้อ 6 กำหนดอัตราร้อยละ 3.3 รวมภาษีท้องถิ่น จากรายรับก่อนหักรายจ่ายตามราคาขายใน ท.ด.16 หรือราคาประเมินทุนทรัพย์ แล้วแต่อย่างใดสูงกว่า และข้อ 5 ให้ชำระต่อเจ้าพนักงานที่ดินเมื่อจดทะเบียนโอน</td><td>rd.go.th/3572.html, rd.go.th/2818.html, rd.go.th/63765.html</td></tr><tr><td>ภาษีเงินได้หัก ณ ที่จ่าย</td><td>ม.69 ตรี นิติบุคคลที่โอนกรรมสิทธิ์อสังหาริมทรัพย์เสียภาษีร้อยละ 1 ของราคาขายหรือราคาประเมินทุนทรัพย์ แล้วแต่อย่างใดสูงกว่า</td><td>ข้อหารือ กค 0811/13824 (22 ก.ย. 2541) rd.go.th/23197.html, rd.go.th/63765.html</td></tr><tr><td>ภาษีมูลค่าเพิ่ม</td><td>การขายอสังหาริมทรัพย์เป็นทางค้าหรือหากำไรอยู่ในขอบข่ายภาษีธุรกิจเฉพาะแทนภาษีมูลค่าเพิ่ม</td><td>rd.go.th/2818.html</td></tr><tr><td>อากรแสตมป์</td><td>ลักษณะแห่งตราสาร 28 (ข) ใบรับการโอนอสังหาริมทรัพย์ 1 บาทต่อทุก 200 บาทหรือเศษของ 200 บาท จากราคาขายหรือราคาประเมินที่สูงกว่า ใบรับสำหรับรายรับที่ต้องเสียภาษีธุรกิจเฉพาะได้รับยกเว้น ถ้าเสียทั้งสองอย่าง ขอคืนอากรได้</td><td>rd.go.th/63777.html</td></tr><tr><td>ค่าธรรมเนียมการจดทะเบียนโอน</td><td>อัตราปกติร้อยละ 2 ของราคาประเมินทุนทรัพย์ ชำระที่สำนักงานที่ดิน ภาระของผู้ซื้อหรือผู้ขายตามข้อตกลงในสัญญา มาตรการชั่วคราว: ลดค่าธรรมเนียมโอนและจดจำนองเหลือร้อยละ 0.01 สำหรับผู้ซื้อที่เป็นบุคคลธรรมดาสัญชาติไทย บ้านเดี่ยว บ้านแฝด บ้านแถว อาคารพาณิชย์ และห้องชุด ที่ราคาซื้อขายและราคาประเมินไม่เกิน 7 ล้านบาท ใช้ 1 กรกฎาคม 2569 ถึง 30 มิถุนายน 2570 ไม่ลดภาษีและอากร</td><td>ประกาศกระทรวงมหาดไทย 2 ฉบับ ลงวันที่ 30 มิ.ย. 2569 · dol.go.th</td></tr></tbody></table></div><p>ตัวอย่างที่ 19.1: ราคาขาย 3,000,000 บาท ราคาประเมิน 2,400,000 บาท ภาษีหัก ณ ที่จ่ายร้อยละ 1 ของจำนวนที่สูงกว่า = 30,000 บาท ภาษีธุรกิจเฉพาะร้อยละ 3 ของ 3,000,000 บาท (ราคาขายสูงกว่าราคาประเมิน) = 90,000 บาท ภาษีท้องถิ่น 9,000 บาท รวม 99,000 บาท ไม่เสียอากรแสตมป์ ค่าธรรมเนียมการจดทะเบียนโอนอัตราปกติ 48,000 บาท ถ้าราคาประเมินเป็น 3,500,000 บาท ฐานภาษีธุรกิจเฉพาะเป็นราคาประเมิน ภาษีธุรกิจเฉพาะ 105,000 บาท ภาษีท้องถิ่น 10,500 บาท (ป.82/2542 ข้อ 6)</p><p>การกระทบยอด: ถ้าทางบัญชีใช้วิธีอัตราส่วนของงานที่ทำเสร็จ แต่ทางภาษีเลือกวิธีทั้งจำนวนเมื่อจดทะเบียนโอนกรรมสิทธิ์ กำไรทางภาษีต่างจากกำไรทางบัญชีในงวดที่ยังไม่โอน กิจการปรับในตารางกระทบยอดของบทที่ 15</p><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">กำไรขั้นต้นทางบัญชี (19.4.2)</th><th class="num">กำไรขั้นต้นทางภาษี (วิธี 1)</th><th class="num">ปรับในการคำนวณภาษี</th></tr></thead><tbody><tr><td>2568</td><td class="num">400,000</td><td class="num">0</td><td class="num">(400,000)</td></tr><tr><td>2569</td><td class="num">400,000</td><td class="num">800,000</td><td class="num">+400,000</td></tr><tr><td>รวม</td><td class="num">800,000</td><td class="num">800,000</td><td class="num">0</td></tr></tbody></table></div><p>กิจการที่เลือกบทที่ 15 ย่อหน้า 15.1 ไม่บันทึกภาษีเงินได้รอการตัดบัญชีจากส่วนต่างนี้ กิจการที่เลือก 15.2 บันทึกตามบทที่ 15</p><h3 id="S19.7">S19.7 ร่างหมายเหตุตามย่อหน้า 19.9 และจุดควบคุมภายใน</h3><h4>ร่างหมายเหตุนโยบายการบัญชีสามแบบ</h4><p>แบบที่ 1 วิธีอัตราส่วนของงานที่ทำเสร็จ: &quot;บริษัทรับรู้รายได้จากการขายบ้านพร้อมที่ดินตามอัตราส่วนของงานที่ทำเสร็จ เมื่อรายการขายเข้าเงื่อนไขตามมาตรฐาน อัตราส่วนของงานที่ทำเสร็จกำหนดจากต้นทุนการก่อสร้างที่เกิดขึ้นจนถึงปัจจุบันเทียบกับประมาณการต้นทุนการก่อสร้างทั้งสิ้น ไม่รวมต้นทุนที่ดิน บริษัทหยุดรับรู้รายได้เมื่อผู้ซื้อผิดนัดชำระเงินเกินกว่า 3 งวดติดต่อกันและอัตราส่วนของงานที่ทำเสร็จสูงกว่าเงินค่างวดที่ถึงกำหนดชำระ เงินที่ได้รับจากสัญญาที่ยังไม่เข้าเงื่อนไขแสดงเป็นเงินรับล่วงหน้าจากผู้ซื้อ&quot;</p><p>แบบที่ 2 วิธีเงินค่างวดที่ถึงกำหนดชำระ: &quot;บริษัทรับรู้รายได้จากการขายบ้านพร้อมที่ดินตามเงินค่างวดที่ถึงกำหนดชำระ เมื่อรายการขายเข้าเงื่อนไขตามมาตรฐาน ต้นทุนของอสังหาริมทรัพย์ที่ขายคำนวณด้วยอัตรากำไรขั้นต้น รายได้ที่รับรู้ไม่เกินอัตราส่วนของงานที่ทำเสร็จ ค่างวดส่วนที่เกินแสดงเป็นเงินรับล่วงหน้าจากผู้ซื้อ บริษัทหยุดรับรู้รายได้เมื่อผู้ซื้อผิดนัดชำระเงินเกินกว่า 3 งวดติดต่อกัน&quot;</p><p>แบบที่ 3 วิธีรับรู้ทั้งจำนวน: &quot;บริษัทรับรู้รายได้จากการขายอสังหาริมทรัพย์ทั้งจำนวนเมื่อจดทะเบียนโอนกรรมสิทธิ์และโอนความเสี่ยงและผลประโยชน์ที่มีนัยสำคัญให้ผู้ซื้อแล้ว เงินที่ได้รับก่อนวันโอนแสดงเป็นเงินรับล่วงหน้าจากผู้ซื้อ&quot;</p><p>ย่อหน้า 19.9 บังคับเปิดเผยสองเรื่อง คือ วิธีการรับรู้รายได้ และวิธีกำหนดอัตราส่วนของงานที่ทำเสร็จเมื่อใช้วิธีนั้น ข้อมูลเพิ่มเติมที่ตำราแนะนำ เช่น จำนวนสัญญาที่หยุดรับรู้รายได้ เงินรับล่วงหน้า และผลของการเปลี่ยนประมาณการ (5.16) เป็นแนวการตีความของตำรา</p><div class="tbl"><table><thead><tr><th>จุดควบคุม</th><th>วัตถุประสงค์</th><th>หลักฐาน/ความถี่</th></tr></thead><tbody><tr><td>ทะเบียนสัญญาแยกตามเงื่อนไข 19.5</td><td>ทราบว่าสัญญาใดใช้วิธีทยอยรับรู้ได้</td><td>ตาราง S19.1 รายสัญญา / ทุกงวด</td></tr><tr><td>อนุมัติประมาณการต้นทุนโครงการ</td><td>ประมาณการทบทวนอย่างน้อยปีละครั้งตาม 19.5.9</td><td>บันทึกการอนุมัติพร้อมเหตุผล / ปีละครั้งหรือเมื่อเปลี่ยนแปลงมาก</td></tr><tr><td>รายงานค่างวดค้างชำระรายสัญญา</td><td>จับสัญญาที่ผิดนัดเกินกว่า 3 งวดติดต่อกัน</td><td>รายงานอายุลูกหนี้ / รายเดือน</td></tr><tr><td>เทียบความก้าวหน้ากับหนังสือรับรอง</td><td>ต้นทุนที่ใช้วัดความก้าวหน้าตรงกับงานจริง</td><td>หนังสือรับรองของวิศวกร / ทุกงวด</td></tr><tr><td>ตรวจสัญญาประกอบ</td><td>จับข้อตกลงซื้อคืนหรือรับประกันผลตอบแทน (19.3.8)</td><td>รายการสัญญาประกอบ / ทุกสัญญาใหม่</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>สัญญาณเตือน</th><th>สิ่งที่ควรตรวจ</th></tr></thead><tbody><tr><td>ยอดขายเพิ่มขึ้นผิดปกติใกล้วันสิ้นงวด</td><td>สัญญาใกล้สิ้นงวด เงินที่ชำระจริง และวันสิ้นสิทธิบอกเลิก</td></tr><tr><td>ต้นทุนประมาณการลดลงทั้งที่ราคาวัสดุสูงขึ้น</td><td>งบประมาณ สัญญาผู้รับเหมา และการอนุมัติ</td></tr><tr><td>ลูกหนี้ค้างชำระเพิ่มแต่รายได้ยังเพิ่ม</td><td>สัญญาที่เข้าเงื่อนไขหยุดรับรู้</td></tr><tr><td>โปรโมชันรับประกันผลตอบแทนหรือซื้อคืน</td><td>การโอนความเสี่ยงตาม 19.3.8</td></tr></tbody></table></div><h3 id="S19.8">S19.8 เฉลยแบบฝึกหัดและแนวคำตอบกรณีศึกษา 19.1</h3><h4>ส่วนที่ 1 ปรนัย</h4><p>1. ค (19.3.1) · 2. ง (19.5.4, ย่อหน้า 19.8) · 3. ก (19.6.1.1) · 4. ข · 5. ค (19.7.2) · 6. ง (19.7.3, 19.7.4) · 7. ก (ท.ป.1/2528 ข้อ 3.7) · 8. ข (19.5.4, ย่อหน้า 19.8)</p><h4>ส่วนที่ 2 อัตนัย</h4><p>ข้อ 1: พื้นที่ที่ทำสัญญา 3,600 ÷ 8,000 = ร้อยละ 45 ผ่านเกณฑ์ร้อยละ 40 ของ 19.5.1 แต่ผู้ซื้อชำระร้อยละ 18 ต่ำกว่าร้อยละ 20 ของ 19.5.4 สัญญานี้ยังทยอยรับรู้ไม่ได้ บันทึกเงินที่ได้รับเป็นเงินรับล่วงหน้า (ย่อหน้า 19.8) จนกว่าชำระครบร้อยละ 20 และเงื่อนไขอื่นครบ</p><p>ข้อ 2: อัตราส่วนของงาน 1,200,000 ÷ 3,000,000 = ร้อยละ 40 (ไม่รวมที่ดิน) รายได้ 2,400,000 บาท ต้นทุน ร้อยละ 40 × 5,000,000 = 2,000,000 บาท กำไรขั้นต้น 400,000 บาท</p><p>ข้อ 3: ค่างวดที่ถึงกำหนดและได้รับชำระแล้ว 3,000,000 บาท (ร้อยละ 50) สูงกว่าอัตราส่วนของงานร้อยละ 40 รับรู้รายได้ไม่เกิน 2,400,000 บาท เงินรับล่วงหน้า 600,000 บาท อัตรากำไรขั้นต้น 16.67% ต้นทุน 2,000,000 บาท กำไรขั้นต้น 400,000 บาท</p><p>ข้อ 4: วิธีอัตราส่วนของงานที่ทำเสร็จ หยุดรับรู้เมื่อผิดนัดเกินกว่า 3 งวดติดต่อกันและอัตราส่วนของงาน (ร้อยละ 60) สูงกว่าค่างวดที่ถึงกำหนด (ร้อยละ 35) ซึ่งเข้าทั้งสองเงื่อนไขของ 19.6.2 วิธีเงินค่างวดหยุดทันทีเมื่อผิดนัดเกินกว่า 3 งวดติดต่อกัน (19.7.3) ทั้งสองวิธีพิจารณาค่าเผื่อหนี้สงสัยจะสูญ (19.6.3, 19.7.4)</p><p>ข้อ 5: ปี 2568 กำไรขั้นต้นทางบัญชี 400,000 บาท ทางภาษี 0 บาท หักออก 400,000 บาท ปี 2569 กำไรขั้นต้นทางบัญชี 400,000 บาท ทางภาษี 800,000 บาท บวกเพิ่ม 400,000 บาท รวมสองปีเท่ากัน</p><h4>กรณีศึกษา 19.1</h4><div class="tbl"><table><thead><tr><th>กลุ่มสัญญา</th><th>ข้อเท็จจริง</th><th>การรับรู้ปี 25X5</th><th>จำนวน (บาท)</th></tr></thead><tbody><tr><td>ก (50 หลัง)</td><td>ชำระแล้วร้อยละ 25 ไม่ผิดนัด</td><td>วิธีอัตราส่วนของงาน ร้อยละ 55</td><td>รายได้ 132,000,000 ต้นทุน 103,125,000</td></tr><tr><td>ข (22 หลัง)</td><td>ชำระแล้วร้อยละ 12 ต่ำกว่าร้อยละ 20</td><td>เงินรับล่วงหน้า (ย่อหน้า 19.8)</td><td>12,672,000</td></tr><tr><td>ค (8 หลัง)</td><td>รับรู้ปี 25X4 ร้อยละ 30 ปี 25X5 ผิดนัด 4 งวดติดต่อกัน ค่างวดถึงกำหนดร้อยละ 35</td><td>หยุดรับรู้ (19.6.2) ทบทวนค่าเผื่อ (19.6.3)</td><td>รายได้ 0 · ค่างวดค้างชำระ 4,992,000 สุทธิจากค่างวดที่เรียกเกินรายได้ 1,920,000 = ยอดเสี่ยงสุทธิ 3,072,000 ใช้ประเมินค่าเผื่อ (19.6.3)</td></tr></tbody></table></div><p>ข้อเสนอของผู้บริหารรับรู้รายได้ปี 25X5 199,680,000 บาท สูงกว่าจำนวนที่ถูกต้อง 132,000,000 บาท อยู่ 67,680,000 บาท ต้นทุนก่อสร้างประมาณการเพิ่มจาก 280,000,000 เป็น 320,000,000 บาท รับรู้ด้วยวิธีเปลี่ยนทันทีเป็นต้นไป (5.15) ไม่ย้อนปรับปี 25X4</p>
+      <h3 id="S19.9">S19.9 ผลวิจัยปี 2569: ฉบับ 2554 ภาษี กฎหมายคุ้มครองผู้ซื้อ งานของผู้สอบบัญชี และการเปรียบเทียบ</h3>
+      <p class="hint">เลขย่อหน้าใน S19.9 เป็นเลขของ TFRS for NPAEs ฉบับปรับปรุง 2565 · ฉบับ 2554 ย่อหน้า 349–357 ตรงกับ 19.1–19.9 (เลขใหม่เท่ากับเลขเดิมลบ 348) ถ้อยคำเหมือนเดิม เอกสารอบรม 9 ธ.ค. 2565 สไลด์ 78 และ 157 ระบุว่าบทนี้ไม่ได้แก้ไข (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <p class="hint">นิยามใน 19.1 ใกล้กับ ป.พ.พ. ม.139 ซึ่งใช้คำว่า "ทรัพยสิทธิอันเกี่ยวกับที่ดิน" (สิทธิเหนือทรัพย์ เช่น ภาระจำยอม สิทธิเก็บกิน สิทธิเหนือพื้นดิน) <span class="pill warn">แนวการตีความ</span></p>
+      <h4>ก. ภาษีและค่าธรรมเนียมที่ยืนยันแล้ว</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>หลัก</th><th>ที่มา</th></tr></thead><tbody><tr><td>ภาษีเงินได้นิติบุคคล</td><td>ข้อ 3.7 แก้ไขโดย ท.ป.228/2557 และ ท.ป.262/2559 วิธี (1) ใช้เฉพาะการขายที่จดทะเบียนโอนในรอบบัญชีเดียวกับการขาย กิจการที่มีส่วนได้เสียสาธารณะและบริษัทย่อยที่จัดทำงบการเงินรวมกับกิจการดังกล่าวใช้วิธีการทางบัญชีที่รับรองทั่วไป</td><td>rd.go.th/3480.html</td></tr><tr><td>ภาษีธุรกิจเฉพาะ</td><td>ร้อยละ 3 บวกภาษีท้องถิ่นร้อยละ 10 ของภาษีธุรกิจเฉพาะ รวมร้อยละ 3.3 ฐานคือราคาซื้อขายหรือราคาประเมินที่สูงกว่า เรียกเก็บ ณ วันจดทะเบียนสิทธิและนิติกรรม จุดความรับผิดจึงต่างจากงวดที่รับรู้รายได้ทางบัญชี</td><td>ป.82/2542 ข้อ 5 (แก้ไขโดย ป.94/2543) และข้อ 6</td></tr><tr><td>ภาษีหัก ณ ที่จ่าย</td><td>ร้อยละ 1 ของราคาขายหรือราคาประเมินที่สูงกว่า หักเมื่อโอนกรรมสิทธิ์</td><td>ม.69 ตรี · rd.go.th/63773.html</td></tr><tr><td>ค่าธรรมเนียมโอนและจดจำนอง</td><td>มาตรการปี 2569 ร้อยละ 0.01 ผู้ซื้อบุคคลธรรมดาสัญชาติไทย ราคาไม่เกิน 7 ล้านบาท ถึง 30 มิ.ย. 2570 ที่ดินเปล่าไม่เข้ามาตรการ</td><td>ประกาศกระทรวงมหาดไทย 2 ฉบับ ลงวันที่ 30 มิ.ย. 2569</td></tr></tbody></table></div>
+      <h4>ข. กฎหมายคุ้มครองผู้ซื้อ</h4>
+      <div class="tbl"><table><thead><tr><th>กฎหมาย</th><th>สาระที่เกี่ยวกับบทที่ 19</th></tr></thead><tbody><tr><td>ประกาศคณะกรรมการว่าด้วยสัญญา พ.ศ. 2543</td><td>ธุรกิจขายห้องชุดเป็นธุรกิจที่ควบคุมสัญญา [รอตรวจต้นฉบับ]</td></tr><tr><td>ประกาศคณะกรรมการว่าด้วยสัญญา พ.ศ. 2567</td><td>การขายห้องชุดที่ผู้ซื้อจองก่อนทำสัญญาเป็นธุรกิจที่ควบคุมสัญญา ใช้บังคับเมื่อพ้น 120 วันนับแต่ประกาศในราชกิจจานุเบกษา</td></tr><tr><td>พ.ร.บ. อาคารชุด พ.ศ. 2522 (ฉบับที่ 4 พ.ศ. 2551)</td><td>ม.6/1 ข้อความโฆษณาเป็นส่วนหนึ่งของสัญญา ม.6/2 สัญญาจะซื้อจะขายห้องชุดทำตามแบบที่รัฐมนตรีประกาศ</td></tr><tr><td>พ.ร.บ. การดูแลผลประโยชน์ของคู่สัญญา พ.ศ. 2551 (ฉบับที่ 2 พ.ศ. 2562)</td><td>ระบบเอสโครว์ ใช้เมื่อคู่สัญญาตกลงกัน</td></tr><tr><td>ผลทางบัญชี (แนวการตีความ)</td><td>เงินจองหรือเงินดาวน์ที่ผู้ซื้อยังมีสิทธิได้คืนเป็นเงินรับล่วงหน้า (19.3.2, 19.8)</td></tr></tbody></table></div>
+      <h4>ค. งานของผู้สอบบัญชี</h4>
+      <ul><li>มาตรฐานการสอบบัญชี รหัส 240: สันนิษฐานว่าการรับรู้รายได้มีความเสี่ยงจากการทุจริต (ย่อหน้า 27) ฉบับปรับปรุง (ประกาศ 18/2569) ใช้กับรอบบัญชีที่เริ่มในหรือหลัง 15 ธ.ค. 2570 จุดเสี่ยงคือเกณฑ์ของ 19.5 การวัดอัตราส่วนของงาน และการหยุดรับรู้</li><li>รหัส 540 (ปรับปรุง) การตรวจสอบประมาณการทางบัญชีและการเปิดเผยข้อมูลที่เกี่ยวข้อง: ประมาณการต้นทุนโครงการ · รหัส 620 การใช้ผลงานของผู้เชี่ยวชาญของผู้สอบบัญชี: งานของวิศวกรหรือผู้สำรวจ</li><li>ประกาศสภาวิชาชีพบัญชี ที่ 32/2568 (11 ธ.ค. 2568): มาตรฐานทางเลือกสำหรับกิจการที่มีความซับซ้อนน้อย รอบบัญชีที่เริ่มในหรือหลัง 15 ธ.ค. 2568</li></ul>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: กิจการที่มีส่วนได้เสียสาธารณะใช้มาตรฐานการรายงานทางการเงิน ฉบับที่ 15 รับรู้รายได้เมื่อโอนการควบคุม ตลอดช่วงเวลาหรือ ณ จุดเวลา ไม่มีเกณฑ์ร้อยละ 40 20 และ 10 มาตรฐานการรายงานทางการเงินระหว่างประเทศ (International Financial Reporting Standards: IFRS) สำหรับกิจการขนาดกลางและขนาดย่อม (Small and Medium-sized Entities: SMEs) ฉบับที่ 3 (27 ก.พ. 2568 ใช้ 1 ม.ค. 2570) ปรับหมวด 23 ไปแนวเดียวกัน</p>
+    </section>
+  </div>
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 19 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์ ใช้งานออฟไลน์ได้</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 19.1–19.5 และตารางที่ 19-1 ถึง 19-4 ในตำรา</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=0)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fp=x=>x<0?'('+fmt(-x)+')':fmt(x);
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function je(title,lines,ref){
+    const L=lines.filter(l=>Math.abs(l.amt)>=0.5);const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);
+    const rows=dr.concat(cr).map(l=>l.dr?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`:`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,t])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${t?esc(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const theory=items=>`<details class="theory"><summary>มาตรฐานและแหล่งอ้างอิง</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  const tbl=(h,rows,num)=>`<div class="tbl"><table><thead><tr>${h.map((x,i)=>`<th${num.includes(i)?' class="num"':''}>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td${num.includes(i)?' class="num"':''}>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  /* tabs */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];const names=tabs.map(b=>b.dataset.tab);
+  function show(name){tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);try{localStorage.setItem('npaes19tab',name)}catch(e){}}
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='cond';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes19tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  function parseCSV(text){const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true;else if(ch===delim){row.push(f);f=''}else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''}else if(ch!=='\r')f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''))}
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{e.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+
+
+
+  const R0=x=>Math.round(x+1e-9);
+  const INT='<span class="pill warn">แนวการตีความ</span>';
+  const G={};window.__R=G;
+  const bad=m=>verdict('warn','ตรวจข้อมูลที่กรอก',m);
+  const wait=m=>`<p class="hint">${m}</p>`;
+  const on=(ids,f)=>ids.forEach(id=>{const e=$(id);e.addEventListener(e.tagName==='SELECT'||e.type==='checkbox'?'change':'input',f)});
+  const pct=x=>fmt(x*100,0)+'%';
+  /* 0 cond */
+  function cCalc(){const t=$('cType').value,area=val($('cArea')),paid=val($('cPaid')),init=val($('cInit'));
+    const ids=['c2','c3','c5','c7','c8','c9','cR'];const a={};ids.forEach(i=>a[i]=$(i).value);
+    G.cRes=null;G.cFail=null;
+    if([area,paid,init].some(x=>x<0||x>100)){$('cOut').innerHTML=bad('ร้อยละต้องอยู่ระหว่าง 0 ถึง 100');return}
+    const left=ids.filter(i=>a[i]==='').length;
+    if(left){$('cOut').innerHTML=wait(`ยังไม่แสดงผล ตอบอีก ${left} ข้อ`);G.cRes='';return}
+    if(a.cR==='yes'){G.cRes='full';G.cFail=[];$('cOut').innerHTML=verdict('ok','เข้าเงื่อนไขรับรู้ทั้งจำนวน (19.4.1)','ตามคำตอบ การขายเกิดขึ้นและผู้ขายโอนความเสี่ยงและผลประโยชน์ที่มีนัยสำคัญแล้ว ใช้แท็บ 1 คำนวณรายได้และต้นทุน')+theory([['19.3.8','ผู้ขายโอนความเสี่ยงและผลประโยชน์ที่มีนัยสำคัญแล้ว การขายที่ดินต้องพัฒนาเสร็จ'],['19.4.1','รับรู้เป็นรายได้ทั้งจำนวน']]);return}
+    const f=[];if(t==='condo'&&area<40)f.push(['19.5.1','อาคารชุดทำสัญญาได้ต่ำกว่าร้อยละ 40 ของพื้นที่ที่เปิดขายหรือเปิดจอง']);
+    if(a.c2==='no')f.push(['19.5.2','ผู้ซื้อยังมีสิทธิเรียกเงินคืน']);if(a.c3==='no')f.push(['19.5.3','ผู้ซื้อและผู้ขายไม่เป็นอิสระต่อกัน']);
+    if(paid<20)f.push(['19.5.4','เงินที่ผู้ซื้อชำระแล้วต่ำกว่าร้อยละ 20 ของราคาขาย']);if(a.c5==='no')f.push(['19.5.5','ผู้ขายเก็บเงินตามสัญญาไม่ได้']);
+    if(init<10)f.push(['19.5.6','งานขั้นตอนเบื้องต้นต่ำกว่าร้อยละ 10']);if(a.c7==='no')f.push(['19.5.7','ผู้ขายขาดความสามารถทางการเงิน']);
+    if(a.c8==='no')f.push(['19.5.8','การก่อสร้างไม่ก้าวหน้าไปด้วยดี']);if(a.c9==='no')f.push(['19.5.9','ประมาณเงินรับรวมหรือต้นทุนทั้งหมดไม่ได้']);
+    G.cFail=f.map(x=>x[0]);
+    if(!f.length){G.cRes='prog';$('cOut').innerHTML=verdict('ok','เข้าเงื่อนไขทั้งเก้าข้อของย่อหน้า 19.5','เลือกได้ระหว่างวิธีอัตราส่วนของงานที่ทำเสร็จ (19.4.2 แท็บ 2) และวิธีเงินค่างวดที่ถึงกำหนดชำระ (19.4.3 แท็บ 3) ใช้วิธีที่เลือกสม่ำเสมอกับรายการที่คล้ายคลึงกัน (5.8)')}
+    else{G.cRes='dep';$('cOut').innerHTML=verdict('warn','ยังไม่เข้าเงื่อนไข บันทึกเป็นเงินมัดจำหรือเงินรับล่วงหน้า (ย่อหน้า 19.8)','เงื่อนไขที่ไม่ผ่าน:')+tbl(['ย่อหน้า','เหตุ'],f.map(x=>[x[0],esc(x[1])]),[])+'<p class="hint">ใช้แท็บ 5 บันทึกเงินที่ได้รับ และทดสอบใหม่ทุกวันสิ้นงวด</p>'}}
+  on(['cType','cArea','cPaid','cInit','c2','c3','c5','c7','c8','c9','cR'],cCalc);cCalc();
+  /* 1 full */
+  function fCalc(){const P=val($('fPrice')),C=val($('fCost')),Rv=val($('fRecv')),tr=$('fTr').value;G.fRev=null;G.fDep=null;
+    if(P<=0||C<0||Rv<0){$('fOut').innerHTML=bad('ราคาขายต้องมากกว่าศูนย์ ต้นทุนและเงินที่ได้รับต้องไม่ติดลบ');return}
+    if(Rv>P){$('fOut').innerHTML=bad('เงินที่ได้รับสะสมสูงกว่าราคาขาย ตรวจตัวเลข');return}
+    if(tr===''){$('fOut').innerHTML=wait('ยังไม่แสดงผล เลือกสถานะการโอนก่อน');return}
+    if(tr==='yes'){G.fRev=P;G.fDep=0;let h=figs([['รายได้จากการขายอสังหาริมทรัพย์',P],['ต้นทุนของอสังหาริมทรัพย์ที่ขาย',C],['กำไรขั้นต้น',P-C]])+je('รายการบันทึกเมื่อโอนกรรมสิทธิ์',[{acct:'เงินสด',amt:P,dr:1},{acct:'รายได้จากการขายอสังหาริมทรัพย์',amt:P},{acct:'ต้นทุนของอสังหาริมทรัพย์ที่ขาย',amt:C,dr:1},{acct:'สินค้าคงเหลือ',amt:C}],'19.4.1');
+      if(C>P)h+=verdict('warn','ต้นทุนสูงกว่าราคาขาย','ทบทวนมูลค่าสุทธิที่จะได้รับของสินค้าคงเหลือที่เหลือในโครงการตามบทที่ 8');$('fOut').innerHTML=h}
+    else{G.fRev=0;G.fDep=Rv;$('fOut').innerHTML=verdict('warn','ยังไม่รับรู้รายได้','เงินที่ได้รับเป็นเงินรับล่วงหน้าและเงินมัดจำจากผู้ซื้อ (ย่อหน้า 19.8) แสดงในแบบ 2 รายการ 3.3 '+INT)+je('รายการบันทึก',[{acct:'เงินสด',amt:Rv,dr:1},{acct:'เงินรับล่วงหน้าและเงินมัดจำจากผู้ซื้อ',amt:Rv}],'19.8')}}
+  on(['fPrice','fCost','fRecv','fTr'],fCalc);fCalc();
+  /* 2 poc */
+  function aCalc(){const P=val($('aPrice')),L=val($('aLand')),E=val($('aEst')),C=val($('aCost')),pr=val($('aPrevR')),pc=val($('aPrevC')),due=val($('aDue'));
+    G.aRev=null;G.aPoc=null;
+    if(P<=0||E<=0||[L,C,pr,pc,due].some(x=>x<0)){$('aOut').innerHTML=bad('ราคาขายและประมาณการต้นทุนก่อสร้างต้องมากกว่าศูนย์ ตัวเลขอื่นต้องไม่ติดลบ');return}
+    if(due>P){$('aOut').innerHTML=bad('ค่างวดที่ถึงกำหนดสะสมสูงกว่าราคาขาย ตรวจตัวเลข');return}
+    let warn='';let p=C/E;if(p>1){p=1;warn+=verdict('warn','ต้นทุนที่เกิดสูงกว่าประมาณการ','แอปใช้อัตราส่วนร้อยละ 100 ทบทวนประมาณการต้นทุนตาม 19.5.9 และรับรู้ผลด้วยวิธีเปลี่ยนทันทีเป็นต้นไป (5.15)')}
+    const cumR=R0(p*P),cumC=R0(p*(L+E)),rv=cumR-pr,cs=cumC-pc;
+    if(rv<0)warn+=verdict('warn','รายได้สะสมต่ำกว่าที่รับรู้งวดก่อน','ตรวจประมาณการและตัวเลขงวดก่อน');
+    if(L+E>P)warn+=verdict('warn','ต้นทุนรวมสูงกว่าราคาขาย','ทดสอบมูลค่าสุทธิที่จะได้รับของต้นทุนโครงการในสินค้าคงเหลือตามย่อหน้า 8.4');
+    const acc=cumR-due;G.aPoc=R0(p*100*100)/100;G.aRev=rv;G.aCost=cs;G.aD=rv-cs;G.aAcc=acc>0?acc:0;G.aAdv=acc<0?-acc:0;
+    $('aOut').innerHTML=figs([['อัตราส่วนของงาน (ไม่รวมที่ดิน)',pct(p),1],['รายได้ของงวด',rv],['ต้นทุนของงวด',cs],['กำไรขั้นต้นของงวด',rv-cs]])+
+      tbl(['รายการ','บาท'],[['รายได้สะสม = อัตราส่วน × ราคาขาย',fmt(cumR)],['ต้นทุนสะสม = อัตราส่วน × (ที่ดิน + ก่อสร้าง) '+INT,fmt(cumC)],
+       [acc>=0?'รายได้ที่ยังไม่ถึงกำหนดชำระ (แบบ 2 รายการ 1.3)':'เงินรับล่วงหน้าส่วนที่เกินงานที่เสร็จ (แบบ 2 รายการ 3.3)',fmt(Math.abs(acc))]],[1])+warn+
+      theory([['19.6.1.1','ต้นทุนการก่อสร้างที่เกิดจนถึงปัจจุบันเทียบประมาณการต้นทุนการก่อสร้างทั้งสิ้น ไม่รวมต้นทุนที่ดิน'],['19.5.9','ปรับปรุงต้นทุนที่ประมาณการอย่างน้อยปีละครั้ง'],['5.15','การเปลี่ยนประมาณการใช้วิธีเปลี่ยนทันทีเป็นต้นไป']])}
+  on(['aPrice','aLand','aEst','aCost','aPrevR','aPrevC','aDue'],aCalc);aCalc();
+  /* 3 inst */
+  function bCalc(){const P=val($('bPrice')),T=val($('bTC')),due=val($('bDue')),pk=val($('bPoc')),pr=val($('bPrevR')),pd=val($('bPrevD'));
+    G.bRev=null;
+    if(P<=0||T<=0||[due,pr,pd].some(x=>x<0)||pk<0||pk>100){$('bOut').innerHTML=bad('ราคาขายและต้นทุนรวมต้องมากกว่าศูนย์ อัตราส่วนของงานอยู่ระหว่างร้อยละ 0 ถึง 100 ตัวเลขอื่นต้องไม่ติดลบ');return}
+    if(due>P){$('bOut').innerHTML=bad('ค่างวดที่ถึงกำหนดสะสมสูงกว่าราคาขาย ตรวจตัวเลข');return}
+    const cap=R0(pk/100*P),cum=Math.min(due,cap),exc=due-cum,g=(P-T)/P,cumD=R0(cum*g),rv=cum-pr,d=cumD-pd,cs=rv-d;
+    G.bRev=rv;G.bCost=cs;G.bD=d;G.bExc=exc;G.bGpr=R0(g*10000)/100;
+    let h=figs([['รายได้ของงวด',rv],['ต้นทุนของงวด',cs],['กำไรขั้นต้นของงวด',d],['อัตรากำไรขั้นต้น',pct(g),1]]);
+    if(exc>0)h+=verdict('warn','ค่างวดสูงกว่าอัตราส่วนของงาน (19.7.2)',`รับรู้รายได้สะสมไม่เกิน ${fmt(cap)} บาท ค่างวดส่วนที่เกิน ${fmt(exc)} บาท เป็นเงินรับล่วงหน้าจากผู้ซื้อ (แบบ 2 รายการ 3.3)`);
+    if(g<0)h+=verdict('warn','ต้นทุนรวมสูงกว่าราคาขาย','ทดสอบมูลค่าสุทธิที่จะได้รับของต้นทุนโครงการในสินค้าคงเหลือตามย่อหน้า 8.4');
+    if(rv<0)h+=verdict('warn','รายได้สะสมต่ำกว่าที่รับรู้งวดก่อน','ตรวจตัวเลขงวดก่อน');
+    $('bOut').innerHTML=h+theory([['19.7.1','ใช้วิธีการรับรู้ตามอัตรากำไรขั้นต้น'],['19.7.2','รับรู้ไม่เกินอัตราส่วนของงานที่ทำเสร็จ ส่วนที่เกินเป็นเงินรับล่วงหน้า']])}
+  on(['bPrice','bTC','bDue','bPoc','bPrevR','bPrevD'],bCalc);bCalc();
+  /* 4 def */
+  function dCalc(){const m=$('dMeth').value,mi=val($('dMiss')),pk=val($('dPoc')),du=val($('dDue')),early=$('dEarly').checked;G.dStop=null;G.dRes=null;
+    if(mi<0||pk<0||pk>100||du<0||du>100||mi!==Math.floor(mi)){$('dOut').innerHTML=bad('จำนวนงวดเป็นจำนวนเต็มไม่ติดลบ ร้อยละอยู่ระหว่าง 0 ถึง 100');return}
+    if(m===''){$('dOut').innerHTML=wait('ยังไม่แสดงผล เลือกวิธีที่กิจการใช้ก่อน');return}
+    if(early){G.dStop=false;G.dRes='early';$('dOut').innerHTML=m==='inst'?verdict('ok','รับรู้จำนวนเงินที่เหลือเป็นรายได้ทั้งจำนวนในงวดนี้ (19.7.5)','ผู้ซื้อชำระส่วนที่เหลือก่อนกำหนด การก่อสร้างเสร็จ และผู้ขายโอนความเสี่ยงแล้ว'):verdict('ok','รับรู้รายได้ส่วนที่เหลือเมื่องานเสร็จ','ย่อหน้า 19.7.5 เป็นข้อของวิธีเงินค่างวด วิธีอัตราส่วนของงานรับรู้ส่วนที่เหลือเมื่องานเสร็จร้อยละ 100 '+INT);return}
+    const stop=m==='poc'?(mi>3&&pk>du):(mi>3);G.dStop=stop;G.dRes=stop?'stop':'go';
+    const ref=m==='poc'?'19.6.2: ผิดนัดเกินกว่า 3 งวดติดต่อกัน และอัตราส่วนของงานสูงกว่าเงินค่างวดที่ถึงกำหนดชำระ':'19.7.3: ผิดนัดเกินกว่า 3 งวดติดต่อกัน';
+    $('dOut').innerHTML=stop?verdict('bad','หยุดรับรู้รายได้ทันที',esc(ref)+' ตั้งค่าเผื่อหนี้สงสัยจะสูญตามความเหมาะสม ('+(m==='poc'?'19.6.3':'19.7.4')+') ประมาณตามบทที่ 7 รายได้ที่รับรู้แล้วไม่กลับรายการ '+INT):
+      verdict('ok','ยังไม่เข้าเงื่อนไขหยุดรับรู้','เงื่อนไข '+esc(ref)+' ยังไม่ครบ ทบทวนความสามารถเก็บเงินตาม 19.5.5 ทุกวันสิ้นงวด')}
+  on(['dMeth','dMiss','dPoc','dDue','dEarly'],dCalc);dCalc();
+  /* 5 dep */
+  function kCalc(){const t=$('kType').value,A=val($('kArea')),Sd=val($('kSold')),Rv=val($('kRecv')),F=val($('kForf'));G.kPct=null;G.kDep=null;G.kRes=null;
+    if(A<=0||Sd<0||Rv<0||F<0){$('kOut').innerHTML=bad('พื้นที่ที่เปิดขายต้องมากกว่าศูนย์ ตัวเลขอื่นต้องไม่ติดลบ');return}
+    if(Sd>A){$('kOut').innerHTML=bad('พื้นที่ที่ทำสัญญาสูงกว่าพื้นที่ที่เปิดขาย');return}
+    if(F>Rv){$('kOut').innerHTML=bad('เงินริบสูงกว่าเงินที่ได้รับ');return}
+    if(t===''){$('kOut').innerHTML=wait('ยังไม่แสดงผล เลือกประเภทการขายก่อน');G.kRes='';return}
+    const p=Sd/A;G.kPct=R0(p*10000)/100;G.kDep=Rv-F;G.kForf=F;G.kRes=(t==='condo'&&p<0.4)?'dep':'test';
+    let h=figs([['พื้นที่ที่ทำสัญญา',pct(p),1],['เงินรับล่วงหน้าคงเหลือ',Rv-F],['รายได้อื่นจากเงินริบ',F]]);
+    h+=(t==='condo'&&p<0.4)?verdict('warn','การขายยังไม่เกิดขึ้นตาม 19.5.1','อาคารชุดทำสัญญาได้ต่ำกว่าร้อยละ 40 ของพื้นที่ เงินที่ได้รับทั้งหมดเป็นเงินรับล่วงหน้า (ย่อหน้า 19.8)'):verdict('ok','ผ่านเกณฑ์ด้านพื้นที่หรือไม่ใช่อาคารชุด','ทดสอบเงื่อนไขข้ออื่นรายสัญญาที่แท็บ 0 สัญญาที่ยังไม่ผ่านคงเป็นเงินรับล่วงหน้า');
+    h+=je('รายการบันทึกเงินที่ได้รับ',[{acct:'เงินสด',amt:Rv,dr:1},{acct:'เงินรับล่วงหน้าและเงินมัดจำจากผู้ซื้อ (แบบ 2 รายการ 3.3)',amt:Rv}],'19.8');
+    if(F>0)h+=je('รายการบันทึกเงินริบ '+'(แนวการตีความ)',[{acct:'เงินรับล่วงหน้าและเงินมัดจำจากผู้ซื้อ',amt:F,dr:1},{acct:'รายได้อื่น – เงินริบ (งบกำไรขาดทุนรายการ 2)',amt:F}],'S19.5');
+    $('kOut').innerHTML=h}
+  on(['kType','kArea','kSold','kRecv','kForf'],kCalc);kCalc();
+  /* 6 tax */
+  function xCalc(){const an=$('xAnon').checked;const nm=an?'บริษัท':esc($('xName').value.trim()||'บริษัท');const P=val($('xPrice')),A=val($('xAssess')),m=$('xMeth').value,bd=val($('xBookD')),td=val($('xTaxD'));
+    G.xWht=null;G.xAnon=an;
+    if(P<=0||A<0){$('xOut').innerHTML=bad('ราคาขายต้องมากกว่าศูนย์ ราคาประเมินต้องไม่ติดลบ');return}
+    const base=Math.max(P,A),w=R0(base*0.01),sb=R0(base*0.03),lo=R0(sb*0.1),fee=R0(A*0.02);G.xWht=w;G.xSbt=sb;G.xLoc=lo;G.xFee=fee;G.xAdj=td-bd;
+    let h=`<p>${nm} โอนอสังหาริมทรัพย์ราคา ${fmt(P)} บาท</p>`+tbl(['ภาษี','ฐานและอัตรา','บาท'],[
+      ['ภาษีเงินได้หัก ณ ที่จ่าย (ม.69 ตรี)',`ร้อยละ 1 ของ ${fmt(Math.max(P,A))} (ราคาขายหรือราคาประเมิน แล้วแต่อย่างใดสูงกว่า)`,fmt(w)],
+      ['ภาษีธุรกิจเฉพาะ (ม.91/2 (6), ป.82/2542 ข้อ 6)',`ร้อยละ 3 ของ ${fmt(base)} (ราคาขายหรือราคาประเมิน แล้วแต่อย่างใดสูงกว่า)`,fmt(sb)],['ภาษีท้องถิ่น','ร้อยละ 10 ของภาษีธุรกิจเฉพาะ (รวมเป็นร้อยละ 3.3)',fmt(lo)],
+      ['ภาษีมูลค่าเพิ่ม','อยู่ในขอบข่ายภาษีธุรกิจเฉพาะแทนภาษีมูลค่าเพิ่ม','0'],['อากรแสตมป์ (28 (ข))','ยกเว้นเมื่อรายรับต้องเสียภาษีธุรกิจเฉพาะ','0'],
+      ['ค่าธรรมเนียมการจดทะเบียนโอน',`อัตราปกติร้อยละ 2 ของราคาประเมิน ${fmt(A)} ภาระตามข้อตกลงในสัญญา มาตรการลดชั่วคราวดู S19.6`,fmt(fee)]],[2]);
+    if(A>P)h+=verdict('ok','ราคาประเมินสูงกว่าราคาขาย','ฐานภาษีธุรกิจเฉพาะและภาษีหัก ณ ที่จ่ายเป็นราคาประเมิน (ป.82/2542 ข้อ 6, ม.69 ตรี)');
+    h+=`<h3>การกระทบยอดบัญชีกับภาษี</h3>`+tbl(['รายการ','บาท'],[['กำไรขั้นต้นทางบัญชีของงวด',fmt(bd)],['กำไรขั้นต้นทางภาษีของงวด',fmt(td)],['ปรับในการคำนวณกำไรสุทธิทางภาษี',fp(td-bd)]],[1]);
+    if(m!=='1')h+='<p class="hint">วิธี (2) หรือ (3) เมื่อเลือกแล้วต้องใช้ตลอดไปสำหรับอสังหาริมทรัพย์ประเภทนั้น เว้นแต่อธิบดีอนุมัติให้เปลี่ยน (ท.ป.1/2528 ข้อ 3.7 แก้ไขโดย ท.ป.228/2557)</p>';
+    $('xOut').innerHTML=h+theory([['ท.ป.1/2528 ข้อ 3.7','แก้ไขโดย ท.ป.228/2557 ลงวันที่ 11 กันยายน 2557'],['ม.69 ตรี','ข้อหารือ กค 0811/13824 (22 ก.ย. 2541)'],['ภาษีธุรกิจเฉพาะ','ม.91/2 (6) พระราชกฤษฎีกา ฉบับที่ 342 และคำสั่ง ป.82/2542 ข้อ 5–6 (15 ก.พ. 2542)'],['อากรแสตมป์','ลักษณะแห่งตราสาร 28 (ข) ยกเว้นใบรับสำหรับรายรับที่ต้องเสียภาษีธุรกิจเฉพาะ']])}
+  on(['xName','xAnon','xPrice','xAssess','xMeth','xBookD','xTaxD'],xCalc);xCalc();
+  /* 7 note */
+  function nCalc(){const an=$('nAnon').checked;const nm=an?'บริษัท':esc($('nName').value.trim()||'บริษัท');const m=$('nMeth').value,b=$('nBasis').value,adv=val($('nAdv')),st=val($('nStop'));
+    G.nAnon=an;
+    if(adv<0||st<0||st!==Math.floor(st)){$('nOut').innerHTML=bad('เงินรับล่วงหน้าต้องไม่ติดลบ จำนวนสัญญาเป็นจำนวนเต็มไม่ติดลบ');G.nTxt=null;return}
+    const BS={cost:'อัตราส่วนของต้นทุนการก่อสร้างที่เกิดขึ้นจนถึงปัจจุบันกับประมาณการต้นทุนการก่อสร้างทั้งสิ้น ไม่รวมต้นทุนที่ดิน',survey:'การสำรวจเนื้องานที่ทำแล้ว',phys:'การสำรวจอัตราส่วนของงานก่อสร้างที่ทำเสร็จกับงานก่อสร้างทั้งหมดตามสัญญาโดยพิจารณาจากการสำรวจทางกายภาพ'};
+    let t=`<h3>นโยบายการบัญชี: รายได้จากการขายอสังหาริมทรัพย์</h3>`;
+    if(m==='full')t+=`<p>${nm} รับรู้รายได้จากการขายอสังหาริมทรัพย์ทั้งจำนวนเมื่อจดทะเบียนโอนกรรมสิทธิ์และโอนความเสี่ยงและผลประโยชน์ที่มีนัยสำคัญให้ผู้ซื้อแล้ว</p>`;
+    else t+=`<p>${nm} รับรู้รายได้จากการขายอสังหาริมทรัพย์${m==='poc'?'ตามอัตราส่วนของงานที่ทำเสร็จ':'ตามเงินค่างวดที่ถึงกำหนดชำระโดยใช้อัตรากำไรขั้นต้น และไม่เกินอัตราส่วนของงานที่ทำเสร็จ'} เมื่อรายการขายเข้าเงื่อนไขตามมาตรฐาน${m==='poc'?` อัตราส่วนของงานที่ทำเสร็จกำหนดจาก${BS[b]}`:''} บริษัทหยุดรับรู้รายได้เมื่อผู้ซื้อผิดนัดชำระเงินเกินกว่า 3 งวดติดต่อกัน${m==='poc'?'และอัตราส่วนของงานที่ทำเสร็จสูงกว่าเงินค่างวดที่ถึงกำหนดชำระ':''}</p>`;
+    t+=`<p>เงินที่ได้รับจากสัญญาที่ยังไม่เข้าเงื่อนไขการรับรู้รายได้แสดงเป็นเงินรับล่วงหน้าจากผู้ซื้อ</p>`;
+    if(adv>0||st>0)t+=`<h3>ข้อมูลเพิ่มเติม</h3><p>ณ วันสิ้นงวด เงินรับล่วงหน้าจากผู้ซื้อมีจำนวน ${fmt(adv)} บาท${st>0?` และมีสัญญาที่หยุดรับรู้รายได้ ${fmt(st)} สัญญา`:''}</p><p class="hint">ข้อมูลเพิ่มเติมนี้เกินกว่าที่ย่อหน้า 19.9 กำหนด ${INT}</p>`;
+    $('nOut').innerHTML=t;G.nTxt=$('nOut').innerText}
+  on(['nName','nAnon','nMeth','nBasis','nAdv','nStop'],nCalc);nCalc();
+  $('nCopy').addEventListener('click',()=>copyText($('nOut').innerText,'nOk'));
+  /* quiz */
+  const QZ=[["LO 19.1", "เข้าใจ", "กิจการขายห้องชุดในอาคารชุด มาตรฐานถือว่าขายได้ \"ในจำนวนที่มากพอ\" ตามย่อหน้า 19.3.1 เมื่อใด", ["ก. ทำสัญญาได้ไม่น้อยกว่าร้อยละ 20 ของราคาขายรวม", "ข. งานก่อสร้างผ่านขั้นตอนเบื้องต้นไม่น้อยกว่าร้อยละ 10", "ค. ขายห้องชุดได้ไม่น้อยกว่าร้อยละ 40 ของพื้นที่ที่เปิดขายหรือเปิดจอง", "ง. ขายได้เกินกึ่งหนึ่งของจำนวนห้องชุด"], 2, "ย่อหน้า 19.3.1 และ 19.5.1 ใช้ร้อยละ 40 ของพื้นที่ที่เปิดขายหรือพื้นที่ที่เปิดจอง ร้อยละ 20 เป็นเกณฑ์เงินที่ผู้ซื้อชำระ (19.5.4) และร้อยละ 10 เป็นเกณฑ์งานขั้นเบื้องต้น (19.5.6)", "19.1–19.2"], ["LO 19.2", "ประยุกต์ใช้", "ผู้ซื้อบ้านพร้อมที่ดินชำระเงินวางเริ่มแรกและค่างวดรวมร้อยละ 15 ของราคาขายตามสัญญา เงื่อนไขอื่นครบ กิจการต้องบันทึกเงินที่ได้รับอย่างไร", ["ก. รับรู้รายได้ตามอัตราส่วนของงานที่ทำเสร็จ", "ข. รับรู้รายได้ตามเงินค่างวดที่ถึงกำหนดชำระ", "ค. รับรู้รายได้ทั้งจำนวนเมื่อทำสัญญา", "ง. บันทึกเป็นเงินมัดจำหรือเงินรับล่วงหน้าจากผู้ซื้อ"], 3, "วิธีทยอยรับรู้ทั้งสองวิธีต้องมีเงินที่ชำระแล้วไม่น้อยกว่าร้อยละ 20 ของราคาขาย (19.5.4) เมื่อไม่เข้าเงื่อนไข ให้บันทึกเป็นเงินมัดจำหรือเงินรับล่วงหน้า (19.4 วรรคท้าย, ย่อหน้า 19.8)", "19.3, 19.7"], ["LO 19.3", "ประยุกต์ใช้", "ขายบ้านพร้อมที่ดินราคา 5,000,000 บาท ต้นทุนที่ดิน 1,500,000 บาท ประมาณการต้นทุนก่อสร้าง 2,500,000 บาท ต้นทุนก่อสร้างที่เกิดสะสม 1,000,000 บาท อัตราส่วนของงานที่ทำเสร็จตามย่อหน้า 19.6.1.1 คือเท่าใด", ["ก. ร้อยละ 40", "ข. ร้อยละ 25", "ค. ร้อยละ 62.5", "ง. ร้อยละ 20"], 0, "ย่อหน้า 19.6.1.1 เทียบต้นทุนการก่อสร้างที่เกิดขึ้นกับประมาณการต้นทุนการก่อสร้างทั้งสิ้น ไม่รวมต้นทุนที่ดิน 1,000,000 ÷ 2,500,000 = ร้อยละ 40", "19.4"], ["LO 19.3", "ประยุกต์ใช้", "จากข้อ 3 รายได้สะสมที่รับรู้ตามอัตราส่วนของงานที่ทำเสร็จ ณ วันสิ้นงวดคือเท่าใด", ["ก. 1,250,000 บาท", "ข. 2,000,000 บาท", "ค. 1,600,000 บาท", "ง. 5,000,000 บาท"], 1, "รายได้ = ร้อยละ 40 × 5,000,000 = 2,000,000 บาท ส่วน 1,600,000 บาทคือต้นทุนของอสังหาริมทรัพย์ที่ขาย (ร้อยละ 40 ของต้นทุนรวม 4,000,000 บาท ตามแนวการตีความของตำรา)", "19.4"], ["LO 19.4", "วิเคราะห์", "ใช้วิธีเงินค่างวดที่ถึงกำหนดชำระ ราคา 5,000,000 บาท ค่างวดที่ถึงกำหนดและได้รับชำระแล้วสะสมร้อยละ 45 แต่อัตราส่วนของงานที่ทำเสร็จร้อยละ 40 กิจการรับรู้รายได้สะสมเท่าใด", ["ก. 2,250,000 บาท", "ข. 1,250,000 บาท", "ค. 2,000,000 บาท และเงินรับล่วงหน้า 250,000 บาท", "ง. ไม่รับรู้รายได้จนโอนกรรมสิทธิ์"], 2, "ย่อหน้า 19.7.2 ให้รับรู้รายได้ไม่เกินอัตราส่วนของงานที่ทำเสร็จ ร้อยละ 40 × 5,000,000 = 2,000,000 บาท ค่างวดส่วนที่เกิน 250,000 บาทเป็นเงินรับล่วงหน้าจากผู้ซื้อ", "19.5–19.6"], ["LO 19.4", "วิเคราะห์", "กิจการใช้วิธีเงินค่างวดที่ถึงกำหนดชำระ ผู้ซื้อผิดนัดชำระเงินสี่งวดติดต่อกัน กิจการต้องทำอย่างไร", ["ก. รับรู้รายได้ต่อเพราะงานก่อสร้างยังก้าวหน้า", "ข. กลับรายการรายได้ทั้งหมดที่เคยรับรู้", "ค. หยุดรับรู้รายได้เฉพาะเมื่ออัตราส่วนของงานที่ทำเสร็จสูงกว่าค่างวด", "ง. หยุดรับรู้รายได้ทันที และตั้งค่าเผื่อหนี้สงสัยจะสูญตามความเหมาะสม"], 3, "ย่อหน้า 19.7.3 ให้หยุดรับรู้รายได้ทันทีเมื่อผิดนัดเกินกว่า 3 งวดติดต่อกัน โดยไม่มีเงื่อนไขเรื่องอัตราส่วนของงาน (เงื่อนไขนั้นเป็นของวิธีอัตราส่วนของงานที่ทำเสร็จตาม 19.6.2) และ 19.7.4 ให้ตั้งค่าเผื่อหนี้สงสัยจะสูญตามความเหมาะสม", "19.5–19.6"], ["LO 19.5", "วิเคราะห์", "ตามคำสั่งกรมสรรพากร ที่ ท.ป.1/2528 ข้อ 3.7 ซึ่งแก้ไขโดย ท.ป.228/2557 บริษัทที่เลือกคำนวณรายได้ตามอัตราส่วนของงานที่ทำเสร็จ ต้องปฏิบัติอย่างไรในปีต่อไป", ["ก. ใช้วิธีนั้นตลอดไปสำหรับอสังหาริมทรัพย์ประเภทนั้น เว้นแต่อธิบดีอนุมัติให้เปลี่ยน", "ข. เปลี่ยนวิธีได้ทุกปีตามวิธีทางบัญชี", "ค. ต้องใช้วิธีเดียวกับบัญชีเสมอ", "ง. ต้องเปลี่ยนเป็นวิธีรับรู้ทั้งจำนวนเมื่อโอนกรรมสิทธิ์"], 0, "ข้อ 3.7 ตามที่แก้ไขโดย ท.ป.228/2557 กำหนดว่าเมื่อเลือกวิธีตามอัตราส่วนของงานที่ทำเสร็จหรือตามงวดที่ถึงกำหนดชำระแล้ว ให้ใช้วิธีนั้นตลอดไปสำหรับการขายอสังหาริมทรัพย์ประเภทนั้น เว้นแต่ได้รับอนุมัติจากอธิบดี", "19.8"], ["LO 19.6", "ประเมินค่า", "ผู้บริหารต้องการรับรู้รายได้ตามอัตราส่วนของงานที่ทำเสร็จสำหรับสัญญาที่ผู้ซื้อชำระแล้วร้อยละ 12 เพื่อรักษาเป้ากำไร ข้อสรุปใดถูกต้องตามบทที่ 19", ["ก. ทำได้ถ้าเปิดเผยเหตุผลในหมายเหตุ", "ข. ทำไม่ได้ เงินที่รับต้องบันทึกเป็นเงินรับล่วงหน้าจนกว่าผู้ซื้อชำระครบร้อยละ 20 และเงื่อนไขอื่นครบ", "ค. ทำได้ถ้าผู้สอบบัญชียอมรับ", "ง. ทำได้ถ้าโครงการก่อสร้างเกินร้อยละ 50"], 1, "เกณฑ์ร้อยละ 20 ใน 19.5.4 เป็นเงื่อนไขของวิธีทยอยรับรู้ การเปิดเผยหรือความก้าวหน้าของงานไม่ทดแทนเงื่อนไขที่ขาด รายการที่ไม่เข้าเงื่อนไขบันทึกเป็นเงินรับล่วงหน้า (ย่อหน้า 19.8)", "19.8–19.9"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  const goS=()=>{const m=(location.hash||'').match(/^#(S19\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}else{const h=(location.hash||'').slice(1);if(names.includes(h))show(h)}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body>
+</html>

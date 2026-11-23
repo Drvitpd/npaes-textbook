@@ -1,0 +1,707 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 04 · จัดทำงบการเงินจากงบทดลองตามรายการขั้นต่ำ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Sarabun","TH Sarabun New","Noto Sans Thai","Leelawadee UI","Thonburi",system-ui,sans-serif;
+  --body:"Sarabun","TH Sarabun New","Noto Sans Thai","Leelawadee UI","Thonburi",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="tl"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ชุดเครื่องมือประกอบตำรา การบัญชีตาม TFRS for NPAEs: หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565</span>
+  </div>
+    <style>
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  </style>
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 4 การนำเสนองบการเงิน</div>
+      <h1>แอป 04 · จัดทำงบการเงินจากงบทดลองตามรายการขั้นต่ำ</h1>
+      <p class="lede">วางงบทดลองจาก Excel แล้วจับคู่บัญชีกับรายการขั้นต่ำในย่อหน้า 4.9 และ 4.12 แอปจัดทำงบฐานะการเงินแยกหมุนเวียนและไม่หมุนเวียน และงบกำไรขาดทุนแบบจำแนกค่าใช้จ่ายตามธรรมชาติหรือตามหน้าที่ พร้อมตรวจการหักกลบและความครบถ้วนของหมายเหตุ ชื่อกิจการและชื่อบัญชีแสดงเป็นรหัส ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>ย่อหน้า 4.1–4.23</b><br>ตำราบทที่ 4 หัวข้อ 4.3–4.7 · ฉบับ 16-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> วางงบทดลองและตรวจการจับคู่ → อ่านงบที่ได้และคำเตือน → จัดประเภทรายการที่มีเงื่อนไข → ทดสอบตนเอง → เนื้อหาเสริม</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="tb"><span class="n">0</span>จัดทำงบจากงบทดลอง</button>
+    <button role="tab" aria-selected="false" data-tab="cls"><span class="n">1</span>จัดประเภทหมุนเวียน</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">2</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">3</span>เนื้อหาเสริม S4</button>
+  </nav>
+
+  <!-- 0 TRIAL BALANCE -->
+  <div class="grid" data-pane="tb">
+    <section class="panel">
+      <h2>งบทดลองและการจับคู่</h2>
+      <p class="hint">วางสองคอลัมน์ (ชื่อบัญชี แท็บ ยอดคงเหลือ โดยยอดเครดิตใส่ลบหรือวงเล็บ) หรือสามคอลัมน์ (ชื่อบัญชี เดบิต เครดิต) แล้วกด "นำเข้า" แอปเดารหัสรายการจากชื่อบัญชี ตรวจและแก้รหัสในตารางได้ทุกบรรทัด</p>
+      <span class="sample" id="tTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 4.2</span>
+      <div class="row-actions" style="margin-bottom:10px">
+        <button class="btn" data-t="ex42">ตัวอย่างที่ 4.2</button>
+        <button class="btn" data-t="off">ตัวอย่างการหักกลบ</button>
+        <button class="btn" data-t="clr">ล้างทั้งหมด</button>
+      </div>
+      <div class="fields">
+        <label class="f">ชื่อกิจการ (ไม่บังคับ)<input type="text" id="tEnt" autocomplete="off"></label>
+        <label class="f">วันสิ้นรอบระยะเวลารายงาน<input type="text" id="tDate" value="31 ธันวาคม 2568"></label>
+        <label class="f">จำนวนหลักที่แสดง (4.7.5)<select id="tUnit"><option value="1">บาท</option><option value="1000">พันบาท</option></select></label>
+        <label class="f">สินค้าคงเหลือปลายงวด (ระบบเป็นงวด)<input type="text" class="num" id="tClose" inputmode="decimal" placeholder="ใส่เมื่อใช้รหัส C3"></label>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="การจำแนกค่าใช้จ่าย">
+        <label><input type="radio" name="tFmt" value="fn3" checked>ตามหน้าที่ แบบหลายขั้น (4.13.2.3.2)</label>
+        <label><input type="radio" name="tFmt" value="fn1">ตามหน้าที่ แบบขั้นเดียว (4.13.2.3.1)</label>
+        <label><input type="radio" name="tFmt" value="nat">ตามธรรมชาติ (4.13.1)</label>
+      </div>
+      <label class="checks" style="display:flex;gap:8px;align-items:center;margin:2px 0 8px"><input type="checkbox" id="tHide" checked>ปกปิดชื่อกิจการและชื่อบัญชี (ค่าเริ่มต้น)</label>
+      <label class="f">วางงบทดลอง<textarea id="tPaste" rows="7" spellcheck="false" placeholder="เงินสด&#9;1,090,000&#10;เจ้าหนี้การค้า&#9;(1,900,000)"></textarea></label>
+      <div class="row-actions"><button class="btn primary" id="tImp">นำเข้า</button><span class="hint" id="tImpMsg"></span></div>
+      <div class="tbl" style="margin-top:10px"><table id="tMap">
+        <thead><tr><th>#</th><th>บัญชี</th><th class="num">ยอด Dr/(Cr)</th><th>รหัสรายการ</th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td></td><td>รวม (ต้องเป็นศูนย์)</td><td class="num" id="tSum">–</td><td></td></tr></tfoot>
+      </table></div>
+      <h3>ตรวจหมายเหตุประกอบงบการเงิน (4.19)</h3>
+      <div class="checks" id="tNotes"></div>
+    </section>
+    <section class="panel voucher" aria-live="polite">
+      <h2>งบการเงินที่ได้</h2>
+      <div id="tOut"></div>
+      <div class="row-actions" style="margin-top:10px"><button class="btn" id="tCopy">คัดลอกงบ (วางใน Excel ได้)</button><span class="copied" id="tCopyMsg"></span></div>
+    </section>
+  </div>
+
+  <!-- 1 CLASSIFICATION -->
+  <div class="grid" data-pane="cls" hidden>
+    <section class="panel">
+      <h2>ข้อเท็จจริงของรายการ</h2>
+      <p class="hint">ตอบคำถามตามข้อเท็จจริง ณ วันสิ้นรอบระยะเวลารายงาน แอปตอบว่ารายการเป็นหมุนเวียนหรือไม่หมุนเวียนตามย่อหน้า 4.8 และแยกส่วนที่ถึงกำหนดภายใน 12 เดือนให้</p>
+      <span class="sample" id="cTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 4.1 รายการ ก</span>
+      <div class="row-actions" style="margin-bottom:10px">
+        <button class="btn" data-c="a">4.1 ก</button><button class="btn" data-c="b">4.1 ข</button><button class="btn" data-c="c">4.1 ค</button><button class="btn" data-c="d">4.1 ง</button>
+        <button class="btn" data-c="e">4.1 จ</button><button class="btn" data-c="f">4.1 ฉ</button><button class="btn" data-c="g">4.1 ช</button><button class="btn" data-c="clr">ล้าง</button>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="ประเภท">
+        <label><input type="radio" name="cKind" value="A" checked>สินทรัพย์</label>
+        <label><input type="radio" name="cKind" value="L">หนี้สิน</label>
+      </div>
+      <div class="fields">
+        <label class="f">คำบรรยายรายการ (ไม่บังคับ)<input type="text" id="cDesc" autocomplete="off"></label>
+        <label class="f">จำนวนเงินทั้งสิ้น<input type="text" class="num" id="cAmt" inputmode="decimal"></label>
+        <label class="f">ส่วนที่ได้รับหรือถึงกำหนดชำระภายใน 12 เดือน<input type="text" class="num" id="cDue" inputmode="decimal" placeholder="เว้นว่างถ้าไม่ทราบหรือไม่แบ่ง"></label>
+      </div>
+      <div id="cQs"></div>
+    </section>
+    <section class="panel voucher" aria-live="polite">
+      <h2>ผลการจัดประเภท</h2>
+      <div id="cOut"></div>
+      <div class="row-actions" style="margin-top:10px"><button class="btn" id="cCopy">คัดลอกบันทึก</button><span class="copied" id="cCopyMsg"></span></div>
+    </section>
+  </div>
+
+  <!-- 2 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="qBox"></div>
+      <div class="row-actions"><button class="btn primary" id="qChk">ตรวจคำตอบ</button><button class="btn" id="qClr">ล้างคำตอบ</button></div>
+      <div id="qOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 3 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S4</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 4 ลิงก์ #S4.1 ถึง #S4.7 เปิดหัวข้อนั้นได้โดยตรง</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S4.1">S4.1</a><a class="btn" href="#S4.2">S4.2</a><a class="btn" href="#S4.3">S4.3</a><a class="btn" href="#S4.4">S4.4</a><a class="btn" href="#S4.5">S4.5</a><a class="btn" href="#S4.6">S4.6</a><a class="btn" href="#S4.7">S4.7</a></div>
+
+      <h3 id="S4.1">S4.1 งบการเงินที่สมบูรณ์ของตัวอย่างที่ 4.2–4.3</h3>
+      <p>บริษัทตัวอย่าง จำกัด งบการเงินสำหรับปีสิ้นสุดวันที่ 31 ธันวาคม 2568 (หน่วย: บาท) ข้อมูลจากงบทดลองในตัวอย่างที่ 4.2 กดปุ่ม "ตัวอย่างที่ 4.2" ในแท็บ 0 เพื่อดูการจับคู่รายบัญชี</p>
+      <div class="tbl"><table>
+        <thead><tr><th>งบฐานะการเงิน ณ วันที่ 31 ธันวาคม 2568</th><th class="num">บาท</th></tr></thead>
+        <tbody>
+          <tr><td><b>สินทรัพย์หมุนเวียน</b></td><td></td></tr>
+          <tr><td>เงินสดและรายการเทียบเท่าเงินสด</td><td class="num">1,090,000</td></tr>
+          <tr><td>เงินลงทุนชั่วคราว</td><td class="num">500,000</td></tr>
+          <tr><td>ลูกหนี้การค้าและลูกหนี้อื่น (สุทธิจากค่าเผื่อหนี้สงสัยจะสูญ 120,000)</td><td class="num">2,280,000</td></tr>
+          <tr><td>สินค้าคงเหลือ</td><td class="num">1,700,000</td></tr>
+          <tr><td>สินทรัพย์หมุนเวียนอื่น</td><td class="num">80,000</td></tr>
+          <tr><td><b>รวมสินทรัพย์หมุนเวียน</b></td><td class="num"><b>5,650,000</b></td></tr>
+          <tr><td><b>สินทรัพย์ไม่หมุนเวียน</b></td><td></td></tr>
+          <tr><td>เงินลงทุนระยะยาวอื่น</td><td class="num">1,000,000</td></tr>
+          <tr><td>ที่ดิน อาคารและอุปกรณ์</td><td class="num">7,900,000</td></tr>
+          <tr><td>สินทรัพย์ไม่มีตัวตน</td><td class="num">200,000</td></tr>
+          <tr><td><b>รวมสินทรัพย์ไม่หมุนเวียน</b></td><td class="num"><b>9,100,000</b></td></tr>
+          <tr><td><b>รวมสินทรัพย์</b></td><td class="num"><b>14,750,000</b></td></tr>
+          <tr><td><b>หนี้สินหมุนเวียน</b></td><td></td></tr>
+          <tr><td>เงินเบิกเกินบัญชีธนาคารและเงินกู้ยืมระยะสั้นจากสถาบันการเงิน</td><td class="num">300,000</td></tr>
+          <tr><td>เจ้าหนี้การค้าและเจ้าหนี้อื่น</td><td class="num">2,050,000</td></tr>
+          <tr><td>เงินกู้ยืมระยะยาวที่ถึงกำหนดชำระภายในหนึ่งปี</td><td class="num">600,000</td></tr>
+          <tr><td>หนี้สินหมุนเวียนอื่น</td><td class="num">120,000</td></tr>
+          <tr><td><b>รวมหนี้สินหมุนเวียน</b></td><td class="num"><b>3,070,000</b></td></tr>
+          <tr><td><b>หนี้สินไม่หมุนเวียน</b></td><td></td></tr>
+          <tr><td>เงินกู้ยืมระยะยาว</td><td class="num">2,400,000</td></tr>
+          <tr><td>ประมาณการหนี้สินระยะยาว</td><td class="num">280,000</td></tr>
+          <tr><td><b>รวมหนี้สินไม่หมุนเวียน</b></td><td class="num"><b>2,680,000</b></td></tr>
+          <tr><td><b>รวมหนี้สิน</b></td><td class="num"><b>5,750,000</b></td></tr>
+          <tr><td><b>ส่วนของเจ้าของ</b></td><td></td></tr>
+          <tr><td>ทุนที่ชำระแล้ว (หุ้นสามัญ 600,000 หุ้น มูลค่าหุ้นละ 10 บาท)</td><td class="num">6,000,000</td></tr>
+          <tr><td>กำไรสะสม – จัดสรรแล้ว – ทุนสำรองตามกฎหมาย</td><td class="num">240,000</td></tr>
+          <tr><td>กำไรสะสม – ยังไม่ได้จัดสรร</td><td class="num">2,760,000</td></tr>
+          <tr><td><b>รวมส่วนของเจ้าของ</b></td><td class="num"><b>9,000,000</b></td></tr>
+          <tr><td><b>รวมหนี้สินและส่วนของเจ้าของ</b></td><td class="num"><b>14,750,000</b></td></tr>
+        </tbody></table></div>
+      <p>งบกำไรขาดทุนทั้งสองรูปแบบอยู่ในตัวอย่างที่ 4.2 ของตำรา และงบการเปลี่ยนแปลงส่วนของเจ้าของอยู่ในตัวอย่างที่ 4.3 หมายเหตุประกอบงบการเงินชุดนี้มีอย่างน้อย (1) ข้อมูลทั่วไปและเกณฑ์การจัดทำ (2) สรุปนโยบายการบัญชีที่สำคัญ (3) ลูกหนี้การค้าและค่าเผื่อหนี้สงสัยจะสูญ (4) ที่ดิน อาคารและอุปกรณ์ (5) เงินกู้ยืมระยะยาวพร้อมหลักประกันและเงื่อนไข (6) ประมาณการหนี้สินผลประโยชน์พนักงาน (7) สำรองตามกฎหมายและเงินปันผล (8) ภาระผูกพันและหนี้สินที่อาจเกิดขึ้น</p>
+
+      <h3 id="S4.2">S4.2 ตารางจับคู่บัญชีกับรายการขั้นต่ำตามย่อหน้า 4.9</h3>
+      <p class="hint">สภาวิชาชีพบัญชีออกมาตรฐาน ส่วนกรมพัฒนาธุรกิจการค้ากำหนดรูปแบบงบการเงินและความหมายของแต่ละบรรทัด ตามประกาศ เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566 และคำชี้แจงประกาศ (แบบ 2 บริษัทจำกัด แก้ไขเพิ่มเติม 17 มีนาคม 2568) บรรทัดตามแบบ 2 ตรงกับย่อหน้า 4.9 และแยกละเอียดขึ้นในบางเรื่อง เช่น ข้อ 2.1 เงินฝากธนาคารที่มีภาระค้ำประกัน ซึ่งย่อหน้า 4.9 รวมไว้ในสินทรัพย์ไม่หมุนเวียนอื่น และข้อ 2.14 สินทรัพย์ภาษีเงินได้รอการตัดบัญชี กับข้อ 4.5 หนี้สินภาษีเงินได้รอการตัดบัญชี สำหรับกิจการที่เลือกย่อหน้า 15.2 ประกาศลงในราชกิจจานุเบกษาเมื่อ 17 พฤศจิกายน 2566 ใช้กับรอบระยะเวลาบัญชีที่เริ่มในหรือหลังวันที่ 1 มกราคม 2567</p>
+      <div class="tbl"><table>
+        <thead><tr><th>ย่อหน้า</th><th>รายการในงบฐานะการเงิน</th><th>บัญชีที่มักจับคู่</th><th>ข้อควรระวัง</th></tr></thead>
+        <tbody>
+          <tr><td class="nw">4.9.1</td><td>เงินสดและรายการเทียบเท่าเงินสด</td><td>เงินสด เงินฝากออมทรัพย์ กระแสรายวัน เงินฝากประจำไม่เกิน 3 เดือน</td><td>เงินฝากที่ติดภาระค้ำประกันไม่เข้าเงื่อนไข 4.8.1.1 · บัญชีธนาคารที่มียอดเครดิตย้ายไป 4.9.16</td></tr>
+          <tr><td class="nw">4.9.2</td><td>เงินลงทุนชั่วคราว (แบบ 2 ข้อ 1.2)</td><td>เงินฝากประจำที่อายุเกิน 3 เดือนนับจากวันที่ได้มาและครบกำหนดภายใน 12 เดือนนับจากวันสิ้นงวด หลักทรัพย์เพื่อค้า หลักทรัพย์เผื่อขายที่ตั้งใจถือไม่เกิน 12 เดือน</td><td>คำชี้แจงแบบ 2 ข้อ 1.2 รวมเงินฝากประจำที่ไม่ใช่รายการเทียบเท่าเงินสด เงินฝากประจำที่ครบกำหนดเกิน 12 เดือนใช้ข้อ 2.5 (4.9.9) ดูบทที่ 6 และบทที่ 9</td></tr>
+          <tr><td class="nw">4.9.15</td><td>เงินฝากธนาคารที่มีภาระค้ำประกัน (แบบ 2 ข้อ 2.1)</td><td>เงินฝากที่นำไปเป็นหลักประกันและถอนไม่ได้เกิน 12 เดือนนับจากวันสิ้นงวดหรือไม่มีกำหนดสิ้นสุด</td><td>ถ้าข้อจำกัดสิ้นสุดภายใน 12 เดือน ใช้สินทรัพย์หมุนเวียนอื่น (4.9.7 แบบ 2 ข้อ 1.9) เปิดเผยเงื่อนไขตามย่อหน้า 6.5 แอปจับคู่ชื่อบัญชีที่มีคำว่าค้ำประกันหรือติดภาระไว้ที่บรรทัดนี้ ผู้ใช้เปลี่ยนเป็น 4.9.7 ได้</td></tr>
+          <tr><td class="nw">15.2</td><td>สินทรัพย์ภาษีเงินได้รอการตัดบัญชี (แบบ 2 ข้อ 2.14) · หนี้สินภาษีเงินได้รอการตัดบัญชี (แบบ 2 ข้อ 4.5)</td><td>เฉพาะกิจการที่เลือกถือปฏิบัติตามย่อหน้า 15.2</td><td>ย่อหน้า 4.9 ไม่มีบรรทัดเฉพาะ ให้แยกแสดงเมื่อมีสาระสำคัญ (4.5) ไม่รวมไว้ในสินทรัพย์หรือหนี้สินอื่น จัดเป็นรายการไม่หมุนเวียน</td></tr>
+          <tr><td class="nw">4.9.3</td><td>ลูกหนี้การค้าและลูกหนี้อื่น</td><td>ลูกหนี้การค้า ตั๋วเงินรับ ค่าเผื่อหนี้สงสัยจะสูญ (หักออก) ลูกหนี้อื่น</td><td>ลูกหนี้ที่มียอดเครดิตเป็นเงินรับล่วงหน้า ย้ายไปหนี้สิน</td></tr>
+          <tr><td class="nw">4.9.4–4.9.7</td><td>เงินให้กู้ยืมระยะสั้น สินค้าคงเหลือ สินทรัพย์ชีวภาพ สินทรัพย์หมุนเวียนอื่น</td><td>เงินให้กู้ยืมแก่กรรมการ สินค้า วัตถุดิบ ค่าใช้จ่ายจ่ายล่วงหน้า ภาษีซื้อรอเรียกคืน</td><td>เงินให้กู้ยืมแก่กรรมการเป็นรายการที่ผู้ใช้สนใจ ควรแยกแสดงเมื่อมีสาระสำคัญ (4.5)</td></tr>
+          <tr><td class="nw">4.9.8–4.9.10</td><td>เงินลงทุนในบริษัทย่อย ร่วม การร่วมค้า · เงินลงทุนระยะยาวอื่น · เงินให้กู้ยืมระยะยาว</td><td>เงินลงทุนตามวิธีราคาทุน ตราสารหนี้ที่จะถือจนครบกำหนดเกิน 12 เดือน</td><td>ส่วนที่ครบกำหนดภายใน 12 เดือนจัดเป็นหมุนเวียน</td></tr>
+          <tr><td class="nw">4.9.11–4.9.15</td><td>อสังหาริมทรัพย์เพื่อการลงทุน · ที่ดิน อาคารและอุปกรณ์ · สินทรัพย์ไม่มีตัวตน · ค่าความนิยม · สินทรัพย์ไม่หมุนเวียนอื่น</td><td>ที่ดิน อาคาร เครื่องจักร ยานพาหนะ ค่าเสื่อมราคาสะสม (หักออก) โปรแกรมคอมพิวเตอร์ เงินประกัน</td><td>ค่าความนิยมแสดงเฉพาะที่เกิดจากการรวมธุรกิจตามบทที่ 25</td></tr>
+          <tr><td class="nw">4.9.16–4.9.21</td><td>เงินเบิกเกินบัญชีและเงินกู้ยืมระยะสั้นจากสถาบันการเงิน · เจ้าหนี้การค้าและเจ้าหนี้อื่น · เงินกู้ยืมระยะยาวที่ถึงกำหนดภายในหนึ่งปี · เงินกู้ยืมระยะสั้น · ประมาณการหนี้สินระยะสั้น · หนี้สินหมุนเวียนอื่น</td><td>เงินเบิกเกินบัญชี ตั๋วเงินจ่าย เจ้าหนี้การค้า ค่าใช้จ่ายค้างจ่าย เงินกู้ยืมจากกรรมการ ภาษีเงินได้ค้างจ่าย ภาษีหัก ณ ที่จ่ายค้างจ่าย</td><td>เงินกู้ยืมจากสถาบันการเงินแยกจากเงินกู้ยืมระยะสั้นจากบุคคลอื่น</td></tr>
+          <tr><td class="nw">4.9.22–4.9.24</td><td>เงินกู้ยืมระยะยาว · ประมาณการหนี้สินระยะยาว · หนี้สินไม่หมุนเวียนอื่น</td><td>เงินกู้ยืมระยะยาวส่วนที่เกิน 12 เดือน หนี้สินตามสัญญาเช่า ภาระผูกพันผลประโยชน์พนักงาน</td><td>เงินกู้ที่ละเมิดเงื่อนไขก่อนหรือ ณ วันสิ้นงวดโดยยังไม่ได้รับผ่อนผัน จัดเป็นหมุนเวียน (4.8.2.3)</td></tr>
+          <tr><td class="nw">4.9.25, 4.10</td><td>ทุนที่ออกและสำรองต่าง ๆ รวมทั้งกำไร (ขาดทุน) สะสม</td><td>ทุนเรือนหุ้น ส่วนเกินมูลค่าหุ้น สำรองตามกฎหมาย กำไรสะสม ทุนของผู้เป็นหุ้นส่วน</td><td>กิจการที่ไม่มีหุ้นทุนเปิดเผยข้อมูลเทียบเท่าตามย่อหน้า 4.10</td></tr>
+        </tbody></table></div>
+
+            <h4>การจับคู่บรรทัดตามย่อหน้า 4.9 กับเลขข้อรายการย่อแบบ 2</h4>
+      <div class="tbl"><table><thead><tr><th>ย่อหน้า</th><th>บรรทัดตามย่อหน้า 4.9</th><th>แบบ 2 ข้อ</th></tr></thead><tbody>
+        <tr><td class="nw">4.9.1</td><td>เงินสดและรายการเทียบเท่าเงินสด</td><td class="nw">1.1</td></tr>
+        <tr><td class="nw">4.9.2</td><td>เงินลงทุนชั่วคราว</td><td class="nw">1.2</td></tr>
+        <tr><td class="nw">4.9.3</td><td>ลูกหนี้การค้าและลูกหนี้อื่น</td><td class="nw">1.3, 2.6</td></tr>
+        <tr><td class="nw">4.9.4</td><td>เงินให้กู้ยืมระยะสั้น</td><td class="nw">1.5</td></tr>
+        <tr><td class="nw">4.9.5</td><td>สินค้าคงเหลือ</td><td class="nw">1.6</td></tr>
+        <tr><td class="nw">4.9.6</td><td>สินทรัพย์ชีวภาพ</td><td class="nw">1.8, 2.13</td></tr>
+        <tr><td class="nw">4.9.7</td><td>สินทรัพย์หมุนเวียนอื่น</td><td class="nw">1.4, 1.7, 1.9, 1.10</td></tr>
+        <tr><td class="nw">4.9.8</td><td>เงินลงทุนในบริษัทย่อย ร่วม หรือการร่วมค้า</td><td class="nw">2.2–2.4</td></tr>
+        <tr><td class="nw">4.9.9</td><td>เงินลงทุนระยะยาวอื่น</td><td class="nw">2.5</td></tr>
+        <tr><td class="nw">4.9.10</td><td>เงินให้กู้ยืมระยะยาว</td><td class="nw">2.7</td></tr>
+        <tr><td class="nw">4.9.11</td><td>อสังหาริมทรัพย์เพื่อการลงทุน</td><td class="nw">2.9</td></tr>
+        <tr><td class="nw">4.9.12</td><td>ที่ดิน อาคารและอุปกรณ์</td><td class="nw">2.10</td></tr>
+        <tr><td class="nw">4.9.13</td><td>สินทรัพย์ไม่มีตัวตน</td><td class="nw">2.12</td></tr>
+        <tr><td class="nw">4.9.14</td><td>ค่าความนิยม</td><td class="nw">2.11</td></tr>
+        <tr><td class="nw">4.9.15</td><td>สินทรัพย์ไม่หมุนเวียนอื่น</td><td class="nw">2.1, 2.8, 2.14, 2.15, 2.16</td></tr>
+        <tr><td class="nw">4.9.16</td><td>เงินเบิกเกินบัญชีธนาคารและเงินกู้ยืมระยะสั้นจากสถาบันการเงิน</td><td class="nw">3.1</td></tr>
+        <tr><td class="nw">4.9.17</td><td>เจ้าหนี้การค้าและเจ้าหนี้อื่น</td><td class="nw">3.2, 4.3</td></tr>
+        <tr><td class="nw">4.9.18</td><td>เงินกู้ยืมระยะยาวที่ถึงกำหนดชำระภายในหนึ่งปี</td><td class="nw">3.4, 3.5</td></tr>
+        <tr><td class="nw">4.9.19</td><td>เงินกู้ยืมระยะสั้น</td><td class="nw">3.6</td></tr>
+        <tr><td class="nw">4.9.20</td><td>ประมาณการหนี้สินระยะสั้น</td><td class="nw">3.8, 3.9</td></tr>
+        <tr><td class="nw">4.9.21</td><td>หนี้สินหมุนเวียนอื่น</td><td class="nw">3.3, 3.7, 3.10</td></tr>
+        <tr><td class="nw">4.9.22</td><td>เงินกู้ยืมระยะยาว</td><td class="nw">4.1, 4.2</td></tr>
+        <tr><td class="nw">4.9.23</td><td>ประมาณการหนี้สินระยะยาว</td><td class="nw">4.6, 4.7</td></tr>
+        <tr><td class="nw">4.9.24</td><td>หนี้สินไม่หมุนเวียนอื่น</td><td class="nw">4.4, 4.5, 4.8</td></tr>
+        <tr><td class="nw">4.9.25</td><td>ทุนที่ออกและสำรองต่าง ๆ รวมทั้งกำไร (ขาดทุน) สะสม</td><td class="nw">5.1–5.6</td></tr>
+      </tbody></table></div>
+      <p class="hint">การจับคู่นี้เป็นแนวการตีความจากความหมายของแต่ละบรรทัดในคำชี้แจงรายการย่อแบบ 2 ของกรมพัฒนาธุรกิจการค้า (แก้ไขเพิ่มเติม 17 มีนาคม 2568) บรรทัด 2.14 และ 4.5 ใช้เมื่อกิจการเลือกถือปฏิบัติตามย่อหน้า 15.2</p>
+
+      <h3 id="S4.3">S4.3 แม่แบบหมายเหตุข้อ 1–2 ตามย่อหน้า 4.19.1–4.19.2</h3>
+      <pre class="memo">1. ข้อมูลทั่วไปและเกณฑ์ในการจัดทำงบการเงิน
+   [ชื่อกิจการ] เป็น [บริษัทจำกัด/ห้างหุ้นส่วนจำกัด] จดทะเบียนในประเทศไทย ประกอบธุรกิจ [ลักษณะธุรกิจ]
+   งบการเงินนี้จัดทำขึ้นตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (ปรับปรุง 2565)
+   ที่ออกโดยสภาวิชาชีพบัญชี และแสดงรายการตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน
+   งบการเงินแสดงหน่วยเงินตราเป็นบาท [และแสดงจำนวนเงินเป็นพันบาท]
+
+2. สรุปนโยบายการบัญชีที่สำคัญ
+   2.1 การรับรู้รายได้ ...................................................... (บทที่ 18)
+   2.2 เงินสดและรายการเทียบเท่าเงินสด ......................... (บทที่ 6)
+   2.3 ลูกหนี้การค้าและค่าเผื่อหนี้สงสัยจะสูญ ................ (บทที่ 7)
+   2.4 สินค้าคงเหลือ: วิธีราคาทุน [เข้าก่อนออกก่อน/ถัวเฉลี่ยถ่วงน้ำหนัก] หรือมูลค่าสุทธิที่จะได้รับ แล้วแต่ราคาใดต่ำกว่า (บทที่ 8)
+   2.5 ที่ดิน อาคารและอุปกรณ์: วิธีการคิดค่าเสื่อมราคาและอายุการใช้ประโยชน์ (บทที่ 10)
+   2.6 ภาษีเงินได้ ....................................................... (บทที่ 15)
+   [เลือกเฉพาะนโยบายที่กิจการมีรายการ และระบุทางเลือกที่กิจการใช้]</pre>
+      <p>รูปแบบรายการย่อตามประกาศกรมพัฒนาธุรกิจการค้าอยู่ในบทที่ 29 ของตำรา</p>
+
+      <h3 id="S4.4">S4.4 เฉลยแบบฝึกหัดท้ายบท</h3>
+      <div class="tbl"><table><thead><tr><th>ข้อ</th><th>คำตอบ</th><th>เหตุผลโดยย่อ</th></tr></thead><tbody id="sKey"></tbody></table></div>
+      <p><b>โจทย์ข้อ 1</b> (ก) งบการเงินไม่ครบ ย่อหน้า 4.1.3 กำหนดให้มีงบการเปลี่ยนแปลงส่วนของเจ้าของ ให้จัดทำเพิ่ม (4.18) (ข) ย่อหน้า 4.3 กำหนดให้รายการเปรียบเทียบได้กับงวดก่อน การเปลี่ยนผังบัญชีไม่ใช่เหตุยกเว้น ให้จัดตัวเลขปี 2567 ใหม่ตามผังบัญชีใหม่และอธิบายการจัดประเภทใหม่ในหมายเหตุ (ค) ขัดย่อหน้า 4.6 ให้แสดงเงินสดและรายการเทียบเท่าเงินสด 700,000 บาท (4.9.1) และเงินเบิกเกินบัญชีธนาคาร 250,000 บาท (4.9.16) สินทรัพย์หมุนเวียนและหนี้สินหมุนเวียนเพิ่มขึ้นด้านละ 250,000 บาท (ง) ระบุสกุลเงินและจำนวนหลักที่ใช้แสดง เช่น "หน่วย: บาท" (4.7.4–4.7.5) (จ) งบกระแสเงินสดเป็นทางเลือก (4.2) แต่เมื่อเลือกจัดทำต้องปฏิบัติตามมาตรฐานการบัญชี ฉบับที่ 7 ทั้งฉบับ ให้เพิ่มกิจกรรมลงทุนและกิจกรรมจัดหาเงิน หรือไม่แนบงบนี้ ร่างบันทึกการสอบทาน: "ร่างงบการเงินปี 2568 ยังไม่เป็นไปตามบทที่ 4 ห้าเรื่อง ได้แก่ งบการเปลี่ยนแปลงส่วนของเจ้าของ (4.1.3) ข้อมูลเปรียบเทียบ (4.3) การหักกลบบัญชีธนาคาร (4.6) หน่วยของจำนวนเงิน (4.7) และงบกระแสเงินสดที่ไม่ครบ (4.2) ขอให้แก้ไขก่อนเสนออนุมัติ"</p>
+      <p><b>โจทย์ข้อ 2</b> (1) หนี้สินหมุนเวียน 500,000 บาท (4.9.18) และไม่หมุนเวียน 1,500,000 บาท (4.9.22) ตามย่อหน้า 4.8.2.2 (2) หนี้สินหมุนเวียนทั้งจำนวน 3,000,000 บาท (4.9.18) เพราะธนาคารผ่อนผันหลังวันสิ้นงวด (4.8.2.3 ก) (3) สินทรัพย์ไม่หมุนเวียน 600,000 บาท (4.9.15 แบบ 2 ข้อ 2.1) เพราะติดภาระเกิน 12 เดือน ไม่เข้า 4.8.1.1 และ 4.8.1.4 (4) สินทรัพย์หมุนเวียน 1,500,000 บาท (4.9.5) ตามรอบการดำเนินงานปกติ (4.8.1.2) (5) สินทรัพย์หมุนเวียน 400,000 บาท เป็นเงินลงทุนชั่วคราว (4.9.2) ตาม 4.8.1.4 (6) หนี้สินหมุนเวียน 1,200,000 บาท (4.9.17) ยอดหนี้สินหมุนเวียนรวม 500,000 + 3,000,000 + 1,200,000 = 4,700,000 บาท เรื่องที่เปิดเผย: เงื่อนไขเงินกู้ การละเมิดเงื่อนไขและหนังสือผ่อนผันที่ได้รับหลังวันสิ้นงวด (บทที่ 17) และเงินฝากที่ติดภาระค้ำประกัน (ย่อหน้า 6.5) ตรวจแต่ละรายการด้วยแท็บ 1 ได้</p>
+      <p><b>โจทย์ข้อ 3</b> (ก) ตามธรรมชาติ: รายได้จากการขาย 5,000,000 รายได้อื่น 60,000 รวมรายได้ 5,060,000 การเปลี่ยนแปลงในสินค้า (100,000) เพราะสินค้าเพิ่มขึ้นจาก 800,000 เป็น 900,000 ซื้อ 3,300,000 ค่าใช้จ่ายพนักงาน 750,000 ค่าเสื่อมราคา 250,000 ค่าใช้จ่ายอื่น 300,000 รวมค่าใช้จ่าย 4,500,000 กำไรก่อนต้นทุนทางการเงินและภาษีเงินได้ 560,000 ต้นทุนทางการเงิน 90,000 กำไรก่อนภาษีเงินได้ 470,000 ภาษีเงินได้ 94,000 กำไรสุทธิ 376,000 · ตามหน้าที่แบบหลายขั้น: รายได้จากการขาย 5,000,000 ต้นทุนขาย 3,200,000 (800,000 + 3,300,000 − 900,000) กำไรขั้นต้น 1,800,000 รายได้อื่น 60,000 ค่าใช้จ่ายในการขาย 600,000 ค่าใช้จ่ายในการบริหาร 700,000 กำไรก่อนต้นทุนทางการเงินและภาษีเงินได้ 560,000 และกำไรสุทธิ 376,000 เท่ากัน (4.13) (ข) ทุน 2,000,000 คงเดิม · ทุนสำรองตามกฎหมาย 100,000 + 20,000 = 120,000 · กำไรสะสมยังไม่ได้จัดสรร 800,000 + 376,000 − 150,000 − 20,000 = 1,006,000 · รวมต้นงวด 2,900,000 ปลายงวด 3,126,000 การจัดสรรทุนสำรองย้ายระหว่างคอลัมน์ ยอดรวมไม่เปลี่ยน (ค) ส่วนเกินทุนจากการตีราคา 500,000 บาท เป็นรายการตามย่อหน้า 4.14.1 ถ้าไม่เลือกจัดทำงบกำไรขาดทุนเบ็ดเสร็จ รับรู้โดยตรงในส่วนของเจ้าของเป็นคอลัมน์ใหม่ในงบการเปลี่ยนแปลงส่วนของเจ้าของ (4.14, 4.18.4) ถ้าเลือกจัดทำ แสดงเป็นกำไรขาดทุนเบ็ดเสร็จอื่นที่จะไม่จัดประเภทใหม่ (4.16) กำไรขาดทุนเบ็ดเสร็จรวม 876,000 บาท ทั้งสองทางส่วนของเจ้าของปลายงวดเป็น 3,626,000 บาท ทางภาษี ส่วนที่ตีราคาเพิ่มไม่นำมาคำนวณกำไรสุทธิตามมาตรา 65 ทวิ (3) แห่งประมวลรัษฎากร</p>
+      <p><b>โจทย์ข้อ 4</b> (ก) หักกลบไม่ได้ ย่อหน้า 4.6 ห้ามหักกลบสินทรัพย์กับหนี้สิน เว้นแต่มาตรฐานกำหนดหรืออนุญาต แสดงลูกหนี้การค้า 350,000 บาท และเจ้าหนี้การค้า 200,000 บาท แยกกัน (ข) ต้องเปิดเผย การค้ำประกันเป็นหนี้สินที่อาจเกิดขึ้นตามย่อหน้า 4.19.4 และบทที่ 16 การไม่เปิดเผยขัดการเป็นตัวแทนอันเที่ยงธรรม (3.11.1) (ค) ย่อหน้า 4.23 กำหนดให้นำเสนองบการเงินเฉพาะกิจการด้วยเมื่อเลือกจัดทำงบการเงินรวม และพิจารณาความเป็นบริษัทย่อยตามย่อหน้า 9.5 (ง) ถ้าเลือกเปิดเผยข้อมูลบุคคลหรือกิจการที่เกี่ยวข้องกันตามย่อหน้า 4.21 ต้องปฏิบัติตามมาตรฐานการบัญชี ฉบับที่ 24 ทั้งฉบับ ไม่เลือกเฉพาะรายการขาย ร่างหมายเหตุ: "ภาระค้ำประกัน ณ วันที่ 31 ธันวาคม 2568 บริษัทค้ำประกันเงินกู้ยืมจากสถาบันการเงินของบริษัทในเครือแห่งหนึ่ง วงเงิน 5,000,000 บาท ฝ่ายบริหารประเมินว่าบริษัทในเครือชำระหนี้ตามกำหนดและยังไม่มีเหตุให้บริษัทต้องชำระแทน" บันทึกถึงเจ้าของควรอธิบายว่าการเปิดเผยพร้อมข้อมูลความสามารถชำระหนี้ของบริษัทในเครือช่วยให้ผู้ใช้ประเมินความเสี่ยงได้ถูกต้อง และลดความกังวลได้ดีกว่าการไม่เปิดเผย</p>
+
+      <h3 id="S4.5">S4.5 แนวคำตอบกรณีศึกษา 4.1 (สำหรับผู้สอน)</h3>
+      <p><b>ประเด็นที่ 1 บัญชีธนาคาร</b> ยอดเงินฝาก 900,000 บาท และเงินเบิกเกินบัญชี 450,000 บาท ต้องแยกแสดงเป็นเงินสดและรายการเทียบเท่าเงินสด 900,000 บาท และเงินเบิกเกินบัญชีธนาคาร 450,000 บาท ตามย่อหน้า 4.6 และ 4.9.1, 4.9.16 แสดงสุทธิ 450,000 บาท ไม่ได้</p>
+      <p><b>ประเด็นที่ 2 เงินกู้ 4,000,000 บาท</b> ห้างละเมิดเงื่อนไขอัตราส่วนหนี้สินต่อทุนในเดือนพฤศจิกายน 2568 และได้หนังสือผ่อนผันในเดือนกุมภาพันธ์ 2569 หลังวันสิ้นงวด จึงไม่มีสิทธิอันปราศจากเงื่อนไขในการเลื่อนชำระ ณ วันสิ้นงวด ต้องจัดเป็นหนี้สินหมุนเวียนทั้งจำนวน (4.8.2.3 ก) และควรเปิดเผยหนังสือผ่อนผันที่ได้รับภายหลังในหมายเหตุ (บทที่ 17)</p>
+      <p><b>ประเด็นที่ 3 ส่วนของผู้เป็นหุ้นส่วน</b> ห้างหุ้นส่วนจำกัดไม่มีหุ้นทุน ต้องเปิดเผยข้อมูลทุนของผู้เป็นหุ้นส่วนแต่ละประเภทให้เทียบเท่ากับย่อหน้า 4.9.25 ตามย่อหน้า 4.10 เช่น ทุนของหุ้นส่วนผู้จัดการและหุ้นส่วนจำกัดความรับผิด เงินถอนระหว่างปี และกำไรที่แบ่งให้</p>
+      <p><b>ประเด็นที่ 4 หมายเหตุ</b> หุ้นส่วนผู้จัดการต้องการแสดงเฉพาะนโยบายการบัญชี ซึ่งไม่ครบตามย่อหน้า 4.19 ต้องมีข้อความว่าจัดทำตาม TFRS for NPAEs ข้อมูลที่บทอื่นกำหนดให้เปิดเผย และข้อมูลอื่นที่เกี่ยวข้อง เช่น เงื่อนไขเงินกู้และการละเมิดเงื่อนไข</p>
+      <p><b>ประเด็นที่ 5 งบกระแสเงินสด</b> ไม่บังคับ (4.2) แต่ถ้าธนาคารต้องการและห้างเลือกจัดทำ ต้องทำตามมาตรฐานการบัญชี ฉบับที่ 7 การแสดงเฉพาะเงินสดรับจ่ายจากการดำเนินงานไม่ครบตามมาตรฐานนั้น</p>
+      <p><b>การประเมิน</b> คำตอบที่ได้คะแนนสูงแก้ทั้งห้าประเด็นพร้อมเลขย่อหน้า แสดงงบฐานะการเงินส่วนที่เปลี่ยนพร้อมตัวเลข (เงินสด 900,000 หนี้สินหมุนเวียนเพิ่ม 4,450,000) อธิบายผลต่ออัตราส่วนสภาพคล่องที่ธนาคารใช้ และชี้ว่าการแสดงเงินกู้เป็นหมุนเวียนตามข้อเท็จจริงคือการเป็นตัวแทนอันเที่ยงธรรม (3.11.1) แม้ทำให้ตัวเลขดูแย่ลง</p>
+      <h3 id="S4.6">S4.6 การเปลี่ยนแปลงจากฉบับ 2554 (ย่อหน้า 31–47) สู่ฉบับปรับปรุง 2565 (ย่อหน้า 4.1–4.23)</h3>
+      <p class="hint">เทียบตัวบทประกาศสภาวิชาชีพบัญชี ฉบับที่ 20/2554 กับประกาศ ที่ 48/2565 และเอกสารประกอบการอบรมของสภาวิชาชีพบัญชี วันที่ 9 ธันวาคม 2565 สไลด์ที่ 21–29 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>ฉบับ 2554</th><th>ฉบับปรับปรุง 2565</th><th>ผลต่อผู้ทำบัญชี</th></tr></thead><tbody>
+        <tr><td>งบการเงินที่สมบูรณ์</td><td>ย่อหน้า 31.2 งบกำไรขาดทุน</td><td>ย่อหน้า 4.1.2 งบกำไรขาดทุนหรืองบกำไรขาดทุนเบ็ดเสร็จ</td><td>เลือกได้ ถ้าไม่จัดทำงบกำไรขาดทุนเบ็ดเสร็จ รับรู้รายการตามย่อหน้า 4.14 โดยตรงในส่วนของเจ้าของ</td></tr>
+        <tr><td>งบกระแสเงินสด</td><td>ย่อหน้า 32 อ้างมาตรฐานที่ว่าด้วยงบกระแสเงินสด</td><td>ย่อหน้า 4.2 ระบุมาตรฐานการบัญชี ฉบับที่ 7</td><td>ยังเป็นทางเลือก เมื่อจัดทำต้องปฏิบัติตามฉบับที่ 7 ทั้งฉบับ</td></tr>
+        <tr><td>งบการเงินระหว่างกาล</td><td>ย่อหน้า 33 ต้องเป็นไปตามข้อกำหนดทุกข้อ</td><td>ย่อหน้า 4.4 ใช้รูปแบบตามมาตรฐานการบัญชี ฉบับที่ 34 ได้ (นำประกาศ ที่ 13/2555 เข้ามารวม)</td><td>ยกเว้นเรื่องที่ไม่เกี่ยวข้อง เช่น งบกระแสเงินสดและกำไรต่อหุ้น</td></tr>
+        <tr><td>การละเมิดเงื่อนไขสัญญาเงินกู้ยืม</td><td>ย่อหน้า 37.2.3 หลักเกณฑ์โดยไม่มีตัวอย่าง</td><td>ย่อหน้า 4.8.2.3 เพิ่มตัวอย่าง (ก) และ (ข)</td><td>ขยายความหลักเกณฑ์เดิม วันที่ผู้ให้กู้ตกลงผ่อนผันเทียบกับวันสิ้นงวดเป็นตัวตัดสิน (สไลด์ที่ 23)</td></tr>
+        <tr><td>รายการขั้นต่ำในงบฐานะการเงิน</td><td>ย่อหน้า 38.1–38.22 รวม 22 บรรทัด</td><td>ย่อหน้า 4.9.1–4.9.25 รวม 25 บรรทัด</td><td>เพิ่มสินทรัพย์ชีวภาพ (4.9.6) เงินลงทุนในบริษัทย่อย ร่วม หรือการร่วมค้า (4.9.8) และค่าความนิยม (4.9.14) ในผังบัญชี</td></tr>
+        <tr><td>กำไรขาดทุนเบ็ดเสร็จอื่น</td><td>ไม่มี</td><td>ย่อหน้า 4.14–4.17 ใหม่</td><td>หกรายการ แยกที่จะจัดและไม่จัดประเภทใหม่ และแยกส่วนแบ่งของบริษัทร่วมและการร่วมค้า (4.16 สไลด์ที่ 24–27)</td></tr>
+        <tr><td>ข้อมูลส่วนงาน บุคคลที่เกี่ยวข้อง เครื่องมือทางการเงิน</td><td>ย่อหน้า 45–47 อ้างมาตรฐานที่ว่าด้วยเรื่องนั้น</td><td>ย่อหน้า 4.20–4.22 ระบุมาตรฐานการรายงานทางการเงิน ฉบับที่ 8 มาตรฐานการบัญชี ฉบับที่ 24 และมาตรฐานการรายงานทางการเงิน ฉบับที่ 7</td><td>ถ้าเลือกเปิดเผย ปฏิบัติตามฉบับนั้นทั้งฉบับ</td></tr>
+        <tr><td>งบการเงินของกลุ่มกิจการ</td><td>ไม่มี</td><td>ย่อหน้า 4.23 ใหม่</td><td>ทางเลือก ถ้าจัดทำ ใช้มาตรฐานหกฉบับที่ระบุ และนำเสนองบการเงินเฉพาะกิจการด้วย</td></tr>
+      </tbody></table></div>
+
+      <h3 id="S4.7">S4.7 เรื่องที่จะมีผลในปี 2570–2571</h3>
+      <p class="hint">สถานะการค้นคว้าถึงพฤศจิกายน 2569 ตรวจประกาศล่าสุดที่เว็บไซต์สภาวิชาชีพบัญชีก่อนใช้</p>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>ประกาศ</th><th>วันถือปฏิบัติ</th><th>ผลต่อบทที่ 4</th></tr></thead><tbody>
+        <tr><td>แนวปฏิบัติทางการบัญชีสำหรับการรวมธุรกิจภายใต้การควบคุมเดียวกัน (ปรับปรุงใหม่)</td><td>ประกาศสภาวิชาชีพบัญชี ที่ 30/2569 แทนฉบับลงวันที่ 26 มิถุนายน 2552</td><td class="nw">1 มกราคม 2570</td><td>เกี่ยวข้องกับกิจการที่เลือกจัดทำงบการเงินรวมตามย่อหน้า 4.23</td></tr>
+        <tr><td>มาตรฐานการรายงานทางการเงิน ฉบับที่ 18 เรื่อง การแสดงรายการและการเปิดเผยข้อมูลในงบการเงิน</td><td>ประกาศ ที่ 11/2569 ราชกิจจานุเบกษา 18 พฤษภาคม 2569</td><td class="nw">1 มกราคม 2571</td><td>ใช้แทนมาตรฐานการบัญชี ฉบับที่ 1 ในชุดมาตรฐานสำหรับกิจการที่มีส่วนได้เสียสาธารณะ ไม่เปลี่ยนข้อกำหนดของบทนี้ กิจการที่เลือกใช้ชุดนั้นตามย่อหน้า 2.4 ใช้ฉบับที่ 18 และแบบ 3 ของกรมพัฒนาธุรกิจการค้า</td></tr>
+        <tr><td>มาตรฐานการรายงานทางการเงิน ฉบับที่ 19 เรื่อง บริษัทย่อยที่ไม่มีความรับผิดชอบต่อสาธารณะ: การเปิดเผยข้อมูล</td><td>ประกาศ ที่ 12/2569 ราชกิจจานุเบกษา 18 พฤษภาคม 2569</td><td class="nw">1 มกราคม 2571</td><td>ใช้กับบริษัทย่อยที่ใช้ชุดมาตรฐานสำหรับกิจการที่มีส่วนได้เสียสาธารณะเท่านั้น</td></tr>
+        <tr><td>มาตรฐานการบัญชี ฉบับที่ 7 ที่แก้ไขเนื่องจากฉบับที่ 18</td><td>ชุดเดียวกับประกาศ ที่ 11/2569</td><td class="nw">1 มกราคม 2571</td><td>แนวการตีความ: กิจการที่ไม่มีส่วนได้เสียสาธารณะที่เลือกจัดทำงบกระแสเงินสดตามย่อหน้า 4.2 ใช้ฉบับที่ 7 ที่มีผลในขณะนั้นเท่าที่เกี่ยวข้อง ยังไม่พบประกาศที่แก้การอ้างอิงในบทที่ 4</td></tr>
+      </tbody></table></div>
+      <p>รายการย่อของกรมพัฒนาธุรกิจการค้า พ.ศ. 2566 ยกเลิกประกาศ พ.ศ. 2554 (ลงวันที่ 28 กันยายน 2554) (ฉบับที่ 2) พ.ศ. 2559 และ (ฉบับที่ 3) พ.ศ. 2562 คำชี้แจงข้อ 2.2 ให้งบกำไรขาดทุนเบ็ดเสร็จ งบกระแสเงินสด และงบการเงินรวมเป็นทางเลือก ปีแรกที่ใช้ประกาศ ข้อมูลเปรียบเทียบควรจัดประเภทใหม่ เว้นแต่ในทางปฏิบัติทำไม่ได้ (ข้อ 2.3) และกรมสรรพากรถือว่าการนำส่งงบการเงินผ่านระบบรับงบการเงินทางอิเล็กทรอนิกส์ของกรมพัฒนาธุรกิจการค้าเป็นการยื่นบัญชีงบดุลตามมาตรา 69 แห่งประมวลรัษฎากร</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ใช้ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 4 ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพ ข้อมูลที่กรอกไม่ถูกส่งออกจากเครื่อง</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 4.1 · ตัวอย่างที่ 4.2 · กรณีศึกษา 4.1 · แบบฝึกหัดส่วนที่ 1</span>
+  </footer>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmt=(n,d=0)=>{if(!isFinite(n))return '–';if(Math.abs(n)<0.005)n=0;return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d})};
+  const acc=n=>!isFinite(n)?'–':(Math.abs(n)<0.005?'0':(n<0?'('+fmt(-n)+')':fmt(n)));
+  function num(s){s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-'||s==='–')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  function copyText(t,msgEl){
+    const done=()=>{if(msgEl){msgEl.textContent='คัดลอกแล้ว';setTimeout(()=>msgEl.textContent='',1800)}};
+    try{navigator.clipboard.writeText(t).then(done,()=>fallback())}catch(e){fallback()}
+    function fallback(){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();done()}
+  }
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes04tab',name)}catch(e){}
+  }
+  window.__show=show;
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='tb';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes04tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+
+  /* =========================================================
+     TAB 0  TRIAL BALANCE -> STATEMENTS
+     ========================================================= */
+  // code: [label, group, paragraph, normal side +1 Dr / -1 Cr]
+  const CODES=[
+    ['A01','เงินสดและรายการเทียบเท่าเงินสด','CA','4.9.1',1],['A02','เงินลงทุนชั่วคราว','CA','4.9.2',1],['A03','ลูกหนี้การค้าและลูกหนี้อื่น','CA','4.9.3',1],
+    ['A04','เงินให้กู้ยืมระยะสั้น','CA','4.9.4',1],['A05','สินค้าคงเหลือ','CA','4.9.5',1],['A06','สินทรัพย์ชีวภาพ','CA','4.9.6',1],['A07','สินทรัพย์หมุนเวียนอื่น','CA','4.9.7',1],
+    ['A15P','เงินฝากธนาคารที่มีภาระค้ำประกัน','NCA','4.9.15 · แบบ 2 ข้อ 2.1',1],['A08','เงินลงทุนในบริษัทย่อย บริษัทร่วม หรือการร่วมค้า','NCA','4.9.8',1],['A09','เงินลงทุนระยะยาวอื่น','NCA','4.9.9',1],['A10','เงินให้กู้ยืมระยะยาว','NCA','4.9.10',1],
+    ['A11','อสังหาริมทรัพย์เพื่อการลงทุน','NCA','4.9.11',1],['A12','ที่ดิน อาคารและอุปกรณ์','NCA','4.9.12',1],['A13','สินทรัพย์ไม่มีตัวตน','NCA','4.9.13',1],
+    ['A14','ค่าความนิยม','NCA','4.9.14',1],['A15D','สินทรัพย์ภาษีเงินได้รอการตัดบัญชี','NCA','15.2 · แบบ 2 ข้อ 2.14',1],['A15','สินทรัพย์ไม่หมุนเวียนอื่น','NCA','4.9.15',1],
+    ['L16','เงินเบิกเกินบัญชีธนาคารและเงินกู้ยืมระยะสั้นจากสถาบันการเงิน','CL','4.9.16',-1],['L17','เจ้าหนี้การค้าและเจ้าหนี้อื่น','CL','4.9.17',-1],
+    ['L18','เงินกู้ยืมระยะยาวที่ถึงกำหนดชำระภายในหนึ่งปี','CL','4.9.18',-1],['L19','เงินกู้ยืมระยะสั้น','CL','4.9.19',-1],['L20','ประมาณการหนี้สินระยะสั้น','CL','4.9.20',-1],
+    ['L21','หนี้สินหมุนเวียนอื่น','CL','4.9.21',-1],['L22','เงินกู้ยืมระยะยาว','NCL','4.9.22',-1],['L24D','หนี้สินภาษีเงินได้รอการตัดบัญชี','NCL','15.2 · แบบ 2 ข้อ 4.5',-1],['L23','ประมาณการหนี้สินระยะยาว','NCL','4.9.23',-1],['L24','หนี้สินไม่หมุนเวียนอื่น','NCL','4.9.24',-1],
+    ['E1','ทุนที่ชำระแล้ว / ทุนของผู้เป็นหุ้นส่วน','EQ','4.9.25',-1],['E2','กำไรสะสม จัดสรรแล้ว ทุนสำรองตามกฎหมาย','EQ','4.9.25',-1],['E3','กำไร (ขาดทุน) สะสม ยังไม่ได้จัดสรร','EQ','4.9.25',-1],
+    ['E4','องค์ประกอบอื่นของส่วนของเจ้าของ','EQ','4.9.25',-1],['E5','เงินปันผลจ่าย / เงินถอนของผู้เป็นหุ้นส่วน','EQD','4.18.1',1],
+    ['R1','รายได้จากการขาย','REV','4.12.1',-1],['R2','รายได้จากการให้บริการ','REV','4.12.1',-1],['R3','รายได้อื่น','REVO','4.12.1',-1],
+    ['C1','ต้นทุนขายหรือต้นทุนการให้บริการ (ระบบต่อเนื่อง)','COGS','4.13.2.2',1],['C2','ซื้อสินค้า (ระบบเป็นงวด)','PUR','4.13.1.3',1],['C3','สินค้าคงเหลือต้นงวด (ระบบเป็นงวด)','OPI','4.13.1.3',1],
+    ['XES','ค่าใช้จ่ายพนักงาน · ฝ่ายขาย','EXP','4.13',1],['XEA','ค่าใช้จ่ายพนักงาน · ฝ่ายบริหาร','EXP','4.13',1],
+    ['XDS','ค่าเสื่อมราคาและค่าตัดจำหน่าย · ฝ่ายขาย','EXP','4.13',1],['XDA','ค่าเสื่อมราคาและค่าตัดจำหน่าย · ฝ่ายบริหาร','EXP','4.13',1],
+    ['XOS','ค่าใช้จ่ายอื่น · ฝ่ายขาย','EXP','4.13',1],['XOA','ค่าใช้จ่ายอื่น · ฝ่ายบริหาร','EXP','4.13',1],
+    ['F1','ต้นทุนทางการเงิน','FIN','4.12.2',1],['T1','ภาษีเงินได้','TAX','4.12.3',1],['X','ไม่จัดเข้างบ (ตรวจอีกครั้ง)','NONE','',0]];
+  const CM={};CODES.forEach(c=>CM[c[0]]={label:c[1],g:c[2],ref:c[3],side:c[4]});
+  const KW=[ // order matters
+    [/สินทรัพย์ภาษี.*รอการตัด|deferred tax asset/i,'A15D'],[/หนี้สินภาษี.*รอการตัด|deferred tax liabilit/i,'L24D'],
+    [/เบิกเกิน|o\/d|overdraft/i,'L16'],[/(เงินฝาก|ฝากประจำ).*(ค้ำประกัน|ติดภาระ|จำนำ|หลักประกัน)|(ค้ำประกัน|ติดภาระ).*(เงินฝาก|ฝากประจำ)/,'A15P'],[/ค่าเผื่อหนี้|หนี้สงสัย/,'A03'],[/ค่าเสื่อมราคาสะสม|ค่าตัดจำหน่ายสะสม/,'A12'],
+    [/ฝากประจำ[^0-9]*(1[3-9]|[2-9][0-9]) ?เดือน|ฝากประจำ[^0-9]*[1-9] ?ปี/,'A09'],[/ฝากประจำ[^0-9]*[1-3] ?เดือน/,'A01'],[/ฝากประจำ.*(6|9|12) ?เดือน|เงินลงทุนชั่วคราว|หลักทรัพย์เพื่อค้า/,'A02'],[/ฝากประจำ/,'A02'],[/^(?!ค่า).*(เงินสด|เงินฝาก|ธนาคาร)/,'A01'],
+    [/ลูกหนี้|ตั๋วเงินรับ/,'A03'],[/ให้กู้ยืม.*(ระยะยาว)/,'A10'],[/ให้กู้ยืม/,'A04'],[/สินค้าคงเหลือ.*ต้นงวด/,'C3'],[/สินค้าคงเหลือ|วัตถุดิบ|งานระหว่างทำ/,'A05'],
+    [/ล่วงหน้า|ภาษีซื้อ/,'A07'],[/บริษัทย่อย|บริษัทร่วม|การร่วมค้า/,'A08'],[/เงินลงทุน|พันธบัตร|หุ้นกู้/,'A09'],[/อสังหาริมทรัพย์เพื่อการลงทุน/,'A11'],
+    [/ที่ดิน|อาคาร|อุปกรณ์|เครื่องจักร|ยานพาหนะ|เครื่องใช้สำนักงาน/,'A12'],[/โปรแกรม|ซอฟต์แวร์|สิทธิ|เครื่องหมายการค้า/,'A13'],[/ค่าความนิยม/,'A14'],[/เงินประกัน|เงินมัดจำจ่าย/,'A15'],
+    [/ภาษีเงินได้.*ค้างจ่าย|ภาษี.*ค้างจ่าย/,'L21'],[/เจ้าหนี้|ค้างจ่าย|ตั๋วเงินจ่าย/,'L17'],
+    [/ถึงกำหนด.*(หนึ่งปี|1 ปี|12 เดือน)/,'L18'],[/เงินกู้ยืม.*ระยะยาว|เงินกู้ระยะยาว/,'L22'],[/เงินกู้/,'L19'],
+    [/ประมาณการ.*ผลประโยชน์|ผลประโยชน์พนักงาน/,'L23'],[/ประมาณการ/,'L20'],
+    [/ทุนเรือนหุ้น|ทุนที่ออก|ทุนจดทะเบียน|ทุน.*หุ้นส่วน|^ทุน/,'E1'],[/สำรองตามกฎหมาย|ทุนสำรอง/,'E2'],[/กำไรสะสม|ขาดทุนสะสม/,'E3'],[/ส่วนเกินทุน/,'E4'],[/เงินปันผล|เงินถอน/,'E5'],
+    [/รายได้จากการให้บริการ|รายได้ค่าบริการ/,'R2'],[/รายได้จากการขาย|^ขาย/,'R1'],[/รายได้|ดอกเบี้ยรับ|กำไรจาก/,'R3'],
+    [/ต้นทุนขาย|ต้นทุนการให้บริการ/,'C1'],[/^ซื้อ|ซื้อสินค้า/,'C2'],
+    [/(เงินเดือน|ค่าจ้าง|ค่าแรง|สวัสดิการ|ค่านายหน้า|พนักงาน).*(ขาย)|(ขาย).*(เงินเดือน|พนักงาน)/,'XES'],[/เงินเดือน|ค่าจ้าง|ค่าแรง|สวัสดิการ|ประกันสังคม|พนักงาน/,'XEA'],
+    [/ค่าเสื่อม.*ขาย/,'XDS'],[/ค่าเสื่อม|ค่าตัดจำหน่าย/,'XDA'],[/ดอกเบี้ยจ่าย|ต้นทุนทางการเงิน|ค่าธรรมเนียมเงินกู้/,'F1'],[/ภาษีเงินได้/,'T1'],
+    [/โฆษณา|ส่งเสริมการขาย|ขนส่ง|ค่าใช้จ่ายในการขาย|ขาย/,'XOS'],[/ค่า/,'XOA']];
+  const guess=n=>{for(const [re,c] of KW)if(re.test(n))return c;return 'X'};
+  const SAMPLES={
+    ex42:{ent:'บริษัท ตัวอย่าง จำกัด',close:'1,700,000',fmt:'fn3',tb:[
+      ['เงินสดและเงินฝากธนาคาร',1090000],['เงินฝากประจำ 6 เดือน',500000],['ลูกหนี้การค้า',2400000],['ค่าเผื่อหนี้สงสัยจะสูญ',-120000],['ค่าใช้จ่ายจ่ายล่วงหน้า',80000],
+      ['สินค้าคงเหลือต้นงวด',1500000],['เงินลงทุนในพันธบัตร 3 ปี',1000000],['ที่ดิน',3000000],['อาคารและอุปกรณ์',6500000],['ค่าเสื่อมราคาสะสม',-1600000],['โปรแกรมคอมพิวเตอร์',200000],
+      ['เงินเบิกเกินบัญชีธนาคาร',-300000],['เจ้าหนี้การค้า',-1900000],['ค่าใช้จ่ายค้างจ่าย',-150000],['เงินกู้ยืมระยะยาวที่ถึงกำหนดชำระภายในหนึ่งปี',-600000],['ภาษีเงินได้ค้างจ่าย',-120000],
+      ['เงินกู้ยืมระยะยาว',-2400000],['ประมาณการหนี้สินผลประโยชน์พนักงาน',-280000],
+      ['ทุนเรือนหุ้น',-6000000],['สำรองตามกฎหมาย',-240000],['กำไรสะสม',-2260000],['เงินปันผลจ่าย',300000],
+      ['รายได้จากการขาย',-12000000],['รายได้อื่น',-150000],['ซื้อสินค้า',8200000],
+      ['เงินเดือนพนักงานขาย',700000],['เงินเดือนและสวัสดิการฝ่ายบริหาร',900000],['ค่าเสื่อมราคา ฝ่ายขาย',100000],['ค่าเสื่อมราคา ฝ่ายบริหาร',300000],
+      ['ค่าโฆษณาและขนส่ง',500000],['ค่าสาธารณูปโภคและค่าใช้จ่ายสำนักงาน',400000],['ดอกเบี้ยจ่าย',250000],['ภาษีเงินได้',200000]]},
+    off:{ent:'ห้างหุ้นส่วนจำกัด ตัวอย่าง',close:'',fmt:'fn3',tb:[
+      ['เงินฝากธนาคาร ก',900000],['เงินฝากกระแสรายวัน ธนาคาร ข',-450000],['ลูกหนี้การค้า',1200000],['ลูกหนี้การค้า ร้านเอ (ยอดรับล่วงหน้า)',-80000],['สินค้าคงเหลือ',1400000],
+      ['อุปกรณ์',2000000],['ค่าเสื่อมราคาสะสม',-500000],['เจ้าหนี้การค้า',-1300000],['เงินกู้ยืมระยะยาว',-1500000],['ทุนของผู้เป็นหุ้นส่วน',-1500000],['กำไรสะสม',-120000],
+      ['รายได้จากการขาย',-6000000],['ต้นทุนขาย',4200000],['เงินเดือนพนักงานขาย',500000],['ค่าใช้จ่ายสำนักงาน',1100000],['ดอกเบี้ยจ่าย',100000],['ภาษีเงินได้',50000]]}};
+  let ROWS=[];
+  const NOTES=[['n1','ข้อความว่างบการเงินจัดทำตาม TFRS for NPAEs','4.19.1'],['n2','สรุปนโยบายการบัญชีที่เลือกใช้','4.19.2'],['n3','ข้อมูลที่บทอื่นกำหนดให้เปิดเผยเป็นการเฉพาะ','4.19.3'],
+    ['n4','ข้อมูลอื่นที่เกี่ยวข้อง เช่น หนี้สินที่อาจเกิดขึ้น ภาระผูกพันตามสัญญา','4.19.4'],['n5','ตัวเลขเปรียบเทียบของงวดก่อน','4.3'],['n6','งบการเปลี่ยนแปลงส่วนของเจ้าของ','4.1.3, 4.18']];
+  $('tNotes').innerHTML=NOTES.map(([k,t,r])=>`<label><input type="checkbox" id="${k}">${esc(t)} <span class="pill">${r}</span></label>`).join('');
+  const optHtml=sel=>CODES.map(c=>`<option value="${c[0]}"${c[0]===sel?' selected':''}>${c[0]} ${esc(c[1])}</option>`).join('');
+  function parse(txt){
+    const out=[];
+    txt.split(/\r?\n/).forEach(l=>{if(!l.trim())return;const p=l.split('\t');if(p.length<2)return;
+      const name=p[0].trim();let v;
+      if(p.length>=3){const d=num(p[1]),c=num(p[2]);v=(isFinite(d)?d:0)-(isFinite(c)?c:0);if(!isFinite(d)&&!isFinite(c))v=NaN}else v=num(p[1]);
+      if(name&&isFinite(v))out.push({name,v,code:guess(name)})});
+    return out;
+  }
+  const hide=()=>$('tHide').checked;
+  const nm=(r,i)=>hide()?'บัญชี '+String(i+1).padStart(3,'0'):r.name;
+  function renderMap(){
+    const tb=$('tMap').querySelector('tbody');
+    tb.innerHTML=ROWS.map((r,i)=>`<tr><td class="num">${i+1}</td><td>${esc(nm(r,i))}</td><td class="num">${acc(r.v)}</td><td><select data-i="${i}" aria-label="รหัสรายการบรรทัด ${i+1}">${optHtml(r.code)}</select></td></tr>`).join('');
+    tb.querySelectorAll('select').forEach(s=>s.addEventListener('change',()=>{ROWS[+s.dataset.i].code=s.value;tCalc()}));
+    const s=ROWS.reduce((a,r)=>a+r.v,0);$('tSum').textContent=acc(s);
+  }
+  function tLoad(k){
+    if(k==='clr'){ROWS=[];$('tEnt').value='';$('tClose').value='';$('tPaste').value='';$('tTag').textContent='ข้อมูลของผู้ใช้';renderMap();tCalc();return}
+    const S=SAMPLES[k];$('tEnt').value=S.ent;$('tClose').value=S.close;document.querySelector(`input[name="tFmt"][value="${S.fmt}"]`).checked=true;
+    $('tPaste').value=S.tb.map(([n,v])=>n+'\t'+(v<0?'('+fmt(-v)+')':fmt(v))).join('\n');
+    ROWS=parse($('tPaste').value);$('tTag').textContent='ข้อมูลตัวอย่าง: '+(k==='ex42'?'ตัวอย่างที่ 4.2':'ตัวอย่างการหักกลบ (กรณีศึกษา 4.1 แบบย่อ)');
+    $('tImpMsg').textContent='';renderMap();tCalc();
+  }
+  window.__tLoad=tLoad;
+  document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>tLoad(b.dataset.t)));
+  $('tImp').addEventListener('click',()=>{ROWS=parse($('tPaste').value);$('tTag').textContent='ข้อมูลของผู้ใช้';
+    $('tImpMsg').textContent=ROWS.length?`นำเข้า ${ROWS.length} บรรทัด ตรวจรหัสรายการทุกบรรทัด`:'ไม่พบบรรทัดที่อ่านได้ ตรวจว่าคั่นคอลัมน์ด้วยแท็บ';renderMap();tCalc()});
+  ['tEnt','tDate','tClose'].forEach(id=>$(id).addEventListener('input',tCalc));
+  ['tUnit','tHide'].forEach(id=>$(id).addEventListener('change',()=>{renderMap();tCalc()}));
+  document.querySelectorAll('input[name="tFmt"]').forEach(x=>x.addEventListener('change',tCalc));
+  NOTES.forEach(([k])=>$(k).addEventListener('change',tCalc));
+  let COPY='';
+  function tCalc(){
+    const out=$('tOut');
+    if(!ROWS.length){out.innerHTML='<p class="hint">กดปุ่มตัวอย่างหรือวางงบทดลองแล้วกด "นำเข้า"</p>';COPY='';return}
+    const U=+$('tUnit').value, uName=U===1?'บาท':'พันบาท', show=v=>acc(v/U);
+    const sum={};CODES.forEach(c=>sum[c[0]]=0);ROWS.forEach(r=>sum[r.code]+=r.v);
+    const warn=[];
+    // offsetting checks (4.6)
+    ROWS.forEach((r,i)=>{const c=CM[r.code];if(!c||!c.side)return;
+      const contra=(r.code==='A03'&&/ค่าเผื่อ|หนี้สงสัย/.test(r.name))||(r.code==='A12'&&/สะสม/.test(r.name))||(r.code==='A13'&&/สะสม/.test(r.name));
+      if((c.g==='CA'||c.g==='NCA')&&r.v<0&&!contra)warn.push(`${esc(nm(r,i))} มียอดเครดิต ${show(-r.v)} แต่จับคู่กับ ${r.code} ${esc(c.label)} ต้องไม่หักกลบกับสินทรัพย์ (4.6) ย้ายไปหนี้สิน เช่น L16 เงินเบิกเกินบัญชี หรือ L21 หนี้สินหมุนเวียนอื่น`);
+      if((c.g==='CL'||c.g==='NCL')&&r.v>0)warn.push(`${esc(nm(r,i))} มียอดเดบิต ${show(r.v)} แต่จับคู่กับหนี้สิน ${r.code} ตรวจว่าเป็นสินทรัพย์หรือไม่ (4.6)`)});
+    const xRows=ROWS.filter(r=>r.code==='X');if(xRows.length)warn.push(`มี ${xRows.length} บรรทัดที่ยังไม่ได้จัดเข้างบ (รหัส X)`);
+    const tbSum=ROWS.reduce((a,r)=>a+r.v,0);if(Math.abs(tbSum)>0.5)warn.push(`งบทดลองไม่สมดุล ผลต่าง ${show(tbSum)} ${uName}`);
+    // P&L
+    const closeInv=num($('tClose').value), periodic=sum.C3!==0||sum.C2!==0;
+    if(periodic&&!isFinite(closeInv))warn.push('มีรหัส C2 หรือ C3 (ระบบเป็นงวด) แต่ยังไม่ได้กรอกสินค้าคงเหลือปลายงวด');
+    const ci=isFinite(closeInv)?closeInv:0;
+    const rev1=-sum.R1, rev2=-sum.R2, revO=-sum.R3;
+    const invChg=periodic?(sum.C3-ci):0; // decrease (+) increase (-)
+    const cogs=sum.C1+sum.C2+invChg;
+    const emp=sum.XES+sum.XEA, dep=sum.XDS+sum.XDA, oth=sum.XOS+sum.XOA;
+    const sell=sum.XES+sum.XDS+sum.XOS, adm=sum.XEA+sum.XDA+sum.XOA;
+    const totRev=rev1+rev2+revO, ebit=totRev-cogs-sell-adm, pbt=ebit-sum.F1, ni=pbt-sum.T1;
+    const fm=document.querySelector('input[name="tFmt"]:checked').value;
+    const L=[];const line=(t,v,b,ref)=>L.push({t,v,b,ref});
+    if(fm==='fn3'){
+      if(rev1)line('รายได้จากการขาย',rev1,0,'4.12.1');if(rev2)line('รายได้จากการให้บริการ',rev2,0,'4.12.1');
+      line('ต้นทุนขาย/ต้นทุนการให้บริการ',-cogs);line('กำไร (ขาดทุน) ขั้นต้น',rev1+rev2-cogs,1);
+      line('รายได้อื่น',revO,0,'4.12.1');line('กำไร (ขาดทุน) ก่อนค่าใช้จ่าย',rev1+rev2-cogs+revO,1);
+      line('ค่าใช้จ่ายในการขาย',-sell);line('ค่าใช้จ่ายในการบริหาร',-adm);line('รวมค่าใช้จ่าย',-(sell+adm),1);
+    }else if(fm==='fn1'){
+      if(rev1)line('รายได้จากการขาย',rev1,0,'4.12.1');if(rev2)line('รายได้จากการให้บริการ',rev2,0,'4.12.1');line('รายได้อื่น',revO,0,'4.12.1');line('รวมรายได้',totRev,1);
+      line('ต้นทุนขาย/ต้นทุนการให้บริการ',-cogs);line('ค่าใช้จ่ายในการขาย',-sell);line('ค่าใช้จ่ายในการบริหาร',-adm);line('รวมค่าใช้จ่าย',-(cogs+sell+adm),1);
+    }else{
+      if(rev1)line('รายได้จากการขาย',rev1,0,'4.12.1');if(rev2)line('รายได้จากการให้บริการ',rev2,0,'4.12.1');line('รายได้อื่น',revO,0,'4.12.1');line('รวมรายได้',totRev,1);
+      if(periodic){line('การเปลี่ยนแปลงในสินค้าสำเร็จรูป',-invChg);line('ซื้อ',-sum.C2)}
+      if(sum.C1){line('ต้นทุนขาย (ระบบต่อเนื่อง ต้องแยกตามธรรมชาติ)',-sum.C1);warn.push('รหัส C1 เป็นการจำแนกตามหน้าที่ งบจำแนกตามธรรมชาติต้องไม่ปันส่วนตามหน้าที่ (4.13.1.1) ควรแยกต้นทุนขายเป็นวัตถุดิบใช้ไป ค่าแรง ค่าเสื่อมราคา และอื่น ๆ')}
+      line('ค่าใช้จ่ายพนักงาน',-emp);line('ค่าเสื่อมราคาและค่าตัดจำหน่าย',-dep);line('ค่าใช้จ่ายอื่น',-oth);line('รวมค่าใช้จ่าย',-(cogs+emp+dep+oth),1);
+    }
+    line('กำไร (ขาดทุน) ก่อนต้นทุนทางการเงินและภาษีเงินได้',ebit,1);line('ต้นทุนทางการเงิน',-sum.F1,0,'4.12.2');line('กำไร (ขาดทุน) ก่อนภาษีเงินได้',pbt,1);
+    line('ภาษีเงินได้',-sum.T1,0,'4.12.3');line('กำไร (ขาดทุน) สุทธิ',ni,1,'4.12.4');
+    // SFP
+    const g=k=>CODES.filter(c=>c[2]===k);
+    const val=c=>c[4]*sum[c[0]]+(c[0]==='A05'&&periodic?ci:0);
+    const sec=(k,title)=>{const rows=g(k).map(c=>({t:c[1],v:val(c),ref:c[3]})).filter(r=>Math.abs(r.v)>0.004);return{title,rows,tot:rows.reduce((a,r)=>a+r.v,0)}};
+    const CA=sec('CA','สินทรัพย์หมุนเวียน'),NCA=sec('NCA','สินทรัพย์ไม่หมุนเวียน'),CL=sec('CL','หนี้สินหมุนเวียน'),NCL=sec('NCL','หนี้สินไม่หมุนเวียน');
+    const eq=[{t:CM.E1.label,v:-sum.E1,ref:'4.9.25'},{t:CM.E2.label,v:-sum.E2,ref:'4.9.25'},{t:CM.E3.label,v:-sum.E3+ni-sum.E5,ref:'4.9.25'},{t:CM.E4.label,v:-sum.E4,ref:'4.9.25'}].filter(r=>Math.abs(r.v)>0.004);
+    const EQt=eq.reduce((a,r)=>a+r.v,0), TA=CA.tot+NCA.tot, TLE=CL.tot+NCL.tot+EQt, diff=TA-TLE;
+    if(Math.abs(diff)>0.5)warn.push(`สินทรัพย์ไม่เท่ากับหนี้สินและส่วนของเจ้าของ ผลต่าง ${show(diff)} ตรวจรหัสรายการและสินค้าคงเหลือปลายงวด`);
+    if(/หุ้นส่วน/.test($('tEnt').value)||ROWS.some(r=>/หุ้นส่วน/.test(r.name)))warn.push('กิจการไม่มีหุ้นทุน ต้องเปิดเผยข้อมูลส่วนของเจ้าของแต่ละประเภทให้เทียบเท่ากับย่อหน้า 4.9.25 (4.10)');
+    const miss=NOTES.filter(([k])=>!$(k).checked);
+    // render
+    const ent=hide()?'กิจการ A':($('tEnt').value.trim()||'กิจการ A');
+    const tr=(t,v,b,ref,ind)=>`<tr${b?' style="font-weight:600"':''}><td${ind?' style="padding-left:18px"':''}>${esc(t)}${ref?` <span class="pill">${ref}</span>`:''}</td><td class="num">${show(v)}</td></tr>`;
+    const secH=s=>`<tr><td colspan="2"><b>${s.title}</b></td></tr>`+s.rows.map(r=>tr(r.t,r.v,0,r.ref,1)).join('')+tr('รวม'+s.title,s.tot,1);
+    const head=t=>`<p style="margin:6px 0 2px;font-weight:600">${esc(ent)}<br>${t}<br><span class="hint">หน่วย: ${uName} · สกุลเงินบาท (4.7)</span></p>`;
+    const date=$('tDate').value.trim()||'วันสิ้นรอบระยะเวลารายงาน';
+    const ok=!warn.length;
+    out.innerHTML=`<div class="verdict${ok?' ok':''}"><h4>${ok?'งบสมดุล ไม่พบการหักกลบ':'พบ '+warn.length+' ประเด็นที่ต้องแก้'}</h4><p>สินทรัพย์ ${show(TA)} · หนี้สินและส่วนของเจ้าของ ${show(TLE)} · กำไรสุทธิ ${show(ni)} ${uName}</p></div>
+      ${warn.length?`<div class="alert warn"><ul style="margin:0;padding-left:18px">${warn.map(w=>`<li>${w}</li>`).join('')}</ul></div>`:''}
+      <div class="figs"><div class="fig"><div class="k">อัตราส่วนทุนหมุนเวียน</div><div class="v">${CL.tot?fmt(CA.tot/CL.tot,2):'–'}</div></div><div class="fig"><div class="k">หนี้สินต่อส่วนของเจ้าของ</div><div class="v">${EQt?fmt((CL.tot+NCL.tot)/EQt,2):'–'}</div></div><div class="fig"><div class="k">หมายเหตุที่ยังไม่ครบ</div><div class="v">${miss.length}/${NOTES.length}</div></div></div>
+      ${head('งบฐานะการเงิน ณ วันที่ '+esc(date))}
+      <div class="tbl"><table><tbody>${secH(CA)}${secH(NCA)}${tr('รวมสินทรัพย์',TA,1)}${secH(CL)}${secH(NCL)}${tr('รวมหนี้สิน',CL.tot+NCL.tot,1)}
+      <tr><td colspan="2"><b>ส่วนของเจ้าของ</b></td></tr>${eq.map(r=>tr(r.t,r.v,0,r.ref,1)).join('')}${tr('รวมส่วนของเจ้าของ',EQt,1)}${tr('รวมหนี้สินและส่วนของเจ้าของ',TLE,1)}</tbody></table></div>
+      ${head('งบกำไรขาดทุน สำหรับปีสิ้นสุดวันที่ '+esc(date)+' · '+(fm==='nat'?'จำแนกค่าใช้จ่ายตามธรรมชาติ':fm==='fn1'?'จำแนกตามหน้าที่ แบบขั้นเดียว':'จำแนกตามหน้าที่ แบบหลายขั้น'))}
+      <div class="tbl"><table><tbody>${L.map(x=>tr(x.t,x.v,x.b,x.ref,!x.b)).join('')}</tbody></table></div>
+      ${miss.length?`<div class="facts"><h4>หมายเหตุและงบที่ยังไม่ได้ทำเครื่องหมาย</h4><ul>${miss.map(([k,t,r])=>`<li>${esc(t)} (${r})</li>`).join('')}</ul></div>`:''}
+      <details class="theory"><summary>ทำไมจึงจัดแบบนี้</summary><dl>
+        <dt>4.8 หมุนเวียนและไม่หมุนเวียน</dt><dd>รหัสรายการกำหนดกลุ่มตามลำดับย่อหน้า 4.9 เงินกู้ระยะยาวต้องแยกส่วนที่ถึงกำหนดชำระภายในหนึ่งปีเป็นบัญชีแยก (L18) ใช้แท็บ 1 ตรวจรายการที่มีเงื่อนไข</dd>
+        <dt>4.6 ห้ามหักกลบ</dt><dd>บัญชีสินทรัพย์ที่มียอดเครดิตต้องย้ายไปหนี้สิน เว้นแต่เป็นบัญชีปรับมูลค่า เช่น ค่าเผื่อหนี้สงสัยจะสูญ และค่าเสื่อมราคาสะสม</dd>
+        <dt>4.13 การจำแนกค่าใช้จ่าย</dt><dd>รหัส X··· เก็บทั้งลักษณะ (พนักงาน ค่าเสื่อมราคา อื่น) และหน้าที่ (ขาย บริหาร) งบเดียวกันจึงแสดงได้ทั้งสองแบบ ผลกำไรสุทธิเท่ากัน</dd>
+        <dt>ภาษีเงินได้</dt><dd>บรรทัดภาษีเงินได้มาจากรหัส T1 การคำนวณภาษีใช้ราคาทุนเท่านั้น หักค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) แห่งประมวลรัษฎากร และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527) และที่แก้ไขเพิ่มเติม ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) ดูบทที่ 15</dd></dl></details>`;
+    const cl=[ent,'งบฐานะการเงิน ณ วันที่ '+date,'หน่วย: '+uName];
+    [CA,NCA].forEach(s=>{cl.push(s.title);s.rows.forEach(r=>cl.push(r.t+'\t'+(r.v/U)));cl.push('รวม'+s.title+'\t'+(s.tot/U))});cl.push('รวมสินทรัพย์\t'+(TA/U));
+    [CL,NCL].forEach(s=>{cl.push(s.title);s.rows.forEach(r=>cl.push(r.t+'\t'+(r.v/U)));cl.push('รวม'+s.title+'\t'+(s.tot/U))});
+    cl.push('ส่วนของเจ้าของ');eq.forEach(r=>cl.push(r.t+'\t'+(r.v/U)));cl.push('รวมส่วนของเจ้าของ\t'+(EQt/U));cl.push('รวมหนี้สินและส่วนของเจ้าของ\t'+(TLE/U));
+    cl.push('','งบกำไรขาดทุน สำหรับปีสิ้นสุดวันที่ '+date);L.forEach(x=>cl.push(x.t+'\t'+(x.v/U)));
+    COPY=cl.join('\n');
+  }
+  $('tCopy').addEventListener('click',()=>{if(COPY)copyText(COPY,$('tCopyMsg'))});
+
+  /* =========================================================
+     TAB 1  CLASSIFICATION (4.8)
+     ========================================================= */
+  const QA=[['a1','เป็นเงินสดหรือรายการเทียบเท่าเงินสดที่ไม่มีข้อจำกัดในการใช้','4.8.1.1'],['a2','คาดว่าจะได้รับประโยชน์ หรือตั้งใจจะขายหรือใช้ ภายในรอบระยะเวลาการดำเนินงานตามปกติ','4.8.1.2'],
+            ['a3','มีไว้โดยมีวัตถุประสงค์เบื้องต้นเพื่อค้า','4.8.1.3'],['a4','คาดว่าจะได้รับประโยชน์ภายใน 12 เดือนนับจากรอบระยะเวลารายงาน','4.8.1.4']];
+  const QL=[['l1','คาดว่าจะชำระคืนภายในรอบระยะเวลาดำเนินงานปกติ','4.8.2.1'],['l2','ถึงกำหนดชำระภายใน 12 เดือนนับจากรอบระยะเวลารายงาน (ทั้งจำนวน)','4.8.2.2'],
+            ['l3','ก่อนหรือ ณ วันสิ้นรอบ กิจการละเมิดเงื่อนไขสัญญาเงินกู้ ทำให้หนี้สินต้องจ่ายคืนเมื่อทวงถาม','4.8.2.3 (ก)'],
+            ['l5','ด้วยเหตุอื่น กิจการไม่มีสิทธิอันปราศจากเงื่อนไขในการเลื่อนชำระออกไปอย่างน้อย 12 เดือน','4.8.2.3']];
+  const WV=[['none','ผู้ให้กู้ไม่ผ่อนผัน'],['pre12','ผ่อนผันภายในวันสิ้นรอบ อย่างน้อย 12 เดือน ผู้ให้กู้เรียกคืนทันทีไม่ได้'],['pre','ผ่อนผันภายในวันสิ้นรอบ แต่น้อยกว่า 12 เดือน'],['post','ผ่อนผันหลังวันสิ้นรอบ ก่อนอนุมัติงบการเงิน']];
+  const yn=(k,t,ref)=>`<div class="q"><div class="lab">${ref}</div><div>${esc(t)}</div><div class="seg"><label><input type="radio" name="${k}" value="y">ใช่</label><label><input type="radio" name="${k}" value="n" checked>ไม่ใช่</label></div></div>`;
+  const kind=()=>document.querySelector('input[name="cKind"]:checked').value;
+  function cRender(){
+    const k=kind();
+    $('cQs').innerHTML=(k==='A'?QA.map(q=>yn(...q)).join(''):QL.map(q=>yn(...q)).join('')+`<div class="q" id="cWvBox"><div class="lab">4.8.2.3 (ข)</div><div>การผ่อนผันจากผู้ให้กู้ (ตอบเมื่อกิจการละเมิดเงื่อนไข)</div><div class="seg">${WV.map(([v,t],i)=>`<label><input type="radio" name="cWv" value="${v}"${i===0?' checked':''}>${esc(t)}</label>`).join('')}</div></div>`);
+    $('cQs').querySelectorAll('input').forEach(x=>x.addEventListener('change',cCalc));
+  }
+  document.querySelectorAll('input[name="cKind"]').forEach(x=>x.addEventListener('change',()=>{cRender();cCalc()}));
+  ['cDesc','cAmt','cDue'].forEach(id=>$(id).addEventListener('input',cCalc));
+  const set=(n,v)=>{const x=document.querySelector(`input[name="${n}"][value="${v}"]`);if(x)x.checked=true};
+  const CS={a:['L','เงินกู้ยืมระยะยาว ผ่อนชำระปีละ 600,000 บาท','3,000,000','600,000',{l2:'n'}],
+    b:['L','เงินกู้ยืมระยะยาว ครบกำหนดปี 2572 ละเมิดเงื่อนไขเมื่อ 15 ธ.ค. 2568 ธนาคารผ่อนผัน 20 ม.ค. 2569','5,000,000','',{l3:'y',cWv:'post'}],
+    c:['L','เงินกู้ยืมระยะยาว ละเมิดเงื่อนไขเมื่อ 15 ธ.ค. 2568 ธนาคารผ่อนผัน 28 ธ.ค. 2568 เป็นเวลา 15 เดือน','5,000,000','',{l3:'y',cWv:'pre12'}],
+    d:['A','เงินฝากประจำ 6 เดือน ครบกำหนดมีนาคม 2569','500,000','',{a4:'y'}],
+    e:['A','เงินฝากธนาคารที่ติดภาระค้ำประกันเงินกู้ถึงปี 2571','800,000','',{}],
+    f:['A','สินค้าที่ต้องบ่ม 3 ปีก่อนขาย ตามรอบการดำเนินงานปกติของกิจการ','2,400,000','',{a2:'y'}],
+    g:['L','เจ้าหนี้การค้า เครดิต 60 วัน','1,900,000','',{l1:'y',l2:'y'}]};
+  function cLoad(k){
+    if(k==='clr'){$('cDesc').value='';$('cAmt').value='';$('cDue').value='';cRender();$('cTag').textContent='ข้อมูลของผู้ใช้';cCalc();return}
+    const [kd,d,a,due,ans]=CS[k];set('cKind',kd);cRender();$('cDesc').value=d;$('cAmt').value=a;$('cDue').value=due;
+    Object.entries(ans).forEach(([n,v])=>set(n,v));$('cTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 4.1 รายการ '+({a:'ก',b:'ข',c:'ค',d:'ง',e:'จ',f:'ฉ',g:'ช'})[k];cCalc();
+  }
+  window.__cLoad=cLoad;
+  document.querySelectorAll('[data-c]').forEach(b=>b.addEventListener('click',()=>cLoad(b.dataset.c)));
+  const ans=n=>{const x=document.querySelector(`input[name="${n}"]:checked`);return x?x.value:''};
+  let CCOPY='';
+  function cCalc(){
+    const k=kind(), amt=num($('cAmt').value), due=num($('cDue').value);
+    const desc=hide()?'รายการ 001':($('cDesc').value.trim()||'รายการ 001');
+    const steps=[];let cur=false,why='',split=null;
+    if(k==='A'){
+      QA.forEach(([q,t,ref])=>{const y=ans(q)==='y';steps.push({ref,t,hit:y&&!cur});if(y&&!cur){cur=true;why=ref}});
+      if(!cur&&isFinite(due)&&due>0&&isFinite(amt)&&due<amt){split=[due,amt-due];why='4.8.1.4'}
+    }else{
+      const l1=ans('l1')==='y',l2=ans('l2')==='y',l3=ans('l3')==='y',l5=ans('l5')==='y',wv=ans('cWv');
+      steps.push({ref:'4.8.2.1',t:QL[0][1],hit:l1});if(l1){cur=true;why='4.8.2.1'}
+      steps.push({ref:'4.8.2.2',t:QL[1][1],hit:l2&&!cur});if(l2&&!cur){cur=true;why='4.8.2.2'}
+      if(l3){const rescue=wv==='pre12';steps.push({ref:'4.8.2.3 (ก)(ข)',t:'ละเมิดเงื่อนไข · '+WV.find(w=>w[0]===wv)[1],hit:!rescue&&!cur});if(!rescue&&!cur){cur=true;why=wv==='post'?'4.8.2.3 (ก)':'4.8.2.3'}}
+      else steps.push({ref:'4.8.2.3 (ก)',t:'กิจการไม่ได้ละเมิดเงื่อนไข',hit:false});
+      steps.push({ref:'4.8.2.3',t:QL[3][1],hit:l5&&!cur});if(l5&&!cur){cur=true;why='4.8.2.3'}
+      if(!cur&&isFinite(due)&&due>0&&isFinite(amt)&&due<amt){split=[due,amt-due];why='4.8.2.2'}
+    }
+    const what=k==='A'?'สินทรัพย์':'หนี้สิน';
+    let h,p;
+    if(split){h=`แยกเป็น${what}หมุนเวียน ${fmt(split[0])} และไม่หมุนเวียน ${fmt(split[1])}`;p=`ส่วนที่${k==='A'?'คาดว่าจะได้รับ':'ถึงกำหนดชำระ'}ภายใน 12 เดือนเป็นรายการหมุนเวียนตามย่อหน้า ${why} ส่วนที่เหลือเป็นรายการไม่หมุนเวียน${k==='L'?' ในงบฐานะการเงินใช้บรรทัด 4.9.18 และ 4.9.22':''}`}
+    else if(cur){h=`${what}หมุนเวียน${isFinite(amt)?' '+fmt(amt):''}`;p=`เป็นไปตามเงื่อนไขย่อหน้า ${why}`+(why==='4.8.2.3 (ก)'?' การผ่อนผันหลังวันสิ้นรอบไม่ทำให้กิจการมีสิทธิเลื่อนชำระ ณ วันสิ้นรอบ จึงยังเป็นหนี้สินหมุนเวียน แม้ได้รับก่อนวันอนุมัติงบการเงิน':'')}
+    else{h=`${what}ไม่หมุนเวียน${isFinite(amt)?' '+fmt(amt):''}`;p=k==='A'?'ไม่เข้าเงื่อนไขข้อใดในย่อหน้า 4.8.1 จึงเป็นสินทรัพย์ไม่หมุนเวียน':(ans('l3')==='y'?'ผู้ให้กู้ผ่อนผันภายในวันสิ้นรอบอย่างน้อย 12 เดือนตามย่อหน้า 4.8.2.3 (ข) จึงจัดเป็นหนี้สินไม่หมุนเวียน':'ไม่เข้าเงื่อนไขข้อใดในย่อหน้า 4.8.2 จึงเป็นหนี้สินไม่หมุนเวียน')}
+    const alert=(k==='A'&&!cur&&/ค้ำประกัน|จำนำ|ติดภาระ/.test($('cDesc').value))?'<div class="alert warn">เงินฝากที่ติดภาระไม่เป็นเงินสดและรายการเทียบเท่าเงินสด (4.8.1.1, 6.4) ถ้าข้อจำกัดเกิน 12 เดือนนับจากวันสิ้นงวด แสดงในบรรทัดเงินฝากธนาคารที่มีภาระค้ำประกัน (รายการย่อแบบ 2 ข้อ 2.1) และเปิดเผยภาระในหมายเหตุ (6.5)</div>':'';
+    $('cOut').innerHTML=`<div class="verdict ok"><h4>${esc(h)}</h4><p>${esc(p)}</p></div>${alert}<ol class="steps">${steps.map((s,i)=>`<li class="${s.hit?'hit':''}"><span class="no">${i+1}</span><div>${esc(s.t)}<div class="r">ย่อหน้า ${s.ref} · ${s.hit?'เข้าเงื่อนไข':'ไม่เข้า'}</div></div></li>`).join('')}</ol>`;
+    CCOPY=`บันทึกการจัดประเภท ${desc}\nจำนวนเงิน ${isFinite(amt)?fmt(amt):'-'} บาท\nผล: ${h}\nเหตุผล: ${p}\nผู้จัดทำ ............ ผู้อนุมัติ ............`;
+  }
+  $('cCopy').addEventListener('click',()=>copyText(CCOPY,$('cCopyMsg')));
+  cRender();
+
+  /* =========================================================
+     TAB 2 QUIZ
+     ========================================================= */
+  const QZ=[
+    ['LO 4.1','จำ','งบใดไม่อยู่ในงบการเงินที่สมบูรณ์ตามย่อหน้า 4.1',['ก. งบฐานะการเงิน','ข. งบกระแสเงินสด','ค. งบการเปลี่ยนแปลงส่วนของเจ้าของ','ง. หมายเหตุประกอบงบการเงิน'],1,'ย่อหน้า 4.2 ไม่กำหนดให้ทำงบกระแสเงินสด ถ้าเลือกทำต้องปฏิบัติตามมาตรฐานการบัญชี ฉบับที่ 7','4.1'],
+    ['LO 4.2','เข้าใจ','ข้อใดถูกต้องตามย่อหน้า 4.3',['ก. ต้องจัดทำงบการเงินทุกไตรมาส','ข. ต้องจัดทำอย่างน้อยปีละครั้ง และรายการต้องเปรียบเทียบได้กับงวดก่อน','ค. ต้องจัดทำอย่างน้อยปีละครั้ง โดยไม่ต้องแสดงข้อมูลเปรียบเทียบ','ง. ต้องจัดทำงบการเงินระหว่างกาลทุกครึ่งปี'],1,'ย่อหน้า 4.3 กำหนดปีละครั้งเป็นอย่างน้อยพร้อมข้อมูลเปรียบเทียบ งบการเงินระหว่างกาลไม่บังคับตามย่อหน้า 4.4','4.2'],
+    ['LO 4.2','เข้าใจ','กิจการมีเงินฝากธนาคาร ก 500,000 บาท และเงินเบิกเกินบัญชีธนาคาร ข 300,000 บาท ควรแสดงอย่างไร',['ก. เงินสดสุทธิ 200,000 บาท','ข. เงินสด 500,000 บาท และเปิดเผยเงินเบิกเกินบัญชีในหมายเหตุเท่านั้น','ค. เงินสดและรายการเทียบเท่าเงินสด 500,000 บาท และเงินเบิกเกินบัญชีธนาคาร 300,000 บาท','ง. หนี้สินสุทธิ 300,000 บาท'],2,'ย่อหน้า 4.6 ห้ามหักกลบสินทรัพย์กับหนี้สิน แสดงตามบรรทัด 4.9.1 และ 4.9.16','4.2'],
+    ['LO 4.3','ประยุกต์ใช้','กิจการละเมิดเงื่อนไขเงินกู้ระยะยาวเมื่อ 20 ธ.ค. 2568 ธนาคารมีหนังสือผ่อนผัน 18 เดือน ลงวันที่ 15 ม.ค. 2569 ณ 31 ธ.ค. 2568 ควรจัดประเภทอย่างไร',['ก. หนี้สินไม่หมุนเวียนทั้งจำนวน','ข. หนี้สินหมุนเวียนทั้งจำนวน','ค. แบ่งตามตารางผ่อนชำระเดิม','ง. ไม่ต้องจัดประเภท เปิดเผยในหมายเหตุ'],1,'ย่อหน้า 4.8.2.3 (ก) ผ่อนผันหลังวันสิ้นรอบ กิจการจึงไม่มีสิทธิอันปราศจากเงื่อนไข ณ วันสิ้นรอบ','4.3'],
+    ['LO 4.3','จำ','รายการใดไม่อยู่ในรายการขั้นต่ำของงบฐานะการเงินตามย่อหน้า 4.9',['ก. ประมาณการหนี้สินระยะยาว','ข. สินทรัพย์ภาษีเงินได้รอการตัดบัญชี','ค. อสังหาริมทรัพย์เพื่อการลงทุน','ง. เงินให้กู้ยืมระยะสั้น'],1,'ย่อหน้า 4.9 มี 25 บรรทัด ไม่มีภาษีเงินได้รอการตัดบัญชี ดูบทที่ 15 ส่วนรายการย่อแบบ 2 ของกรมพัฒนาธุรกิจการค้ามีบรรทัด 2.14 และ 4.5 สำหรับกิจการที่เลือกย่อหน้า 15.2','4.3'],
+    ['LO 4.4','เข้าใจ','รายการใดไม่ต้องแสดงในงบกำไรขาดทุนตามย่อหน้า 4.12',['ก. รายได้','ข. ต้นทุนทางการเงิน','ค. กำไรขั้นต้น','ง. ภาษีเงินได้'],2,'ย่อหน้า 4.12 กำหนด 4 บรรทัด กำไรขั้นต้นแสดงเมื่อเลือกแบบหลายขั้น (4.13.2.3.2)','4.4'],
+    ['LO 4.5','วิเคราะห์','รายการกำไรขาดทุนเบ็ดเสร็จอื่นใดจะไม่จัดประเภทใหม่ในงบกำไรขาดทุนในภายหลัง',['ก. ผลต่างจากการแปลงค่างบการเงินของหน่วยงานต่างประเทศ','ข. การเปลี่ยนแปลงในส่วนเกินทุนจากการตีราคาสินทรัพย์','ค. ผลกำไรขาดทุนจากการปรับมูลค่าตราสารหนี้เผื่อขาย','ง. ผลกำไรขาดทุนที่มีประสิทธิผลจากการป้องกันความเสี่ยงในกระแสเงินสด'],1,'ย่อหน้า 4.16 กำหนดให้ 4.14.1 และ 4.14.2 เป็นรายการที่จะไม่จัดประเภทใหม่ในงบกำไรขาดทุนในภายหลัง','4.5'],
+    ['LO 4.6','ประเมินค่า','กิจการเลือกจัดทำงบการเงินรวม ข้อใดถูกต้องตามย่อหน้า 4.23',['ก. ไม่ต้องนำเสนองบการเงินเฉพาะกิจการ','ข. ใช้นิยามบริษัทย่อยตาม TFRS 10','ค. ต้องนำเสนองบการเงินเฉพาะกิจการด้วย และพิจารณาความเป็นบริษัทย่อยตามย่อหน้า 9.5','ง. เลือกปฏิบัติตาม TFRS 10 เฉพาะส่วนที่ต้องการได้'],2,'ย่อหน้า 4.23 กำหนดให้นำเสนองบเฉพาะกิจการด้วย ปฏิบัติตามมาตรฐาน 6 ฉบับ และใช้นิยามในย่อหน้า 9.5','4.8']];
+  window.__QZ=QZ;
+  $('qBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="qf${i}"></div></div>`).join('');
+  $('sKey').innerHTML=QZ.map((q,i)=>`<tr><td class="num">${i+1}</td><td>${esc(q[3][q[4]])}</td><td>${esc(q[5])}</td></tr>`).join('');
+  $('qChk').addEventListener('click',qCheck);
+  $('qClr').addEventListener('click',()=>{document.querySelectorAll('#qBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('qf'+i).innerHTML='');$('qOut').innerHTML=''});
+  function qCheck(){
+    let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="q${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;
+      lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('qf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort().map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('qOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div><div class="fig"><div class="k">LO ที่บรรลุ</div><div class="v">${Object.values(lo).filter(x=>x.ok===x.n).length}/${Object.keys(lo).length}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+})();
+</script>
+<script>
+(function(){
+  window.__tLoad('ex42');window.__cLoad('a');
+  const goS=()=>{const m=(location.hash||'').match(/^#(S4\.\d)$/);if(m){window.__show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body></html>

@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แอป 21 · กระดาษทำการเงินตราต่างประเทศ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+<style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head>
+<body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div>
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 21 ผลกระทบจากการเปลี่ยนแปลงอัตราแลกเปลี่ยนเงินตราต่างประเทศ</div>
+      <h1>แอป 21 · กระดาษทำการเงินตราต่างประเทศ</h1>
+      <p class="lede">จำแนกรายการที่เป็นตัวเงินกับไม่เป็นตัวเงินและอัตราที่ใช้ ณ วันสิ้นงวด คำนวณผลต่างของรายการตั้งแต่วันเกิดรายการถึงวันชำระ ปิดบัญชีหลายสกุล แปลงค่างบสาขา แยกต้นทุนการกู้ยืมของเงินกู้เงินตราต่างประเทศ เทียบอัตราทางบัญชีกับอัตราตามมาตรา 65 ทวิ (5) และร่างหมายเหตุ</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 21 ย่อหน้า 21.1–21.18</b><br>ตำราบทที่ 21 · ฉบับ 20-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> จำแนกรายการ · รายการเดียวถึงวันชำระ · ปิดบัญชีหลายสกุล · แปลงค่าสาขา · ต้นทุนการกู้ยืม · บัญชีกับภาษี · ร่างหมายเหตุ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="cls"><span class="n">0</span>จำแนกรายการ</button>
+    <button role="tab" aria-selected="false" data-tab="txn"><span class="n">1</span>รายการเดียวถึงวันชำระ</button>
+    <button role="tab" aria-selected="false" data-tab="multi"><span class="n">2</span>ปิดบัญชีหลายสกุล</button>
+    <button role="tab" aria-selected="false" data-tab="br"><span class="n">3</span>แปลงค่าสาขา</button>
+    <button role="tab" aria-selected="false" data-tab="bc"><span class="n">4</span>ต้นทุนการกู้ยืม</button>
+    <button role="tab" aria-selected="false" data-tab="tax"><span class="n">5</span>บัญชีกับภาษี</button>
+    <button role="tab" aria-selected="false" data-tab="note"><span class="n">6</span>ร่างหมายเหตุ</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">7</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">8</span>เนื้อหาเสริม S21</button>
+  </nav>
+
+  <div class="grid" data-pane="cls" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>จำแนกรายการและอัตราที่ใช้ (21.3–21.4, 21.8, 21.13–21.16)</h2>
+      <p class="hint">ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น ไม่ส่งออกจากเครื่อง เลือกสถานการณ์แล้วตอบทุกข้อตามเงื่อนไขในสัญญา แอปแสดงผลเมื่อตอบครบเท่านั้น และไม่ประเมินเอกสารแทนผู้ใช้</p>
+      
+      <div class="fields"><label class="f">สถานการณ์<select id="cMode"><option value="" selected>– เลือก –</option><option value="item">รายการคงค้าง ณ วันสิ้นงวด (21.8)</option><option value="fo">หน่วยงานต่างประเทศ (21.13–21.16)</option></select></label><label class="f">ข้อ 1<select id="c1"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">ข้อ 2<select id="c2"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label></div>
+      <div id="cOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="txn" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>รายการเดียว: วันเกิดรายการ วันสิ้นงวด และวันชำระ (21.6, 21.8.1, 21.11)</h2>
+      <p class="hint">ใช้กับรายการที่เป็นตัวเงินเท่านั้น ใส่อัตราวันชำระเป็น 0 ถ้ายังไม่ชำระ ผลต่างวันชำระวัดจากยอดที่รายงาน ณ วันสิ้นงวด</p>
+      <span class="sample">ตัวอย่างที่ 21.1 เจ้าหนี้</span>
+      <div class="fields"><label class="f">ประเภท<select id="tType"><option value="asset">สินทรัพย์ (ลูกหนี้ เงินฝาก เงินให้กู้ยืม)</option><option value="liab" selected>หนี้สิน (เจ้าหนี้ เงินกู้ยืม ค่าใช้จ่ายค้างจ่าย)</option></select></label><label class="f">จำนวนเงินตราต่างประเทศ<input class="num" type="number" step="any" id="tFC" value="20000"></label><label class="f">อัตรา ณ วันที่เกิดรายการ (บาท)<input class="num" type="number" step="any" id="tR0" value="34.0"></label><label class="f">อัตราปิด ณ วันสิ้นงวด (บาท)<input class="num" type="number" step="any" id="tRc" value="34.5"></label><label class="f">อัตรา ณ วันชำระในงวดถัดไป (บาท) ใส่ 0 ถ้ายังไม่ชำระ<input class="num" type="number" step="any" id="tRs" value="33.6"></label></div>
+      <div id="tOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="multi" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ปิดบัญชีหลายสกุล ณ วันสิ้นงวด (21.8.1, 21.11) และบรรทัดในแบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566)</h2>
+      <p class="hint">ใส่เฉพาะรายการที่เป็นตัวเงิน (ตรวจด้วยแท็บ 0 ก่อน) รายการที่ไม่เป็นตัวเงินไม่แปลงค่าใหม่ แถวที่จำนวนเป็นศูนย์ไม่นำมาคำนวณ</p>
+      <span class="sample">ตารางที่ 21-2</span>
+      <div class="fields"><label class="f">รายการ ก: ชื่อ<input type="text" id="mNก" value="เจ้าหนี้การค้า USD"></label><label class="f">รายการ ก: ประเภท<select id="mTก"><option value="asset">สินทรัพย์ (ลูกหนี้ เงินฝาก เงินให้กู้ยืม)</option><option value="liab" selected>หนี้สิน (เจ้าหนี้ เงินกู้ยืม ค่าใช้จ่ายค้างจ่าย)</option></select></label><label class="f">รายการ ก: จำนวนเงินตราต่างประเทศ<input class="num" type="number" step="any" id="mFก" value="20000"></label><label class="f">รายการ ก: ยอดตามบัญชีก่อนแปลงค่า (บาท)<input class="num" type="number" step="any" id="mBก" value="680000"></label><label class="f">รายการ ก: อัตราปิด (บาท)<input class="num" type="number" step="any" id="mRก" value="34.5"></label><label class="f">รายการ ข: ชื่อ<input type="text" id="mNข" value="ลูกหนี้การค้า EUR"></label><label class="f">รายการ ข: ประเภท<select id="mTข"><option value="asset" selected>สินทรัพย์ (ลูกหนี้ เงินฝาก เงินให้กู้ยืม)</option><option value="liab">หนี้สิน (เจ้าหนี้ เงินกู้ยืม ค่าใช้จ่ายค้างจ่าย)</option></select></label><label class="f">รายการ ข: จำนวนเงินตราต่างประเทศ<input class="num" type="number" step="any" id="mFข" value="15000"></label><label class="f">รายการ ข: ยอดตามบัญชีก่อนแปลงค่า (บาท)<input class="num" type="number" step="any" id="mBข" value="555000"></label><label class="f">รายการ ข: อัตราปิด (บาท)<input class="num" type="number" step="any" id="mRข" value="37.4"></label><label class="f">รายการ ค: ชื่อ<input type="text" id="mNค" value=""></label><label class="f">รายการ ค: ประเภท<select id="mTค"><option value="asset" selected>สินทรัพย์ (ลูกหนี้ เงินฝาก เงินให้กู้ยืม)</option><option value="liab">หนี้สิน (เจ้าหนี้ เงินกู้ยืม ค่าใช้จ่ายค้างจ่าย)</option></select></label><label class="f">รายการ ค: จำนวนเงินตราต่างประเทศ<input class="num" type="number" step="any" id="mFค" value="0"></label><label class="f">รายการ ค: ยอดตามบัญชีก่อนแปลงค่า (บาท)<input class="num" type="number" step="any" id="mBค" value="0"></label><label class="f">รายการ ค: อัตราปิด (บาท)<input class="num" type="number" step="any" id="mRค" value="0"></label><label class="f">รายการ ง: ชื่อ<input type="text" id="mNง" value=""></label><label class="f">รายการ ง: ประเภท<select id="mTง"><option value="asset" selected>สินทรัพย์ (ลูกหนี้ เงินฝาก เงินให้กู้ยืม)</option><option value="liab">หนี้สิน (เจ้าหนี้ เงินกู้ยืม ค่าใช้จ่ายค้างจ่าย)</option></select></label><label class="f">รายการ ง: จำนวนเงินตราต่างประเทศ<input class="num" type="number" step="any" id="mFง" value="0"></label><label class="f">รายการ ง: ยอดตามบัญชีก่อนแปลงค่า (บาท)<input class="num" type="number" step="any" id="mBง" value="0"></label><label class="f">รายการ ง: อัตราปิด (บาท)<input class="num" type="number" step="any" id="mRง" value="0"></label></div>
+      <div id="mOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="br" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แปลงค่างบการเงินของสาขาต่างประเทศ (21.14–21.15)</h2>
+      <p class="hint">สินทรัพย์และหนี้สินใช้อัตราปิด รายได้และค่าใช้จ่ายใช้อัตราวันเกิดรายการหรืออัตราถัวเฉลี่ยเมื่ออัตราไม่ผันผวนอย่างมีนัยสำคัญ ผลต่างรับรู้ในส่วนของเจ้าของ</p>
+      <span class="sample">ตัวอย่างที่ 21.2</span>
+      <div class="fields"><label class="f">สินทรัพย์สุทธิต้นปี (LC)<input class="num" type="number" step="any" id="bNA0" value="500000"></label><label class="f">อัตราปิดปีก่อน (บาท)<input class="num" type="number" step="any" id="bR0" value="1.6"></label><label class="f">รายได้ (LC)<input class="num" type="number" step="any" id="bRev" value="900000"></label><label class="f">ค่าใช้จ่าย (LC)<input class="num" type="number" step="any" id="bExp" value="750000"></label><label class="f">อัตราถัวเฉลี่ยของปี (บาท)<input class="num" type="number" step="any" id="bAvg" value="1.7"></label><label class="f">อัตราปิด (บาท)<input class="num" type="number" step="any" id="bCl" value="1.8"></label><label class="f">สินทรัพย์ ณ สิ้นปี (LC)<input class="num" type="number" step="any" id="bA" value="900000"></label><label class="f">หนี้สิน ณ สิ้นปี (LC)<input class="num" type="number" step="any" id="bL" value="250000"></label><label class="f">เงินที่สาขาส่งกลับระหว่างปี (LC)<input class="num" type="number" step="any" id="bRm" value="0"></label><label class="f">อัตรา ณ วันส่งเงินกลับ (บาท)<input class="num" type="number" step="any" id="bRmR" value="0"></label></div>
+      <div id="bOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="bc" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ต้นทุนการกู้ยืมของเงินกู้เงินตราต่างประเทศ (13.1, 13.4, 21.11)</h2>
+      <p class="hint">ตอบก่อนว่าเงินกู้ใช้กับสินทรัพย์ที่เข้าเงื่อนไขและเป็นไปตาม 13.5 หรือไม่ ผลต่างของดอกเบี้ยค้างจ่ายถือเป็นต้นทุนดอกเบี้ยทั้งจำนวน ส่วนของผลต่างของเงินต้นที่ปรับปรุงดอกเบี้ยคำนวณตามแนวการตีความของตำรา: ดอกเบี้ยหากกู้เป็นเงินบาทหักดอกเบี้ยเงินตราต่างประเทศรวมผลต่างของดอกเบี้ย และไม่เกินผลต่างของเงินต้น</p>
+      <span class="sample">ตัวอย่างที่ 21.3 (งวดถัดไปดู S21.5)</span>
+      <div class="fields"><label class="f">เงินกู้ใช้ก่อสร้างหรือได้มาซึ่งสินทรัพย์ที่เข้าเงื่อนไข (13.3) และเป็นไปตาม 13.5<select id="kQ"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">เงินกู้ (เงินตราต่างประเทศ)<input class="num" type="number" step="any" id="kFC" value="1000000"></label><label class="f">อัตรา ณ วันกู้ (บาท) ใช้เป็นฐานดอกเบี้ยหากกู้เป็นเงินบาท<input class="num" type="number" step="any" id="kRb" value="34.0"></label><label class="f">อัตราปิดงวดก่อน (บาท) ใช้เป็นฐานผลต่างของเงินต้น งวดแรกใส่อัตรา ณ วันกู้<input class="num" type="number" step="any" id="kR0" value="34.0"></label><label class="f">ดอกเบี้ยค้างจ่ายยกมาจากงวดก่อน (เงินตราต่างประเทศ) งวดแรกใส่ 0<input class="num" type="number" step="any" id="kAcc" value="0"></label><label class="f">อัตราปิด (บาท)<input class="num" type="number" step="any" id="kCl" value="34.5"></label><label class="f">อัตราถัวเฉลี่ยของช่วงดอกเบี้ย (บาท)<input class="num" type="number" step="any" id="kAvg" value="34.2"></label><label class="f">อัตราดอกเบี้ยเงินตราต่างประเทศต่อปี (%)<input class="num" type="number" step="any" id="kI" value="4.0"></label><label class="f">จำนวนเดือนในงวด<input class="num" type="number" step="any" id="kM" value="6"></label><label class="f">อัตราดอกเบี้ยเงินกู้เงินบาทเทียบเคียงต่อปี (%)<input class="num" type="number" step="any" id="kTHB" value="5.0"></label></div>
+      <div id="kOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="tax" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>อัตราทางบัญชีกับอัตราทางภาษี (มาตรา 65 ทวิ (5))</h2>
+      <p class="hint">ทางบัญชีใช้อัตราปิด ทางภาษีมาตรา 65 ทวิ (5) ฉบับแก้ไข พ.ศ. 2562 ให้กิจการเลือกวิธีใดวิธีหนึ่งในสามวิธี แท็บนี้คำนวณกรณีเลือกวิธีที่ (2) คือ อัตราถัวเฉลี่ยรับซื้อสำหรับทรัพย์สิน และอัตราถัวเฉลี่ยขายสำหรับหนี้สิน ที่ธนาคารแห่งประเทศไทยคำนวณไว้ ช่อง "ปกปิดชื่อ" เปิดไว้โดยค่าเริ่มต้น</p>
+      <span class="sample">ตารางที่ 21-6</span>
+      <div class="fields"><label class="f">ชื่อกิจการ<input type="text" id="xName" value="บริษัท ตัวอย่างนำเข้าส่งออก จำกัด"></label><label class="f"><span><input type="checkbox" id="xAnon" checked> ปกปิดชื่อ</span></label><label class="f">ทรัพย์สิน: จำนวนเงินตราต่างประเทศ<input class="num" type="number" step="any" id="xAF" value="15000"></label><label class="f">ทรัพย์สิน: ยอดตามบัญชีก่อนแปลงค่า (บาท)<input class="num" type="number" step="any" id="xAB" value="555000"></label><label class="f">ทรัพย์สิน: อัตราปิด (บาท)<input class="num" type="number" step="any" id="xAC" value="37.4"></label><label class="f">ทรัพย์สิน: อัตราถัวเฉลี่ยรับซื้อ (บาท)<input class="num" type="number" step="any" id="xAT" value="37.25"></label><label class="f">หนี้สิน: จำนวนเงินตราต่างประเทศ<input class="num" type="number" step="any" id="xLF" value="20000"></label><label class="f">หนี้สิน: ยอดตามบัญชีก่อนแปลงค่า (บาท)<input class="num" type="number" step="any" id="xLB" value="680000"></label><label class="f">หนี้สิน: อัตราปิด (บาท)<input class="num" type="number" step="any" id="xLC" value="34.5"></label><label class="f">หนี้สิน: อัตราถัวเฉลี่ยขาย (บาท)<input class="num" type="number" step="any" id="xLT" value="34.65"></label></div>
+      <div id="xOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="note" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>ร่างหมายเหตุนโยบายการบัญชี (ย่อหน้า 4.19.2)</h2>
+      <p class="hint">บทที่ 21 ไม่มีย่อหน้าการเปิดเผยเฉพาะ ร่างนี้เป็นแนวการตีความของตำรา ช่อง "ปกปิดชื่อ" เปิดไว้โดยค่าเริ่มต้น คัดลอกแล้ววางใน Word</p>
+      
+      <div class="fields"><label class="f">ชื่อกิจการ<input type="text" id="nName" value="บริษัท ตัวอย่างนำเข้าส่งออก จำกัด"></label><label class="f"><span><input type="checkbox" id="nAnon" checked> ปกปิดชื่อ</span></label><label class="f">แหล่งของอัตราแลกเปลี่ยน<input type="text" id="nSrc" value="อัตราอ้างอิงของธนาคารแห่งประเทศไทย"></label><label class="f">อัตราที่ใช้ ณ วันที่เกิดรายการ (21.7)<select id="nAvg"><option value="spot" selected>อัตรา ณ วันที่เกิดรายการ</option><option value="avg">อัตราถัวเฉลี่ยรายเดือนเมื่ออัตราไม่ผันผวนอย่างมีนัยสำคัญ</option></select></label><label class="f">กิจการมีสาขาต่างประเทศ (21.14)<select id="nBr"><option value="">– เลือก –</option><option value="yes">ใช่</option><option value="no">ไม่ใช่</option></select></label><label class="f">กำไร (ขาดทุน) จากอัตราแลกเปลี่ยนสุทธิในงวด (บาท) ขาดทุนใส่ติดลบ<input class="num" type="number" step="any" id="nNet" value="-344000"></label><label class="f">ผลต่างจากการแปลงค่างบการเงินสะสม (บาท)<input class="num" type="number" step="any" id="nTr" value="115000"></label><div class="row-actions"><button class="btn primary" id="nCopy">คัดลอกร่าง</button><span class="copied" id="nOk" hidden>คัดลอกแล้ว</span></div></div>
+      <div id="nOut" style="margin-top:10px"></div>
+    </section>
+  </div>
+
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อและผลราย LO</p>
+      <div id="zBox"></div>
+      <div class="row-actions"><button class="btn primary" id="zChk">ตรวจคำตอบ</button><button class="btn" id="zClr">ล้างคำตอบ</button></div>
+      <div id="zOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 8 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S21</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 21 กดปุ่ม S21.1 ถึง S21.9 เพื่อเลื่อนไปยังหัวข้อนั้น</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S21.1">S21.1</a><a class="btn" href="#S21.2">S21.2</a><a class="btn" href="#S21.3">S21.3</a><a class="btn" href="#S21.4">S21.4</a><a class="btn" href="#S21.5">S21.5</a><a class="btn" href="#S21.6">S21.6</a><a class="btn" href="#S21.7">S21.7</a><a class="btn" href="#S21.8">S21.8</a><a class="btn" href="#S21.9">S21.9</a></div>
+<h3 id="S21.1">S21.1 รายการตรวจการจำแนกรายการที่เป็นตัวเงิน</h3><p>ตอบคำถามเดียวก่อนเลือกอัตรา: รายการนั้นให้สิทธิได้รับหรือภาระส่งมอบจำนวนเงินที่กำหนดได้แน่นอนหรือทราบได้ในจำนวนหน่วยของสกุลเงินหรือไม่ (21.3) ถ้าใช่เป็นรายการที่เป็นตัวเงิน ถ้าไม่ใช่เป็นรายการที่ไม่เป็นตัวเงิน (21.4) รายการที่ตัวบทไม่ได้ระบุติดป้ายแนวการตีความ</p><div class="tbl"><table><thead><tr><th>รายการ</th><th>ประเภท</th><th>เหตุผล</th></tr></thead><tbody><tr><td>เงินสดและเงินฝากธนาคารสกุลต่างประเทศ</td><td>ตัวเงิน</td><td>จำนวนหน่วยของสกุลเงินแน่นอน (แนวการตีความ)</td></tr><tr><td>ลูกหนี้การค้า เจ้าหนี้การค้า</td><td>ตัวเงิน</td><td>สิทธิหรือภาระรับจ่ายเงินจำนวนแน่นอน (แนวการตีความ)</td></tr><tr><td>เงินกู้ยืม เงินให้กู้ยืม ดอกเบี้ยค้างรับค้างจ่าย</td><td>ตัวเงิน</td><td>ภาระหรือสิทธิตามสัญญาเงินกู้ (แนวการตีความ)</td></tr><tr><td>ผลประโยชน์พนักงานที่จ่ายเป็นเงินสด</td><td>ตัวเงิน</td><td>ตัวบท 21.3</td></tr><tr><td>ประมาณการหนี้สินที่ชำระด้วยเงินสด</td><td>ตัวเงิน</td><td>ตัวบท 21.3</td></tr><tr><td>หนี้สินตามสัญญาเช่า</td><td>ตัวเงิน</td><td>ตัวบท 21.3</td></tr><tr><td>เงินปันผลที่รับรู้เป็นหนี้สิน</td><td>ตัวเงิน</td><td>ตัวบท 21.3</td></tr><tr><td>เงินมัดจำที่จะได้รับคืนเป็นเงินเมื่อสัญญาสิ้นสุด</td><td>ตัวเงิน</td><td>สิทธิรับเงินคืนจำนวนแน่นอน (แนวการตีความ)</td></tr><tr><td>เงินจ่ายล่วงหน้าสำหรับสินค้าและบริการ</td><td>ไม่เป็นตัวเงิน</td><td>ตัวบท 21.4</td></tr><tr><td>เงินมัดจำค่าสินค้าที่จะได้รับเป็นสินค้าและไม่คืนเงิน</td><td>ไม่เป็นตัวเงิน</td><td>เทียบเงินจ่ายล่วงหน้าตาม 21.4 (แนวการตีความ)</td></tr><tr><td>สินค้าคงเหลือ</td><td>ไม่เป็นตัวเงิน</td><td>ตัวบท 21.4</td></tr><tr><td>ที่ดิน อาคารและอุปกรณ์</td><td>ไม่เป็นตัวเงิน</td><td>ตัวบท 21.4</td></tr><tr><td>สินทรัพย์ไม่มีตัวตน ค่าความนิยม</td><td>ไม่เป็นตัวเงิน</td><td>ตัวบท 21.4</td></tr><tr><td>ประมาณการหนี้สินที่ชำระด้วยการส่งมอบสินทรัพย์ที่ไม่เป็นตัวเงิน</td><td>ไม่เป็นตัวเงิน</td><td>ตัวบท 21.4</td></tr><tr><td>รายได้รับล่วงหน้าที่ชำระด้วยการส่งมอบสินค้าหรือบริการ</td><td>ไม่เป็นตัวเงิน</td><td>ภาระส่งมอบสินค้าหรือบริการ ไม่ใช่เงิน (แนวการตีความ)</td></tr><tr><td>เงินลงทุนในตราสารทุน</td><td>ไม่เป็นตัวเงิน</td><td>ไม่มีสิทธิรับเงินจำนวนแน่นอน วัดตามบทที่ 9 (แนวการตีความ)</td></tr><tr><td>เงินลงทุนในตราสารหนี้ที่ถือจนครบกำหนด</td><td>ตัวเงิน</td><td>สิทธิรับเงินต้นและดอกเบี้ยจำนวนแน่นอน (แนวการตีความ)</td></tr><tr><td>ค่าใช้จ่ายจ่ายล่วงหน้า (ค่าเช่า ค่าประกันภัย)</td><td>ไม่เป็นตัวเงิน</td><td>รับบริการ ไม่ใช่รับเงินคืน (แนวการตีความ)</td></tr><tr><td>ภาษีเงินได้ค้างจ่ายหรือขอคืนจากต่างประเทศ</td><td>ตัวเงิน</td><td>จำนวนเงินแน่นอน (แนวการตีความ)</td></tr><tr><td>เงินประกันผลงานที่ผู้ว่าจ้างหักไว้</td><td>ตัวเงิน</td><td>จะได้รับเป็นเงิน (แนวการตีความ)</td></tr><tr><td>ตั๋วเงินรับหรือตั๋วเงินจ่ายสกุลต่างประเทศ</td><td>ตัวเงิน</td><td>จำนวนเงินตามตั๋ว (แนวการตีความ)</td></tr><tr><td>สิทธิในการใช้ซอฟต์แวร์ที่จ่ายล่วงหน้า</td><td>ไม่เป็นตัวเงิน</td><td>สินทรัพย์ไม่มีตัวตนตาม 21.4</td></tr><tr><td>ประมาณการค่ารื้อถอนที่จ่ายเป็นเงินดอลลาร์สหรัฐ</td><td>ตัวเงิน</td><td>ประมาณการหนี้สินที่ชำระด้วยเงินสดตาม 21.3</td></tr><tr><td>สัญญาที่จะส่งมอบหุ้นของกิจการจำนวนผันแปรมูลค่าเท่ากับเงินจำนวนคงที่</td><td>ตัวเงิน</td><td>ตัวบท 21.3</td></tr></tbody></table></div><p>อ่านเงื่อนไขในสัญญาก่อนจำแนกเสมอ เงินมัดจำชื่อเดียวกันอาจเป็นตัวเงินหรือไม่เป็นตัวเงินขึ้นกับว่าจะได้รับคืนเป็นเงินหรือเป็นสินค้า</p><h3 id="S21.2">S21.2 รายการบันทึกครบวงจรของตัวอย่างที่ 21.1</h3><h4>1 และ 15 พฤศจิกายน และ 1 ธันวาคม 25X1</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต สินค้าคงเหลือ</td><td class="num">680,000</td><td class="num"></td></tr><tr><td>    เครดิต เจ้าหนี้การค้า</td><td class="num"></td><td class="num">680,000</td></tr><tr><td>เดบิต ลูกหนี้การค้า</td><td class="num">555,000</td><td class="num"></td></tr><tr><td>    เครดิต รายได้จากการขาย</td><td class="num"></td><td class="num">555,000</td></tr><tr><td>เดบิต เงินจ่ายล่วงหน้าค่าเครื่องจักร</td><td class="num">342,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินฝากธนาคาร</td><td class="num"></td><td class="num">342,000</td></tr><tr><td>รวม</td><td class="num">1,577,000</td><td class="num">1,577,000</td></tr></tbody></table></div><h4>31 ธันวาคม 25X1</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ขาดทุนจากอัตราแลกเปลี่ยน</td><td class="num">10,000</td><td class="num"></td></tr><tr><td>    เครดิต เจ้าหนี้การค้า</td><td class="num"></td><td class="num">10,000</td></tr><tr><td>เดบิต ลูกหนี้การค้า</td><td class="num">6,000</td><td class="num"></td></tr><tr><td>    เครดิต กำไรจากอัตราแลกเปลี่ยน</td><td class="num"></td><td class="num">6,000</td></tr><tr><td>เดบิต ผลขาดทุนจากการลดมูลค่าสินค้า</td><td class="num">24,500</td><td class="num"></td></tr><tr><td>    เครดิต ค่าเผื่อการลดมูลค่าสินค้า</td><td class="num"></td><td class="num">24,500</td></tr><tr><td>รวม</td><td class="num">40,500</td><td class="num">40,500</td></tr></tbody></table></div><h4>31 มกราคม และ 15 กุมภาพันธ์ 25X2</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต เจ้าหนี้การค้า</td><td class="num">690,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินฝากธนาคาร</td><td class="num"></td><td class="num">672,000</td></tr><tr><td>    เครดิต กำไรจากอัตราแลกเปลี่ยน</td><td class="num"></td><td class="num">18,000</td></tr><tr><td>เดบิต เงินฝากธนาคาร</td><td class="num">568,500</td><td class="num"></td></tr><tr><td>    เครดิต ลูกหนี้การค้า</td><td class="num"></td><td class="num">561,000</td></tr><tr><td>    เครดิต กำไรจากอัตราแลกเปลี่ยน</td><td class="num"></td><td class="num">7,500</td></tr><tr><td>รวม</td><td class="num">1,258,500</td><td class="num">1,258,500</td></tr></tbody></table></div><h4>บัญชีแยกประเภท</h4><div class="tbl"><table><thead><tr><th>บัญชี</th><th class="num">วันเกิดรายการ</th><th class="num">31 ธ.ค. 25X1</th><th class="num">วันชำระ</th><th class="num">คงเหลือ</th></tr></thead><tbody><tr><td>เจ้าหนี้การค้า (เครดิต)</td><td class="num">680,000</td><td class="num">10,000</td><td class="num">(690,000)</td><td class="num">0</td></tr><tr><td>ลูกหนี้การค้า (เดบิต)</td><td class="num">555,000</td><td class="num">6,000</td><td class="num">(561,000)</td><td class="num">0</td></tr></tbody></table></div><p>ผลต่างรวมสองปี: เจ้าหนี้ (10,000) + 18,000 = 8,000 บาท เท่ากับ 20,000 × (34.00 − 33.60) ลูกหนี้ 6,000 + 7,500 = 13,500 บาท เท่ากับ 15,000 × (37.90 − 37.00) เงินจ่ายล่วงหน้าโอนเป็นราคาทุนเครื่องจักร 342,000 บาทเมื่อรับมอบ ไม่ปรับตามอัตรา</p><h3 id="S21.3">S21.3 การเปรียบเทียบสองจำนวนตามย่อหน้า 21.9 และรายการไม่เป็นตัวเงินที่วัดด้วยมูลค่ายุติธรรม</h3><h4>สินค้านำเข้า (21.9)</h4><div class="tbl"><table><thead><tr><th>จำนวน</th><th>สกุลเงิน</th><th>อัตรา</th><th class="num">บาท</th></tr></thead><tbody><tr><td>ราคาทุน</td><td>20,000 ดอลลาร์สหรัฐ (USD)</td><td>34.00 วันกำหนดราคาทุน</td><td class="num">680,000</td></tr><tr><td>มูลค่าสุทธิที่จะได้รับ</td><td>19,000 USD</td><td>34.50 อัตราปิด</td><td class="num">655,500</td></tr><tr><td>ผลขาดทุนจากการลดมูลค่า</td><td></td><td></td><td class="num">24,500</td></tr></tbody></table></div><p>ถ้าอัตราปิดเป็น 36.00 บาท มูลค่าสุทธิที่จะได้รับเป็น 684,000 บาท สูงกว่าราคาทุน ไม่ต้องลดมูลค่าในเงินบาทแม้ในเงินดอลลาร์มูลค่าสุทธิที่จะได้รับต่ำกว่าราคาทุน (21.9.3)</p><h4>ที่ดินในต่างประเทศที่ใช้วิธีตีราคาใหม่ (21.8.3, 21.12)</h4><p>ที่ดินซื้อ 100,000 USD ที่อัตรา 33.00 บาท (3,300,000 บาท) ปลายปีราคาประเมิน 110,000 USD อัตรา ณ วันประเมิน 34.50 บาท มูลค่ายุติธรรม 3,795,000 บาท ส่วนเกินทุนจากการตีราคา 495,000 บาท ประกอบด้วยราคาที่เพิ่ม 10,000 × 33.00 = 330,000 บาท และองค์ประกอบอัตราแลกเปลี่ยน 110,000 × 1.50 = 165,000 บาท ทั้งจำนวนรับรู้ในส่วนของเจ้าของตามบทที่ 10 เพราะผลกำไรของรายการนั้นรับรู้ในส่วนของเจ้าของ (21.12)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ที่ดิน</td><td class="num">495,000</td><td class="num"></td></tr><tr><td>    เครดิต ส่วนเกินทุนจากการตีราคาสินทรัพย์</td><td class="num"></td><td class="num">495,000</td></tr><tr><td>รวม</td><td class="num">495,000</td><td class="num">495,000</td></tr></tbody></table></div><h3 id="S21.4">S21.4 กระดาษทำการแปลงค่างบสาขาและการกระทบยอดผลต่าง</h3><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">LC</th><th>อัตรา</th><th class="num">บาท</th></tr></thead><tbody><tr><td>สินทรัพย์</td><td class="num">900,000</td><td>1.80</td><td class="num">1,620,000</td></tr><tr><td>หนี้สิน</td><td class="num">250,000</td><td>1.80</td><td class="num">450,000</td></tr><tr><td>สินทรัพย์สุทธิ</td><td class="num">650,000</td><td></td><td class="num">1,170,000</td></tr><tr><td>รายได้</td><td class="num">900,000</td><td>1.70</td><td class="num">1,530,000</td></tr><tr><td>ค่าใช้จ่าย</td><td class="num">750,000</td><td>1.70</td><td class="num">1,275,000</td></tr><tr><td>กำไร</td><td class="num">150,000</td><td></td><td class="num">255,000</td></tr><tr><td>บัญชีสำนักงานใหญ่ต้นปี</td><td class="num">500,000</td><td>1.60</td><td class="num">800,000</td></tr><tr><td>ผลต่างจากการแปลงค่า</td><td class="num"></td><td></td><td class="num">115,000</td></tr></tbody></table></div><h4>กระทบยอดสองส่วน (21.14.3)</h4><div class="tbl"><table><thead><tr><th>ส่วน</th><th>วิธีคำนวณ</th><th class="num">บาท</th></tr></thead><tbody><tr><td>(1) กำไรของงวด</td><td>150,000 × (1.80 − 1.70)</td><td class="num">15,000</td></tr><tr><td>(2) สินทรัพย์สุทธิต้นงวด</td><td>500,000 × (1.80 − 1.60)</td><td class="num">100,000</td></tr><tr><td>รวม</td><td></td><td class="num">115,000</td></tr></tbody></table></div><h4>กรณีสาขาส่งเงินกลับระหว่างปี</h4><p>ถ้าสาขาส่งเงินกลับ 100,000 LC เมื่ออัตรา 1.75 บาท (175,000 บาท) สินทรัพย์สุทธิปลายปีเหลือ 550,000 LC (990,000 บาท) ผลต่างจากการแปลงค่า = 990,000 − 800,000 − 255,000 + 175,000 = 110,000 บาท ส่วนที่ลดลง 5,000 บาทมาจากเงินที่ส่งกลับ 100,000 × (1.80 − 1.75) ซึ่งไม่ได้อยู่ในสาขา ณ วันสิ้นปี</p><h4>กรณีจำหน่ายสาขา</h4><p>เมื่อจำหน่ายสาขา ผลต่างสะสมในส่วนของเจ้าของจัดประเภทใหม่เข้าไปในงบกำไรขาดทุนเมื่อรับรู้กำไรขาดทุนจากการจำหน่าย (21.14.3) ถ้ายอดสะสมคือ 115,000 บาท</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ผลต่างของอัตราแลกเปลี่ยนจากการแปลงค่างบการเงิน (ส่วนของเจ้าของ)</td><td class="num">115,000</td><td class="num"></td></tr><tr><td>    เครดิต กำไรจากการจำหน่ายหน่วยงานต่างประเทศ</td><td class="num"></td><td class="num">115,000</td></tr><tr><td>รวม</td><td class="num">115,000</td><td class="num">115,000</td></tr></tbody></table></div><h3 id="S21.5">S21.5 ต้นทุนการกู้ยืมเงินตราต่างประเทศและสัญญาซื้อขายล่วงหน้า</h3><h4>ตัวอย่างที่ 21.3 หกเดือนแรกของปี 25X2 (อัตราถัวเฉลี่ย 34.60 อัตรา 30 มิ.ย. 25X2 34.80)</h4><p>ดอกเบี้ยหกเดือน 20,000 USD × 34.60 = 692,000 บาท ผลต่างของดอกเบี้ยค้างจ่ายยกมา 20,000 × (34.80 − 34.50) = 6,000 บาท ผลต่างของดอกเบี้ยงวดนี้ 20,000 × (34.80 − 34.60) = 4,000 บาท ผลต่างของเงินต้น 1,000,000 × (34.80 − 34.50) = 300,000 บาท ดอกเบี้ยหากกู้เป็นเงินบาท 850,000 บาท ผลต่างของดอกเบี้ยทั้งสองรายการถือเป็นต้นทุนดอกเบี้ยทั้งจำนวน ส่วนของผลต่างของเงินต้นที่ปรับปรุงดอกเบี้ย = 850,000 − (692,000 + 6,000 + 4,000) = 148,000 บาท ไม่เกินผลต่างของเงินต้น 300,000 บาท รวมเป็นราคาทุน 850,000 บาท ขาดทุนในงบกำไรขาดทุน 300,000 − 148,000 = 152,000 บาท (แนวการตีความ)</p><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต งานระหว่างก่อสร้าง – คลังสินค้า</td><td class="num">850,000</td><td class="num"></td></tr><tr><td>เดบิต ขาดทุนจากอัตราแลกเปลี่ยน</td><td class="num">152,000</td><td class="num"></td></tr><tr><td>    เครดิต ดอกเบี้ยค้างจ่าย</td><td class="num"></td><td class="num">702,000</td></tr><tr><td>    เครดิต เงินกู้ยืม</td><td class="num"></td><td class="num">300,000</td></tr><tr><td>รวม</td><td class="num">1,002,000</td><td class="num">1,002,000</td></tr></tbody></table></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody><tr><td>เดบิต ดอกเบี้ยค้างจ่าย (40,000 × 34.80)</td><td class="num">1,392,000</td><td class="num"></td></tr><tr><td>    เครดิต เงินฝากธนาคาร</td><td class="num"></td><td class="num">1,392,000</td></tr><tr><td>รวม</td><td class="num">1,392,000</td><td class="num">1,392,000</td></tr></tbody></table></div><h4>กรณีอัตรากลับทิศจนเกิดกำไร</h4><p>ถ้าเงินบาทแข็งค่าจนผลต่างของเงินต้นเป็นกำไร ไม่มีส่วนที่ปรับปรุงดอกเบี้ย ต้นทุนการกู้ยืมที่รวมเป็นราคาทุนคือดอกเบี้ยเงินตราต่างประเทศที่รับรู้ และกำไรจากอัตราแลกเปลี่ยนรับรู้ในงบกำไรขาดทุนตาม 21.11 (แนวการตีความ ใช้วิธีเดียวกันทุกงวดตาม 5.8)</p><h4>สัญญาซื้อเงินดอลลาร์ล่วงหน้า</h4><p>กิจการทำสัญญาซื้อ 20,000 USD ล่วงหน้าที่อัตรา 34.30 บาท เพื่อชำระเจ้าหนี้ในตัวอย่างที่ 21.1 ทางเลือกตามย่อหน้า 24.3: (24.3.1) เปิดเผยจำนวนเงินตามสัญญา 20,000 USD ในหมายเหตุ (24.3.2) รับรู้ด้วยวิธีการคงค้างอย่างง่าย (24.3.3) รับรู้ด้วยมูลค่ายุติธรรม หรือ (24.3.4) ใช้การบัญชีป้องกันความเสี่ยงโดยถือปฏิบัติตามข้อกำหนดในมาตรฐานการรายงานทางการเงินกลุ่มเครื่องมือทางการเงิน รายละเอียดของแต่ละทางเลือกอยู่ในบทที่ 24 แนวการตีความของตำรา: เมื่อเลือก 24.3.1 หรือ 24.3.3 เจ้าหนี้ 20,000 USD ยังแปลงค่าด้วยอัตราปิด 34.50 บาทตาม 21.8.1 ส่วนกรณี 24.3.2 และ 24.3.4 ผลต่อการวัดเจ้าหนี้ขึ้นกับวิธีที่เลือกตามบทที่ 24 และมาตรฐานกลุ่มเครื่องมือทางการเงิน</p><h3 id="S21.6">S21.6 ผลทางภาษีของรายการเงินตราต่างประเทศ</h3><div class="tbl"><table><thead><tr><th>เรื่อง</th><th>ข้อกำหนด</th><th>แหล่ง</th></tr></thead><tbody><tr><td>วิธีคำนวณ ณ วันสุดท้ายของรอบระยะเวลาบัญชี (กฎหมายปัจจุบัน)</td><td>กิจการที่ไม่ใช่ธนาคารพาณิชย์หรือสถาบันการเงินเลือกวิธีใดวิธีหนึ่ง (1) อัตราถัวเฉลี่ยระหว่างอัตราซื้อและอัตราขายของธนาคารพาณิชย์ที่ธนาคารแห่งประเทศไทยคำนวณไว้ (2) อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์รับซื้อสำหรับเงินตราและทรัพย์สิน และอัตราถัวเฉลี่ยที่ธนาคารพาณิชย์ขายสำหรับหนี้สิน ซึ่งธนาคารแห่งประเทศไทยคำนวณไว้ หรือ (3) วิธีอื่นที่สอดคล้องกับหลักเกณฑ์ตามวิชาการบัญชี ตามหลักเกณฑ์ วิธีการ และเงื่อนไขที่รัฐมนตรีประกาศกำหนดในราชกิจจานุเบกษา เมื่อเลือกแล้วใช้วิธีนั้นตลอดไป เว้นแต่อธิบดีอนุมัติให้เปลี่ยน</td><td>ม.65 ทวิ (5) แก้ไขโดยพระราชบัญญัติแก้ไขเพิ่มเติมประมวลรัษฎากร (ฉบับที่ 50) พ.ศ. 2562 ใช้กับรอบระยะเวลาบัญชีที่เริ่มในหรือหลัง 1 ม.ค. 2562</td></tr><tr><td>ทรัพย์สินหรือเงินตราที่คงเหลือ ณ วันสุดท้ายของรอบระยะเวลาบัญชี</td><td>วิธีที่ (2): อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์รับซื้อ ซึ่งธนาคารแห่งประเทศไทยคำนวณไว้</td><td>ม.65 ทวิ (5) และข้อหารือ กค 0811/08464 (11 มิ.ย. 2541) ตามถ้อยคำเดิมก่อนปี 2562</td></tr><tr><td>หนี้สินที่คงเหลือ ณ วันสุดท้ายของรอบระยะเวลาบัญชี</td><td>วิธีที่ (2): อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์ขาย ซึ่งธนาคารแห่งประเทศไทยคำนวณไว้</td><td>ม.65 ทวิ (5) และข้อหารือเดียวกัน (ถ้อยคำเดิม)</td></tr><tr><td>กำไรหรือขาดทุนจากการคำนวณ</td><td>นำไปรวมคำนวณเป็นรายได้หรือรายจ่าย</td><td>ข้อหารือ กค 0811/08464 และ กค 0811/12274</td></tr><tr><td>รายจ่ายเป็นเงินตราต่างประเทศที่จ่ายระหว่างรอบระยะเวลาบัญชี</td><td>คำนวณเป็นเงินบาทตามราคาตลาดในวันที่จ่าย</td><td>ม.65 ทวิ (5) วรรคสอง ตามข้อหารือ กค 0706/6629 (6 ก.ค. 2550)</td></tr><tr><td>ผลขาดทุนของเงินกู้ระยะยาวที่ใช้ก่อสร้างโรงงาน</td><td>วินิจฉัยว่ารวมเป็นต้นทุนทรัพย์สินและหักค่าเสื่อมราคาตาม ม.65 ทวิ (2) ได้ ในบริบทของคำสั่ง ท.ป.72/2540 จึงไม่ใช่หลักทั่วไปสำหรับรอบระยะเวลาบัญชีปัจจุบัน</td><td>ข้อหารือ กค 0811/08464</td></tr><tr><td>คำสั่ง ท.ป.72/2540 (24 ก.ค. 2540)</td><td>มาตรการเฉพาะหลังการเปลี่ยนระบบแลกเปลี่ยนเงินตรา 2 ก.ค. 2540 ใช้กับรอบระยะเวลาบัญชีที่สิ้นสุดในหรือหลังวันนั้น ใช้กับทั้งผลกำไรและขาดทุน เลือกรับรู้ทั้งจำนวน (ข้อ 1) ตามส่วนของหนี้ที่ถึงกำหนดชำระ (ข้อ 2) หรือเฉลี่ยไม่เกินห้ารอบระยะเวลาบัญชี (ข้อ 3) ปัจจุบันหมดผลในทางปฏิบัติ (แนวการตีความ) เมื่อเลือกต้องใช้กับทุกรายการและหมายเหตุในงบการเงิน</td><td>ข้อหารือ กค 0811/12274 (17 ส.ค. 2541) และ กค 0811(กม)/1906 (29 ต.ค. 2541)</td></tr><tr><td>ประกาศอัตราของกรมสรรพากร</td><td>กรมสรรพากรออกประกาศอัตราถัวเฉลี่ยในวันสุดท้ายของปีที่ธนาคารแห่งประเทศไทยคำนวณ ทุกต้นปี ฉบับหลังปี 2562 มีคอลัมน์อัตรากลาง และในปี 2569 ออกประกาศใหม่ให้ใช้อัตรา ณ วันสุดท้ายของรอบระยะเวลาบัญชีของแต่ละกิจการ (ราชกิจจานุเบกษา 20 ส.ค. 2569 สาระรอตรวจต้นฉบับ)</td><td>ประกาศกรมสรรพากร เรื่อง การคำนวณค่าหรือราคาเงินตราต่างประเทศเป็นเงินตราไทย (เช่น ฉบับ 4 ม.ค. 2549 และอัตราสิ้นปี 2567)</td></tr></tbody></table></div><h4>กระทบยอดกำไรทางบัญชีกับกำไรทางภาษี ตัวอย่างที่ 21.1 (กรณีเลือกวิธีที่ (2))</h4><div class="tbl"><table><thead><tr><th>ปี</th><th class="num">ทางบัญชี</th><th class="num">ทางภาษี</th><th class="num">ปรับปรุง</th></tr></thead><tbody><tr><td>25X1 ณ วันสิ้นงวด</td><td class="num">(4,000)</td><td class="num">(9,250)</td><td class="num">(5,250)</td></tr><tr><td>25X2 วันชำระ</td><td class="num">25,500</td><td class="num">30,750</td><td class="num">5,250</td></tr><tr><td>รวมสองปี</td><td class="num">21,500</td><td class="num">21,500</td><td class="num">0</td></tr></tbody></table></div><p>ผลรวมสองปีทางบัญชีและทางภาษีเท่ากันที่ 21,500 บาท ต่างกันเฉพาะจังหวะเวลา ผลขาดทุนจากการลดมูลค่าสินค้า 24,500 บาทใช้หลักทางภาษีตาม ม.65 ทวิ (6) ในบทที่ 8</p><h3 id="S21.7">S21.7 ร่างหมายเหตุนโยบายการบัญชีและจุดควบคุม</h3><h4>ร่างนโยบายการบัญชี (แนวการตีความ)</h4><p>บริษัทบันทึกรายการที่เป็นเงินตราต่างประเทศเป็นเงินบาทด้วยอัตราแลกเปลี่ยน ณ วันที่เกิดรายการ ณ วันสิ้นรอบระยะเวลารายงาน สินทรัพย์และหนี้สินที่เป็นตัวเงินแปลงค่าเป็นเงินบาทด้วยอัตราปิด กำไรหรือขาดทุนจากอัตราแลกเปลี่ยนรับรู้ในงบกำไรขาดทุน งบการเงินของสาขาต่างประเทศแปลงค่าสินทรัพย์และหนี้สินด้วยอัตราปิด และรายได้และค่าใช้จ่ายด้วยอัตราถัวเฉลี่ยของปี ผลต่างจากการแปลงค่าแสดงเป็นองค์ประกอบอื่นของส่วนของผู้ถือหุ้น</p><h4>ตารางยอดคงเหลือรายสกุล ณ 31 ธันวาคม 25X1</h4><div class="tbl"><table><thead><tr><th>สกุลเงิน</th><th>สินทรัพย์ที่เป็นตัวเงิน</th><th>หนี้สินที่เป็นตัวเงิน</th><th>อัตราปิด</th></tr></thead><tbody><tr><td>USD</td><td>–</td><td>20,000 และเงินกู้ 1,000,000 ดอกเบี้ยค้างจ่าย 20,000</td><td>34.50</td></tr><tr><td>EUR</td><td>15,000</td><td>–</td><td>37.40</td></tr></tbody></table></div><h4>จุดควบคุม</h4><div class="tbl"><table><thead><tr><th>จุด</th><th>วิธีควบคุม</th></tr></thead><tbody><tr><td>แหล่งอัตรา</td><td>กำหนดแหล่งและเวลาของอัตราในนโยบาย ใช้สม่ำเสมอ (5.8) เก็บหลักฐานอัตราทุกวันที่ใช้</td></tr><tr><td>ทะเบียนรายการ</td><td>ทะเบียนรายการเงินตราต่างประเทศคงค้างแยกสกุลและแยกตัวเงินกับไม่เป็นตัวเงิน</td></tr><tr><td>ปิดบัญชีปลายงวด</td><td>แปลงค่ารายการที่เป็นตัวเงินทุกรายการด้วยอัตราปิด กระทบยอดกับใบแจ้งยอดธนาคารและยืนยันยอด</td></tr><tr><td>สาขา</td><td>กระทบยอดผลต่างจากการแปลงค่าสองส่วนตาม 21.14.3 ทุกปี</td></tr><tr><td>ภาษี</td><td>จัดทำตารางอัตราทางภาษีตาม ม.65 ทวิ (5) แยกจากอัตราทางบัญชี</td></tr></tbody></table></div><h3 id="S21.8">S21.8 เฉลยแบบฝึกหัดและแนวคำตอบกรณีศึกษา 21.1</h3><h4>ปรนัย</h4><div class="tbl"><table><thead><tr><th>ข้อ</th><th>คำตอบ</th><th>ย่อหน้า</th></tr></thead><tbody><tr><td>1</td><td>ข</td><td>21.3</td></tr><tr><td>2</td><td>ก</td><td>21.18, 1.3.3</td></tr><tr><td>3</td><td>ค</td><td>21.8.1, 21.11</td></tr><tr><td>4</td><td>ข</td><td>21.4, 21.8.2</td></tr><tr><td>5</td><td>ง</td><td>21.14.3</td></tr><tr><td>6</td><td>ก</td><td>13.1, 13.4</td></tr><tr><td>7</td><td>ค</td><td>ม.65 ทวิ (5)</td></tr><tr><td>8</td><td>ง</td><td>21.4, 21.8.2, 21.14.3</td></tr></tbody></table></div><h4>อัตนัย</h4><div class="tbl"><table><thead><tr><th>ข้อ</th><th>แนวคำตอบ</th></tr></thead><tbody><tr><td>1</td><td>เงินฝากยูโรและเงินมัดจำค่าเช่าที่ได้คืนเป็นเงินเป็นรายการที่เป็นตัวเงิน (21.3) เงินจ่ายล่วงหน้าค่าบริการที่ปรึกษาไม่เป็นตัวเงิน (21.4) ประมาณการค่ารื้อถอนที่จ่ายเป็นเงินเป็นตัวเงิน (21.3)</td></tr><tr><td>2</td><td>วันซื้อ เดบิตวัตถุดิบ เครดิตเจ้าหนี้ 272,800 บาท วันสิ้นงวด ขาดทุน 4,000 บาท เจ้าหนี้เป็น 276,800 บาท วันชำระ จ่าย 274,400 บาท กำไร 2,400 บาท</td></tr><tr><td>3</td><td>เงินต้นเพิ่มเป็น 7,500,000 บาท ขาดทุน 100,000 บาท ดอกเบี้ยค้างจ่าย 112,500 บาท</td></tr><tr><td>4</td><td>(360,000 × 1.60) − (300,000 × 1.50) − (60,000 × 1.55) = 33,000 บาท แยกเป็นกำไรของงวด 3,000 บาท และสินทรัพย์สุทธิต้นงวด 30,000 บาท รับรู้ในส่วนของเจ้าของ</td></tr><tr><td>5</td><td>ลูกหนี้: ทางบัญชีกำไร 5,000 บาท ทางภาษีกำไร 3,500 บาท เจ้าหนี้: ทางบัญชีขาดทุน 5,000 บาท ทางภาษีขาดทุน 6,500 บาท ผลต่างกลับรายการเมื่อชำระ</td></tr></tbody></table></div><h4>กรณีศึกษา 21.1</h4><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">ข้อเสนอผู้บริหาร</th><th class="num">ที่ถูกต้อง</th></tr></thead><tbody><tr><td>เจ้าหนี้ 50,000 USD</td><td class="num">(10,000)</td><td class="num">(35,000)</td></tr><tr><td>เงินมัดจำ 20,000 USD</td><td class="num">12,000</td><td class="num">0</td></tr><tr><td>ลูกหนี้ 30,000 EUR</td><td class="num">12,000</td><td class="num">12,000</td></tr><tr><td>ผลต่างจากการแปลงค่างบสาขา</td><td class="num">80,000 (รายได้อื่น)</td><td class="num">0 ในงบกำไรขาดทุน (80,000 ในส่วนของเจ้าของ)</td></tr><tr><td>ผลต่างในงบกำไรขาดทุน</td><td class="num">94,000</td><td class="num">(23,000)</td></tr></tbody></table></div><p>ข้อเสนอแสดงกำไรสูงกว่าที่ถูกต้อง 117,000 บาท ผลต่างที่ถูกต้องเป็นขาดทุนสุทธิ 23,000 บาท แสดงในรายการ 9 ค่าใช้จ่ายอื่น</p>
+      <h3 id="S21.9">S21.9 ผลวิจัยปี 2569: ฉบับ 2554 อัตราปิด ภาษี งานของผู้สอบบัญชี และการเปรียบเทียบ</h3>
+      <h4>ก. ฉบับ 2554 (ย่อหน้า 382–390) เทียบฉบับปรับปรุง 2565</h4>
+      <div class="tbl"><table><thead><tr><th>ฉบับ 2554</th><th>ฉบับ 2565</th><th>ความต่าง</th></tr></thead><tbody><tr><td>382 383 384 385</td><td>21.1 21.2 21.6 21.7</td><td>21.1 เพิ่มวงเล็บสกุลเงินที่ใช้ในการดำเนินงาน</td></tr><tr><td>–</td><td>21.3 21.4 21.5</td><td>ใหม่: นิยามรายการที่เป็นตัวเงิน ไม่เป็นตัวเงิน และสกุลเงินที่ใช้นำเสนองบการเงิน</td></tr><tr><td>386</td><td>21.8.1 21.8.2</td><td>เหมือนเดิม</td></tr><tr><td>–</td><td>21.8.3</td><td>ใหม่: รายการไม่เป็นตัวเงินที่วัดด้วยมูลค่ายุติธรรม</td></tr><tr><td>387</td><td>21.9</td><td>21.9.2 เปลี่ยนจาก "ราคาตลาด" เป็นมูลค่าสุทธิที่จะได้รับหรือมูลค่าที่คาดว่าจะได้รับคืน</td></tr><tr><td>388 390</td><td>21.10 21.11</td><td>เหมือนเดิม</td></tr><tr><td>389</td><td>–</td><td>ตัดออก: อัตราธนาคารรับซื้อสำหรับสินทรัพย์ อัตราธนาคารขายสำหรับหนี้สิน</td></tr><tr><td>–</td><td>21.12–21.18</td><td>ใหม่: ผลต่างของรายการไม่เป็นตัวเงิน หน่วยงานต่างประเทศ สกุลเงินที่ใช้ในการดำเนินงาน</td></tr></tbody></table></div>
+      <p class="hint">เอกสารอบรมสภาวิชาชีพบัญชี 9 ธ.ค. 2565 สไลด์ 80–84 และ 158 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+      <h4>ข. อัตราปิดหลังตัดย่อหน้า 389</h4>
+      <p class="hint">มาตรฐานไม่ได้กำหนดว่าอัตราปิดเป็นอัตราซื้อ ขาย หรืออัตรากลาง และยังไม่พบเอกสารสภาวิชาชีพบัญชีที่อธิบาย กิจการกำหนดแหล่งและชนิดของอัตราเป็นนโยบายการบัญชี ใช้สม่ำเสมอ (5.8) และเลือกให้ตรงกับวิธีตามมาตรา 65 ทวิ (5) เพื่อลดผลต่างทางภาษี <span class="pill warn">แนวการตีความ</span></p>
+      <h4>ค. ภาษีที่ยืนยันแล้ว</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>หลัก</th><th>ที่มา</th></tr></thead><tbody><tr><td>ม.65 ทวิ (5) แก้ไขโดย พ.ร.บ. (ฉบับที่ 50) พ.ศ. 2562</td><td>รอบบัญชีที่เริ่มในหรือหลัง 1 ม.ค. 2562 เลือก (1) อัตรากลาง (2) รับซื้อสำหรับทรัพย์สิน ขายสำหรับหนี้สิน (3) วิธีอื่นตามวิชาการบัญชีที่รัฐมนตรีประกาศ เลือกแล้วใช้ตลอดไป เว้นแต่อธิบดีอนุมัติ</td><td>rd.go.th/5939</td></tr><tr><td>ม.65 ทวิ (5) วรรคสอง</td><td>รายการระหว่างรอบใช้ราคาตลาดในวันที่รับหรือจ่าย (กค 0706/6629)</td><td>rd.go.th/35690</td></tr><tr><td>ม.76 ตรี ถึง 76 สัตต</td><td>กิจการที่ใช้สกุลเงินที่ใช้ในการดำเนินงานอื่น ไม่ใช้ ม.65 ทวิ (5) (ม.76 เบญจ)</td><td>rd.go.th/5939</td></tr><tr><td>ป.132/2548 (28 ก.ย. 2548)</td><td>ข้อ 2 ยังใช้ถ้อยคำก่อนแก้ไข · ข้อ 4 อัตราขายสำหรับภาษีหัก ณ ที่จ่ายรวม ม.70 · ข้อ 5 อัตราซื้อสำหรับใบกำกับภาษี · ข้อ 8 สินค้านำเข้าใช้อัตรากรมศุลกากร</td><td>rd.go.th/28635</td></tr><tr><td>ประกาศกระทรวงการคลังตามมาตรา 9</td><td>อัตราของธนาคารพาณิชย์รายวัน หรืออัตราอ้างอิงประจำวันของธนาคารแห่งประเทศไทย ใช้ตั้งแต่ 1 มี.ค. 2548 ฉบับที่ 2 ใช้ 17 ก.ค. 2563</td><td>rd.go.th/25611</td></tr><tr><td>ท.ป.72/2540 (24 ก.ค. 2540)</td><td>ทั้งกำไรและขาดทุน ข้อ 1–4 หมดผลในทางปฏิบัติ</td><td>rd.go.th/3463</td></tr></tbody></table></div>
+      <p class="hint">ข้อหารือ กค 0811/08464 และ กค 0811(กม)/1906 รอตรวจต้นฉบับ (หน้าเว็บเปิดไม่ได้ 20 พ.ย. 2569) · แบบ 2 แบบจำแนกตามหน้าที่ใช้ค่าใช้จ่ายอื่นรายการ 6 และกำไรขาดทุนเบ็ดเสร็จอื่นรายการ 13.1.2 (แอปและตำราใช้แบบจำแนกตามธรรมชาติ: รายการ 9 และ 16.1.2)</p>
+      <h4>ง. งานของผู้สอบบัญชี</h4>
+      <ul><li>มาตรฐานการสอบบัญชี รหัส 500 หลักฐานการสอบบัญชี: ความน่าเชื่อถือของแหล่งอัตราภายนอก</li><li>รหัส 505 การขอคำยืนยันจากบุคคลภายนอก: ยอดเงินฝากและเงินกู้เงินตราต่างประเทศ</li><li>รหัส 540 (ปรับปรุง) การตรวจสอบประมาณการทางบัญชีและการเปิดเผยข้อมูลที่เกี่ยวข้อง: มูลค่าสุทธิที่จะได้รับตาม 21.9</li><li>ประกาศสภาวิชาชีพบัญชี ที่ 32/2568: มาตรฐานทางเลือกสำหรับกิจการที่มีความซับซ้อนน้อย</li></ul>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการบัญชี ฉบับที่ 21 (ปรับปรุง 2568) ตามประกาศ 20/2568 เพิ่มเรื่องการขาดความสามารถในการแลกเปลี่ยน ใช้ 1 ม.ค. 2569 กับกิจการที่มีส่วนได้เสียสาธารณะ เทียบกับย่อหน้า 21.10 · มาตรฐานการรายงานทางการเงินระหว่างประเทศสำหรับกิจการขนาดกลางและขนาดย่อม ฉบับที่ 3 หมวด 30 ใช้ 1 ม.ค. 2570</p>
+    </section>
+  </div>
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 21 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์ ใช้งานแบบออฟไลน์ได้</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 21.1–21.3 และตารางที่ 21-2 ถึง 21-6 ในตำรา</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=0)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fp=x=>x<0?'('+fmt(-x)+')':fmt(x);
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function je(title,lines,ref){
+    const L=lines.filter(l=>Math.abs(l.amt)>=0.5);const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);
+    const rows=dr.concat(cr).map(l=>l.dr?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`:`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,t])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${t?esc(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+  const theory=items=>`<details class="theory"><summary>มาตรฐานและแหล่งอ้างอิง</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  const tbl=(h,rows,num)=>`<div class="tbl"><table><thead><tr>${h.map((x,i)=>`<th${num.includes(i)?' class="num"':''}>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((x,i)=>`<td${num.includes(i)?' class="num"':''}>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  /* tabs */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];const names=tabs.map(b=>b.dataset.tab);
+  function show(name){tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);try{localStorage.setItem('npaes21tab',name)}catch(e){}}
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='cls';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes21tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  function parseCSV(text){const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true;else if(ch===delim){row.push(f);f=''}else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''}else if(ch!=='\r')f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''))}
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{e.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+
+
+
+
+
+  const R0=x=>Math.round(x+1e-9);
+  const INT='<span class="pill warn">แนวการตีความ</span>';
+  const G={};window.__R=G;
+  const bad=m=>verdict('warn','ตรวจข้อมูลที่กรอก',m);
+  const wait=m=>`<p class="hint">${m}</p>`;
+  const on=(ids,f)=>ids.forEach(id=>{const e=$(id);e.addEventListener(e.tagName==='SELECT'||e.type==='checkbox'?'change':'input',f)});
+  const f2=x=>fmt(x,2);
+  const blank=ids=>ids.some(id=>String($(id).value).trim()==='');
+  const BL='กรอกให้ครบทุกช่อง ช่องที่ว่างไม่ถือเป็นศูนย์';
+  /* 0 cls */
+  const CL={item:['รายการให้สิทธิได้รับหรือภาระส่งมอบจำนวนเงินที่กำหนดได้แน่นอนหรือทราบได้ในจำนวนหน่วยของสกุลเงิน (21.3)','รายการที่ไม่เป็นตัวเงินนั้นวัดด้วยมูลค่ายุติธรรม (21.8.3)'],
+    fo:['หน่วยงานต่างประเทศเป็นสาขาของกิจการ (21.13–21.14)','กิจการแปลงค่าเพื่อรวมไว้ในงบการเงินรวมหรือวิธีส่วนได้เสีย (21.16)']};
+  function cLabels(){const m=$('cMode').value;['c1','c2'].forEach((id,i)=>{const lab=$(id).closest('label');lab.firstChild.textContent=m?CL[m][i]:'ข้อ '+(i+1);lab.hidden=!m||(i===1&&$('c1').value!=='no')})}
+  function cCalc(){cLabels();const m=$('cMode').value;G.cRes=null;
+    if(!m){$('cOut').innerHTML=wait('ยังไม่แสดงผล เลือกสถานการณ์ก่อน');G.cRes='';return}
+    const a1=$('c1').value,a2=$('c2').value;
+    if(m==='item'){
+      if(a1===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 1');G.cRes='';return}
+      if(a1==='yes'){G.cRes='closing';$('cOut').innerHTML=verdict('ok','รายการที่เป็นตัวเงิน: แปลงค่าด้วยอัตราปิด (21.8.1)','ผลต่างรับรู้ในงบกำไรขาดทุน (21.11) ใช้แท็บ 1 หรือ 2 คำนวณ')+theory([['21.3','นิยามรายการที่เป็นตัวเงิน'],['21.8.1','แปลงค่าด้วยอัตราปิด'],['21.11','ผลต่างในงบกำไรขาดทุน']]);return}
+      if(a2===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 2');G.cRes='';return}
+      if(a2==='yes'){G.cRes='fv';$('cOut').innerHTML=verdict('ok','รายการที่ไม่เป็นตัวเงินวัดด้วยมูลค่ายุติธรรม: ใช้อัตรา ณ วันที่วัดมูลค่ายุติธรรม (21.8.3)','องค์ประกอบอัตราแลกเปลี่ยนรับรู้ที่เดียวกับกำไรขาดทุนของรายการนั้น (21.12) ดู S21.3');return}
+      G.cRes='hist';$('cOut').innerHTML=verdict('ok','รายการที่ไม่เป็นตัวเงินวัดด้วยราคาทุนเดิม: ใช้อัตรา ณ วันที่เกิดรายการ (21.8.2)','ไม่แปลงค่าใหม่ ถ้ามูลค่าที่ใช้เปรียบเทียบกำหนดเป็นเงินตราต่างประเทศ ใช้ย่อหน้า 21.9 ดู S21.3');return}
+    if(a1===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 1');G.cRes='';return}
+    if(a1==='yes'){G.cRes='branch';$('cOut').innerHTML=verdict('ok','แปลงค่าสาขาตามย่อหน้า 21.14','สาขาเป็นส่วนหนึ่งของกิจการ สินทรัพย์และหนี้สินใช้อัตราปิด รายได้และค่าใช้จ่ายใช้อัตราวันเกิดรายการ ผลต่างในส่วนของเจ้าของ ใช้แท็บ 3');return}
+    if(a2===''){$('cOut').innerHTML=wait('ยังไม่แสดงผล ตอบข้อ 2');G.cRes='';return}
+    if(a2==='yes'){G.cRes='tas21';$('cOut').innerHTML=verdict('warn','ปฏิบัติตาม TAS 21 (21.16)','การแปลงค่าเพื่อรวมงบการเงินหรือวิธีส่วนได้เสียใช้ข้อกำหนดของ TAS 21 ในงบการเงินเฉพาะกิจการ เงินให้กู้ยืมแก่หน่วยงานต่างประเทศเป็นรายการที่เป็นตัวเงินตาม 21.8.1 และ 21.11');return}
+    G.cRes='check';$('cOut').innerHTML=verdict('warn','ทบทวนข้อเท็จจริง','หน่วยงานที่ไม่ใช่สาขาและไม่ได้รวมในงบการเงินรวมหรือวิธีส่วนได้เสีย: ใช้บทที่เกี่ยวข้องกับเงินลงทุน (บทที่ 9) ร่วมกับ 21.8 '+INT)}
+  $('cMode').addEventListener('change',()=>{['c1','c2'].forEach(i=>{$(i).value=''})});
+  $('c1').addEventListener('change',()=>{$('c2').value=''});
+  on(['cMode','c1','c2'],cCalc);cCalc();
+  /* 1 txn */
+  function tCalc(){const ty=$('tType').value,F=val($('tFC')),r0=val($('tR0')),rc=val($('tRc')),rs=val($('tRs'));G.tD1=null;G.tD2=null;
+    if(blank(['tFC','tR0','tRc','tRs'])){$('tOut').innerHTML=bad(BL);return}
+    if(F<=0||r0<=0||rc<=0){$('tOut').innerHTML=bad('จำนวนเงินตราต่างประเทศและอัตราต้องมากกว่าศูนย์');return}
+    if(rs<0){$('tOut').innerHTML=bad('อัตรา ณ วันชำระต้องไม่ติดลบ ใส่ 0 ถ้ายังไม่ชำระ');return}
+    const s=ty==='asset'?1:-1,b0=R0(F*r0),b1=R0(F*rc),d1=s*(b1-b0);G.tD1=d1;G.tB0=b0;G.tB1=b1;
+    const acct=ty==='asset'?'ลูกหนี้หรือสินทรัพย์ที่เป็นตัวเงิน':'เจ้าหนี้หรือหนี้สินที่เป็นตัวเงิน';
+    let h=figs([['ยอดวันเกิดรายการ',b0],['ยอด ณ วันสิ้นงวด',b1],['ผลต่าง ณ วันสิ้นงวด',fp(d1),1]]);
+    h+=d1?je('วันสิ้นงวด (21.8.1, 21.11)',d1>0?[{acct:acct,amt:d1,dr:true},{acct:'กำไรจากอัตราแลกเปลี่ยน',amt:d1,dr:false}]:[{acct:'ขาดทุนจากอัตราแลกเปลี่ยน',amt:-d1,dr:true},{acct:acct,amt:-d1,dr:false}],''):'';
+    if(rs>0){const b2=R0(F*rs),d2=s*(b2-b1);G.tD2=d2;G.tB2=b2;h+=figs([['เงินสดวันชำระ',b2],['ผลต่างวันชำระ',fp(d2),1],['ผลต่างรวม',fp(d1+d2),1]])}
+    $('tOut').innerHTML=h+theory([['21.6','บันทึกเริ่มแรกด้วยอัตรา ณ วันที่เกิดรายการ'],['21.8.1','รายการที่เป็นตัวเงินแปลงค่าด้วยอัตราปิด'],['21.11','ผลต่างจากการชำระหรือแปลงค่าวัดจากอัตราที่บันทึกครั้งแรกในงวดหรือที่รายงานในงวดก่อน รับรู้ในงบกำไรขาดทุน']])}
+  on(['tType','tFC','tR0','tRc','tRs'],tCalc);tCalc();
+  /* 2 multi */
+  function mCalc(){G.mNet=null;let net=0;const rows=[];
+    for(const k of ['ก','ข','ค','ง']){const t=$('mT'+k).value,F=val($('mF'+k)),B=val($('mB'+k)),r=val($('mR'+k));
+      if(F<0||B<0||r<0){$('mOut').innerHTML=bad(`รายการ ${k}: ตัวเลขต้องไม่ติดลบ`);return}
+      if(F===0&&B===0)continue;if(F===0||B===0||r===0){$('mOut').innerHTML=bad(`รายการ ${k}: กรอกจำนวนเงินตราต่างประเทศ ยอดตามบัญชี และอัตราปิดให้ครบ`);return}
+      const c=R0(F*r),d=(t==='asset'?1:-1)*(c-B);net+=d;rows.push([esc($('mN'+k).value||('รายการ '+k)),t==='asset'?'สินทรัพย์':'หนี้สิน',fmt(B),fmt(c),fp(d)])}
+    if(!rows.length){$('mOut').innerHTML=wait('ยังไม่แสดงผล กรอกอย่างน้อยหนึ่งรายการ');return}
+    G.mNet=net;
+    $('mOut').innerHTML=tbl(['รายการ','ประเภท','ยอดเดิม','ยอดอัตราปิด','ผลต่าง'],rows,[2,3,4])+figs([['ผลต่างสุทธิ',fp(net),1]])+
+      (net===0?verdict('ok','ไม่มีผลต่างที่ต้องแสดง','ผลต่างสุทธิเป็นศูนย์ ไม่มีจำนวนในรายการ 2 หรือรายการ 9'):verdict(net>0?'ok':'warn',net>0?'แสดงในแบบ 2 รายการ 2 รายได้อื่น':'แสดงในแบบ 2 รายการ 9 ค่าใช้จ่ายอื่น','แบบ 2 แสดงเป็นกำไรหรือขาดทุนตามยอดสุทธิ ณ วันสิ้นรอบของรายการเดียวกัน การถือผลต่างของอัตราแลกเปลี่ยนทั้งหมดของงวดเป็นรายการเดียวกัน แล้วแยกจำนวนในหมายเหตุ เป็น'+INT))}
+  on(['mNก','mTก','mFก','mBก','mRก','mNข','mTข','mFข','mBข','mRข','mNค','mTค','mFค','mBค','mRค','mNง','mTง','mFง','mBง','mRง'],mCalc);mCalc();
+  /* 3 br */
+  function bCalc(){const n0=val($('bNA0')),r0=val($('bR0')),rv=val($('bRev')),ex=val($('bExp')),av=val($('bAvg')),cl=val($('bCl')),A=val($('bA')),L=val($('bL')),rm=val($('bRm')),rr=val($('bRmR'));G.bTD=null;
+    if(blank(['bNA0','bR0','bRev','bExp','bAvg','bCl','bA','bL','bRm','bRmR'])){$('bOut').innerHTML=bad(BL);return}
+    if([n0,rv,ex,A,L,rm].some(x=>x<0)||[r0,av,cl].some(x=>x<=0)){$('bOut').innerHTML=bad('จำนวนต้องไม่ติดลบ อัตราต้องมากกว่าศูนย์');return}
+    if(rm>0&&rr<=0){$('bOut').innerHTML=bad('กรอกอัตรา ณ วันส่งเงินกลับ');return}
+    const p=rv-ex,na1=A-L;if(Math.abs(na1-(n0+p-rm))>0.5){$('bOut').innerHTML=bad(`สินทรัพย์หักหนี้สิน ${fmt(na1)} LC ไม่เท่ากับสินทรัพย์สุทธิต้นปี + กำไร − เงินส่งกลับ ${fmt(n0+p-rm)} LC`);return}
+    const na0t=R0(n0*r0),pt=R0(p*av),rmt=R0(rm*rr),at=R0(A*cl),lt=R0(L*cl),na1t=at-lt,td=na1t-na0t-pt+rmt;
+    const td1=R0(p*(cl-av)),td2=R0(n0*(cl-r0)),td3=R0(-rm*(cl-rr));G.bTD=td;G.bTD1=td1;G.bTD2=td2;G.bTD3=td3;
+    $('bOut').innerHTML=tbl(['รายการ','LC','อัตรา','บาท'],[['สินทรัพย์',fmt(A),f2(cl),fmt(at)],['หนี้สิน',fmt(L),f2(cl),fmt(lt)],['สินทรัพย์สุทธิ ณ สิ้นปี',fmt(na1),'',fmt(na1t)],['กำไรของสาขา',fmt(p),f2(av),fmt(pt)],['สินทรัพย์สุทธิต้นปี',fmt(n0),f2(r0),fmt(na0t)]].concat(rm?[['เงินส่งกลับ',fmt(rm),f2(rr),fmt(rmt)]]:[]),[1,3])+
+      figs([['ผลต่างจากการแปลงค่า',fp(td),1],['(1) กำไรของงวด',fp(td1),1],['(2) สินทรัพย์สุทธิต้นงวด',fp(td2),1]].concat(rm?[['(3) เงินส่งกลับ',fp(td3),1]]:[]))+
+      verdict('ok','รับรู้ในส่วนของเจ้าของ (21.14.3)','แบบ 2 รายการ 5.6 (2) จนกว่าจะจำหน่ายสาขา (หรือกำไรขาดทุนเบ็ดเสร็จอื่น หากกิจการเลือกจัดทำงบกำไรขาดทุนเบ็ดเสร็จ)')+
+      (Math.abs(cl-av)/av>0.1?verdict('warn','อัตราปิดต่างจากอัตราถัวเฉลี่ยเกินร้อยละ 10','ทบทวนว่าอัตราผันผวนอย่างมีนัยสำคัญหรือไม่ (21.15) ร้อยละ 10 เป็นเกณฑ์เตือนของแอป ไม่ใช่ข้อกำหนด'):'')+
+      theory([['21.14.1','สินทรัพย์และหนี้สินใช้อัตราปิด'],['21.14.2','รายได้และค่าใช้จ่ายใช้อัตรา ณ วันที่เกิดรายการ'],['21.14.3','ผลต่างสองแหล่งรับรู้ในส่วนของเจ้าของ จัดประเภทใหม่เมื่อจำหน่าย'],['21.15','อัตราถัวเฉลี่ยใช้ได้เว้นแต่ผันผวนอย่างมีนัยสำคัญ']])}
+  on(['bNA0','bR0','bRev','bExp','bAvg','bCl','bA','bL','bRm','bRmR'],bCalc);bCalc();
+  /* 4 bc */
+  function kCalc(){const q=$('kQ').value,F=val($('kFC')),rb=val($('kRb')),r0=val($('kR0')),acc=val($('kAcc')),cl=val($('kCl')),av=val($('kAvg')),ir=val($('kI'))/100,m=val($('kM')),th=val($('kTHB'))/100;G.kCap=null;G.kPL=null;G.kAdj=null;
+    if(blank(['kFC','kRb','kR0','kAcc','kCl','kAvg','kI','kM','kTHB'])){$('kOut').innerHTML=bad(BL);return}
+    if(F<=0||rb<=0||r0<=0||cl<=0||av<=0){$('kOut').innerHTML=bad('เงินกู้และอัตราต้องมากกว่าศูนย์');return}
+    if(acc<0){$('kOut').innerHTML=bad('ดอกเบี้ยค้างจ่ายยกมาต้องไม่ติดลบ');return}
+    if(ir<0||ir>1||th<0||th>1||m<=0||m>12){$('kOut').innerHTML=bad('อัตราดอกเบี้ยอยู่ระหว่าง 0 ถึง 100 จำนวนเดือน 1 ถึง 12');return}
+    if(q===''){$('kOut').innerHTML=wait('ยังไม่แสดงผล ตอบคำถามเรื่องสินทรัพย์ที่เข้าเงื่อนไขก่อน');G.kCap='';return}
+    const ifc=R0(F*ir*m/12),it=R0(ifc*av),icl=R0(ifc*cl),id=icl-it,ad=R0(acc*(cl-r0)),ld=R0(F*(cl-r0)),thb=R0(F*rb*th*m/12);
+    const adj=q==='yes'?Math.max(Math.min(thb-(it+id+ad),Math.max(ld,0)),0):0,cap=q==='yes'?it+id+ad+adj:0,pl=ld-adj;G.kCap=cap;G.kPL=pl;G.kAdj=adj;G.kInt=it;
+    $('kOut').innerHTML=tbl(['รายการ','บาท'],[['ดอกเบี้ยของงวด (อัตราถัวเฉลี่ย)',fmt(it)],['ผลต่างของดอกเบี้ยของงวด',fp(id)],['ผลต่างของดอกเบี้ยค้างจ่ายยกมา',fp(ad)],['ผลต่างของเงินต้น',(ld>0?'ขาดทุน ':ld<0?'กำไร ':'')+fmt(Math.abs(ld))],['ดอกเบี้ยหากกู้เป็นเงินบาท (เงินกู้ × อัตรา ณ วันกู้)',fmt(thb)],['ส่วนของผลต่างของเงินต้นที่ปรับปรุงดอกเบี้ย '+INT,fmt(adj)]],[1])+
+      (q==='yes'?figs([['รวมเป็นราคาทุนสินทรัพย์ (13.4)',cap],['ผลต่างในงบกำไรขาดทุน (21.11)',fp(-pl),1]]):figs([['ดอกเบี้ยเป็นค่าใช้จ่ายของงวด',it+id+ad],['ผลต่างในงบกำไรขาดทุน (21.11)',fp(-pl),1]])+verdict('warn','ไม่ใช่สินทรัพย์ที่เข้าเงื่อนไข','ต้นทุนการกู้ยืมเป็นค่าใช้จ่ายตามบทที่ 13 ผลต่างทั้งหมดรับรู้ในงบกำไรขาดทุน'))+
+      theory([['13.1','ต้นทุนการกู้ยืมรวมผลต่างจากอัตราแลกเปลี่ยนของเงินกู้เงินตราต่างประเทศส่วนที่นำมาปรับปรุงกับต้นทุนของดอกเบี้ย'],['13.4–13.5','ต้นทุนการกู้ยืมของสินทรัพย์ที่เข้าเงื่อนไขต้องรวมเป็นราคาทุนเมื่อเป็นไปตาม 13.5'],['5.8','ใช้วิธีวัดส่วนที่ปรับปรุงดอกเบี้ยสม่ำเสมอทุกงวด']])}
+  on(['kQ','kFC','kRb','kR0','kAcc','kCl','kAvg','kI','kM','kTHB'],kCalc);kCalc();
+  /* 5 tax */
+  function xCalc(){const an=$('xAnon').checked;const nm=an?'บริษัท':esc($('xName').value.trim()||'บริษัท');G.xAnon=an;G.xDiff=null;
+    if(blank(['xAF','xAB','xAC','xAT','xLF','xLB','xLC','xLT'])){$('xOut').innerHTML=bad(BL);return}
+    const v=['xAF','xAB','xAC','xAT','xLF','xLB','xLC','xLT'].map(i=>val($(i)));if(v.some(x=>x<0)){$('xOut').innerHTML=bad('ตัวเลขต้องไม่ติดลบ');return}
+    const [AF,AB,AC,AT,LF,LB,LC,LT]=v;if((AF>0&&(AC<=0||AT<=0))||(LF>0&&(LC<=0||LT<=0))){$('xOut').innerHTML=bad('กรอกอัตราปิดและอัตราทางภาษีของรายการที่มีจำนวนเงิน');return}
+    const ab=R0(AF*AC)-AB,at=R0(AF*AT)-AB,lb=LB-R0(LF*LC),lt=LB-R0(LF*LT);G.xBook=ab+lb;G.xTax=at+lt;G.xDiff=(at+lt)-(ab+lb);
+    $('xOut').innerHTML=`<p>${nm} เปรียบเทียบผลต่าง ณ วันสุดท้ายของรอบระยะเวลาบัญชี</p>`+tbl(['รายการ','ทางบัญชี (อัตราปิด)','ทางภาษี','ผลต่าง'],[['ทรัพย์สิน (อัตรารับซื้อ)',fp(ab),fp(at),fp(at-ab)],['หนี้สิน (อัตราขาย)',fp(lb),fp(lt),fp(lt-lb)],['รวม',fp(ab+lb),fp(at+lt),fp(G.xDiff)]],[1,2,3])+
+      '<p class="hint">ผลต่างเป็นผลต่างชั่วคราวที่กลับรายการเมื่อชำระ กิจการที่เลือกถือปฏิบัติตามย่อหน้า 15.2 ใช้ผลต่างนี้คำนวณภาษีเงินได้รอการตัดบัญชีตาม TAS 12 ที่ย่อหน้า 15.2 อ้าง (บทที่ 15)</p>'+
+      theory([['ม.65 ทวิ (5)','ทรัพย์สินหรือหนี้สินที่มีค่าหรือราคาเป็นเงินตราต่างประเทศซึ่งคงเหลือ ณ วันสุดท้ายของรอบระยะเวลาบัญชี คำนวณเป็นเงินบาท'],['ม.65 ทวิ (5) แก้ไขโดยพระราชบัญญัติแก้ไขเพิ่มเติมประมวลรัษฎากร (ฉบับที่ 50) พ.ศ. 2562','รอบระยะเวลาบัญชีที่เริ่มในหรือหลัง 1 ม.ค. 2562 เลือก (1) อัตราถัวเฉลี่ยระหว่างอัตราซื้อและอัตราขายของธนาคารพาณิชย์ที่ธนาคารแห่งประเทศไทยคำนวณไว้ (2) อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์รับซื้อสำหรับเงินตราและทรัพย์สิน และอัตราถัวเฉลี่ยที่ธนาคารพาณิชย์ขายสำหรับหนี้สิน ซึ่งธนาคารแห่งประเทศไทยคำนวณไว้ หรือ (3) วิธีอื่นที่สอดคล้องกับหลักเกณฑ์ตามวิชาการบัญชี ตามหลักเกณฑ์ วิธีการ และเงื่อนไขที่รัฐมนตรีประกาศกำหนดในราชกิจจานุเบกษา เมื่อเลือกแล้วใช้ตลอดไป เว้นแต่อธิบดีอนุมัติให้เปลี่ยน'],['กค 0811/08464 (11 มิ.ย. 2541)','ถ้อยคำเดิมก่อนปี 2562: เงินตราหรือทรัพย์สินใช้อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์รับซื้อ หนี้สินใช้อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์ขาย ซึ่งตรงกับวิธีที่ (2)'],['21.8.1','ทางบัญชีใช้อัตราปิด']])}
+  on(['xName','xAnon','xAF','xAB','xAC','xAT','xLF','xLB','xLC','xLT'],xCalc);xCalc();
+  /* 6 note */
+  function nCalc(){const an=$('nAnon').checked;const nm=an?'บริษัท':esc($('nName').value.trim()||'บริษัท');G.nAnon=an;const br=$('nBr').value,net=val($('nNet')),tr=val($('nTr'));
+    if(br===''){$('nOut').innerHTML=wait('ยังไม่แสดงผล ตอบว่ากิจการมีสาขาต่างประเทศหรือไม่');G.nTxt='';return}
+    if(blank(['nNet','nTr'])){$('nOut').innerHTML=bad(BL);G.nTxt='';return}
+    const src=esc($('nSrc').value.trim()||'แหล่งที่กำหนดในนโยบาย');const first=$('nAvg').value==='avg'?'อัตราถัวเฉลี่ยรายเดือน ซึ่งใกล้เคียงกับอัตรา ณ วันที่เกิดรายการ':'อัตราแลกเปลี่ยน ณ วันที่เกิดรายการ';
+    let t=`<h3>นโยบายการบัญชี: รายการที่เป็นเงินตราต่างประเทศ</h3><p>${nm} บันทึกรายการที่เป็นเงินตราต่างประเทศเป็นเงินบาทด้วย${first} ณ วันสิ้นรอบระยะเวลารายงาน สินทรัพย์และหนี้สินที่เป็นตัวเงินแปลงค่าเป็นเงินบาทด้วยอัตราปิดตาม${src} รายการที่ไม่เป็นตัวเงินซึ่งวัดด้วยราคาทุนเดิมแสดงด้วยอัตรา ณ วันที่เกิดรายการ กำไรหรือขาดทุนจากอัตราแลกเปลี่ยนรับรู้ในงบกำไรขาดทุน</p>`;
+    if(br==='yes')t+=`<p>งบการเงินของสาขาต่างประเทศแปลงค่าสินทรัพย์และหนี้สินด้วยอัตราปิด และรายได้และค่าใช้จ่ายด้วยอัตราถัวเฉลี่ยของปี ผลต่างจากการแปลงค่าแสดงเป็นองค์ประกอบอื่นของส่วนของผู้ถือหุ้น ณ วันสิ้นงวดมียอดสะสม ${fp(tr)} บาท</p>`;
+    t+=`<p>ในงวดนี้ ${nm} รับรู้${net>=0?'กำไร':'ขาดทุน'}จากอัตราแลกเปลี่ยนสุทธิ ${fmt(Math.abs(net))} บาท</p>`;
+    $('nOut').innerHTML=`<p class="hint">${INT} ร่างนี้เป็นแนวการตีความของตำรา ปุ่มคัดลอกคัดลอกเฉพาะข้อความในกรอบ</p><div id="nDraft">${t}</div>`;G.nTxt=$('nDraft').innerText}
+  on(['nName','nAnon','nSrc','nAvg','nBr','nNet','nTr'],nCalc);nCalc();
+  $('nCopy').addEventListener('click',()=>{const d=$('nDraft');if(d)copyText(d.innerText,'nOk')});
+  /* quiz */
+  const QZ=[["LO 21.1", "เข้าใจ", "รายการใดเป็นรายการที่เป็นตัวเงินตามย่อหน้า 21.3", ["ก. เงินจ่ายล่วงหน้าค่าสินค้าที่จะได้รับเป็นสินค้า", "ข. เงินกู้ยืมสกุลดอลลาร์สหรัฐที่ต้องชำระคืนเป็นเงิน", "ค. สินค้าคงเหลือที่นำเข้า", "ง. เครื่องจักรที่ซื้อจากต่างประเทศ"], 1, "ย่อหน้า 21.3 รายการที่เป็นตัวเงินคือภาระที่จะส่งมอบจำนวนเงินที่กำหนดได้แน่นอนในหน่วยของสกุลเงิน เงินกู้ยืมจึงเป็นรายการที่เป็นตัวเงิน ส่วนเงินจ่ายล่วงหน้าสำหรับสินค้า สินค้าคงเหลือ และอุปกรณ์เป็นรายการที่ไม่เป็นตัวเงินตามย่อหน้า 21.4", "21.1"], ["LO 21.1", "เข้าใจ", "ข้อใดถูกต้องเกี่ยวกับสกุลเงินที่ใช้ในการดำเนินงานของกิจการที่ไม่มีส่วนได้เสียสาธารณะ", ["ก. ไม่บังคับให้ใช้สกุลอื่นนอกจากเงินบาท ถ้าเลือกใช้ต้องปฏิบัติตาม TAS 21", "ข. ต้องใช้สกุลเงินที่ผู้ถือหุ้นใหญ่ใช้ในการรายงานต่อบริษัทแม่", "ค. ห้ามใช้สกุลเงินอื่นนอกจากเงินบาทในทุกกรณี ไม่มีทางเลือก", "ง. เปลี่ยนสกุลเงินได้ทุกงวดตามความสะดวกของกิจการ"], 0, "ย่อหน้า 21.18 ไม่ได้กำหนดให้กิจการต้องกำหนดสกุลเงินที่ใช้ในการดำเนินงานที่ไม่ใช่เงินบาท แต่ถ้ากิจการเลือกจัดทำ ต้องปฏิบัติตาม TAS 21 ย่อหน้า 1.3.3 ระบุว่าเป็นทางเลือกที่เพิ่มในฉบับปรับปรุง 2565", "21.1"], ["LO 21.2", "ประยุกต์ใช้", "ตัวอย่างที่ 21.1 ซื้อสินค้า 20,000 ดอลลาร์สหรัฐ อัตรา ณ วันที่เกิดรายการ 34.00 บาท อัตราปิด 34.50 บาท ณ วันสิ้นงวดต้องรับรู้อย่างไร", ["ก. ไม่รับรู้ผลต่างจนกว่าจะชำระเงิน", "ข. เพิ่มราคาทุนสินค้า 10,000 บาท", "ค. เพิ่มเจ้าหนี้และรับรู้ขาดทุนจากอัตราแลกเปลี่ยน 10,000 บาท", "ง. ลดเจ้าหนี้และรับรู้กำไร 10,000 บาท"], 2, "เจ้าหนี้เป็นรายการที่เป็นตัวเงิน แปลงค่าด้วยอัตราปิด (21.8.1) เพิ่มเป็น 690,000 บาท ผลต่าง 10,000 บาทรับรู้ในงบกำไรขาดทุน (21.11) สินค้าไม่เป็นตัวเงิน ใช้อัตราวันเกิดรายการตาม 21.8.2", "21.2–21.4"], ["LO 21.2", "ประยุกต์ใช้", "เงินจ่ายล่วงหน้าค่าเครื่องจักร 10,000 ดอลลาร์สหรัฐ บันทึกที่อัตรา 34.20 บาท ณ วันสิ้นงวดอัตราปิด 34.50 บาท ยอดในงบแสดงฐานะการเงินคือเท่าใด", ["ก. 345,000 บาท", "ข. 342,000 บาท", "ค. 339,000 บาท", "ง. 3,000 บาท"], 1, "เงินจ่ายล่วงหน้าสำหรับสินค้าและบริการเป็นรายการที่ไม่เป็นตัวเงิน (21.4) ซึ่งบันทึกด้วยราคาทุนเดิม แปลงค่าด้วยอัตรา ณ วันที่เกิดรายการ (21.8.2) จึงคงไว้ที่ 342,000 บาท", "21.2–21.4"], ["LO 21.3", "วิเคราะห์", "สาขาต่างประเทศมีสินทรัพย์สุทธิต้นปี 500,000 LC (อัตราปิดปีก่อน 1.60) กำไรของปี 150,000 LC (อัตราถัวเฉลี่ย 1.70) อัตราปิด 1.80 ผลต่างจากการแปลงค่ามีจำนวนเท่าใดและรับรู้ที่ใด", ["ก. 15,000 บาท ในงบกำไรขาดทุน", "ข. 100,000 บาท ในงบกำไรขาดทุน", "ค. 255,000 บาท ในส่วนของเจ้าของ", "ง. 115,000 บาท ในส่วนของเจ้าของ"], 3, "ย่อหน้า 21.14.3 ผลต่างเกิดจาก (1) กำไรที่แปลงด้วยอัตราถัวเฉลี่ยกับอัตราปิด 15,000 บาท และ (2) สินทรัพย์สุทธิต้นงวดที่แปลงด้วยอัตราปิดใหม่ 100,000 บาท รวม 115,000 บาท รับรู้ในส่วนของเจ้าของ (หรือกำไรขาดทุนเบ็ดเสร็จอื่น หากกิจการเลือกจัดทำงบกำไรขาดทุนเบ็ดเสร็จ)", "21.5"], ["LO 21.4", "วิเคราะห์", "เงินกู้ดอลลาร์สหรัฐเพื่อก่อสร้างคลังสินค้าซึ่งเป็นสินทรัพย์ที่เข้าเงื่อนไข เกิดผลขาดทุนจากอัตราแลกเปลี่ยน ข้อใดถูกต้อง", ["ก. ส่วนของผลต่างที่ถือเป็นการปรับปรุงต้นทุนดอกเบี้ยเป็นต้นทุนการกู้ยืม (13.1) และรวมเป็นราคาทุนตาม 13.4", "ข. ผลต่างทั้งหมดรวมเป็นราคาทุนคลังสินค้าเสมอ", "ค. ผลต่างทั้งหมดรับรู้ในส่วนของเจ้าของ", "ง. ไม่รับรู้ผลต่างจนกว่าจะชำระคืนเงินกู้"], 0, "ย่อหน้า 13.1 นับผลต่างจากอัตราแลกเปลี่ยนของเงินกู้เงินตราต่างประเทศ \"ส่วนที่นำมาปรับปรุงกับต้นทุนของดอกเบี้ย\" เป็นต้นทุนการกู้ยืม ซึ่งต้องรวมเป็นราคาทุนตาม 13.4 เมื่อเป็นไปตาม 13.5 ส่วนที่เหลือรับรู้ในงบกำไรขาดทุน (21.11)", "21.7"], ["LO 21.5", "วิเคราะห์", "ทางภาษีเงินได้ กิจการเลือกวิธีอัตราถัวเฉลี่ยรับซื้อและขายตามมาตรา 65 ทวิ (5) ฉบับแก้ไข พ.ศ. 2562 เจ้าหนี้เงินตราต่างประเทศที่คงเหลือ ณ วันสุดท้ายของรอบระยะเวลาบัญชีคำนวณเป็นเงินบาทด้วยอัตราใด", ["ก. อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์รับซื้อซึ่งธนาคารแห่งประเทศไทยคำนวณไว้", "ข. อัตรา ณ วันที่เกิดรายการตามที่บันทึกไว้ในบัญชีครั้งแรก", "ค. อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์ขายซึ่งธนาคารแห่งประเทศไทยคำนวณไว้", "ง. อัตราปิดทางบัญชีตามย่อหน้า 21.8.1 ของมาตรฐาน"], 2, "มาตรา 65 ทวิ (5) แก้ไขโดยพระราชบัญญัติแก้ไขเพิ่มเติมประมวลรัษฎากร (ฉบับที่ 50) พ.ศ. 2562 ให้เลือกได้สามวิธี วิธีอัตราถัวเฉลี่ยรับซื้อและขายให้หนี้สินใช้อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์ขาย และเงินตราหรือทรัพย์สินใช้อัตราถัวเฉลี่ยที่ธนาคารพาณิชย์รับซื้อ ซึ่งธนาคารแห่งประเทศไทยคำนวณไว้ ตรงกับข้อหารือ กค 0811/08464 (11 มิ.ย. 2541) ตามถ้อยคำเดิม", "21.8"], ["LO 21.6", "ประเมินค่า", "ผู้บริหารเสนอให้แปลงค่าเงินมัดจำค่าสินค้าด้วยอัตราปิดและบันทึกผลต่างจากการแปลงค่างบสาขาเป็นรายได้อื่น ข้อเสนอนี้ขัดย่อหน้าใด", ["ก. ไม่ขัด เพราะทำให้กำไรสะท้อนอัตราปัจจุบัน", "ข. ขัดเฉพาะเรื่องเงินมัดจำ", "ค. ขัดเฉพาะเรื่องสาขา", "ง. ขัดทั้ง 21.8.2 (เงินมัดจำไม่เป็นตัวเงินตาม 21.4) และ 21.14.3 (ผลต่างจากการแปลงค่ารับรู้ในส่วนของเจ้าของ)"], 3, "เงินมัดจำที่จะได้รับเป็นสินค้าเป็นรายการที่ไม่เป็นตัวเงิน (21.4) ใช้อัตรา ณ วันที่เกิดรายการ (21.8.2) ผลต่างจากการแปลงค่างบสาขารับรู้ในส่วนของเจ้าของ (21.14.3) ไม่ใช่งบกำไรขาดทุน", "21.9"]];
+  window.__QZ=QZ;
+  $('zBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="zq${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="zf${i}"></div></div>`).join('');
+  $('zChk').addEventListener('click',qCheck);
+  $('zClr').addEventListener('click',()=>{document.querySelectorAll('#zBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('zf'+i).innerHTML='');$('zOut').innerHTML=''});
+  function qCheck(){let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="zq${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'กลับไปอ่านหัวข้อที่ '+esc(lo[k].sec)+' ของตำรา'}</td></tr>`).join('');
+    $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div></div><div class="tbl"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+  const goS=()=>{const m=(location.hash||'').match(/^#(S21\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}else{const h=(location.hash||'').slice(1);if(names.includes(h))show(h)}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body>
+</html>

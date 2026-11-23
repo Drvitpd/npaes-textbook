@@ -1,0 +1,648 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div><title>แอป 03 · ตรวจการรับรู้รายการและการดำเนินงานต่อเนื่อง</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Sarabun","TH Sarabun New","Noto Sans Thai","Leelawadee UI","Thonburi",system-ui,sans-serif;
+  --body:"Sarabun","TH Sarabun New","Noto Sans Thai","Leelawadee UI","Thonburi",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.pill{white-space:nowrap}
+.nw{white-space:nowrap}
+[data-pane="tl"]{grid-template-columns:minmax(0,1fr)}
+#gBody input.num{min-width:6.5em}
+#gBody select{min-width:4.5em}
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ชุดเครื่องมือประกอบตำรา การบัญชีตาม TFRS for NPAEs: หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565</span>
+  </div>
+    <style>
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  </style>
+  <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 3 กรอบแนวคิดการรายงานทางการเงิน</div>
+      <h1>แอป 03 · ตรวจการรับรู้รายการและการดำเนินงานต่อเนื่อง</h1>
+      <p class="lede">ตอบคำถามตามคำนิยามและเกณฑ์การรับรู้ในย่อหน้า 3.17–3.20 แล้วได้ผลว่ารายการควรรับรู้เป็นองค์ประกอบใด พร้อมเกณฑ์การวัดมูลค่าตามย่อหน้า 3.22–3.23 และประเมินเกณฑ์การดำเนินงานต่อเนื่องตามย่อหน้า 3.4 พร้อมร่างหมายเหตุ ชื่อกิจการและคำบรรยายรายการแสดงเป็นรหัส ข้อมูลประมวลผลในเบราว์เซอร์เท่านั้น</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>ย่อหน้า 3.1–3.23</b><br>ตำราบทที่ 3 หัวข้อ 3.5–3.7 · ฉบับ 16-11-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> ตรวจการรับรู้รายการ → ประเมินการดำเนินงานต่อเนื่องและคัดลอกร่างหมายเหตุ → ทดสอบตนเอง → เนื้อหาเสริม</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="rec"><span class="n">0</span>ตรวจการรับรู้รายการ</button>
+    <button role="tab" aria-selected="false" data-tab="gc"><span class="n">1</span>ประเมินการดำเนินงานต่อเนื่อง</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">2</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">3</span>เนื้อหาเสริม S3</button>
+  </nav>
+
+  <!-- 0 RECOGNITION -->
+  <div class="grid" data-pane="rec">
+    <section class="panel">
+      <h2>ข้อเท็จจริงของรายการ</h2>
+      <p class="hint">เลือกองค์ประกอบที่คาดว่ารายการจะเป็น แล้วตอบคำถามตามข้อเท็จจริง ณ วันสิ้นรอบระยะเวลารายงาน ข้อที่ยังไม่แน่ใจให้เลือก "ไม่แน่ใจ" แอปจะบอกว่าต้องหาหลักฐานอะไรเพิ่ม</p>
+      <span class="sample" id="rTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 3.2 รายการ ก</span>
+      <div class="row-actions" style="margin-bottom:10px">
+        <button class="btn" data-r="a">3.2 ก</button><button class="btn" data-r="b">3.2 ข</button><button class="btn" data-r="c">3.2 ค</button><button class="btn" data-r="d">3.2 ง</button>
+        <button class="btn" data-r="e">3.2 จ</button><button class="btn" data-r="f">3.2 ฉ</button><button class="btn" data-r="g">3.2 ช</button><button class="btn" data-r="h">3.2 ซ</button>
+        <button class="btn" data-r="clr">ล้างทั้งหมด</button>
+      </div>
+      <div class="fields">
+        <label class="f">ชื่อกิจการ (ไม่บังคับ)<input type="text" id="rEnt" autocomplete="off" placeholder="แสดงเป็นรหัสเมื่อปกปิดชื่อ"></label>
+        <label class="f">คำบรรยายรายการ<input type="text" id="rDesc" autocomplete="off"></label>
+        <label class="f">จำนวนเงิน (บาท)<input type="text" class="num" id="rAmt" inputmode="decimal" autocomplete="off"></label>
+        <label class="f">ประเภทรายการ (ใช้เลือกเกณฑ์การวัดมูลค่า)<select id="rCat">
+          <option value="other">อื่น ๆ</option><option value="cash">เงินสดและรายการเทียบเท่าเงินสด</option><option value="rec">ลูกหนี้</option><option value="inv">สินค้าคงเหลือ</option>
+          <option value="sec">หลักทรัพย์ในความต้องการของตลาด</option><option value="ppe">ที่ดิน อาคารและอุปกรณ์</option><option value="ip">อสังหาริมทรัพย์เพื่อการลงทุน</option>
+          <option value="intan">สินทรัพย์ไม่มีตัวตน</option><option value="pay">เจ้าหนี้และเงินกู้ยืม</option><option value="accr">ค่าใช้จ่ายค้างจ่าย</option><option value="prov">ประมาณการหนี้สิน</option>
+          <option value="lease">หนี้สินตามสัญญาเช่า</option><option value="rev">รายได้และผลกำไร</option><option value="expn">ค่าใช้จ่ายและผลขาดทุน</option><option value="own">รายการกับเจ้าของ</option></select></label>
+      </div>
+      <div class="checks" style="margin-top:12px"><label><input type="checkbox" id="rHide" checked>ปกปิดชื่อกิจการและคำบรรยายรายการในผลลัพธ์และบันทึก</label></div>
+      <h3>องค์ประกอบที่คาดว่าจะเป็น</h3>
+      <div class="seg" id="rEl">
+        <label><input type="radio" name="rEl" value="asset" checked>สินทรัพย์</label>
+        <label><input type="radio" name="rEl" value="liab">หนี้สิน</label>
+        <label><input type="radio" name="rEl" value="eq">ส่วนของเจ้าของ</label>
+        <label><input type="radio" name="rEl" value="inc">รายได้</label>
+        <label><input type="radio" name="rEl" value="exp">ค่าใช้จ่าย</label>
+      </div>
+      <div id="rQs"></div>
+    </section>
+    <section class="panel voucher" aria-live="polite">
+      <h2>ผลการพิจารณา</h2>
+      <div id="rOut"></div>
+    </section>
+  </div>
+
+  <!-- 1 GOING CONCERN -->
+  <div class="grid" data-pane="gc" hidden>
+    <section class="panel">
+      <h2>ข้อมูลสำหรับประเมินการดำเนินงานต่อเนื่อง</h2>
+      <p class="hint">กรอกตัวเลข ณ วันสิ้นรอบระยะเวลารายงาน หรือวางยอดจาก Excel (ชื่อรายการ แท็บ จำนวนเงิน) แล้วตอบคำถาม แอปคำนวณตัวชี้วัด ตั้งข้อบ่งชี้ให้อัตโนมัติ และเสนอผล ผู้ใช้ต้องสรุปผลเองในข้อ "ข้อสรุปของฝ่ายบริหาร"</p>
+      <span class="sample" id="gTag">ข้อมูลตัวอย่าง: ตัวอย่างที่ 3.3</span>
+      <div class="row-actions" style="margin-bottom:10px">
+        <button class="btn" data-g="ex34">ตัวอย่างที่ 3.3</button><button class="btn" data-g="good">กิจการมีกำไรต่อเนื่อง</button><button class="btn" data-g="liq">ตัดสินใจเลิกกิจการ</button><button class="btn" data-g="case">กรณีศึกษา 3.1</button><button class="btn" data-g="clr">ล้างทั้งหมด</button>
+      </div>
+      <div class="fields">
+        <label class="f">ชื่อกิจการ (ไม่บังคับ)<input type="text" id="gEnt" autocomplete="off" placeholder="แสดงเป็นรหัสเมื่อปกปิดชื่อ"></label>
+        <label class="f">วันสิ้นรอบระยะเวลารายงาน<input type="text" id="gDate" value="31 ธันวาคม 2568" autocomplete="off"></label>
+        <label class="f">ระยะเวลาที่ประเมิน (เดือนนับจากวันสิ้นรอบ)<input type="text" class="num" id="gMon" value="12" inputmode="numeric"></label>
+      </div>
+      <div class="checks" style="margin-top:12px"><label><input type="checkbox" id="gHide" checked>ปกปิดชื่อกิจการในผลลัพธ์และร่างหมายเหตุ</label></div>
+      <h3>ตัวเลขจากงบการเงิน (บาท)</h3>
+      <div class="fields" id="gNums"></div>
+      <details style="margin-top:10px"><summary class="btn" style="display:inline-block">วางยอดจาก Excel</summary>
+        <p class="hint" style="margin-top:8px">วางสองคอลัมน์ ชื่อรายการตามช่องด้านบน (หรือรหัส เช่น cash ca cl) แล้วกด "นำยอดเข้า"</p>
+        <textarea id="gPaste" style="min-height:120px" spellcheck="false"></textarea>
+        <div class="row-actions"><button class="btn primary" id="gImp">นำยอดเข้า</button><button class="btn" id="gHead">คัดลอกหัวรายการ</button><span class="copied" id="gImpMsg"></span></div>
+      </details>
+      <h3>คำถามตามย่อหน้า 3.4</h3>
+      <div id="gQs"></div>
+      <h3>ข้อบ่งชี้ที่ผู้ใช้ทำเครื่องหมายเอง</h3>
+      <div class="checks" id="gInd"></div>
+      <h3>แผนของฝ่ายบริหารที่มีหลักฐานรองรับ</h3>
+      <div class="checks" id="gMit"></div>
+      <h3>ข้อสรุปของฝ่ายบริหาร</h3>
+      <div class="seg" id="gJudge">
+        <label><input type="radio" name="gJ" value="auto" checked>ให้แอปเสนอ</label>
+        <label><input type="radio" name="gJ" value="none">ไม่มีความไม่แน่นอนที่มีสาระสำคัญ</label>
+        <label><input type="radio" name="gJ" value="mu">มีความไม่แน่นอนที่มีสาระสำคัญ</label>
+      </div>
+    </section>
+    <section class="panel voucher" aria-live="polite">
+      <h2>ผลการประเมิน</h2>
+      <div id="gOut"></div>
+    </section>
+  </div>
+
+  <!-- 2 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="qBox"></div>
+      <div class="row-actions"><button class="btn primary" id="qChk">ตรวจคำตอบ</button><button class="btn" id="qClr">ล้างคำตอบ</button></div>
+      <div id="qOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 3 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S3</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 3 ลิงก์ #S3.1 ถึง #S3.8 เปิดหัวข้อนั้นได้โดยตรง</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S3.1">S3.1</a><a class="btn" href="#S3.2">S3.2</a><a class="btn" href="#S3.3">S3.3</a><a class="btn" href="#S3.4">S3.4</a><a class="btn" href="#S3.5">S3.5</a><a class="btn" href="#S3.6">S3.6</a><a class="btn" href="#S3.7">S3.7</a><a class="btn" href="#S3.8">S3.8</a></div>
+
+      <h3 id="S3.1">S3.1 แผนที่กรอบแนวคิดกับบทอื่นของมาตรฐาน</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>ย่อหน้าในบทที่ 3</th><th>หลักการ</th><th>บทที่นำไปใช้</th></tr></thead>
+        <tbody>
+          <tr><td class="nw">3.3</td><td>เกณฑ์คงค้าง</td><td>บทที่ 18 รายได้ บทที่ 20 สัญญาก่อสร้าง ค่าใช้จ่ายค้างจ่ายและจ่ายล่วงหน้าในทุกบท</td></tr>
+          <tr><td class="nw">3.4</td><td>การดำเนินงานต่อเนื่อง</td><td>บทที่ 4 การนำเสนองบการเงิน บทที่ 17 เหตุการณ์ภายหลังรอบระยะเวลารายงาน</td></tr>
+          <tr><td class="nw">3.12.1, 3.13</td><td>เปรียบเทียบกันได้ ความมีสาระสำคัญ</td><td>บทที่ 4 และบทที่ 5 นโยบายการบัญชี ประมาณการ และข้อผิดพลาด</td></tr>
+          <tr><td class="nw">3.14</td><td>หลักความระมัดระวัง</td><td>บทที่ 7 ค่าเผื่อหนี้สงสัยจะสูญ บทที่ 8 มูลค่าสุทธิที่จะได้รับ บทที่ 16 ประมาณการหนี้สิน</td></tr>
+          <tr><td class="nw">3.15</td><td>ประโยชน์กับต้นทุน</td><td>ทางเลือกและข้อผ่อนปรนในทุกบท เช่น การใช้ราคาทุนเป็นหลัก</td></tr>
+          <tr><td class="nw">3.18.1</td><td>สินทรัพย์</td><td>บทที่ 6–12 และบทที่ 14</td></tr>
+          <tr><td class="nw">3.18.2</td><td>หนี้สิน</td><td>บทที่ 4 การจัดประเภทหมุนเวียน บทที่ 14 บทที่ 16</td></tr>
+          <tr><td class="nw">3.19</td><td>อำนาจควบคุมเมื่อจัดทำงบการเงินรวม</td><td>บทที่ 4 ย่อหน้า 4.23 และบทที่ 28 ย่อหน้า 28.7 (นิยามบริษัทย่อยตามย่อหน้า 9.5)</td></tr>
+          <tr><td class="nw">3.20</td><td>รายได้และค่าใช้จ่าย</td><td>บทที่ 18–21</td></tr>
+          <tr><td class="nw">3.22–3.23</td><td>เกณฑ์การวัดมูลค่า</td><td>บทที่ 8 สินค้า บทที่ 9 หลักทรัพย์ บทที่ 10 การตีราคาใหม่ บทที่ 12 อสังหาริมทรัพย์เพื่อการลงทุน บทที่ 14 สัญญาเช่า</td></tr>
+        </tbody></table></div>
+
+      <h3 id="S3.2">S3.2 กรณีเพิ่มเติม: การรับรู้รายการ 6 กรณี</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>กรณี</th><th>ผลการพิจารณา</th><th>ย่อหน้า</th></tr></thead>
+        <tbody>
+          <tr><td>รับเงินมัดจำค่าสินค้าจากลูกค้า 50,000 บาท ยังไม่ส่งมอบสินค้า</td><td>หนี้สิน (ภาระผูกพันปัจจุบันที่ต้องส่งสินค้าหรือคืนเงิน) ยังไม่เป็นรายได้</td><td class="nw">3.18.2, 3.20.1</td></tr>
+          <tr><td>จ่ายค่าโฆษณาล่วงหน้า 12 เดือน 240,000 บาท ณ 1 ตุลาคม</td><td>ส่วนที่ยังไม่ได้รับบริการ 180,000 บาท เป็นสินทรัพย์ (ค่าใช้จ่ายจ่ายล่วงหน้า) ส่วน 3 เดือนที่ได้รับแล้ว 60,000 บาท เป็นค่าใช้จ่าย</td><td class="nw">3.3, 3.18.1</td></tr>
+          <tr><td>ค่าอบรมพนักงาน 120,000 บาท</td><td>ค่าใช้จ่าย กิจการไม่ได้ควบคุมความรู้ของพนักงาน จึงไม่เข้านิยามสินทรัพย์</td><td class="nw">3.18.1, 3.20.2</td></tr>
+          <tr><td>รับประกันสินค้าที่ขายแล้ว ประมาณค่าซ่อมจากสถิติ 35,000 บาท</td><td>หนี้สินและค่าใช้จ่ายในงวดที่ขาย วัดตามบทที่ 16</td><td class="nw">3.18.2, 3.20.2</td></tr>
+          <tr><td>จ่ายเงินปันผล 300,000 บาท</td><td>การแบ่งปันให้เจ้าของ ลดส่วนของเจ้าของ ไม่ใช่ค่าใช้จ่าย</td><td class="nw">3.20.2</td></tr>
+          <tr><td>ผู้ขายให้ส่วนลดตามปริมาณซื้อ 25,000 บาท เงื่อนไขครบแล้วแต่ยังไม่ได้รับเงิน</td><td>สินทรัพย์ (ส่วนลดค้างรับ) และลดต้นทุนสินค้า เพราะสิทธิเกิดแล้วและวัดได้</td><td class="nw">3.3, 3.18.1</td></tr>
+        </tbody></table></div>
+
+      <h3 id="S3.3">S3.3 แม่แบบบันทึกการประเมินการดำเนินงานต่อเนื่องและตัวอย่างหมายเหตุ</h3>
+      <ol>
+        <li>วันสิ้นรอบระยะเวลารายงาน และระยะเวลาที่ประเมิน (อย่างน้อย 12 เดือนนับจากวันสิ้นรอบ)</li>
+        <li>ฝ่ายบริหารมีความตั้งใจจะชำระบัญชีหรือหยุดประกอบธุรกิจ หรือไม่มีทางเลือกอื่นที่เป็นไปได้จริงหรือไม่</li>
+        <li>ประวัติผลการดำเนินงานและความพร้อมในการหาแหล่งเงินทุน</li>
+        <li>เหตุการณ์หรือสถานการณ์ที่เป็นข้อบ่งชี้ พร้อมตัวเลข</li>
+        <li>แผนของฝ่ายบริหารและหลักฐาน เช่น หนังสือยืนยันจากธนาคาร หนังสือสนับสนุนจากผู้ถือหุ้น</li>
+        <li>ข้อสรุป: ไม่มีความไม่แน่นอนที่มีสาระสำคัญ / มีความไม่แน่นอนที่มีสาระสำคัญ / ไม่ใช้เกณฑ์การดำเนินงานต่อเนื่อง</li>
+        <li>การเปิดเผยข้อมูลที่ต้องทำ ผู้จัดทำ ผู้อนุมัติ และวันที่</li>
+      </ol>
+      <p><b>ตัวอย่างหมายเหตุ:</b> แท็บ 1 สร้างร่างหมายเหตุจากข้อมูลที่กรอก ผู้ใช้ต้องปรับถ้อยคำให้ตรงกับข้อเท็จจริงของกิจการก่อนใช้</p>
+
+      <h3 id="S3.4">S3.4 เฉลยแบบฝึกหัดท้ายบท</h3>
+      <p><b>ส่วนที่ 1:</b> 1 ข · 2 ค · 3 ข · 4 ค · 5 ค · 6 ข · 7 ค · 8 ข เหตุผลรายข้ออยู่ในแท็บ 2</p>
+      <p><b>โจทย์ข้อ 1:</b> รายการปรับปรุง ณ 31 ธันวาคม 2568 (ก) เดบิต ค่าไฟฟ้า 45,000 เครดิต ค่าไฟฟ้าค้างจ่าย 45,000 (ข) เดบิต รายได้ค่าเช่า 120,000 เครดิต รายได้ค่าเช่ารับล่วงหน้า 120,000 เพราะบริการยังไม่เกิดในปี 2568 (ค) เดบิต ดอกเบี้ยค้างรับ 8,000 เครดิต รายได้ดอกเบี้ย 8,000 (ย่อหน้า 3.3) กำไรลดลงสุทธิ 157,000 บาท ผู้ใช้ทุกกลุ่มใช้งบการเงินชุดเดียวกัน แต่ใช้ต่างกัน เจ้าของกิจการใช้กำไรที่ปรับแล้วประเมินผลการดำเนินงานและการดูแลของผู้บริหาร (3.8, 3.9) ผู้ให้กู้ใช้หนี้สินหมุนเวียนที่เพิ่มขึ้น 165,000 บาท ประเมินสภาพคล่องและเงื่อนไขเงินกู้ (3.10.1) กรมสรรพากรใช้กำไรตามเกณฑ์คงค้างเป็นจุดเริ่มต้นของการคำนวณกำไรสุทธิทางภาษี (3.10.2.1)</p>
+      <p><b>โจทย์ข้อ 2:</b> (ก) 18,000 บาท เล็กเมื่อเทียบกับกำไร แต่มีสาระสำคัญเชิงลักษณะเพราะเกี่ยวกับกรรมการ (3.13) ต้องจัดประเภทใหม่เป็นลูกหนี้กรรมการหรือรายการที่กรรมการต้องรับผิดชอบ และเป็นรายจ่ายต้องห้ามตามมาตรา 65 ตรี (3) แห่งประมวลรัษฎากร (ข) ตั้งไม่ได้ หลักความระมัดระวังไม่อนุญาตให้ตั้งค่าเผื่อสูงเกินไปโดยเจตนา (3.14) และไม่มีหลักฐานรองรับ ค่าเผื่อหนี้สงสัยจะสูญยังเป็นรายจ่ายต้องห้ามตามมาตรา 65 ตรี (1) (ค) 6,000 บาท คิดเป็นร้อยละ 0.3 ของกำไร ไม่มีสาระสำคัญทั้งเชิงจำนวนและเชิงลักษณะ ผ่อนปรนได้ตามประโยชน์กับต้นทุน (3.15) แต่บันทึกไว้ในสรุปรายการที่ไม่ได้ปรับปรุง ข้อความในกระดาษทำการ: "ปรับปรุงรายการ (ก) ไม่ยอมรับรายการ (ข) รายการ (ค) ไม่มีสาระสำคัญ บันทึกไว้ในสรุปผลต่างที่ไม่ได้ปรับปรุง"</p>
+      <p><b>โจทย์ข้อ 3:</b> (1) เงินปันผลเป็นการแบ่งปันให้เจ้าของ ไม่ใช่ค่าใช้จ่าย (3.20.2) เดบิต กำไรสะสม 300,000 เครดิต เงินปันผลค้างจ่าย 300,000 (2) เงินมัดจำเป็นหนี้สิน เพราะยังมีภาระส่งสินค้าหรือคืนเงิน (3.18.2) เดบิต เงินสด 50,000 เครดิต เงินมัดจำรับจากลูกค้า 50,000 (3) ค่าอบรมเป็นค่าใช้จ่าย กิจการไม่ได้ควบคุมความรู้ของพนักงาน (3.18.1, 3.20.2) เดบิต ค่าฝึกอบรม 120,000 เครดิต เงินสด 120,000 (4) รับประกันสินค้าเป็นภาระผูกพันปัจจุบันจากการขาย วัดได้จากสถิติ (3.18.2) เดบิต ค่าใช้จ่ายรับประกันสินค้า 35,000 เครดิต ประมาณการหนี้สินจากการรับประกัน 35,000 ตรวจแต่ละรายการด้วยแท็บ 0 ได้</p>
+      <p><b>โจทย์ข้อ 4:</b> (1) หลักทรัพย์เพื่อค้า มูลค่ายุติธรรม 460,000 บาท กำไรที่ยังไม่เกิดขึ้น 60,000 บาท อยู่ในกำไรขาดทุน (3.22.5) ทางภาษีปรับลด 60,000 บาท เพราะรับรู้ผลต่างเมื่อขาย (แนวการตีความ ดูบทที่ 9 และบทที่ 15) (2) สินค้าคงเหลือ 850,000 บาท ปรับลดมูลค่า 50,000 บาท (3.23) มาตรา 65 ทวิ (6) ให้ตีราคาสินค้าตามราคาทุนหรือราคาตลาดแล้วแต่อย่างใดจะน้อยกว่า โดยทั่วไปจึงไม่ต้องปรับ เว้นแต่มูลค่าสุทธิที่จะได้รับต่างจากราคาตลาด (3) ที่ดิน 3,000,000 บาท ตามวิธีราคาทุน ราคาประเมินไม่ใช้ ไม่มีผลต่างทางภาษี (4) ลูกหนี้สุทธิ 1,140,000 บาท ค่าเผื่อ 60,000 บาท บวกกลับในการคำนวณภาษีตามมาตรา 65 ตรี (1) (5) หนี้สินตามสัญญาเช่าเงินทุน 700,000 บาท (3.22.4) ผลทางภาษีดูบทที่ 14 และบทที่ 15</p>
+
+      <h3 id="S3.5">S3.5 แนวคำตอบกรณีศึกษา 3.1 (สำหรับผู้สอน)</h3>
+      <p>ทาง (ก) ใช้ไม่ได้ ย่อหน้า 3.4 กำหนดให้กิจการต้องเปิดเผยความไม่แน่นอนที่มีสาระสำคัญ ความกังวลว่าธนาคารจะเรียกคืนเงินกู้ไม่ใช่เหตุผลให้ไม่เปิดเผย และขัดกับการเป็นตัวแทนอันเที่ยงธรรม (3.11.1) ทาง (ค) ใช้ไม่ได้ เพราะฝ่ายบริหารไม่ได้ตั้งใจเลิกกิจการ และยังมีทางเลือกที่เป็นไปได้จริง ทาง (ข) เหมาะสม เพราะลูกค้ารายใหญ่ที่หายไป ผลขาดทุน และเงินกู้ 8,000,000 บาท ที่ครบกำหนดภายใน 12 เดือนโดยยังไม่มีหนังสือยืนยันจากธนาคาร เป็นข้อบ่งชี้ที่แผนของฝ่ายบริหารยังไม่ขจัด หมายเหตุควรระบุเหตุการณ์ ตัวเลข แผนของฝ่ายบริหาร และข้อความว่ามีความไม่แน่นอนที่มีสาระสำคัญ คำตอบที่ได้คะแนนสูงระบุเงื่อนไขที่จะทำให้ข้อสรุปเปลี่ยน เช่น ได้หนังสือยืนยันจากธนาคารก่อนวันอนุมัติงบการเงิน และกล่าวถึงความรับผิดชอบของผู้ทำบัญชีต่อผู้ใช้งบการเงิน</p>
+    
+      <h3 id="S3.6">S3.6 ตัวอย่างการเลือกเกณฑ์การวัดมูลค่า (ย้ายจากหัวข้อ 3.6)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>รายการ ณ วันสิ้นรอบ</th><th>เกณฑ์ที่ใช้</th><th>ย่อหน้าและบท</th></tr></thead>
+        <tbody>
+          <tr><td>สินค้าคงเหลือ ราคาทุน 850,000 บาท มูลค่าสุทธิที่จะได้รับ 790,000 บาท</td><td>ราคาทุนหรือมูลค่าสุทธิที่จะได้รับ แล้วแต่ราคาใดจะต่ำกว่า แสดง 790,000 บาท</td><td class="nw">3.23 · บทที่ 8</td></tr>
+          <tr><td>หุ้นจดทะเบียนในตลาดหลักทรัพย์ที่ถือเพื่อค้า ราคาทุน 300,000 บาท ราคาเสนอซื้อปัจจุบัน 345,000 บาท</td><td>มูลค่ายุติธรรม 345,000 บาท</td><td class="nw">3.22.5, 3.23 · บทที่ 9 ย่อหน้า 9.11</td></tr>
+          <tr><td>อาคารสำนักงาน ราคาทุน 6,000,000 บาท ค่าเสื่อมราคาสะสม 1,200,000 บาท กิจการใช้วิธีราคาทุน</td><td>ราคาทุนหักค่าเสื่อมราคาสะสม 4,800,000 บาท</td><td class="nw">3.22.1 · บทที่ 10</td></tr>
+          <tr><td>ค่าซ่อมตามสัญญารับประกันที่คาดว่าต้องจ่าย 35,000 บาท</td><td>ประมาณการที่ดีที่สุดของจำนวนที่ต้องจ่าย</td><td class="nw">3.22.3 · บทที่ 16</td></tr>
+        </tbody></table></div>
+      <p class="hint">ย่อหน้า 9.11 ใช้ราคาเสนอซื้อปัจจุบันเป็นหลัก ถ้าหาไม่ได้หรือไม่เป็นตัวแทนของมูลค่ายุติธรรม ใช้ราคาซื้อขายครั้งล่าสุดได้เมื่อสภาพเศรษฐกิจไม่เปลี่ยนแปลงอย่างมีสาระสำคัญ</p>
+    
+      <h3 id="S3.7">S3.7 เปรียบเทียบบทที่ 3 ฉบับ 2554 กับฉบับปรับปรุง 2565 (อ้างจากหัวข้อ 3.1)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>เรื่อง</th><th>ฉบับ 2554 (ย่อหน้า 9–30)</th><th>ฉบับปรับปรุง 2565 (ย่อหน้า 3.1–3.23)</th></tr></thead>
+        <tbody>
+          <tr><td>การดำเนินงานต่อเนื่อง</td><td>ย่อหน้า 12 ประโยคเดียว: ถ้ามีข้อสงสัย วัดมูลค่าด้วยเกณฑ์อื่น</td><td>ย่อหน้า 3.4 ฝ่ายบริหารต้องประเมิน เปิดเผยความไม่แน่นอนที่มีสาระสำคัญ เปิดเผยข้อเท็จจริง เกณฑ์ และเหตุผลเมื่อไม่ใช้เกณฑ์ และพิจารณาอย่างน้อย 12 เดือนนับจากวันสิ้นรอบ</td></tr>
+          <tr><td>ลักษณะเชิงคุณภาพพื้นฐานข้อแรก</td><td>เชื่อถือได้ (19.1)</td><td>เป็นตัวแทนอันเที่ยงธรรม (3.11.1) คำนิยามเดิม</td></tr>
+          <tr><td>การรับรู้รายการ</td><td>งบแสดงฐานะการเงินหรืองบกำไรขาดทุน (25)</td><td>เพิ่มงบกำไรขาดทุนเบ็ดเสร็จ แล้วแต่กรณี (3.17)</td></tr>
+          <tr><td>อำนาจควบคุม</td><td>ไม่มี</td><td>ย่อหน้า 3.19 เนื้อหาสำคัญกว่ารูปแบบ: เงินกู้ การค้ำประกันหนี้สินส่วนใหญ่ หรือการแต่งตั้งกรรมการส่วนใหญ่</td></tr>
+          <tr><td>นิยามรายได้</td><td>ไม่รวมเงินทุนจากเจ้าของ และรายการกำไรที่มาตรฐานกำหนดให้รับรู้โดยตรงไปยังส่วนของเจ้าของ (27.1)</td><td>ไม่รวมเงินทุนจากเจ้าของ (3.20.1) แนวการตีความ: รายการกำไรขาดทุนเบ็ดเสร็จอื่นเข้านิยามรายได้ แต่ไม่ผ่านกำไรขาดทุน (4.14, 10.20)</td></tr>
+          <tr><td>รอบเวลา</td><td>รอบระยะเวลาบัญชี</td><td>รอบระยะเวลารายงาน</td></tr>
+        </tbody></table></div>
+      <p class="hint">ที่มา: ประกาศ 20/2554 และ 48/2565 · เอกสารประกอบการอบรมของสภาวิชาชีพบัญชี 9 ธันวาคม 2565 สไลด์ที่ 19–20 และ 24 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</p>
+
+      <h3 id="S3.8">S3.8 เปรียบเทียบกับกรอบแนวคิดสำหรับการรายงานทางการเงินของ TFRS for PAEs (เพื่อการศึกษา ไม่ใช่ข้อกำหนด)</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>ประเด็น</th><th>TFRS for NPAEs บทที่ 3</th><th>กรอบแนวคิดสำหรับการรายงานทางการเงิน (ฉบับที่ใช้กับ TFRS for PAEs)</th></tr></thead>
+        <tbody>
+          <tr><td>สถานะ</td><td>เป็นส่วนหนึ่งของมาตรฐาน</td><td>เอกสารแยกต่างหาก ไม่ใช่มาตรฐาน และไม่ได้มีผลเหนือมาตรฐานฉบับใด</td></tr>
+          <tr><td>ผู้ใช้หลัก</td><td>เจ้าของกิจการ (3.9)</td><td>ผู้ลงทุน ผู้ให้กู้ และเจ้าหนี้อื่น</td></tr>
+          <tr><td>นิยามสินทรัพย์</td><td>ทรัพยากรที่กิจการควบคุม คาดว่าจะได้รับประโยชน์ (3.18.1)</td><td>ทรัพยากรเชิงเศรษฐกิจปัจจุบัน คือสิทธิที่มีศักยภาพในการสร้างประโยชน์เชิงเศรษฐกิจ</td></tr>
+          <tr><td>เกณฑ์การรับรู้</td><td>เป็นไปได้ค่อนข้างแน่ และวัดได้อย่างน่าเชื่อถือ</td><td>ไม่มีเกณฑ์ความน่าจะเป็น ใช้ความเกี่ยวข้องและความเป็นตัวแทนอันเที่ยงธรรม</td></tr>
+          <tr><td>เกณฑ์การวัดมูลค่า</td><td>ห้าเกณฑ์ ราคาทุนเดิมเป็นหลัก (3.22–3.23)</td><td>ราคาทุนเดิม และมูลค่าปัจจุบัน (มูลค่ายุติธรรม มูลค่าจากการใช้หรือมูลค่าการปฏิบัติตามภาระ ราคาทุนปัจจุบัน)</td></tr>
+        </tbody></table></div>
+      <p class="hint">ที่มา: เอกสารของสภาวิชาชีพบัญชี เรื่อง ความแตกต่างระหว่าง TFRS กับ TFRS for NPAEs (2 ตุลาคม 2566 หน้า 6 ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน) ตารางนี้ใช้เพื่อการศึกษา ข้อกำหนดสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะคือบทที่ 3</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ใช้ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 3 ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพ ข้อมูลที่กรอกไม่ถูกส่งออกจากเครื่อง</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 3.2 · ตัวอย่างที่ 3.3 · กรณีศึกษา 3.1 · แบบฝึกหัดส่วนที่ 1</span>
+  </footer>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmt=(n,d=0)=>isFinite(n)?(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+  function num(s){s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-'||s==='–')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  function copyText(t,msgEl){
+    const done=()=>{if(msgEl){msgEl.textContent='คัดลอกแล้ว';setTimeout(()=>msgEl.textContent='',1800)}};
+    try{navigator.clipboard.writeText(t).then(done,()=>fallback())}catch(e){fallback()}
+    function fallback(){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();done()}
+  }
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes03tab',name)}catch(e){}
+  }
+  window.__show=show;
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='rec';const h0=(location.hash||'').slice(1);
+  if(names.includes(h0))start=h0;else{try{const s=localStorage.getItem('npaes03tab');if(names.includes(s))start=s}catch(e){}}
+  show(start);
+
+  /* =========================================================
+     TAB 0  RECOGNITION
+     ========================================================= */
+  const EL={asset:'สินทรัพย์',liab:'หนี้สิน',eq:'ส่วนของเจ้าของ',inc:'รายได้',exp:'ค่าใช้จ่าย'};
+  const QS={
+    asset:{def:[['a1','กิจการควบคุมทรัพยากรนั้น','3.18.1'],['a2','ทรัพยากรนั้นเป็นผลของเหตุการณ์ในอดีต เช่น ได้รับมอบแล้วหรือสิทธิเกิดแล้ว','3.18.1'],['a3','กิจการคาดว่าจะได้รับประโยชน์เชิงเศรษฐกิจจากทรัพยากรนั้นในอนาคต','3.18.1']],
+           rec:[['r1','เป็นไปได้ค่อนข้างแน่ที่กิจการจะได้รับประโยชน์เชิงเศรษฐกิจในอนาคต','3.18.1.1'],['r2','รายการนั้นมีราคาทุนหรือมูลค่าที่วัดได้อย่างน่าเชื่อถือ','3.18.1.2']]},
+    liab:{def:[['l1','เป็นภาระผูกพันปัจจุบันของกิจการ','3.18.2'],['l2','ภาระผูกพันนั้นเป็นผลของเหตุการณ์ในอดีต เช่น ได้รับสินค้าหรือบริการแล้ว เกิดเหตุแห่งการฟ้องร้องแล้ว','3.18.2'],['l3','การชำระภาระผูกพันคาดว่าจะทำให้กิจการสูญเสียทรัพยากรเชิงเศรษฐกิจ','3.18.2']],
+          rec:[['r1','เป็นไปได้ค่อนข้างแน่ที่ประโยชน์เชิงเศรษฐกิจจะออกจากกิจการเพื่อชำระภาระผูกพัน','3.18.2.1'],['r2','มูลค่าที่ต้องชำระภาระผูกพันวัดได้อย่างน่าเชื่อถือ','3.18.2.2']]},
+    inc:{def:[['i1','ประโยชน์เชิงเศรษฐกิจเพิ่มขึ้นจากสินทรัพย์เพิ่มหรือหนี้สินลด ทำให้ส่วนของเจ้าของเพิ่มขึ้น','3.20.1'],['i2','ไม่ใช่เงินทุนที่ได้รับจากเจ้าของ','3.20.1']],
+         rec:[['r1','กิจการคาดว่าจะได้รับประโยชน์เชิงเศรษฐกิจในอนาคตเพิ่มขึ้น','3.20.1'],['r2','วัดมูลค่าของประโยชน์เชิงเศรษฐกิจได้อย่างน่าเชื่อถือ','3.20.1']],
+         ext:[['g','เป็นผลกำไร เช่น กำไรจากการขายสินทรัพย์ กำไรจากอัตราแลกเปลี่ยน','3.20.1']]},
+    exp:{def:[['e1','ประโยชน์เชิงเศรษฐกิจลดลงจากสินทรัพย์ลดหรือหนี้สินเพิ่ม ทำให้ส่วนของเจ้าของลดลง','3.20.2'],['e2','ไม่ใช่การแบ่งปันให้กับเจ้าของ','3.20.2']],
+         rec:[['r1','กิจการคาดว่าจะเสียประโยชน์เชิงเศรษฐกิจในอนาคต','3.20.2'],['r2','วัดมูลค่าได้อย่างน่าเชื่อถือ','3.20.2']],
+         ext:[['g','เป็นผลขาดทุน เช่น ขาดทุนจากการขายสินทรัพย์ ขาดทุนจากอัตราแลกเปลี่ยน','3.20.2']]},
+    eq:{def:[['q1','เป็นรายการกับเจ้าของในฐานะเจ้าของ เช่น เงินลงทุนหรือเงินเพิ่มทุน การจ่ายเงินปันผลหรือการถอนทุน','3.18.3, 3.20']],rec:[]}
+  };
+  const MEAS={
+    cash:['ราคาทุนเดิม (จำนวนเงินสด)','3.22.1','บทที่ 6'],
+    rec:['ราคาทุนเดิม หักค่าเผื่อหนี้สงสัยจะสูญที่ประมาณภายใต้หลักความระมัดระวัง','3.22.1, 3.14','บทที่ 7'],
+    inv:['ราคาทุนหรือมูลค่าสุทธิที่จะได้รับ แล้วแต่ราคาใดจะต่ำกว่า','3.23','บทที่ 8'],
+    sec:['มูลค่ายุติธรรม สำหรับหลักทรัพย์ในความต้องการของตลาด','3.22.5, 3.23','บทที่ 9'],
+    ppe:['ราคาทุนเดิม หักค่าเสื่อมราคาสะสม มาตรฐานมีทางเลือกวิธีตีราคาใหม่','3.22.1, 3.23','บทที่ 10'],
+    ip:['ราคาทุนเป็นหลัก มาตรฐานมีทางเลือกวัดด้วยมูลค่ายุติธรรม','3.22.1, 3.23','บทที่ 12'],
+    intan:['ราคาทุนเดิม หักค่าตัดจำหน่ายสะสม','3.22.1','บทที่ 11'],
+    pay:['ราคาทุนเดิม (จำนวนที่ได้รับจากการก่อหนี้สิน)','3.22.1','บทที่ 4 การจัดประเภทหมุนเวียน'],
+    accr:['จำนวนที่คาดว่าจะจ่ายชำระ','3.22.3','3.3 เกณฑ์คงค้าง และบทที่เกี่ยวข้อง'],
+    prov:['ประมาณการที่ดีที่สุดของจำนวนที่ต้องจ่ายชำระ','3.22.3','บทที่ 16'],
+    lease:['มูลค่ายุติธรรมหรือมูลค่าปัจจุบันของจำนวนเงินขั้นต่ำที่ต้องจ่าย แล้วแต่จำนวนใดต่ำกว่า เมื่อเริ่มสัญญาเช่าเงินทุน','3.22.4','บทที่ 14'],
+    rev:['มูลค่าของสิ่งตอบแทนที่ได้รับหรือค้างรับ','3.20.1','บทที่ 18'],
+    expn:['จำนวนที่สินทรัพย์ลดลงหรือหนี้สินเพิ่มขึ้น','3.20.2','บทที่ที่เกี่ยวข้อง'],
+    own:['จำนวนเงินหรือมูลค่าสินทรัพย์ที่เจ้าของนำมาลงหรือได้รับ','3.18.3','บทที่ 4'],
+    other:['ราคาทุนเดิมเป็นเกณฑ์หลัก ใช้ร่วมกับเกณฑ์อื่นตามที่บทที่เกี่ยวข้องกำหนด','3.23','ตรวจบทที่เกี่ยวข้อง']
+  };
+  const TAXCAT={sec:1,ppe:1,ip:1};
+  const R={
+    a:{d:'ซื้อเครื่องจักรเงินเชื่อ ผู้ขายส่งมอบและติดตั้งแล้ว',amt:500000,cat:'ppe',el:'asset',ans:{a1:'y',a2:'y',a3:'y',r1:'y',r2:'y'}},
+    b:{d:'ออกใบสั่งซื้อสินค้า ผู้ขายยังไม่ส่งมอบ',amt:300000,cat:'pay',el:'liab',ans:{l1:'n',l2:'n',l3:'y',r1:'y',r2:'y'}},
+    c:{d:'ถูกลูกค้าฟ้องเรียกค่าเสียหาย ทนายความเห็นว่าค่อนข้างแน่ที่จะแพ้คดี',amt:1200000,cat:'prov',el:'liab',ans:{l1:'y',l2:'y',l3:'y',r1:'y',r2:'y'}},
+    d:{d:'ถูกฟ้องอีกคดีหนึ่ง ทนายความเห็นว่าโอกาสแพ้คดีไม่สูง',amt:800000,cat:'prov',el:'liab',ans:{l1:'y',l2:'y',l3:'y',r1:'n',r2:'y'}},
+    e:{d:'ตราสินค้าที่กิจการสร้างขึ้นเอง ที่ปรึกษาประเมินว่ามีมูลค่าสูง',amt:5000000,cat:'intan',el:'asset',ans:{a1:'y',a2:'y',a3:'y',r1:'y',r2:'n'}},
+    f:{d:'ผู้ถือหุ้นนำเงินมาชำระค่าหุ้นเพิ่มทุน',amt:1000000,cat:'own',el:'inc',ans:{i1:'y',i2:'n',r1:'y',r2:'y'}},
+    g:{d:'ขายรถยนต์เก่า ได้กำไร',amt:40000,cat:'rev',el:'inc',ans:{i1:'y',i2:'y',r1:'y',r2:'y',g:'y'}},
+    h:{d:'ค่าไฟฟ้าเดือนธันวาคม ยังไม่ได้รับใบแจ้งหนี้ ประมาณจากมิเตอร์',amt:18000,cat:'accr',el:'exp',ans:{e1:'y',e2:'y',r1:'y',r2:'y'}}
+  };
+  const LET={a:'ก',b:'ข',c:'ค',d:'ง',e:'จ',f:'ฉ',g:'ช',h:'ซ'};
+  let rAns={};
+  const curEl=()=>document.querySelector('input[name="rEl"]:checked').value;
+  function rQsRender(){
+    const el=curEl(),q=QS[el];
+    const row=([k,t,ref])=>`<label class="f" style="flex-direction:row;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--rule);padding:6px 0;color:var(--ink)"><span style="flex:1;min-width:0">${esc(t)} <span class="nw" style="color:var(--muted);font-family:var(--mono);font-size:12px">${ref}</span></span><select data-k="${k}" style="width:auto;flex:none"><option value="">–</option><option value="y">ใช่</option><option value="n">ไม่ใช่</option><option value="u">ไม่แน่ใจ</option></select></label>`;
+    let html=`<h3>ก. คำนิยามของ${EL[el]}</h3>`+q.def.map(row).join('');
+    if(q.rec.length) html+=`<h3>ข. เกณฑ์การรับรู้รายการ</h3>`+q.rec.map(row).join('');
+    if(q.ext) html+=`<h3>ค. การแสดงรายการ</h3>`+q.ext.map(row).join('');
+    $('rQs').innerHTML=html;
+    $('rQs').querySelectorAll('select').forEach(s=>{s.value=rAns[s.dataset.k]||'';s.addEventListener('change',()=>{rAns[s.dataset.k]=s.value;rCalc()})});
+  }
+  document.querySelectorAll('input[name="rEl"]').forEach(r=>r.addEventListener('change',()=>{rQsRender();rCalc()}));
+  ['rEnt','rDesc','rAmt'].forEach(id=>$(id).addEventListener('input',rCalc));
+  ['rCat','rHide'].forEach(id=>$(id).addEventListener('change',rCalc));
+  function rLoad(k){
+    if(k==='clr'){rAns={};$('rDesc').value='';$('rAmt').value='';$('rEnt').value='';$('rCat').value='other';document.querySelector('input[name="rEl"][value="asset"]').checked=true;$('rTag').textContent='ข้อมูลที่ผู้ใช้กรอก';rQsRender();rCalc();return}
+    const x=R[k];rAns={...x.ans};$('rDesc').value=x.d;$('rAmt').value=fmt(x.amt);$('rCat').value=x.cat;
+    document.querySelector(`input[name="rEl"][value="${x.el}"]`).checked=true;$('rTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 3.2 รายการ '+LET[k];rQsRender();rCalc();
+  }
+  window.__rLoad=rLoad;
+  document.querySelectorAll('[data-r]').forEach(b=>b.addEventListener('click',()=>rLoad(b.dataset.r)));
+  function rEval(el,ans){
+    const q=QS[el];const steps=[];let defOK=true,unk=[],recOK=true,failDef=null,failRec=null;
+    q.def.forEach(([k,t,ref])=>{const v=ans[k]||'';steps.push({k,t,ref,v,grp:'นิยาม'});if(v==='n'){defOK=false;if(!failDef)failDef=k}else if(v!=='y')unk.push(t)});
+    q.rec.forEach(([k,t,ref])=>{const v=ans[k]||'';steps.push({k,t,ref,v,grp:'การรับรู้'});if(v==='n'){recOK=false;if(!failRec)failRec=k}else if(v!=='y')unk.push(t)});
+    let cls,head,body=[],status;
+    if(el==='eq'){
+      if(ans.q1==='y'){cls='ok';status='EQ';head='บันทึกในส่วนของเจ้าของ';body.push('รายการกับเจ้าของในฐานะเจ้าของไม่ใช่รายได้หรือค่าใช้จ่าย เงินทุนที่ได้รับจากเจ้าของไม่รวมในรายได้ (3.20.1) และการแบ่งปันให้เจ้าของไม่รวมในค่าใช้จ่าย (3.20.2) ส่วนของเจ้าของคือส่วนได้เสียคงเหลือในสินทรัพย์หลังหักหนี้สินทั้งสิ้น (3.18.3)')}
+      else if(ans.q1==='n'){cls='bad';status='NOTDEF';head='ไม่ใช่รายการกับเจ้าของ';body.push('ส่วนของเจ้าของเปลี่ยนจากรายการอื่นผ่านรายได้และค่าใช้จ่าย ให้พิจารณาว่ารายการเป็นสินทรัพย์ หนี้สิน รายได้ หรือค่าใช้จ่าย')}
+      else{cls='warn';status='UNK';head='ข้อมูลยังไม่พอ';body.push('ระบุว่ารายการเกิดกับเจ้าของในฐานะเจ้าของหรือไม่')}
+      return {cls,head,body,steps,status};
+    }
+    if(!defOK){
+      cls='bad';status='NOTDEF';head=`ไม่เข้านิยามของ${EL[el]} ไม่รับรู้เป็น${EL[el]}`;
+      if(el==='inc'&&failDef==='i2'){cls='ok';status='EQ';head='ไม่ใช่รายได้ บันทึกในส่วนของเจ้าของ';body.push('เงินทุนที่ได้รับจากเจ้าของไม่รวมอยู่ในคำนิยามของรายได้ (3.20.1) กิจการบันทึกเงินที่ได้รับเป็นสินทรัพย์ และเพิ่มส่วนของเจ้าของ (3.18.3)')}
+      else if(el==='exp'&&failDef==='e2'){cls='ok';status='EQ';head='ไม่ใช่ค่าใช้จ่าย บันทึกลดส่วนของเจ้าของ';body.push('การแบ่งปันให้กับเจ้าของ เช่น เงินปันผล ไม่รวมอยู่ในคำนิยามของค่าใช้จ่าย (3.20.2) ให้บันทึกลดส่วนของเจ้าของ')}
+      else if(el==='liab'){body.push('ยังไม่มีภาระผูกพันปัจจุบันที่เป็นผลของเหตุการณ์ในอดีต เช่น สัญญาซื้อที่อีกฝ่ายยังไม่ส่งมอบ กิจการไม่รับรู้หนี้สินจนกว่าเหตุการณ์จะเกิด ถ้าเป็นภาระผูกพันที่มีนัยสำคัญ ให้พิจารณาการเปิดเผยตามบทที่เกี่ยวข้อง')}
+      else if(el==='asset'){body.push('ถ้ากิจการไม่ได้ควบคุมทรัพยากร หรือยังไม่เกิดเหตุการณ์ในอดีต รายจ่ายที่เกิดขึ้นเป็นค่าใช้จ่าย หรือยังไม่บันทึกรายการ ให้พิจารณาองค์ประกอบอื่น')}
+      else body.push('ให้พิจารณาองค์ประกอบอื่นที่เหมาะสมกับข้อเท็จจริง');
+    }else if(!recOK){
+      cls='warn';status='NOTREC';head=`เข้านิยามของ${EL[el]} แต่ไม่ผ่านเกณฑ์การรับรู้ ไม่รับรู้ในงบการเงิน`;
+      if(failRec==='r2')body.push('ราคาทุนหรือมูลค่าวัดไม่ได้อย่างน่าเชื่อถือ (เกณฑ์ข้อ 2) การประเมินมูลค่าโดยที่ปรึกษาไม่ทำให้ราคาทุนวัดได้อย่างน่าเชื่อถือ');
+      if(failRec==='r1')body.push('ความเป็นไปได้ยังไม่ถึงระดับค่อนข้างแน่ (เกณฑ์ข้อ 1)');
+      if(el==='liab')body.push('ไม่รับรู้หนี้สินที่อาจเกิดขึ้น และเปิดเผยรายละเอียดของภาระผูกพันและผลกระทบทางการเงินที่ประมาณได้ในหมายเหตุ (ย่อหน้า 16.4)');
+      if(el==='asset')body.push('รายจ่ายที่เกิดขึ้นรับรู้เป็นค่าใช้จ่าย ถ้าเป็นสินทรัพย์ไม่มีตัวตนให้ตรวจบทที่ 11 ด้วย เช่น ย่อหน้า 11.21 ห้ามรับรู้ตราผลิตภัณฑ์ที่สร้างขึ้นภายใน');
+    }else if(unk.length){
+      cls='warn';status='UNK';head='ข้อมูลยังไม่พอสำหรับสรุป';body.push('ต้องหาหลักฐานเพิ่มสำหรับ: '+unk.map(esc).join(' · '));
+    }else{
+      cls='ok';status='REC';head=`รับรู้เป็น${EL[el]}`;
+      if(el==='inc'&&ans.g==='y')body.push('เป็นผลกำไร ตามปกติแสดงเป็นรายการแยกต่างหาก และมักแสดงสุทธิจากค่าใช้จ่ายที่เกี่ยวข้อง (3.20.1)');
+      if(el==='exp'&&ans.g==='y')body.push('เป็นผลขาดทุน ตามปกติแสดงเป็นรายการแยกต่างหาก และมักแสดงสุทธิจากรายได้ที่เกี่ยวข้อง (3.20.2)');
+      if(el==='exp')body.push('รับรู้ในงวดที่เกิดรายการตามเกณฑ์คงค้าง (3.3) แม้ยังไม่ได้จ่ายเงิน ถ้ายังไม่จ่ายให้รับรู้หนี้สินคู่กัน');
+      if(el==='asset')body.push('รับรู้ด้านเครดิตตามรายการที่เกิด เช่น เจ้าหนี้หรือเงินสด');
+    }
+    return {cls,head,body,steps,status};
+  }
+  window.__rEval=rEval;
+  function rCalc(){
+    const el=curEl();const res=rEval(el,rAns);const hide=$('rHide').checked;
+    const ent=hide?'กิจการ A':($('rEnt').value.trim()||'กิจการ A');
+    const desc=hide?'รายการ 001':($('rDesc').value.trim()||'รายการ 001');
+    const amt=num($('rAmt').value);const cat=$('rCat').value;const m=MEAS[cat];
+    const sym={y:'ใช่',n:'ไม่ใช่',u:'ไม่แน่ใจ','':'ยังไม่ตอบ'};
+    const trail=res.steps.map((s,i)=>`<li class="${s.v==='y'?'hit':(s.v==='n'?'':'skip')}"><span class="no">${i+1}</span><div><div>${esc(s.t)}</div><div class="r">${s.grp} · ย่อหน้า ${s.ref} · ตอบ: ${sym[s.v]}</div></div></li>`).join('');
+    let mh='';
+    if(res.status==='REC'||res.status==='EQ'){
+      mh=`<div class="note"><div class="cap">เกณฑ์การวัดมูลค่า (ย่อหน้า 3.21–3.23)</div>${esc(m[0])}<br><span style="color:var(--muted)">ย่อหน้า ${m[1]} · ${m[2]}</span>${isFinite(amt)?`<br>จำนวนที่บันทึก: <b class="nw" style="font-family:var(--mono)">${fmt(amt,2)}</b> บาท`:''}</div>`;
+      if(TAXCAT[cat])mh+=`<div class="tax"><b>ผลทางภาษี:</b> การคำนวณกำไรสุทธิทางภาษีใช้ราคาทุนเท่านั้น และหักค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) แห่งประมวลรัษฎากร และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527) และที่แก้ไขเพิ่มเติม ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) ถ้าเลือกวัดด้วยมูลค่ายุติธรรมหรือตีราคาใหม่ ต้องปรับปรุงผลต่างในการคำนวณภาษี (บทที่ 15)</div>`;
+    }
+    const memo=[`บันทึกการพิจารณาการรับรู้รายการ`,`กิจการ: ${ent}`,`รายการ: ${desc}${isFinite(amt)?' จำนวน '+fmt(amt,2)+' บาท':''}`,`องค์ประกอบที่พิจารณา: ${EL[el]}`,
+      ...res.steps.map((s,i)=>`${i+1}. ${s.t} (${s.ref}): ${sym[s.v]}`),`ข้อสรุป: ${res.head}`,...res.body.map(b=>'- '+b.replace(/<[^>]+>/g,'')),
+      (res.status==='REC'||res.status==='EQ')?`เกณฑ์การวัดมูลค่า: ${m[0]} (${m[1]}; ${m[2]})`:'',`ผู้จัดทำ ……………… ผู้อนุมัติ ……………… วันที่ ………………`].filter(Boolean).join('\n');
+    $('rOut').innerHTML=`<div class="verdict ${res.cls}"><h4>${esc(res.head)}</h4>${res.body.map(b=>`<div>${b}</div>`).join('')}</div>
+      <div><h3 style="margin-top:0">เส้นทางการพิจารณา</h3><ol class="steps">${trail}</ol></div>${mh}
+      <div class="note"><div class="cap">ร่างบันทึกสำหรับแฟ้มงาน</div><pre class="memo" id="rMemo">${esc(memo)}</pre><div class="row-actions"><button class="btn" id="rCopy">คัดลอกบันทึก</button><span class="copied" id="rMsg"></span></div></div>
+      <details class="theory"><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl><dt>3.17</dt><dd>การรับรู้รายการคือการรวมรายการเข้าเป็นส่วนหนึ่งของงบฐานะการเงินหรืองบกำไรขาดทุน</dd><dt>3.18.1–3.18.3</dt><dd>คำนิยามและเกณฑ์การรับรู้สินทรัพย์และหนี้สินต้องผ่านทุกข้อ ส่วนของเจ้าของคือส่วนได้เสียคงเหลือ</dd><dt>3.20.1–3.20.2</dt><dd>รายได้ไม่รวมเงินทุนจากเจ้าของ ค่าใช้จ่ายไม่รวมการแบ่งปันให้เจ้าของ</dd><dt>3.23</dt><dd>ราคาทุนเดิมเป็นเกณฑ์หลัก ใช้ร่วมกับเกณฑ์อื่น</dd></dl></details>`;
+    $('rCopy').addEventListener('click',()=>copyText(memo,$('rMsg')));
+  }
+
+  /* =========================================================
+     TAB 1  GOING CONCERN
+     ========================================================= */
+  const GN=[['cash','เงินสดและรายการเทียบเท่าเงินสด'],['ca','สินทรัพย์หมุนเวียน'],['cl','หนี้สินหมุนเวียน'],['tl','หนี้สินรวม'],['eq','ส่วนของเจ้าของ'],
+    ['np','กำไร (ขาดทุน) สุทธิปีปัจจุบัน'],['np1','กำไร (ขาดทุน) สุทธิปีก่อน'],['cfo','กระแสเงินสดสุทธิจากกิจกรรมดำเนินงาน'],['due','เงินกู้ที่ครบกำหนดชำระภายใน 12 เดือน'],['fac','วงเงินกู้ที่ได้รับอนุมัติแล้วยังไม่เบิกใช้']];
+  $('gNums').innerHTML=GN.map(([k,t])=>`<label class="f">${t}<input type="text" class="num" id="g_${k}" inputmode="decimal" autocomplete="off"></label>`).join('');
+  const GQ=[['liq','ฝ่ายบริหารมีความตั้งใจจะชำระบัญชีหรือหยุดประกอบธุรกิจ'],['noalt','ไม่มีทางเลือกที่เป็นไปได้จริงอื่นใดนอกจากชำระบัญชีหรือหยุดประกอบธุรกิจ'],['hist','กิจการมีผลการดำเนินงานที่มีกำไรในอดีต'],['fund','กิจการมีความพร้อมที่จะหาแหล่งเงินทุนรองรับ']];
+  $('gQs').innerHTML=GQ.map(([k,t])=>`<label class="f" style="flex-direction:row;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--rule);padding:6px 0;color:var(--ink)"><span style="flex:1;min-width:0">${t}</span><select id="gq_${k}" style="width:auto;flex:none"><option value="">–</option><option value="y">ใช่</option><option value="n">ไม่ใช่</option></select></label>`).join('');
+  const GI=[['cust','สูญเสียลูกค้า ผู้ขาย หรือใบอนุญาตที่สำคัญ'],['law','มีคดีความหรือข้อกำหนดของหน่วยงานกำกับที่อาจทำให้กิจการดำเนินงานต่อไม่ได้'],['cov','ผิดเงื่อนไขสัญญาเงินกู้'],['late','จ่ายชำระเจ้าหนี้ไม่ได้ตามกำหนด']];
+  $('gInd').innerHTML=GI.map(([k,t])=>`<label><input type="checkbox" id="gi_${k}">${t}</label>`).join('');
+  const GM=[['bank','ธนาคารยืนยันการขยายเวลาหรือจัดหาเงินกู้ใหม่เป็นหนังสือ'],['own','ผู้ถือหุ้นหรือบริษัทใหญ่ออกหนังสือยืนยันการสนับสนุนทางการเงิน พร้อมหลักฐานว่ามีความสามารถ'],['sale','ทำสัญญาขายสินทรัพย์ที่ไม่จำเป็นแล้ว'],['cost','แผนลดต้นทุนหรือปรับโครงสร้างที่เริ่มแล้วและมีตัวเลขรองรับ']];
+  $('gMit').innerHTML=GM.map(([k,t])=>`<label><input type="checkbox" id="gm_${k}">${t}</label>`).join('');
+  const GS={
+    ex34:{ent:'บริษัท ครัวสยาม จำกัด',date:'31 ธันวาคม 2568',mon:12,n:{cash:650000,ca:2400000,cl:5100000,tl:9800000,eq:1150000,np:-1850000,np1:-920000,cfo:-480000,due:3000000,fac:0},q:{liq:'n',noalt:'n',hist:'n',fund:'n'},i:{cust:false,law:false,cov:false,late:false},m:{own:true}},
+    good:{ent:'บริษัท มั่นคงพาณิชย์ จำกัด',date:'31 ธันวาคม 2568',mon:12,n:{cash:3200000,ca:9500000,cl:4100000,tl:6000000,eq:15400000,np:2300000,np1:1900000,cfo:2700000,due:1000000,fac:2000000},q:{liq:'n',noalt:'n',hist:'y',fund:'y'},i:{},m:{}},
+    liq:{ent:'บริษัท ปิดตัว จำกัด',date:'31 ธันวาคม 2568',mon:12,n:{cash:400000,ca:1200000,cl:900000,tl:900000,eq:700000,np:-300000,np1:-150000,cfo:-100000,due:0,fac:0},q:{liq:'y',noalt:'n',hist:'n',fund:'n'},i:{},m:{}},
+    case:{ent:'บริษัท สยามเบเกอรี่ จำกัด',date:'31 ธันวาคม 2568',mon:12,n:{cash:900000,ca:6200000,cl:11800000,tl:16500000,eq:2400000,np:-2600000,np1:350000,cfo:-1100000,due:8000000,fac:0},q:{liq:'n',noalt:'n',hist:'y',fund:'n'},i:{cust:true},m:{cost:true}}
+  };
+  const gIds=()=>[...GN.map(([k])=>'g_'+k),...GQ.map(([k])=>'gq_'+k),...GI.map(([k])=>'gi_'+k),...GM.map(([k])=>'gm_'+k),'gEnt','gDate','gMon','gHide'];
+  gIds().forEach(id=>{$(id).addEventListener('input',gCalc);$(id).addEventListener('change',gCalc)});
+  document.querySelectorAll('input[name="gJ"]').forEach(r=>r.addEventListener('change',gCalc));
+  function gLoad(k){
+    if(k==='clr'){GN.forEach(([x])=>$('g_'+x).value='');GQ.forEach(([x])=>$('gq_'+x).value='');GI.forEach(([x])=>$('gi_'+x).checked=false);GM.forEach(([x])=>$('gm_'+x).checked=false);$('gEnt').value='';$('gMon').value='12';$('gTag').textContent='ข้อมูลที่ผู้ใช้กรอก';document.querySelector('input[name="gJ"][value="auto"]').checked=true;gCalc();return}
+    const s=GS[k];$('gEnt').value=s.ent;$('gDate').value=s.date;$('gMon').value=s.mon;
+    GN.forEach(([x])=>$('g_'+x).value=s.n[x]==null?'':fmt(s.n[x]));GQ.forEach(([x])=>$('gq_'+x).value=s.q[x]||'');
+    GI.forEach(([x])=>$('gi_'+x).checked=!!s.i[x]);GM.forEach(([x])=>$('gm_'+x).checked=!!s.m[x]);
+    document.querySelector('input[name="gJ"][value="auto"]').checked=true;
+    $('gTag').textContent='ข้อมูลตัวอย่าง: '+({ex34:'ตัวอย่างที่ 3.3',good:'กิจการมีกำไรต่อเนื่อง',liq:'ตัดสินใจเลิกกิจการ',case:'กรณีศึกษา 3.1'}[k]);gCalc();
+  }
+  window.__gLoad=gLoad;
+  document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',()=>gLoad(b.dataset.g)));
+  /* paste import */
+  const ALIAS={};GN.forEach(([k,t])=>{ALIAS[k]=k;ALIAS[t.replace(/\s/g,'')]=k});
+  Object.assign(ALIAS,{'เงินสด':'cash','สินทรัพย์หมุนเวียนรวม':'ca','หนี้สินหมุนเวียนรวม':'cl','หนี้สินทั้งสิ้น':'tl','รวมหนี้สิน':'tl','รวมส่วนของเจ้าของ':'eq','ส่วนของผู้ถือหุ้น':'eq','กำไรสุทธิ':'np','ขาดทุนสุทธิ':'np','กำไรสุทธิปีก่อน':'np1','กระแสเงินสดจากการดำเนินงาน':'cfo'});
+  $('gImp').addEventListener('click',()=>{let n=0;$('gPaste').value.split(/\r?\n/).forEach(line=>{const c=line.split('\t');if(c.length<2)return;const key=ALIAS[c[0].trim().replace(/\s/g,'')];const v=num(c[c.length-1]);if(key&&isFinite(v)){$('g_'+key).value=fmt(v);n++}});$('gImpMsg').textContent=`นำเข้า ${n} รายการ`;$('gTag').textContent='ข้อมูลที่ผู้ใช้กรอก';gCalc()});
+  $('gHead').addEventListener('click',()=>copyText(GN.map(([k,t])=>t+'\t').join('\n'),$('gImpMsg')));
+  function gEval(){
+    const v={};GN.forEach(([k])=>v[k]=num($('g_'+k).value));
+    const q={};GQ.forEach(([k])=>q[k]=$('gq_'+k).value);
+    const ind=[];
+    if(isFinite(v.ca)&&isFinite(v.cl)&&v.cl>v.ca)ind.push(['หนี้สินหมุนเวียนสูงกว่าสินทรัพย์หมุนเวียน',v.cl-v.ca]);
+    if(isFinite(v.eq)&&v.eq<0)ind.push(['ส่วนของเจ้าของติดลบ',Math.abs(v.eq)]);
+    if(isFinite(v.np)&&v.np<0&&isFinite(v.np1)&&v.np1<0)ind.push(['ขาดทุนสุทธิสองปีติดต่อกัน (ขาดทุนปีปัจจุบัน)',Math.abs(v.np)]);
+    else if(isFinite(v.np)&&v.np<0)ind.push(['ขาดทุนสุทธิปีปัจจุบัน',Math.abs(v.np)]);
+    if(isFinite(v.cfo)&&v.cfo<0)ind.push(['กระแสเงินสดจากกิจกรรมดำเนินงานติดลบ',Math.abs(v.cfo)]);
+    const cover=(isFinite(v.cash)?v.cash:0)+(isFinite(v.fac)?v.fac:0);
+    if(isFinite(v.due)&&v.due>0&&v.due>cover)ind.push(['เงินกู้ที่ครบกำหนดใน 12 เดือนสูงกว่าเงินสดรวมวงเงินที่ยังไม่ใช้',v.due-cover]);
+    GI.forEach(([k,t])=>{if($('gi_'+k).checked)ind.push([t,NaN])});
+    const mit=GM.filter(([k])=>$('gm_'+k).checked).map(([,t])=>t);
+    const mon=num($('gMon').value);
+    const ratios={cr:isFinite(v.ca)&&v.cl>0?v.ca/v.cl:NaN,de:isFinite(v.tl)&&v.eq>0?v.tl/v.eq:NaN,cov:isFinite(v.due)&&v.due>0?cover/v.due:NaN};
+    const judge=document.querySelector('input[name="gJ"]:checked').value;
+    let out,cls,head,body=[],sugg='';
+    const strong=mit.some(t=>/ธนาคาร|ผู้ถือหุ้น/.test(t));
+    if(q.liq==='y'||q.noalt==='y'){out='NGC';cls='bad';head='ไม่ใช้เกณฑ์การดำเนินงานต่อเนื่อง';body.push('ฝ่ายบริหารตั้งใจจะชำระบัญชีหรือหยุดประกอบธุรกิจ หรือไม่มีทางเลือกที่เป็นไปได้จริงอื่น กิจการต้องเปิดเผยข้อเท็จจริงนี้ เกณฑ์ที่ใช้จัดทำงบการเงิน และเหตุผลที่ไม่อาจถือได้ว่ากิจการจะดำเนินงานอย่างต่อเนื่อง (3.4)')}
+    else if(q.liq===''||q.noalt===''){out='UNK';cls='warn';head='ตอบคำถามเรื่องความตั้งใจชำระบัญชีก่อน';body.push('ย่อหน้า 3.4 ให้พิจารณาความตั้งใจและทางเลือกของฝ่ายบริหารเป็นขั้นแรก')}
+    else if(q.hist==='y'&&q.fund==='y'&&ind.length===0){out='GC0';cls='ok';head='ใช้เกณฑ์การดำเนินงานต่อเนื่องได้ ไม่ต้องวิเคราะห์ในรายละเอียด';body.push('กิจการมีกำไรในอดีตและพร้อมหาแหล่งเงินทุน และไม่พบข้อบ่งชี้ ย่อหน้า 3.4 ให้สรุปได้ว่าการใช้เกณฑ์การดำเนินงานต่อเนื่องเหมาะสมโดยไม่ต้องวิเคราะห์ในรายละเอียด')}
+    else{
+      sugg=ind.length===0?'none':'mu';
+      const j=judge==='auto'?sugg:judge;
+      if(j==='mu'){out='MU';cls='warn';head='ใช้เกณฑ์การดำเนินงานต่อเนื่อง และต้องเปิดเผยความไม่แน่นอนที่มีสาระสำคัญ';body.push('มีเหตุการณ์หรือสถานการณ์ที่อาจทำให้เกิดความสงสัยอย่างมีนัยสำคัญเกี่ยวกับความสามารถในการดำเนินงานต่อเนื่อง และแผนของฝ่ายบริหารยังไม่ขจัดข้อสงสัย กิจการต้องเปิดเผยความไม่แน่นอนดังกล่าว (3.4)')}
+      else{out='GC1';cls='ok';head='ใช้เกณฑ์การดำเนินงานต่อเนื่อง ไม่มีความไม่แน่นอนที่มีสาระสำคัญ';body.push(ind.length?'พบข้อบ่งชี้ แต่แผนของฝ่ายบริหารที่มีหลักฐานรองรับขจัดข้อสงสัยได้ ควรบันทึกการพิจารณาและหลักฐานไว้ในแฟ้มงาน':'ไม่พบข้อบ่งชี้จากตัวเลขและข้อเท็จจริงที่กรอก ฝ่ายบริหารพิจารณาความสามารถในการทำกำไร กำหนดการชำระหนี้ และแหล่งเงินทุนแล้ว (3.4)')}
+      if(judge==='auto'&&sugg==='mu'&&mit.length)body.push(`มีแผนของฝ่ายบริหาร ${mit.length} รายการ${strong?' รวมหนังสือยืนยันจากธนาคารหรือผู้ถือหุ้น':''} แอปไม่ตัดสินแทนว่าแผนขจัดข้อสงสัยได้หรือไม่ ถ้าฝ่ายบริหารประเมินพร้อมหลักฐานแล้วว่าขจัดได้ ให้เลือก "ไม่มีความไม่แน่นอนที่มีสาระสำคัญ" และบันทึกเหตุผล`);
+      if(judge!=='auto')body.push('ข้อสรุปนี้มาจากการเลือกของผู้ใช้ แอปเสนอ: '+(sugg==='mu'?'มีความไม่แน่นอนที่มีสาระสำคัญ':'ไม่มีความไม่แน่นอนที่มีสาระสำคัญ'));
+    }
+    const warn=[];if(!isFinite(mon)||mon<12)warn.push('ระยะเวลาที่ประเมินต้องไม่น้อยกว่า 12 เดือนนับจากวันสิ้นรอบระยะเวลารายงาน (3.4)');
+    else if(mon<15)warn.push('มาตรฐานการสอบบัญชี รหัส 570 (ปรับปรุง 2569) ซึ่งใช้กับรอบบัญชีที่เริ่มในหรือหลัง 15 ธันวาคม 2570 ให้ผู้สอบบัญชีประเมินอย่างน้อย 12 เดือนนับจากวันที่อนุมัติงบการเงิน ถ้างบการเงินอนุมัติหลังวันสิ้นรอบหลายเดือน ควรขยายระยะที่ประเมินให้ครอบคลุม');
+    return {v,q,ind,mit,ratios,out,cls,head,body,warn,mon,sugg};
+  }
+  window.__gEval=gEval;
+  function gCalc(){
+    const r=gEval();const hide=$('gHide').checked;const ent=hide?'กิจการ A':($('gEnt').value.trim()||'กิจการ A');const dt=$('gDate').value.trim()||'……………';
+    const f2=x=>isFinite(x)?x.toFixed(2):'–';
+    const figs=`<div class="figs"><div class="fig"><div class="k">อัตราส่วนทุนหมุนเวียน</div><div class="v">${f2(r.ratios.cr)} เท่า</div></div><div class="fig"><div class="k">หนี้สินต่อส่วนของเจ้าของ</div><div class="v">${f2(r.ratios.de)} เท่า</div></div><div class="fig"><div class="k">เงินสดและวงเงินต่อหนี้ครบกำหนด</div><div class="v">${f2(r.ratios.cov)} เท่า</div></div></div>`;
+    const indH=r.ind.length?`<ul>${r.ind.map(([t,a])=>`<li>${esc(t)}${isFinite(a)?` <span class="nw" style="font-family:var(--mono)">${fmt(a)}</span> บาท`:''}</li>`).join('')}</ul>`:'<p class="hint" style="margin:0">ไม่พบข้อบ่งชี้</p>';
+    const mitH=r.mit.length?`<ul>${r.mit.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:'<p class="hint" style="margin:0">ยังไม่มีแผนที่มีหลักฐานรองรับ</p>';
+    let note='';
+    if(r.out==='MU'){
+      const p=[];if(isFinite(r.v.np)&&r.v.np<0)p.push(`มีผลขาดทุนสุทธิ ${fmt(-r.v.np)} บาท`);if(isFinite(r.v.cl)&&isFinite(r.v.ca)&&r.v.cl>r.v.ca)p.push(`มีหนี้สินหมุนเวียนสูงกว่าสินทรัพย์หมุนเวียน ${fmt(r.v.cl-r.v.ca)} บาท`);if(isFinite(r.v.due)&&r.v.due>0)p.push(`มีเงินกู้ ${fmt(r.v.due)} บาท ครบกำหนดชำระภายใน 12 เดือน`);
+      r.ind.filter(([,a])=>!isFinite(a)).forEach(([t])=>p.push(t));
+      note=`หมายเหตุ … เกณฑ์การจัดทำงบการเงิน: ความไม่แน่นอนที่มีสาระสำคัญเกี่ยวกับการดำเนินงานต่อเนื่อง\nสำหรับปีสิ้นสุดวันที่ ${dt} ${ent} ${p.join(' ')} ${r.mit.length?'ฝ่ายบริหารมีแผน ได้แก่ '+r.mit.join(' ')+' ':''}เหตุการณ์และสถานการณ์เหล่านี้แสดงว่ามีความไม่แน่นอนที่มีสาระสำคัญ ซึ่งอาจเป็นเหตุให้เกิดความสงสัยอย่างมีนัยสำคัญเกี่ยวกับความสามารถในการดำเนินงานอย่างต่อเนื่องของกิจการ งบการเงินนี้จัดทำขึ้นตามเกณฑ์การดำเนินงานต่อเนื่อง`;
+    }else if(r.out==='NGC'){
+      note=`หมายเหตุ … เกณฑ์การจัดทำงบการเงิน\nงบการเงินสำหรับปีสิ้นสุดวันที่ ${dt} ของ ${ent} มิได้จัดทำขึ้นตามเกณฑ์การดำเนินงานต่อเนื่อง เนื่องจาก [ระบุเหตุผล เช่น มติให้เลิกกิจการ] กิจการจัดทำงบการเงินตามเกณฑ์ [ระบุเกณฑ์ที่ใช้ เช่น มูลค่าที่คาดว่าจะได้รับหรือชำระ] [ระบุนโยบายการวัดมูลค่าที่สำคัญ]`;
+    }else if(r.out==='GC0'||r.out==='GC1'){
+      note=`บันทึกในแฟ้มงาน (ไม่ต้องเปิดเผยเพิ่มเติมตามย่อหน้า 3.4)\n${ent} ใช้เกณฑ์การดำเนินงานต่อเนื่องสำหรับงบการเงินปีสิ้นสุดวันที่ ${dt} ฝ่ายบริหารประเมินข้อมูลเกี่ยวกับอนาคต ${isFinite(r.mon)?r.mon:12} เดือนนับจากวันสิ้นรอบระยะเวลารายงาน ${r.ind.length?'พบข้อบ่งชี้ '+r.ind.map(x=>x[0]).join(' ')+' และพิจารณาแผน '+r.mit.join(' ')+' แล้ว':'ไม่พบข้อบ่งชี้'}`;
+    }
+    $('gOut').innerHTML=`<div class="verdict ${r.cls}"><h4>${esc(r.head)}</h4>${r.body.map(b=>`<div>${esc(b)}</div>`).join('')}</div>
+      ${r.warn.map(w=>`<div class="alert bad">${esc(w)}</div>`).join('')}${figs}
+      <div class="facts"><h4>ข้อบ่งชี้ (${r.ind.length})</h4>${indH}</div>
+      <div class="facts"><h4>แผนของฝ่ายบริหาร (${r.mit.length})</h4>${mitH}</div>
+      ${note?`<div class="note"><div class="cap">${r.out==='MU'||r.out==='NGC'?'ร่างหมายเหตุประกอบงบการเงิน':'ร่างบันทึก'}</div><pre class="memo" id="gNote">${esc(note)}</pre><div class="row-actions"><button class="btn" id="gCopy">คัดลอก</button><span class="copied" id="gMsg"></span></div></div>`:''}
+      <details class="theory"><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl><dt>3.2</dt><dd>ข้อสมมติที่ใช้ในการนำเสนองบการเงิน ได้แก่ เกณฑ์คงค้างและการดำเนินงานต่อเนื่อง</dd><dt>3.4</dt><dd>ฝ่ายบริหารต้องประเมินความสามารถในการดำเนินงานต่อเนื่อง พิจารณาข้อมูลเกี่ยวกับอนาคตอย่างน้อย 12 เดือนนับจากวันสิ้นรอบ เปิดเผยความไม่แน่นอนที่มีสาระสำคัญ และเปิดเผยเมื่อไม่ใช้เกณฑ์นี้</dd><dt>3.11.1</dt><dd>การเปิดเผยความไม่แน่นอนอย่างครบถ้วนเป็นส่วนหนึ่งของการเป็นตัวแทนอันเที่ยงธรรม</dd></dl></details>`;
+    if($('gCopy'))$('gCopy').addEventListener('click',()=>copyText(note,$('gMsg')));
+  }
+
+  /* =========================================================
+     TAB 2  QUIZ
+     ========================================================= */
+  const QZ=[
+    ['LO 3.1','เข้าใจ','วัตถุประสงค์ของงบการเงินตามย่อหน้า 3.6 คือข้อใด',['ก. เพื่อคำนวณภาษีเงินได้นิติบุคคล','ข. เพื่อนำเสนอข้อมูลเกี่ยวกับฐานะการเงินและผลการดำเนินงานที่มีประโยชน์ต่อการตัดสินใจเชิงเศรษฐกิจ','ค. เพื่อแสดงมูลค่ายุติธรรมของกิจการทั้งกิจการ','ง. เพื่อให้ผู้สอบบัญชีแสดงความเห็น'],1,'ย่อหน้า 3.6 ระบุวัตถุประสงค์ว่าเป็นการนำเสนอข้อมูลที่เกี่ยวข้องกับฐานะการเงินและผลการดำเนินงานที่มีประโยชน์ต่อการตัดสินใจเชิงเศรษฐกิจ การกำกับภาษีเป็นประโยชน์ของผู้ใช้อื่นตาม 3.10.2','3.2'],
+    ['LO 3.2','เข้าใจ','ย่อหน้า 3.9 กำหนดว่างบการเงินตามมาตรฐานนี้มีวัตถุประสงค์หลักเพื่อสนองความต้องการของผู้ใช้กลุ่มใด',['ก. ผู้ให้กู้','ข. หน่วยงานรัฐบาล','ค. เจ้าของกิจการ','ง. ผู้ลงทุนในตลาดหลักทรัพย์'],2,'ย่อหน้า 3.9 กำหนดว่าวัตถุประสงค์หลักคือสนองความต้องการของเจ้าของกิจการ ผู้ให้กู้และหน่วยงานรัฐเป็นผู้ใช้อื่นตาม 3.10','3.2'],
+    ['LO 3.3','วิเคราะห์','ลักษณะเชิงคุณภาพพื้นฐานตามย่อหน้า 3.11 ได้แก่ข้อใด',['ก. เปรียบเทียบกันได้ และทันต่อเวลา','ข. เป็นตัวแทนอันเที่ยงธรรม และเกี่ยวข้องกับการตัดสินใจ','ค. เข้าใจได้ และยืนยันความถูกต้องได้','ง. ความมีสาระสำคัญ และความระมัดระวัง'],1,'ย่อหน้า 3.11 กำหนดลักษณะเชิงคุณภาพพื้นฐานสองข้อ ส่วนเปรียบเทียบกันได้ ยืนยันความถูกต้องได้ ทันต่อเวลา และเข้าใจได้ เป็นลักษณะเชิงคุณภาพเสริมตาม 3.12','3.3'],
+    ['LO 3.5','ประยุกต์ใช้','ณ วันสิ้นรอบ สินค้าคงเหลือมีราคาทุน 850,000 บาท และมูลค่าสุทธิที่จะได้รับ 790,000 บาท ตามเกณฑ์ที่ย่อหน้า 3.23 ยกตัวอย่าง กิจการแสดงสินค้าคงเหลือเท่าใด',['ก. 850,000 บาท','ข. 820,000 บาท','ค. 790,000 บาท','ง. 60,000 บาท'],2,'ย่อหน้า 3.23 ยกตัวอย่างว่าสินค้าคงเหลือแสดงด้วยราคาทุนหรือมูลค่าสุทธิที่จะได้รับ แล้วแต่ราคาใดจะต่ำกว่า จึงแสดง 790,000 บาท ผลต่าง 60,000 บาท เป็นการปรับลดมูลค่าสินค้าตามบทที่ 8 (ดูตัวอย่างใน S3.6)','3.6'],
+    ['LO 3.3','วิเคราะห์','ผู้บริหารต้องการตั้งค่าเผื่อหนี้สงสัยจะสูญสูงกว่าประมาณการที่ดีที่สุด "เผื่อไว้ก่อน" ข้อใดถูกต้อง',['ก. ทำได้ เพราะเป็นไปตามหลักความระมัดระวัง','ข. ทำได้ ถ้าเปิดเผยในหมายเหตุ','ค. ทำไม่ได้ หลักความระมัดระวังไม่อนุญาตให้ตั้งสำรองลับหรือค่าเผื่อสูงเกินไปโดยเจตนา','ง. ทำได้ ถ้าผู้สอบบัญชีเห็นด้วย'],2,'ย่อหน้า 3.14 ระบุว่าหลักความระมัดระวังมิได้อนุญาตให้ตั้งสำรองลับหรือค่าเผื่อไว้สูงเกินไปโดยเจตนา เพราะทำให้งบการเงินขาดความเป็นกลาง','3.4'],
+    ['LO 3.4','ประยุกต์ใช้','ตราสินค้าที่กิจการสร้างขึ้นเอง ที่ปรึกษาประเมินว่ามีมูลค่าสูง ข้อใดถูกต้อง',['ก. รับรู้เป็นสินทรัพย์ตามมูลค่าที่ประเมิน','ข. ไม่รับรู้ เพราะไม่มีราคาทุนหรือมูลค่าที่วัดได้อย่างน่าเชื่อถือ','ค. รับรู้เป็นรายได้','ง. รับรู้เป็นส่วนเกินทุนในส่วนของเจ้าของ'],1,'แม้ตราสินค้าอาจเข้าคำนิยามของสินทรัพย์ แต่ไม่ผ่านเกณฑ์การรับรู้ข้อ 3.18.1.2 ตรวจด้วยแท็บ 0 ปุ่ม 3.2 จ ได้ และย่อหน้า 11.21 ห้ามรับรู้ตราผลิตภัณฑ์ที่กิจการก่อให้เกิดขึ้นภายในเป็นสินทรัพย์ไม่มีตัวตน','3.5'],
+    ['LO 3.4','ประยุกต์ใช้','ผู้ถือหุ้นนำเงินมาชำระค่าหุ้นเพิ่มทุน 1,000,000 บาท กิจการควรบันทึกอย่างไร',['ก. รายได้อื่น','ข. ผลกำไร','ค. เพิ่มส่วนของเจ้าของ','ง. หนี้สิน'],2,'ย่อหน้า 3.20.1 ระบุว่ารายได้ไม่รวมเงินทุนที่ได้รับจากเจ้าของ ตรวจด้วยแท็บ 0 ปุ่ม 3.2 ฉ ได้','3.5'],
+    ['LO 3.6','จำ','ในการประเมินความเหมาะสมของข้อสมมติการดำเนินงานต่อเนื่อง ฝ่ายบริหารพิจารณาข้อมูลเกี่ยวกับอนาคตเป็นเวลาเท่าใด',['ก. 12 เดือนนับจากวันที่อนุมัติงบการเงิน','ข. อย่างน้อย 12 เดือนนับตั้งแต่วันสิ้นรอบระยะเวลารายงาน','ค. 6 เดือนนับจากวันสิ้นรอบระยะเวลารายงาน','ง. มาตรฐานไม่ได้กำหนด'],1,'ย่อหน้า 3.4 กำหนดว่าฝ่ายบริหารพิจารณาข้อมูลทั้งหมดที่มีอยู่เกี่ยวกับอนาคตเป็นเวลาอย่างน้อย 12 เดือนนับตั้งแต่วันสิ้นรอบระยะเวลารายงาน','3.7']
+  ];
+  window.__QZ=QZ;
+  $('qBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="qf${i}"></div></div>`).join('');
+  $('qChk').addEventListener('click',qCheck);
+  $('qClr').addEventListener('click',()=>{document.querySelectorAll('#qBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('qf'+i).innerHTML='');$('qOut').innerHTML=''});
+  function qCheck(){
+    let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="q${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;
+      lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('qf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort().map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('qOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div><div class="fig"><div class="k">LO ที่บรรลุ</div><div class="v">${Object.values(lo).filter(x=>x.ok===x.n).length}/${Object.keys(lo).length}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+})();
+</script>
+<script>
+(function(){
+  window.__rLoad('a');window.__gLoad('ex34');
+  const goS=()=>{const m=(location.hash||'').match(/^#(S3\.\d)$/);if(m){window.__show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+})();
+</script>
+</body></html>

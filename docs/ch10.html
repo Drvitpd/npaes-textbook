@@ -1,0 +1,1278 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style></head><body><style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Sarabun,'Noto Sans Thai',sans-serif}
+#gate .gb{background:#fff;border-top:4px solid #1F3864;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px 26px;max-width:380px;width:88%;color:#222}
+#gate h2{color:#1F3864;font-size:19px;margin:0 0 6px}#gate p{font-size:14px;margin:0 0 14px;line-height:1.6}
+#gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
+#gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
+#gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>TFRS for NPAEs: หลักการและการประยุกต์ใช้ (ฉบับปรับปรุง 2565)</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
+<label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
+<script>(function(){var H="29adc820eeefe9111e0932a90d971b54d4c341bb63f7ff01a0f846098b09f3cf",K="npaes_gate";
+function ok(){var g=document.getElementById('gate');if(g)g.remove();}
+try{if(localStorage.getItem(K)===H||sessionStorage.getItem(K)===H){ok();return;}}catch(e){}
+async function chk(){var v=document.getElementById('gk').value.replace(/[\s\-]/g,'').toUpperCase();
+var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
+document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script><div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div>
+<title>แอป 10 · ทะเบียนสินทรัพย์และการวัดมูลค่าที่ดิน อาคารและอุปกรณ์</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: ledger worksheet — header strip, step tabs, input sheet beside a result "voucher"; theory + facts panels under each result; stacks on phones */
+:root{
+  --paper:#F7F6F4; --sheet:#FFFFFF; --ink:#1B2230; --muted:#5E6573; --rule:#E0DDD8; --rule-strong:#BDB7AE;
+  --accent:#C25A22; --accent-ink:#FFFFFF; --accent-soft:#FBEADF; --brand-ink:#1B2230;
+  --debit:#1B2230; --credit:#8A3B22; --theory:#2C4A7A; --theory-soft:#E7EDF7;
+  --ok:#2F7A4F; --ok-soft:#E4F2E9; --warn:#9A6400; --warn-soft:#FBF0D9; --bad:#A33A2C; --bad-soft:#F8E4E0;
+  --heat0:#EEF4F1; --heat1:#F9E9C9; --heat2:#F4CDB8;
+  --display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --body:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#14171D; --sheet:#1C2028; --ink:#ECEEF2; --muted:#A3A9B4; --rule:#2E333D; --rule-strong:#454B57;
+  --accent:#F08A4B; --accent-ink:#1B1006; --accent-soft:#3A2618; --brand-ink:#1B2230;
+  --debit:#C9D2E3; --credit:#E59A7E; --theory:#9DB8E8; --theory-soft:#1B2536;
+  --ok:#7FCB9A; --ok-soft:#1C2E23; --warn:#E3B45A; --warn-soft:#30281A; --bad:#EE8E80; --bad-soft:#35201D;
+  --heat0:#1B2622; --heat1:#3A3020; --heat2:#4A2A22; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandbar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:inline-flex;align-items:center;background:#FFFFFF;border-radius:10px;padding:6px 10px;border:1px solid var(--rule)}
+.logo img{height:44px;width:auto;display:block}
+@media (max-width:480px){.logo img{height:36px}}
+.byline{font-size:13.5px;color:var(--muted)}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--accent)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:2px 0 0;text-wrap:balance}
+.lede{color:var(--muted);margin:6px 0 0;max-width:66ch}
+.refs{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.refs b{color:var(--ink);font-weight:500}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 4px;font-size:13.5px;color:var(--muted)}
+.flow b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+nav.tabs button{font:600 15px var(--display);padding:9px 14px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+nav.tabs button .n{font-family:var(--mono);font-size:12px;opacity:.7;margin-right:6px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:18px;min-width:0}
+h2{font-family:var(--display);font-size:19px;font-weight:700;margin:0 0 4px}
+h3{font-family:var(--display);font-size:15.5px;font-weight:600;margin:18px 0 8px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 12px}
+.sample{display:inline-flex;gap:6px;align-items:center;font-size:13px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;margin-bottom:10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted);text-align:left;border-bottom:1px solid var(--rule-strong);padding:6px}
+td{border-bottom:1px solid var(--rule);padding:5px 6px;vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:3px double var(--ink)}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule-strong);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+textarea{font-family:var(--mono);font-size:13.5px;line-height:1.5;min-height:230px;resize:vertical;white-space:pre;overflow-x:auto}
+input.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{font:600 14px var(--display);padding:7px 12px;border-radius:7px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.voucher{display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.figs{grid-template-columns:1fr}}
+.fig{border-top:3px solid var(--accent);padding-top:6px}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig .v{font-family:var(--mono);font-size:19px;font-weight:500;font-variant-numeric:tabular-nums}
+.je{border:1px solid var(--rule-strong);border-radius:8px;overflow:hidden}
+.je .cap{background:var(--accent-soft);color:var(--accent);font:600 14px var(--display);padding:6px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.je td.cr{padding-left:28px}
+.dr-amt{color:var(--debit)} .cr-amt{color:var(--credit)}
+.why{font-size:14.5px;background:var(--paper);border-left:3px solid var(--rule-strong);padding:8px 12px;border-radius:0 6px 6px 0}
+.note{font-size:14.5px;border:1px dashed var(--rule-strong);border-radius:8px;padding:10px 12px;background:var(--sheet)}
+.note .cap{font:600 13px var(--display);color:var(--muted);margin-bottom:4px}
+.pill{display:inline-block;font:600 13px var(--display);border-radius:999px;padding:2px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.tax{font-size:14.5px;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
+.tax b{color:var(--warn)}
+.facts{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 14px}
+.facts h4,.theory summary{font:700 15px var(--display);margin:0 0 6px}
+.facts ul{margin:0;padding-left:20px;font-size:14.5px;display:flex;flex-direction:column;gap:4px}
+.theory{background:var(--theory-soft);border-radius:8px;padding:10px 14px;font-size:14.5px}
+.theory summary{color:var(--theory);cursor:pointer;margin:0}
+.theory[open] summary{margin-bottom:8px}
+.theory dl{margin:0;display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:6px 12px}
+.theory dt{font-family:var(--mono);font-size:12.5px;color:var(--theory);font-weight:500;padding-top:2px}
+.theory dd{margin:0}
+@media (max-width:480px){.theory dl{grid-template-columns:1fr}.theory dd{margin-bottom:6px}}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.checks input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.verdict{border-radius:8px;padding:12px 14px}
+.verdict.ok{background:var(--ok-soft)} .verdict.warn{background:var(--warn-soft)} .verdict.bad{background:var(--bad-soft)}
+.verdict h4{margin:0 0 4px;font:700 16px var(--display)}
+.verdict.ok h4{color:var(--ok)} .verdict.warn h4{color:var(--warn)} .verdict.bad h4{color:var(--bad)}
+.alert{font-size:14px;border-radius:8px;padding:8px 12px}
+.alert.warn{background:var(--warn-soft);color:var(--ink)} .alert.bad{background:var(--bad-soft);color:var(--ink)}
+.heat td.h0{background:var(--heat0)} .heat td.h1{background:var(--heat1)} .heat td.h2{background:var(--heat2)}
+.heat td,.heat th{font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:11px}
+.chart .lab{fill:var(--ink);font-family:var(--display);font-size:12px}
+.chart .val{fill:var(--ink);font-weight:500}
+footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.copied{font-size:13px;color:var(--ok)}
+.lvl{width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .q{border:1px solid var(--rule-strong);border-radius:8px;padding:10px 12px;margin-bottom:10px}
+  .q .lab{font:600 13px var(--display);color:var(--accent)}
+  .q label{display:flex;gap:8px;align-items:flex-start;margin:4px 0;font-size:15px}
+  .q .fb{font-size:14px;margin-top:6px}
+  .ok-t{color:var(--ok)} .bad-t{color:var(--bad)}
+  .steps{list-style:none;padding:0;margin:8px 0 0}
+  .steps li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .steps .no{font:600 14px var(--mono);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--heat0);color:var(--ink)}
+  .steps li.hit .no{background:var(--accent);color:var(--accent-ink)}
+  .steps li.skip{opacity:.55}
+  .steps .r{font-size:14px;color:var(--muted)}
+  pre.memo{white-space:pre-wrap;font-family:var(--body);font-size:14.5px;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:8px 0 0;overflow-wrap:anywhere}
+  .seg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px}
+  .seg label{display:flex;gap:6px;align-items:center;font-size:15px}
+  
+</style>
+
+<div class="wrap">
+  <div class="brandbar">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Dr.VIT &amp; PD" width="480" height="128"></span>
+    <span class="byline">ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 · Dr.VIT &amp; PD</span>
+  </div>
+    <header class="top">
+    <div>
+      <div class="eyebrow">นำไปใช้ · บทที่ 10 ที่ดิน อาคารและอุปกรณ์</div>
+      <h1>แอป 10 · ทะเบียนสินทรัพย์และการวัดมูลค่าที่ดิน อาคารและอุปกรณ์</h1>
+      <p class="lede">นำเข้าทะเบียนสินทรัพย์ของกิจการ คำนวณค่าเสื่อมราคา จัดทำตารางกระทบยอดตามย่อหน้า 10.45.4 และกระดาษทำการภาษี แล้วใช้เครื่องคำนวณเฉพาะเรื่อง ได้แก่ ส่วนประกอบ การตีราคาใหม่ การลดลงของมูลค่า สินทรัพย์ถือไว้เพื่อขาย และต้นทุนรื้อถอน พร้อมรายการบันทึกบัญชี ทฤษฎีรองรับ และคำอธิบายว่าตัวเลขบอกอะไร</p>
+    </div>
+    <div class="refs">TFRS for NPAEs (ปรับปรุง 2565)<br><b>บทที่ 10 ย่อหน้า 10.1–10.47</b><br>ตำราบทที่ 10 · ฉบับ 26-10-69</div>
+  </header>
+
+  <div class="flow" aria-label="ลำดับการใช้งาน"><b>ลำดับแนะนำ:</b> นำเข้าทะเบียน → ตรวจสัญญาณเตือน → ใช้เครื่องคำนวณเฉพาะเรื่องกับรายการที่พบ → รวมผลต่างภาษี → ร่างหมายเหตุประกอบงบ</div>
+  <nav class="tabs" role="tablist" aria-label="ขั้นตอน">
+    <button role="tab" aria-selected="true" data-tab="reg"><span class="n">0</span>ทะเบียนสินทรัพย์</button>
+    <button role="tab" aria-selected="false" data-tab="comp"><span class="n">1</span>ส่วนประกอบ</button>
+    <button role="tab" aria-selected="false" data-tab="rev"><span class="n">2</span>ตีราคาใหม่</button>
+    <button role="tab" aria-selected="false" data-tab="imp"><span class="n">3</span>ลดลงของมูลค่า</button>
+    <button role="tab" aria-selected="false" data-tab="hfs"><span class="n">4</span>ถือไว้เพื่อขาย</button>
+    <button role="tab" aria-selected="false" data-tab="dis"><span class="n">5</span>ต้นทุนรื้อถอน</button>
+    <button role="tab" aria-selected="false" data-tab="dec"><span class="n">6</span>เลือกนโยบาย</button>
+    <button role="tab" aria-selected="false" data-tab="disc"><span class="n">7</span>เปิดเผยข้อมูล</button>
+    <button role="tab" aria-selected="false" data-tab="quiz"><span class="n">8</span>แบบทดสอบตนเอง</button>
+    <button role="tab" aria-selected="false" data-tab="sup"><span class="n">9</span>เนื้อหาเสริม S10</button>
+  </nav>
+
+  <!-- 0 REGISTER -->
+  <div class="grid" data-pane="reg">
+    <section class="panel">
+      <h2>นำเข้าทะเบียนสินทรัพย์</h2>
+      <p class="hint">เลือกไฟล์ Excel (.xlsx, .xls) หรือ CSV (ไฟล์ข้อความคั่นด้วยจุลภาค) ที่ส่งออกจากโปรแกรมบัญชี ควรมีคอลัมน์ รหัส ชื่อสินทรัพย์ ประเภท วันที่พร้อมใช้ ราคาทุน มูลค่าคงเหลือ อายุการใช้ประโยชน์ (ปี) และค่าเสื่อมราคาสะสมต้นงวด ถ้ามีวิธีคิดค่าเสื่อมราคา วันที่จำหน่าย และเงินที่ได้รับจากการจำหน่าย แอปจะใช้ด้วย ไฟล์ถูกอ่านในเครื่องของคุณเท่านั้น</p>
+      <div class="fields">
+        <label class="f">ไฟล์ทะเบียน<input type="file" id="rgFile" accept=".xlsx,.xls,.csv,.txt"></label><p class="hint" style="grid-column:1/-1;margin:0">ไฟล์ .xlsx ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อโหลดตัวอ่านไฟล์ เมื่อออฟไลน์ให้บันทึกเป็น CSV แล้วนำเข้า ซึ่งทำงานได้โดยไม่ต้องใช้อินเทอร์เน็ต</p>
+        <label class="f">วันสิ้นงวด<input type="date" id="rgDate" value="2025-12-31"></label>
+      </div>
+      <div class="checks" style="margin:10px 0"><label><input type="checkbox" id="rgAnon" checked><span><b>ปกปิดชื่อสินทรัพย์</b> แปลงชื่อเป็นรหัส (สินทรัพย์ 001, 002, …) ทันทีที่อ่านไฟล์ ชื่อจริงไม่ปรากฏบนหน้าจอและไม่ถูกส่งต่อ ใช้เมื่อชื่อที่ตั้ง ทะเบียนรถ หรือชื่อโครงการเป็นข้อมูลลับ</span></label></div>
+      <div class="row-actions" id="rgKeyWrap" hidden><button class="btn" id="rgKey">คัดลอกตารางจับคู่รหัสกับชื่อ</button><span class="copied" id="rgKeyOk" hidden>คัดลอกแล้ว</span></div>
+      <div class="row-actions">
+        <button class="btn" id="rgSample">โหลดไฟล์ตัวอย่าง</button>
+        <button class="btn" id="rgTpl">คัดลอกหัวตารางแม่แบบ</button><span class="copied" id="rgTplOk" hidden>คัดลอกแล้ว</span>
+      </div>
+      <p class="hint" id="rgStatus" style="margin-top:8px"></p>
+      <div id="rgSheetWrap" hidden><label class="f">แผ่นงาน<select id="rgSheet"></select></label></div>
+      <h3>จับคู่คอลัมน์</h3>
+      <div class="fields">
+        <label class="f">แถวหัวตาราง<input class="num" type="number" min="1" id="rgHdr" value="1"></label>
+        <label class="f">รหัส<select id="rmCode"></select></label>
+        <label class="f">ชื่อสินทรัพย์<select id="rmName"></select></label>
+        <label class="f">ประเภท<select id="rmCls"></select></label>
+        <label class="f">วันที่พร้อมใช้<select id="rmIn"></select></label>
+        <label class="f">ราคาทุน<select id="rmCost"></select></label>
+        <label class="f">มูลค่าคงเหลือ<select id="rmRv"></select></label>
+        <label class="f">อายุการใช้ประโยชน์ (ปี)<select id="rmLife"></select></label>
+        <label class="f">วิธีคิดค่าเสื่อม (ถ้ามี)<select id="rmMeth"></select></label>
+        <label class="f">ค่าเสื่อมสะสมต้นงวด (ถ้ามี)<select id="rmAcc"></select></label>
+        <label class="f">วันที่จำหน่าย (ถ้ามี)<select id="rmOut"></select></label>
+        <label class="f">เงินที่ได้รับจากการจำหน่าย (ถ้ามี)<select id="rmProc"></select></label>
+      </div>
+      <h3>เพดานอัตราค่าเสื่อมราคาทางภาษีและยอดคุม</h3>
+      <div class="fields">
+        <label class="f" style="grid-column:1/-1">อัตราสูงสุดต่อปีตาม พ.ร.ฎ. 145 แยกตามคำในชื่อประเภท (คำ=ร้อยละ คั่นด้วย ;)<input type="text" id="rgTax" value="ที่ดิน=0; อาคาร=5; เครื่องจักร=20; ยานพาหนะ=20; รถ=20; อุปกรณ์=20; อื่น=20"></label>
+        <label class="f">ราคาทุนในบัญชีแยกประเภท สิ้นงวด (บาท)<input class="num" type="number" id="rgGLc"></label>
+        <label class="f">ค่าเสื่อมสะสมในบัญชีแยกประเภท สิ้นงวด (บาท)<input class="num" type="number" id="rgGLa"></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="rgOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 1 COMPONENTS -->
+  <div class="grid" data-pane="comp" hidden>
+    <section class="panel">
+      <h2>ส่วนประกอบและการเปลี่ยนแทน</h2>
+      <p class="hint">กรอกส่วนประกอบของสินทรัพย์หนึ่งรายการ แอปทดสอบตามย่อหน้า 10.8 และ 10.24 ว่าส่วนประกอบใดมีนัยสำคัญและมีอายุต่างจากส่วนหลักจนต้องใช้อัตราค่าเสื่อมราคาต่างกัน เกณฑ์นัยสำคัญให้กำหนดตามนโยบายของกิจการโดยอาศัยแนวคิดความมีสาระสำคัญในย่อหน้า 3.13 แล้วคำนวณค่าเสื่อมราคาและจำลองการเปลี่ยนแทน</p>
+      <span class="sample" id="cpTag">ข้อมูลฝึกหัด: รถบรรทุกสองส่วนประกอบ</span>
+      <div class="tbl"><table><thead><tr><th>ส่วนประกอบ</th><th class="num">ราคาทุน</th><th class="num">อายุ (ปี)</th><th class="num">มูลค่าคงเหลือ</th><th></th></tr></thead><tbody id="cpBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="cpAdd">เพิ่มส่วนประกอบ</button><button class="btn" id="cpSample">ข้อมูลฝึกหัด</button><button class="btn primary" id="cpEx">ตัวอย่างที่ 10.2</button></div>
+      <h3>สมมติฐานเปรียบเทียบและการเปลี่ยนแทน</h3>
+      <div class="fields">
+        <label class="f">เกณฑ์นัยสำคัญตามนโยบายกิจการ (% ของราคาทุนรวม)<input class="num" type="number" id="cpMat" value="10"></label>
+        <label class="f">อายุ หากคิดทั้งรายการเป็นหน่วยเดียว (ปี)<input class="num" type="number" id="cpSingle" value="10"></label>
+        <label class="f">ส่วนประกอบที่เปลี่ยนแทน<select id="cpWhich"></select></label>
+        <label class="f">เปลี่ยนแทนเมื่อต้นปีที่<input class="num" type="number" id="cpYear" value="4" min="2"></label>
+        <label class="f">ราคาทุนชิ้นใหม่<input class="num" type="number" id="cpNew" value="1500000"></label>
+        <label class="f">อายุชิ้นใหม่ (ปี)<input class="num" type="number" id="cpNewLife" value="5"></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="cpOut" aria-live="polite"></section>
+    <section class="panel">
+      <h2>เปลี่ยนประมาณการอายุหรือมูลค่าคงเหลือ</h2>
+      <p class="hint">ทบทวนมูลค่าคงเหลือและอายุการใช้ประโยชน์ ถ้าต่างจากที่ประมาณไว้อย่างมีสาระสำคัญ ต้องคำนวณค่าเสื่อมราคาใหม่โดยใช้วิธีเปลี่ยนทันทีเป็นต้นไป (10.29) และรับรู้ผลในงวดปัจจุบันและงวดอนาคต (5.15) ไม่แก้งบการเงินงวดก่อน</p>
+      <div class="row-actions"><button class="btn primary" id="ceEx">ตัวอย่างที่ 10.3</button></div>
+      <div class="fields">
+        <label class="f">ราคาทุน<input class="num" type="number" id="ceCost" value="1800000"></label>
+        <label class="f">มูลค่าคงเหลือเดิม<input class="num" type="number" id="ceRv" value="100000"></label>
+        <label class="f">อายุเดิม (ปี)<input class="num" type="number" id="ceLife" value="10"></label>
+        <label class="f">ใช้งานแล้วก่อนทบทวน (ปี)<input class="num" type="number" id="ceUsed" value="2"></label>
+        <label class="f">อายุคงเหลือใหม่ (ปี)<input class="num" type="number" id="ceRem" value="5"></label>
+        <label class="f">มูลค่าคงเหลือใหม่<input class="num" type="number" id="ceRvN" value="100000"></label>
+      </div>
+      <div id="ceOut" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <!-- 2 REVALUATION -->
+  <div class="grid" data-pane="rev" hidden>
+    <section class="panel">
+      <h2>การตีราคาใหม่</h2>
+      <p class="hint">กรอกข้อมูลสินทรัพย์และวันที่ตีราคาแต่ละครั้ง (นับเป็นสิ้นปีที่เท่าใดหลังได้มา) แอปจะติดตามส่วนเกินทุน ผลขาดทุนที่เคยรับรู้ในงบกำไรขาดทุน ค่าเสื่อมราคา และการโอนส่วนเกินทุนให้ทุกปี</p>
+      <span class="sample" id="rvTag">ข้อมูลตัวอย่าง: ตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566) ตัวอย่างที่ 5–6</span>
+      <div class="fields">
+        <label class="f">ราคาทุน<input class="num" type="number" id="rvCost" value="4200000"></label>
+        <label class="f">มูลค่าคงเหลือ<input class="num" type="number" id="rvRv" value="200000"></label>
+        <label class="f">อายุการใช้ประโยชน์ (ปี)<input class="num" type="number" id="rvLife" value="10"></label>
+        <label class="f">วิธีปรับค่าเสื่อมราคาสะสม<select id="rvMeth"><option value="2">10.17.2 หักค่าเสื่อมสะสมออกก่อน</option><option value="1">10.17.1 ปรับตามสัดส่วน</option></select></label>
+        <label class="f">การโอนส่วนเกินทุน (10.22)<select id="rvTr"><option value="end">โอนเมื่อจำหน่ายหรือเลิกใช้</option><option value="ann">ทยอยโอนทุกปี</option></select></label>
+      </div>
+      <div class="checks" style="margin:10px 0"><label><input type="checkbox" id="rvLand"><span><b>ที่ดิน</b> ไม่คิดค่าเสื่อมราคา (ย่อหน้า 10.25, 10.32)</span></label></div>
+      <h3>การตีราคาแต่ละครั้ง</h3>
+      <div class="tbl"><table><thead><tr><th>ครั้งที่</th><th class="num">สิ้นปีที่</th><th class="num">มูลค่ายุติธรรม</th><th></th></tr></thead><tbody id="rvBody"></tbody></table></div>
+      <div class="row-actions"><button class="btn" id="rvAdd">เพิ่มครั้งตีราคา</button><button class="btn" id="rvS1">ตัวอย่างเครื่องจักร (5–6)</button><button class="btn" id="rvS2">ตัวอย่างที่ดิน (4)</button><button class="btn primary" id="rvEx">ตัวอย่างที่ 10.4</button><button class="btn primary" id="rvExB">ตัวอย่างที่ 10.4ข</button></div>
+    </section>
+    <section class="panel voucher" id="rvOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 3 DECREASE IN VALUE -->
+  <div class="grid" data-pane="imp" hidden>
+    <section class="panel">
+      <h2>การลดลงของมูลค่าและการกลับรายการ</h2>
+      <p class="hint">เริ่มจากข้อบ่งชี้ตามย่อหน้า 10.37 ถ้าไม่มีข้อบ่งชี้ ไม่ต้องทดสอบ ถ้ามี ให้เลือกตัววัดตามนโยบายของกิจการ แล้วจำลองการกลับรายการในปีต่อไป</p>
+      <span class="sample" id="imTag">ข้อมูลฝึกหัด</span><div class="row-actions"><button class="btn primary" id="imEx">ตัวอย่างที่ 10.5</button></div>
+      <h3>ข้อบ่งชี้ (10.37)</h3>
+      <div class="checks" id="imInd">
+        <label><input type="checkbox" value="obs" checked><span>หลักฐานว่าสินทรัพย์ล้าสมัยหรือชำรุดเสียหาย</span></label>
+        <label><input type="checkbox" value="use" checked><span>การเปลี่ยนแปลงลักษณะการใช้ที่ส่งผลทางลบอย่างมีนัยสำคัญ ในงวดหรือในอนาคตอันใกล้</span></label>
+        <label><input type="checkbox" value="idle"><span>สินทรัพย์ไม่ได้ถูกใช้งานอีกต่อไป</span></label>
+        <label><input type="checkbox" value="mkt"><span>ตลาดอสังหาริมทรัพย์ซบเซารุนแรงต่อเนื่องยาวนาน และไม่อาจคาดได้ว่าจะหมดไปเมื่อใด</span></label>
+      </div>
+      <h3>ข้อมูลสินทรัพย์ ณ วันทดสอบ</h3>
+      <div class="fields">
+        <label class="f">ราคาทุน<input class="num" type="number" id="imCost" value="2000000"></label>
+        <label class="f">ค่าเสื่อมราคาสะสม<input class="num" type="number" id="imAcc" value="1200000"></label>
+        <label class="f">ค่าเผื่อการลดมูลค่าเดิม (ถ้ามี)<input class="num" type="number" id="imPrev" value="0"></label>
+        <label class="f">อายุคงเหลือ (ปี)<input class="num" type="number" id="imRem" value="4"></label>
+        <label class="f">มูลค่าคงเหลือ<input class="num" type="number" id="imRv" value="0"></label>
+      </div>
+      <h3>ตัววัด</h3>
+      <div class="fields">
+        <label class="f">นโยบายตัววัด<select id="imPol"><option value="fv">ราคาขายหักต้นทุนในการขาย (10.37)</option><option value="viu">มูลค่าจากการใช้แทน (10.38)</option></select></label>
+        <label class="f">ราคาขายที่ประมาณได้<input class="num" type="number" id="imPrice" value="320000"></label>
+        <label class="f">ต้นทุนในการขาย<input class="num" type="number" id="imCts" value="20000"></label>
+        <label class="f">มูลค่าจากการใช้<input class="num" type="number" id="imViu" value="350000"></label>
+      </div>
+      <div class="checks" style="margin:10px 0"><label><input type="checkbox" id="imRel" checked><span>ประมาณค่าที่เลือกได้อย่างน่าเชื่อถือโดยไม่มีต้นทุนสูงเกินไป</span></label></div>
+      <details class="theory"><summary>ช่วยคำนวณมูลค่าจากการใช้จากกระแสเงินสด</summary>
+        <div class="fields" style="margin-top:8px">
+          <label class="f" style="grid-column:1/-1">กระแสเงินสดสุทธิรายปี (คั่นด้วย ,)<input type="text" id="imCF" value="120000, 105000, 95000, 85000"></label>
+          <label class="f">อัตราคิดลดก่อนภาษี (%)<input class="num" type="number" id="imR" value="6"></label>
+        </div>
+        <div class="row-actions"><button class="btn" id="imCFgo">คำนวณและใส่ในช่องมูลค่าจากการใช้</button><span class="hint" id="imCFv" style="margin:0"></span></div>
+      </details>
+      <h3>ส่วนประกอบของสินทรัพย์ (10.24)</h3>
+      <p class="hint">ถ้าสินทรัพย์คิดค่าเสื่อมราคาแยกส่วนประกอบ ให้กรอกบรรทัดละหนึ่งส่วน: ชื่อ, มูลค่าตามบัญชีก่อนรับรู้ผลขาดทุน, มูลค่าคงเหลือ, อายุคงเหลือ (ปี) แอปปันส่วนค่าเผื่อตามสัดส่วนมูลค่าตามบัญชี (แนวการตีความ) แล้วคิดค่าเสื่อมราคาต่อตามส่วนประกอบ (10.24, 10.36) เว้นว่างไว้ถ้าคิดเป็นรายการเดียว</p>
+      <textarea id="imComp" style="min-height:90px" placeholder="ตัวเครื่อง, 1188000, 100000, 4"></textarea>
+      <h3>การกลับรายการภายหลัง</h3>
+      <div class="fields">
+        <label class="f">ทดสอบอีกครั้งเมื่อผ่านไป (ปี)<input class="num" type="number" id="imN" value="2"></label>
+        <label class="f">ตัววัดที่ประมาณได้ใหม่ (ตัววัดเดียวกับครั้งแรก)<input class="num" type="number" id="imNew" value="600000"></label>
+      </div>
+      <div class="checks" style="margin:10px 0">
+        <label><input type="checkbox" id="imCap" checked><span><b>เพดานการกลับรายการ (แนวการตีความ)</b> ย่อหน้า 10.37 ไม่ได้กำหนดเพดาน แนวการตีความคือ ไม่ควรกลับเกินมูลค่าตามบัญชีหากไม่เคยลดมูลค่า โดยเทียบเคียง (5.5.1)สินค้าคงเหลือ (8.4, 8.17) และสินทรัพย์ถือไว้เพื่อขาย (10.40.2) ส่วนที่สูงกว่าเป็นการตีราคาเพิ่ม (10.20) เอาเครื่องหมายออกเพื่อดูผลถ้าไม่มีเพดาน</span></label>
+        <label><input type="checkbox" id="imGone" checked><span>ข้อบ่งชี้เดิมไม่ปรากฏอีกต่อไป</span></label>
+      </div>
+    </section>
+    <section class="panel voucher" id="imOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 4 HELD FOR SALE -->
+  <div class="grid" data-pane="hfs" hidden>
+    <section class="panel">
+      <h2>สินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย</h2>
+      <p class="hint">กรอกข้อมูล ณ ต้นปีและวันที่จัดประเภท แอปจะคำนวณค่าเสื่อมราคาถึงวันจัดประเภท วัดมูลค่าตามย่อหน้า 10.40 วัดใหม่ ณ วันสิ้นงวด และบันทึกการขาย</p>
+      <span class="sample" id="hfTag">ข้อมูลตัวอย่าง: ตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566) ตัวอย่างที่ 8</span>
+      <div class="fields">
+        <label class="f">ราคาทุน<input class="num" type="number" id="hfCost" value="600000"></label>
+        <label class="f">มูลค่าตามบัญชีต้นปี (สุทธิจากค่าเสื่อมสะสมและค่าเผื่อ)<input class="num" type="number" id="hfNbv" value="480000"></label>
+        <label class="f">อายุคงเหลือต้นปี (เดือน)<input class="num" type="number" id="hfRem" value="48"></label>
+        <label class="f">จัดประเภทหลังต้นปี (เดือน)<input class="num" type="number" id="hfM" value="6"></label>
+        <label class="f">ราคาที่คาดว่าจะขายได้ ณ วันจัดประเภท<input class="num" type="number" id="hfP" value="450000"></label>
+        <label class="f">ต้นทุนในการขาย ณ วันจัดประเภท<input class="num" type="number" id="hfC" value="10000"></label>
+        <label class="f">ราคาขายสุทธิ ณ วันสิ้นงวด<input class="num" type="number" id="hfYe" value="430000"></label>
+        <label class="f">ราคาขายสุทธิ ณ วันสิ้นงวดถัดไป ถ้ายังไม่ขาย (คั่นด้วย ,)<input type="text" id="hfYeM" value="" placeholder="เช่น 850000, 1100000"></label>
+        <label class="f">ค่าเผื่อการลดลงของมูลค่าที่มีอยู่ก่อนจัดประเภท (10.37, รวมอยู่ในมูลค่าตามบัญชี)<input class="num" type="number" id="hfPal" value="0"></label>
+      </div>
+      <div class="checks" style="margin:10px 0"><label><input type="checkbox" id="hfSold" checked><span>ขายแล้วในงวดถัดไป</span></label>
+        <label><input type="checkbox" id="hfCur" checked><span>คาดว่าจะขายภายใน 12 เดือนนับจากวันสิ้นงวด (แสดงเป็นรายการหมุนเวียนตามย่อหน้า 4.8.1)</span></label>
+        <label><input type="checkbox" id="hfBack"><span><b>เลิกแผนขาย ณ วันสิ้นงวด</b> กลับมาใช้สินทรัพย์ จึงเข้านิยามย่อหน้า 10.1 อีกครั้ง</span></label></div>
+      <div class="fields"><label class="f">อายุการใช้ประโยชน์ที่เหลือเมื่อจัดประเภทกลับ (เดือน)<input class="num" type="number" id="hfLife" value="36"></label></div>
+      <div class="fields">
+        <label class="f">ราคาขายจริง<input class="num" type="number" id="hfSp" value="430000"></label>
+        <label class="f">ต้นทุนในการขายจริง<input class="num" type="number" id="hfSc" value="12000"></label>
+      </div>
+      <div class="checks" style="margin:10px 0">
+        <b style="font-size:14px">หลักฐานประกอบการพิจารณาวัตถุประสงค์ตามย่อหน้า 10.39</b>
+        <label><input type="checkbox" class="hfE" checked><span>มติผู้มีอำนาจอนุมัติการขาย</span></label>
+        <label><input type="checkbox" class="hfE" checked><span>เริ่มหาผู้ซื้อจริง เช่น ประกาศขายหรือมอบหมายนายหน้า</span></label>
+        <label><input type="checkbox" class="hfE" checked><span>ราคาเสนอขายสมเหตุสมผลเมื่อเทียบกับมูลค่ายุติธรรม</span></label>
+      </div>
+      <h3>ภาษีจากการขาย</h3>
+      <div class="fields">
+        <label class="f">ประเภททรัพย์สิน<select id="hxType"><option value="mov">สังหาริมทรัพย์ (เครื่องจักร ยานพาหนะ อุปกรณ์)</option><option value="imm">อสังหาริมทรัพย์ (ที่ดิน อาคาร)</option></select></label>
+        <label class="f">ราคาประเมินทุนทรัพย์ (อสังหาฯ)<input class="num" type="number" id="hxApp" value="0"></label>
+        <label class="f">อัตราภาษีธุรกิจเฉพาะรวมภาษีท้องถิ่น (%)<input class="num" type="number" id="hxSbt" value="3.3" step="0.01"></label>
+        <label class="f">ผู้ขายรับค่าธรรมเนียมโอน (%)<input class="num" type="number" id="hxShare" value="50"></label>
+        <label class="f">ค่านายหน้า (% ของราคาขาย)<input class="num" type="number" id="hxBro" value="0" step="0.1"></label>
+        <label class="f">ต้นทุนในการขายอื่น<input class="num" type="number" id="hxOth" value="12000"></label>
+        <label class="f">ราคาทุนคงเหลือทางภาษี (เว้นว่าง = เท่าบัญชีก่อนลดมูลค่า)<input class="num" type="number" id="hxTnbv"></label>
+        <label class="f">ราคาตลาดตามรายงานประเมิน (ถ้ามี)<input class="num" type="number" id="hxMkt"></label>
+      </div>
+      <div class="checks" style="margin:10px 0">
+        <label><input type="checkbox" id="hxVat" checked><span>จดทะเบียนภาษีมูลค่าเพิ่มและยังประกอบกิจการ</span></label>
+        <label><input type="checkbox" id="hxRel"><span>ผู้ซื้อเป็นกรรมการ ผู้ถือหุ้น หรือกิจการที่เกี่ยวข้องกัน</span></label>
+      </div>
+      <div class="row-actions"><button class="btn" id="hxUse">ใช้ต้นทุนในการขายที่คำนวณได้</button><span class="copied" id="hxUsed" hidden>ใส่แล้ว</span></div>
+      <div class="row-actions"><button class="btn" id="hfS1">ตัวอย่างที่ 8</button><button class="btn" id="hfS2">ตัวอย่างที่ 9</button><button class="btn primary" id="hfEx">ตัวอย่างที่ 10.6</button><button class="btn" id="hfS3">ข้อมูลฝึกหัด (ที่ดินและอาคาร)</button></div>
+    </section>
+    <section class="panel voucher" id="hfOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 5 DISMANTLING -->
+  <div class="grid" data-pane="dis" hidden>
+    <section class="panel">
+      <h2>ต้นทุนการรื้อถอนและการบูรณะสถานที่</h2>
+      <p class="hint">ย่อหน้า 10.5.3 ให้รวมต้นทุนที่ประมาณที่ดีที่สุดเป็นราคาทุน ประมาณการที่ดีที่สุดตามย่อหน้า 16.12–16.13 คือจำนวนที่สมเหตุสมผลที่กิจการจะจ่ายเพื่อชำระหรือโอนภาระผูกพันให้บุคคลที่สาม ณ วันสิ้นงวด บทที่ 16 ของ NPAEs ไม่ได้กำหนดให้คิดลด ตัวเลือกคิดลดมีไว้เพื่อเปรียบเทียบกับ มาตรฐานการบัญชี ฉบับที่ 37 เรื่อง ประมาณการหนี้สิน หนี้สินที่อาจเกิดขึ้น และสินทรัพย์ที่อาจเกิดขึ้น (TAS 37) เท่านั้น</p>
+      <span class="sample">ข้อมูลฝึกหัด</span>
+      <div class="fields">
+        <label class="f">ราคาทุนก่อนรวมรื้อถอน<input class="num" type="number" id="dsBase" value="5200000"></label>
+        <label class="f">ประมาณการที่ดีที่สุดของค่ารื้อถอน (ราคาที่ผู้รับเหมารับภาระ ณ วันสิ้นงวด)<input class="num" type="number" id="dsFv" value="200000"></label>
+        <label class="f">ระยะเวลาถึงวันรื้อถอน (ปี)<input class="num" type="number" id="dsN" value="10"></label>
+        <label class="f">อัตราคิดลด (%)<input class="num" type="number" id="dsR" value="6"></label>
+        <label class="f">อายุการใช้ประโยชน์ (ปี)<input class="num" type="number" id="dsLife" value="10"></label>
+        <label class="f">มูลค่าคงเหลือ<input class="num" type="number" id="dsRv" value="0"></label>
+      </div>
+      <div class="checks" style="margin:10px 0"><label><input type="checkbox" id="dsDisc"><span>คิดลดเป็นมูลค่าปัจจุบัน (เปรียบเทียบกับ TAS 37 ไม่ใช่ข้อกำหนดของ NPAEs)</span></label></div>
+    </section>
+    <section class="panel voucher" id="dsOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 6 DECISION -->
+  <div class="grid" data-pane="dec" hidden>
+    <section class="panel">
+      <h2>เลือกวิธีราคาทุนหรือวิธีตีราคาใหม่</h2>
+      <p class="hint">ตอบทีละข้อสำหรับสินทรัพย์หนึ่งประเภท ตามผังตัดสินใจตารางที่ 10.16 ข้อใดตอบ "ไม่" แอปจะหยุดและแนะนำวิธีราคาทุน</p>
+      <div class="fields"><label class="f">ประเภทสินทรัพย์<input type="text" id="dcCls" value="ที่ดิน"></label></div>
+      <div id="dcQ" class="checks" style="margin-top:12px"></div>
+    </section>
+    <section class="panel voucher" id="dcOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 7 DISCLOSURE -->
+  <div class="grid" data-pane="disc" hidden>
+    <section class="panel">
+      <h2>ร่างหมายเหตุประกอบงบการเงิน</h2>
+      <p class="hint">แอปรวมข้อมูลจากแท็บ 0 (ทะเบียน) และแท็บ 2–4 ที่คุณเลือก แล้วสร้างร่างหมายเหตุตามย่อหน้า 4.19 และ 10.45–10.47 พร้อมรายการตรวจสอบ ข้อมูลที่แอปไม่มี เช่น หลักประกันและภาระผูกพัน ให้กรอกด้านล่าง</p>
+      <div class="fields">
+        <label class="f">ชื่อกิจการ<input type="text" id="nsCo" value="บริษัท ตัวอย่างบรรจุภัณฑ์ จำกัด"></label>
+        <label class="f">ตัวเลขในหมายเหตุ<select id="nsUnit"><option value="1">บาท</option><option value="1000">พันบาท</option></select></label>
+      </div>
+      <h3>นำผลจากแท็บอื่นเข้ารายการกระทบยอด</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="nsHfs"><span><b>โอนไปถือไว้เพื่อขาย</b> ใช้ราคาทุน ค่าเสื่อมสะสม และผลขาดทุนจากแท็บ 4</span></label>
+        <label><input type="checkbox" id="nsImp"><span><b>ผลขาดทุนจากการลดมูลค่า</b> ใช้ผลจากแท็บ 3</span></label>
+        <label><input type="checkbox" id="nsRev"><span><b>ประเภทนี้ใช้วิธีตีราคาใหม่</b> ใช้ผลจากแท็บ 2 สำหรับข้อมูลตาม 10.47</span></label>
+      </div>
+      <div class="fields" style="margin-top:8px">
+        <label class="f">ประเภทที่ได้รับผล<select id="nsCls"></select></label>
+        <label class="f">วันที่ตีราคาใหม่ครั้งล่าสุด<input type="text" id="nsRvDate" value="31 ธันวาคม 2568"></label>
+        <label class="f">ผู้ประเมินราคา<select id="nsRvBy"><option value="ind">ผู้ประเมินราคาอิสระ</option><option value="own">ฝ่ายบริหารประเมินเอง</option></select></label>
+        <label class="f" style="grid-column:1/-1">วิธีประมาณมูลค่ายุติธรรม (ถ้าไม่ใช้ผู้ประเมินอิสระ)<input type="text" id="nsRvM" value="วิธีเปรียบเทียบราคาตลาด"></label>
+      </div>
+      <h3>ข้อมูลที่ต้องกรอก</h3>
+      <div class="fields">
+        <label class="f" style="grid-column:1/-1">สินทรัพย์ที่ใช้เป็นหลักประกัน (10.46.2)<input type="text" id="nsCol" value="" placeholder="เช่น ที่ดินและอาคารโรงงาน"></label>
+        <label class="f">มูลค่าตามบัญชีของหลักประกัน<input class="num" type="number" id="nsColA"></label>
+        <label class="f">หลักประกันวงเงิน / ผู้รับหลักประกัน<input type="text" id="nsColL" placeholder="เช่น เงินกู้ยืมระยะยาว ธนาคาร ก วงเงิน 20 ล้านบาท"></label>
+        <label class="f">ภาระผูกพันตามสัญญาซื้อ PPE (10.46.3)<input class="num" type="number" id="nsCom"></label>
+      </div>
+      <div class="checks" style="margin-top:10px">
+        <label><input type="checkbox" id="nsNoCol"><span>ไม่มีสินทรัพย์ที่ใช้เป็นหลักประกัน</span></label>
+        <label><input type="checkbox" id="nsNoCom"><span>ไม่มีภาระผูกพันตามสัญญา</span></label>
+        <label><input type="checkbox" id="nsVolFull" checked><span>เปิดเผยโดยสมัครใจ: ราคาทุนของสินทรัพย์ที่ตัดหมดแต่ยังใช้งาน</span></label>
+        <label><input type="checkbox" id="nsEst"><span>เปลี่ยนแปลงประมาณการอายุหรือมูลค่าคงเหลือในปีนี้ (บทที่ 5)</span></label>
+      </div>
+      <div class="fields"><label class="f" style="grid-column:1/-1">รายละเอียดการเปลี่ยนแปลงประมาณการ<input type="text" id="nsEstT" placeholder="เช่น เปลี่ยนอายุเครื่องจักร จาก 8 ปีเป็น 6 ปี ทำให้ค่าเสื่อมราคาปีนี้เพิ่มขึ้น 80,000 บาท"></label></div>
+      <div class="row-actions"><button class="btn" id="nsSample">ใส่ข้อมูลฝึกหัด</button><button class="btn primary" id="nsCopy">คัดลอกร่างหมายเหตุ</button><span class="copied" id="nsCopied" hidden>คัดลอกแล้ว วางใน Word ได้</span></div>
+    </section>
+    <section class="panel voucher" id="nsOut" aria-live="polite"></section>
+  </div>
+
+  <!-- 8 QUIZ -->
+  <div class="grid" data-pane="quiz" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>แบบทดสอบตนเอง: แบบฝึกหัดท้ายบทส่วนที่ 1</h2>
+      <p class="hint">ข้อเดียวกับในตำรา ตอบแล้วกด "ตรวจคำตอบ" แอปบอกเหตุผลรายข้อ และสรุปผลราย LO พร้อมหัวข้อที่ควรกลับไปอ่าน</p>
+      <div id="qBox"></div>
+      <div class="row-actions"><button class="btn primary" id="qChk">ตรวจคำตอบ</button><button class="btn" id="qClr">ล้างคำตอบ</button></div>
+      <div id="qOut" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <!-- 9 SUPPLEMENT -->
+  <div class="grid" data-pane="sup" hidden style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel">
+      <h2>เนื้อหาเสริม S10</h2>
+      <p class="hint">เนื้อหาที่ย้ายออกจากเล่มพิมพ์ตามกล่อง QR สีส้มในบทที่ 10 ลิงก์ #S10.1 ถึง #S10.10 เปิดหัวข้อนั้นได้โดยตรง ตัวเลขใช้ข้อมูลชุดเดียวกับตำรา (บริษัท ตัวอย่างบรรจุภัณฑ์ จำกัด ชื่อสมมติ)</p>
+      <div class="row-actions" style="margin-bottom:6px"><a class="btn" href="#S10.1">S10.1</a><a class="btn" href="#S10.2">S10.2</a><a class="btn" href="#S10.3">S10.3</a><a class="btn" href="#S10.4">S10.4</a><a class="btn" href="#S10.5">S10.5</a><a class="btn" href="#S10.6">S10.6</a><a class="btn" href="#S10.7">S10.7</a><a class="btn" href="#S10.8">S10.8</a><a class="btn" href="#S10.9">S10.9</a><a class="btn" href="#S10.10">S10.10</a></div>
+
+      <h3 id="S10.1">S10.1 ส่วนประกอบของราคาทุนฉบับเต็ม</h3>
+      <div class="tbl"><table><thead><tr><th>รายจ่าย</th><th>การปฏิบัติ</th><th>ย่อหน้า</th></tr></thead><tbody>
+        <tr><td>ราคาซื้อหลังหักส่วนลดการค้าและเงินที่ได้รับคืนจากผู้ขาย</td><td>ราคาทุน</td><td>10.5.1</td></tr>
+        <tr><td>อากรขาเข้า</td><td>ราคาทุน</td><td>10.5.1</td></tr>
+        <tr><td>ภาษีซื้อที่เรียกคืนไม่ได้</td><td>ราคาทุน</td><td>10.5.1</td></tr>
+        <tr><td>ภาษีซื้อที่เรียกคืนได้</td><td>ไม่รวม บันทึกเป็นภาษีซื้อ</td><td>10.5.1</td></tr>
+        <tr><td>ค่าขนส่ง ค่าประกันภัยระหว่างขนส่ง ค่าขนถ่าย</td><td>ราคาทุน</td><td>10.5.2</td></tr>
+        <tr><td>ค่าเตรียมสถานที่ ค่าฐานราก ค่าติดตั้งและประกอบ</td><td>ราคาทุน</td><td>10.5.2</td></tr>
+        <tr><td>ค่าทดสอบการเดินเครื่องก่อนพร้อมใช้งาน</td><td>ราคาทุน</td><td>10.5.2</td></tr>
+        <tr><td>ค่าธรรมเนียมวิชาชีพ เช่น สถาปนิก วิศวกร ที่ปรึกษาการติดตั้ง</td><td>ราคาทุน เมื่อเกี่ยวข้องโดยตรงกับการทำให้พร้อมใช้งาน</td><td>10.5.2</td></tr>
+        <tr><td>ค่าธรรมเนียมการโอนและค่าอากรแสตมป์ในการซื้อที่ดินและอาคาร</td><td>ราคาทุน</td><td>10.5.2</td></tr>
+        <tr><td>ประมาณการต้นทุนการรื้อ การขนย้าย และการบูรณะสถานที่ที่เป็นภาระผูกพัน</td><td>ราคาทุน และรับรู้ประมาณการหนี้สินตามบทที่ 16</td><td>10.5.3</td></tr>
+        <tr><td>ต้นทุนการกู้ยืมของสินทรัพย์ที่เข้าเงื่อนไข</td><td>ตามนโยบายในบทที่ 13</td><td>บทที่ 13</td></tr>
+        <tr><td>ค่าฝึกอบรมพนักงาน</td><td>ค่าใช้จ่าย ไม่ทำให้สินทรัพย์อยู่ในสภาพพร้อมใช้งาน</td><td>10.5</td></tr>
+        <tr><td>ค่าโฆษณาและค่าเปิดตัวสินค้าหรือบริการใหม่</td><td>ค่าใช้จ่าย</td><td>10.5</td></tr>
+        <tr><td>ค่าใช้จ่ายบริหารและค่าใช้จ่ายทั่วไปที่ไม่เกี่ยวข้องโดยตรง</td><td>ค่าใช้จ่าย</td><td>10.5</td></tr>
+        <tr><td>ผลขาดทุนจากการดำเนินงานช่วงแรกหลังพร้อมใช้งาน</td><td>ค่าใช้จ่าย (สินทรัพย์พร้อมใช้งานแล้ว)</td><td>10.5.2, 10.30</td></tr>
+        <tr><td>ค่าย้ายสถานที่ตั้งหรือจัดวางใหม่ของสินทรัพย์ที่ใช้งานอยู่</td><td>ค่าใช้จ่าย</td><td>10.5.2</td></tr>
+        <tr><td>ชิ้นส่วนอะไหล่สำคัญและอุปกรณ์สำรองที่ใช้ได้มากกว่าหนึ่งรอบระยะเวลารายงาน</td><td>ที่ดิน อาคารและอุปกรณ์</td><td>10.3</td></tr>
+        <tr><td>ชิ้นส่วนอะไหล่ทั่วไป</td><td>สินค้าคงเหลือ รับรู้เป็นค่าใช้จ่ายเมื่อนำมาใช้</td><td>10.3</td></tr>
+        <tr><td>ห้องชุด สิทธิครอบครองเฉพาะหน่วยและทรัพย์สินส่วนกลาง</td><td>รับรู้ต้นทุนทั้งหมดเป็นอาคารและอุปกรณ์หน่วยเดียวกัน</td><td>10.7</td></tr>
+        <tr><td>ได้มาจากการแลกเปลี่ยนสินทรัพย์ที่ไม่เป็นตัวเงิน</td><td>มูลค่ายุติธรรมของสินทรัพย์ที่นำไปแลก เว้นแต่มูลค่ายุติธรรมของสินทรัพย์ที่ได้มามีหลักฐานชัดเจนกว่า ถ้าวัดไม่ได้อย่างน่าเชื่อถือ ใช้มูลค่าตามบัญชีของสินทรัพย์ที่นำไปแลก</td><td>10.6</td></tr>
+      </tbody></table></div>
+      <p class="hint">ตัวอย่างแลกเปลี่ยน: เครื่องจักรเก่าราคาทุน 900,000 บาท ค่าเสื่อมราคาสะสม 600,000 บาท มูลค่ายุติธรรม 350,000 บาท แลกกับเครื่องจักรใหม่และจ่ายเงินเพิ่ม 500,000 บาท ราคาทุนของเครื่องจักรใหม่ = 350,000 + 500,000 = 850,000 บาท กำไรจากการแลกเปลี่ยน 50,000 บาท (10.6, 10.43)</p>
+
+      <h3 id="S10.2">S10.2 ตารางค่าเสื่อมราคาฉบับเต็มและการเปรียบเทียบวิธี</h3>
+      <p class="hint">เครื่องจักร ก ตามแผนเดิมก่อนการลดลงของมูลค่า ณ 31 ธันวาคม 2570 (ตารางหลังลดมูลค่าอยู่ใน S10.4)</p>
+      <div class="tbl"><table><thead><tr><th>ปี</th><th class="num">ตัวเครื่อง</th><th class="num">มอเตอร์</th><th class="num">การตรวจสอบสภาพ</th><th class="num">รวม</th><th class="num">มูลค่าตามบัญชีตัวเครื่องสิ้นปี</th></tr></thead><tbody>
+        <tr><td>2568</td><td class="num">170,000</td><td class="num">68,000</td><td class="num">–</td><td class="num">238,000</td><td class="num">1,630,000</td></tr>
+        <tr><td>2569</td><td class="num">170,000</td><td class="num">68,000</td><td class="num">–</td><td class="num">238,000</td><td class="num">1,460,000</td></tr>
+        <tr><td>2570</td><td class="num">272,000</td><td class="num">68,000</td><td class="num">60,000</td><td class="num">400,000</td><td class="num">1,188,000</td></tr>
+        <tr><td>2571</td><td class="num">272,000</td><td class="num">68,000</td><td class="num">60,000</td><td class="num">400,000</td><td class="num">916,000</td></tr>
+        <tr><td>2572</td><td class="num">272,000</td><td class="num">68,000</td><td class="num">–</td><td class="num">340,000</td><td class="num">644,000</td></tr>
+        <tr><td>2573</td><td class="num">272,000</td><td class="num">–</td><td class="num">–</td><td class="num">272,000</td><td class="num">372,000</td></tr>
+        <tr><td>2574</td><td class="num">272,000</td><td class="num">–</td><td class="num">–</td><td class="num">272,000</td><td class="num">100,000</td></tr>
+      </tbody></table></div>
+      <p class="hint">ตารางไม่รวมต้นทุนการตรวจสอบสภาพครั้งใหม่ในปี 2572 และมอเตอร์ชิ้นใหม่ที่เปลี่ยนแทนในปี 2573 ซึ่งรับรู้เป็นส่วนประกอบใหม่ตามย่อหน้า 10.10–10.11</p>
+      <p class="hint">เปรียบเทียบวิธีกับตัวเครื่อง ราคาทุน 1,800,000 บาท มูลค่าคงเหลือ 100,000 บาท อายุ 10 ปี (10.34, 10.36)</p>
+      <div class="tbl"><table><thead><tr><th>ปี</th><th class="num">เส้นตรง</th><th class="num">ยอดคงเหลือลดลง ร้อยละ 20</th><th class="num">จำนวนผลผลิต (0.20 บาทต่อหน่วย)</th></tr></thead><tbody>
+        <tr><td>1</td><td class="num">170,000</td><td class="num">360,000</td><td class="num">200,000 (1,000,000 หน่วย)</td></tr>
+        <tr><td>2</td><td class="num">170,000</td><td class="num">288,000</td><td class="num">180,000 (900,000 หน่วย)</td></tr>
+        <tr><td>3</td><td class="num">170,000</td><td class="num">230,400</td><td class="num">170,000 (850,000 หน่วย)</td></tr>
+      </tbody></table></div>
+      <p class="hint">วิธีจำนวนผลผลิตสมมติกำลังผลิตตลอดอายุ 8,500,000 หน่วย อัตรา (1,800,000 − 100,000) ÷ 8,500,000 = 0.20 บาทต่อหน่วย วิธียอดคงเหลือลดลงหยุดคิดเมื่อมูลค่าตามบัญชีลดถึงมูลค่าคงเหลือ</p>
+      <p class="hint"><b>ที่ดินที่มีอายุการใช้ประโยชน์จำกัด (10.32–10.33):</b> ตัวอย่างที่ 7 ในตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566 หน้า 38) ที่ดินฝังกลบขยะราคาทุน 130 ล้านบาท ใช้ได้ 20 ปี มูลค่าเมื่อจำหน่ายปลายอายุ 30 ล้านบาท คิดค่าเสื่อมราคาปีละ (130 − 30) ÷ 20 = 5 ล้านบาท</p>
+
+      <h3 id="S10.3">S10.3 การตีราคาใหม่ของสินทรัพย์ที่คิดค่าเสื่อมราคา</h3>
+      <p class="hint">ข้อมูลตามตัวอย่างที่ 5 ในตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566 หน้า 32–35): เครื่องจักรราคาทุน 4,200,000 บาท มูลค่าคงเหลือ 200,000 บาท อายุ 10 ปี ณ 31 ธันวาคม ปีที่ 3 มูลค่าตามบัญชี 3,000,000 บาท มูลค่ายุติธรรม 3,600,000 บาท</p>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">10.17.1 ปรับตามสัดส่วน</th><th class="num">10.17.2 หักค่าเสื่อมราคาสะสมออก</th></tr></thead><tbody>
+        <tr><td>ราคาทุนหลังตีราคา</td><td class="num">5,040,000</td><td class="num">3,600,000</td></tr>
+        <tr><td>ค่าเสื่อมราคาสะสมหลังตีราคา</td><td class="num">1,440,000</td><td class="num">–</td></tr>
+        <tr><td>มูลค่าตามบัญชีหลังตีราคา</td><td class="num">3,600,000</td><td class="num">3,600,000</td></tr>
+        <tr><td>ส่วนเกินทุนจากการตีราคาสินทรัพย์</td><td class="num">600,000</td><td class="num">600,000</td></tr>
+      </tbody></table></div>
+      <p class="hint">ปีที่ 4 ค่าเสื่อมราคา = (3,600,000 − 200,000) ÷ 7 = 485,714.29 บาท ค่าเสื่อมราคาตามราคาทุนเดิม 400,000 บาท ถ้าทยอยโอนส่วนเกินทุน (10.22) โอนไปกำไรสะสมปีละ 85,714.29 บาท โดยตรง ไม่ผ่านงบกำไรขาดทุน ทางภาษี ค่าเสื่อมราคาส่วนที่ตีราคาเพิ่ม 85,714.29 บาท หักไม่ได้ ต้องบวกกลับ เพราะให้หักตามหลักเกณฑ์และอัตราเดิมก่อนตีราคาเพิ่ม (มาตรา 65 ทวิ (3))</p>
+
+      <h3 id="S10.4">S10.4 ตารางหลังการลดลงของมูลค่าและรายการบันทึกฉบับเต็ม</h3>
+      <p class="hint">เครื่องจักร ก ณ 31 ธันวาคม 2570 ค่าเผื่อการลดลงของมูลค่า 184,000 บาท แนวการตีความคือ ปันส่วนค่าเผื่อไปยังส่วนประกอบตามสัดส่วนมูลค่าตามบัญชี แล้วคิดค่าเสื่อมราคาตามส่วนประกอบจากมูลค่าตามบัญชีหลังหักค่าเผื่อตลอดอายุคงเหลือ (10.24, 10.36) แท็บ 3 ของแอปคำนวณตารางนี้เมื่อกดตัวอย่างที่ 10.5</p>
+      <div class="tbl"><table><thead><tr><th>ส่วนประกอบ</th><th class="num">มูลค่าตามบัญชีก่อน</th><th class="num">ค่าเผื่อที่ปันส่วน</th><th class="num">หลังหักค่าเผื่อ</th><th class="num">อายุคงเหลือ</th><th class="num">ค่าเสื่อมราคาปี 2571</th></tr></thead><tbody>
+        <tr><td>ตัวเครื่อง (มูลค่าคงเหลือ 100,000)</td><td class="num">1,188,000</td><td class="num">157,942</td><td class="num">1,030,058</td><td class="num">4 ปี</td><td class="num">232,514</td></tr>
+        <tr><td>มอเตอร์</td><td class="num">136,000</td><td class="num">18,081</td><td class="num">117,919</td><td class="num">2 ปี</td><td class="num">58,960</td></tr>
+        <tr><td>การตรวจสอบสภาพ</td><td class="num">60,000</td><td class="num">7,977</td><td class="num">52,023</td><td class="num">1 ปี</td><td class="num">52,023</td></tr>
+        <tr><td><b>รวม</b></td><td class="num"><b>1,384,000</b></td><td class="num"><b>184,000</b></td><td class="num"><b>1,200,000</b></td><td></td><td class="num"><b>343,497</b></td></tr>
+      </tbody></table></div>
+      <p class="hint"><b>การกลับรายการ:</b> ถ้า ณ 31 ธันวาคม 2571 ข้อบ่งชี้หมดไป (10.37) กิจการกลับรายการได้ แนวการตีความคือ ไม่ควรกลับเกินมูลค่าตามบัญชีที่ควรเป็นหากไม่เคยรับรู้ผลขาดทุน (ตามแผนเดิมใน S10.2) โดยเทียบเคียงข้อกำหนดที่คล้ายคลึงกันในมาตรฐานนี้ (5.5.1) ได้แก่ เพดานในย่อหน้า 10.40.2 และเพดาน "มูลค่าที่ควรจะเป็น (สุทธิจากค่าเสื่อมราคา)" ในย่อหน้า 12.25.2.1</p>
+      <p class="hint"><b>รถบรรทุกที่ถือไว้เพื่อขาย (ตัวอย่างที่ 10.6):</b></p>
+      <div class="tbl"><table><thead><tr><th>วันที่</th><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>
+        <tr><td>30 ก.ย. 2570</td><td>ค่าเสื่อมราคา – รถบรรทุก / ค่าเสื่อมราคาสะสม</td><td class="num">225,000</td><td class="num">225,000</td></tr>
+        <tr><td>30 ก.ย. 2570</td><td>สินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย 375,000 · ค่าเสื่อมราคาสะสม 1,125,000 / รถบรรทุก 1,500,000</td><td class="num">1,500,000</td><td class="num">1,500,000</td></tr>
+        <tr><td>30 ก.ย. 2570</td><td>ผลขาดทุนจากการลดมูลค่า / ค่าเผื่อผลขาดทุนจากการลดมูลค่า – รถบรรทุกที่ถือไว้เพื่อขาย</td><td class="num">25,000</td><td class="num">25,000</td></tr>
+        <tr><td>31 ธ.ค. 2570</td><td>ค่าเผื่อผลขาดทุนจากการลดมูลค่า / กลับรายการผลขาดทุนจากการลดมูลค่า (10.40.2)</td><td class="num">15,000</td><td class="num">15,000</td></tr>
+        <tr><td>15 ก.พ. 2571</td><td>เงินฝากธนาคาร 370,000 · ค่าเผื่อผลขาดทุนจากการลดมูลค่า 10,000 / สินทรัพย์ที่ถือไว้เพื่อขาย 375,000 · กำไรจากการขายสินทรัพย์ 5,000</td><td class="num">380,000</td><td class="num">380,000</td></tr>
+      </tbody></table></div>
+      <p class="hint">ชื่อบัญชีตามรูปแบบตัวอย่างที่ 9 ในตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566 หน้า 41–42) ซึ่งระบุว่าชื่อบัญชีเป็นเพียงตัวอย่าง <b>เลิกใช้โดยไม่มีประโยชน์ในอนาคต (10.44):</b> แม่พิมพ์ราคาทุน 300,000 บาท ค่าเสื่อมราคาสะสม 240,000 บาท เลิกใช้และไม่มีมูลค่าขาย รับรู้ผลขาดทุนจากการเลิกรับรู้ 60,000 บาท</p>
+
+      <h3 id="S10.5">S10.5 แม่แบบหมายเหตุที่ดิน อาคารและอุปกรณ์</h3>
+      <pre class="memo">นโยบายการบัญชี
+ที่ดิน อาคารและอุปกรณ์แสดงด้วยราคาทุนหักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่า (ถ้ามี) ยกเว้นที่ดินซึ่งแสดงด้วยราคาที่ตีใหม่ ผู้ประเมินราคาอิสระ [ชื่อ] ประเมินมูลค่ายุติธรรม ณ วันที่ [วันที่] ด้วยวิธี [วิธี] (10.45.1, 10.47.1–10.47.2)
+ค่าเสื่อมราคาคำนวณด้วยวิธีเส้นตรงตามส่วนประกอบ อายุการใช้ประโยชน์: อาคาร 20 ปี เครื่องจักร – ตัวเครื่อง 10 ปี มอเตอร์ 5 ปี การตรวจสอบสภาพครั้งใหญ่ 2 ปี ยานพาหนะ 5 ปี (10.45.2–10.45.3)
+ในปี 2570 บริษัททบทวนอายุการใช้ประโยชน์คงเหลือของตัวเครื่องจักร ก จาก 8 ปีเป็น 5 ปี ทำให้ค่าเสื่อมราคาปี 2570 เพิ่มขึ้น 102,000 บาท (บทที่ 5)
+เครื่องจักร ก มีข้อบ่งชี้ว่ามีมูลค่าลดลงอย่างถาวรจากการเปลี่ยนแปลงเทคโนโลยีและคำสั่งซื้อที่ลดลง บริษัทรับรู้ผลขาดทุนจากการลดมูลค่า 184,000 บาท โดยใช้มูลค่าจากการใช้ของสินทรัพย์ (10.38, 10.46.1)
+ที่ดินมูลค่า [จำนวน] บาท จดจำนองเป็นหลักประกันวงเงินสินเชื่อ [จำนวน] บาท (10.46.2) ภาระผูกพันตามสัญญาซื้อเครื่องจักร [จำนวน] บาท (10.46.3)
+ที่ดินที่ตีราคาใหม่ หากแสดงด้วยวิธีราคาทุนจะมีมูลค่าตามบัญชี 7,500,000 บาท (10.47.3) ส่วนเกินทุนจากการตีราคาสินทรัพย์ลดลง 800,000 บาท และรับรู้ผลขาดทุนจากการลดลงของมูลค่าในงบกำไรขาดทุน 500,000 บาท ในปี 2570 ส่วนเกินทุนนี้นำไปจ่ายเป็นเงินปันผลไม่ได้ (10.47.4–10.47.5)</pre>
+      <div class="tbl"><table><thead><tr><th>กระทบยอดปี 2570 (10.45.4)</th><th class="num">ที่ดิน</th><th class="num">อาคาร</th><th class="num">เครื่องจักร</th><th class="num">ยานพาหนะ</th></tr></thead><tbody>
+        <tr><td>มูลค่าตามบัญชีต้นปี</td><td class="num">8,300,000</td><td class="num">4,050,000</td><td class="num">1,664,000</td><td class="num">1,560,000</td></tr>
+        <tr><td>เพิ่มขึ้น</td><td class="num">–</td><td class="num">–</td><td class="num">120,000</td><td class="num">–</td></tr>
+        <tr><td>จัดประเภทเป็นสินทรัพย์ที่ถือไว้เพื่อขาย</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">(375,000)</td></tr>
+        <tr><td>ค่าเสื่อมราคา</td><td class="num">–</td><td class="num">(225,000)</td><td class="num">(400,000)</td><td class="num">(545,000)</td></tr>
+        <tr><td>ผลขาดทุนจากการลดมูลค่าและการตีราคาลดลง</td><td class="num">(1,300,000)</td><td class="num">–</td><td class="num">(184,000)</td><td class="num">–</td></tr>
+        <tr><td><b>มูลค่าตามบัญชีปลายปี</b></td><td class="num"><b>7,000,000</b></td><td class="num"><b>3,825,000</b></td><td class="num"><b>1,200,000</b></td><td class="num"><b>640,000</b></td></tr>
+      </tbody></table></div>
+      <p class="hint">ยานพาหนะต้นปี: รถบรรทุก 600,000 + รถยนต์นั่ง 960,000 ค่าเสื่อมราคา: รถบรรทุก 225,000 (9 เดือน) + รถยนต์นั่ง 320,000 ที่ดินแสดงการลดลง 800,000 บาทในส่วนของเจ้าของ และ 500,000 บาทในงบกำไรขาดทุน</p>
+
+      <h3 id="S10.6">S10.6 กระดาษทำการกระทบยอดบัญชีกับภาษีรายสินทรัพย์</h3>
+      <div class="tbl"><table><thead><tr><th>สินทรัพย์</th><th>ปี</th><th class="num">ทางบัญชี</th><th class="num">ทางภาษี</th><th class="num">บวกกลับ (หักออก)</th><th>ฐาน</th></tr></thead><tbody>
+        <tr><td>อาคารโรงงาน ราคาทุน 4,500,000</td><td>2568–2570</td><td class="num">225,000</td><td class="num">225,000</td><td class="num">–</td><td>พ.ร.ฎ. 145 ม.4 (1) อาคารถาวรร้อยละ 5</td></tr>
+        <tr><td>เครื่องจักร ก ตัวเครื่องและมอเตอร์</td><td>2568–2569</td><td class="num">238,000</td><td class="num">238,000</td><td class="num">–</td><td>ไม่เกินร้อยละ 20 (ม.4 (5))</td></tr>
+        <tr><td>เครื่องจักร ก ตัวเครื่อง หลังเปลี่ยนอายุ (ตัวอย่างที่ 10.3)</td><td>2570</td><td class="num">272,000</td><td class="num">170,000</td><td class="num">102,000</td><td>พ.ร.ฎ. 145 ม.3 ใช้อัตราเดิมจนกว่าอธิบดีอนุมัติ (กค 0702/3266, กค 0706/12610)</td></tr>
+        <tr><td>เครื่องจักร ก มอเตอร์</td><td>2570</td><td class="num">68,000</td><td class="num">68,000</td><td class="num">–</td><td>ไม่เกินร้อยละ 20 (ม.4 (5))</td></tr>
+        <tr><td>เครื่องจักร ก ผลขาดทุนจากการลดมูลค่า</td><td>2570</td><td class="num">184,000</td><td class="num">–</td><td class="num">184,000</td><td>ม.65 ตรี (17)</td></tr>
+        <tr><td>ที่ดิน ส่วนที่ตีราคาเพิ่ม</td><td>2569</td><td class="num">800,000 (ส่วนของเจ้าของ)</td><td class="num">–</td><td class="num">–</td><td>ม.65 ทวิ (3) ไม่ผ่านกำไรทางบัญชี</td></tr>
+        <tr><td>ที่ดิน ผลขาดทุนจากการตีราคาลดลง</td><td>2570</td><td class="num">500,000</td><td class="num">–</td><td class="num">500,000</td><td>ม.65 ตรี (17)</td></tr>
+        <tr><td>รถยนต์นั่ง ราคาทุน 1,600,000</td><td>2568–2572</td><td class="num">320,000</td><td class="num">200,000</td><td class="num">120,000</td><td>พ.ร.ฎ. 145 ม.5 ต้นทุนไม่เกิน 1,000,000</td></tr>
+        <tr><td>รถบรรทุก ผลขาดทุน 25,000 กำไร 15,000</td><td>2570</td><td class="num">10,000</td><td class="num">–</td><td class="num">10,000</td><td>ม.65 ตรี (17) รับรู้ทางภาษีเมื่อขายปี 2571 ไม่หักค่าเสื่อมราคาทางภาษีระหว่างถือไว้เพื่อขาย (แนวการตีความ ป.3/2527 ข้อ 2)</td></tr>
+        <tr><td colspan="4"><b>รวมบวกกลับปี 2570</b></td><td class="num"><b>916,000</b></td><td>ตารางที่ 10-4</td></tr>
+        <tr><td>ประมาณการต้นทุนการรื้อถอน 60,000 ในราคาทุน</td><td>ทุกปี</td><td class="num">ค่าเสื่อมราคาส่วนนี้และดอกเบี้ยจากการคิดลด</td><td class="num">–</td><td class="num">บวกกลับ</td><td>แนวการตีความ ม.65 ตรี (1) หักได้เมื่อจ่ายจริง</td></tr>
+        <tr><td>สินทรัพย์เลิกใช้ตาม 10.44 ที่ยังไม่ทำลายหรือขาย</td><td>ปีที่เลิกรับรู้</td><td class="num">มูลค่าตามบัญชี</td><td class="num">ค่าเสื่อมราคาตามอัตราเดิม</td><td class="num">บวกกลับ</td><td>ป.58/2538 ข้อ 1, กค 0702/570</td></tr>
+      </tbody></table></div>
+      <p class="hint">ตัวบท: <a href="https://www.rd.go.th/5939.html" target="_blank" rel="noopener">ประมวลรัษฎากร มาตรา 65 ทวิ และ 65 ตรี</a> · <a href="https://www.rd.go.th/2369.html" target="_blank" rel="noopener">พ.ร.ฎ. ฉบับที่ 145</a> · <a href="https://www.rd.go.th/3618.html" target="_blank" rel="noopener">คำสั่ง ป.3/2527</a> · <a href="https://www.rd.go.th/3589.html" target="_blank" rel="noopener">คำสั่ง ป.58/2538</a> · <a href="https://www.rd.go.th/48554.html" target="_blank" rel="noopener">กค 0702/3266</a> · <a href="https://www.rd.go.th/24585.html" target="_blank" rel="noopener">กค 0706/12610</a> ทางภาษีใช้ราคาทุนเท่านั้น หักค่าเสื่อมราคาตามมาตรา 65 ทวิ (2) และ พ.ร.ฎ. ฉบับที่ 145 (พ.ศ. 2527) และที่แก้ไขเพิ่มเติม ส่วนที่ตีราคาเพิ่มขึ้นไม่นำมาคำนวณตามมาตรา 65 ทวิ (3) ต้นทุนการตรวจสอบสภาพครั้งใหญ่ต้องพิจารณาตามข้อเท็จจริงว่าเป็นรายจ่ายซ่อมแซมให้คงสภาพเดิม หรือรายจ่ายอันมีลักษณะเป็นการลงทุนตามมาตรา 65 ตรี (5)</p>
+
+      <h3 id="S10.7">S10.7 แนวคำตอบกรณีศึกษา 10.1 (สำหรับผู้สอน)</h3>
+      <div class="tbl"><table><thead><tr><th>ข้อเสนอ</th><th>แนวคำตอบ</th><th>ย่อหน้า</th></tr></thead><tbody>
+        <tr><td>(1) ตีราคาเฉพาะอาคารหลังใหม่</td><td>ทำไม่ได้ ต้องตีราคาทุกรายการในประเภทอาคารพร้อมกัน ถ้าตีราคาทั้งประเภท ส่วนเพิ่ม 3,000,000 บาทเข้าส่วนเกินทุน ไม่ผ่านกำไร ไม่ปรับย้อนหลัง และต้องเปิดเผยตามย่อหน้า 10.47 ส่วนของเจ้าของเพิ่มขึ้นแต่ส่วนเกินทุนจ่ายเป็นเงินปันผลไม่ได้ ทางภาษีไม่นำมาคำนวณ และค่าเสื่อมราคาส่วนที่ตีเพิ่มต้องบวกกลับ</td><td>10.18–10.20, 10.47, 5.12ก, ม.65 ทวิ (3)</td></tr>
+        <tr><td>(2) ไม่บันทึกการลดลงของมูลค่า</td><td>มีข้อบ่งชี้ตามย่อหน้า 10.37 การที่สินทรัพย์ "ยังใช้งานได้" ไม่ทำให้ข้อบ่งชี้หมดไป ต้องรับรู้ผลขาดทุนจากการลดมูลค่า 184,000 บาท (ใช้มูลค่าจากการใช้ตาม 10.38) หรือ 334,000 บาท (ราคาขายหักต้นทุนในการขาย) แสดงในรายการย่อข้อ 8 และเปิดเผยข้อบ่งชี้</td><td>10.37–10.38, 10.46.1</td></tr>
+        <tr><td>(3) คิดค่าเสื่อมราคารถบรรทุกต่อ</td><td>หยุดคิดตั้งแต่ 30 ก.ย. 2570 ถ้าคิดต่อจะเกิดค่าเสื่อมราคาเกิน 75,000 บาท (3 เดือน) และวัดมูลค่าไม่ถูก ต้องวัดด้วยจำนวนที่ต่ำกว่าและแสดงในรายการย่อข้อ 1.10</td><td>10.30, 10.40.1–10.40.5</td></tr>
+        <tr><td>(4) ใช้อัตราร้อยละ 20 ทางภาษี</td><td>อัตราภาษีไม่ใช่ปัจจัยในการกำหนดอายุการใช้ประโยชน์ ต้องใช้หลักฐานการใช้งานจริงตามย่อหน้า 10.31 ทางภาษีการเปลี่ยนอัตราต้องได้รับอนุมัติจากอธิบดี (พ.ร.ฎ. 145 ม.3) ตัวเครื่องจักร ก อายุ 10 ปี ถ้าใช้ร้อยละ 20 ค่าเสื่อมราคาจะสูงเกินจริงและงบไม่สะท้อนรูปแบบประโยชน์</td><td>10.31, 10.34</td></tr>
+        <tr><td>การสื่อสาร</td><td>คำตอบคะแนนสูงอธิบายผลต่อส่วนของเจ้าของ กำไร อัตราส่วนหนี้สินต่อทุน และความเสี่ยงต่อความเห็นของผู้สอบบัญชี และเสนอทางเลือกที่ถูกต้อง เช่น ตีราคาอาคารทั้งประเภทพร้อมรายงานผู้ประเมินราคาอิสระ</td><td>บทที่ 3</td></tr>
+      </tbody></table></div>
+
+      <h3 id="S10.9">S10.9 ตารางเปรียบเทียบการวัดมูลค่ายุติธรรมข้ามบทฉบับเต็ม</h3>
+      <p class="hint"><b>ก. อาคารที่ใช้งานเปลี่ยนเป็นอสังหาริมทรัพย์เพื่อการลงทุนวิธีมูลค่ายุติธรรม (12.24–12.25):</b> อาคารโรงงานของบทนี้ราคาทุน 4,500,000 บาท ได้มา 1 มกราคม 2568 อายุ 20 ปี ณ 31 ธันวาคม 2571 บริษัทย้ายการผลิตและให้เช่าอาคารทั้งหลัง มูลค่ายุติธรรม 5,000,000 บาท ค่าเสื่อมราคาสะสมถึงวันเปลี่ยนการใช้งาน 900,000 บาท มูลค่าตามบัญชี 3,600,000 บาท</p>
+      <div class="tbl"><table><thead><tr><th>วันที่</th><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>
+        <tr><td>31 ธ.ค. 2571</td><td>ค่าเสื่อมราคาสะสม – อาคาร / อาคาร (ตัดค่าเสื่อมราคาสะสมก่อนโอน)</td><td class="num">900,000</td><td class="num">900,000</td></tr>
+        <tr><td>31 ธ.ค. 2571</td><td>อสังหาริมทรัพย์เพื่อการลงทุน 5,000,000 / อาคาร 3,600,000 · ส่วนเกินทุนจากการตีราคาสินทรัพย์ 1,400,000 (12.25.2.2)</td><td class="num">5,000,000</td><td class="num">5,000,000</td></tr>
+        <tr><td>31 ธ.ค. 2572</td><td>อสังหาริมทรัพย์เพื่อการลงทุน / กำไรจากการเปลี่ยนแปลงมูลค่ายุติธรรม (มูลค่ายุติธรรม 5,300,000 บาท) (12.18) แสดงใน 2 รายได้อื่นของแบบ 2 (แบบสำหรับบริษัทจำกัด ตามประกาศกรมพัฒนาธุรกิจการค้า เรื่อง กำหนดรายการย่อที่ต้องมีในงบการเงิน พ.ศ. 2566) (แนวการตีความ)</td><td class="num">300,000</td><td class="num">300,000</td></tr>
+      </tbody></table></div>
+      <p class="hint">ส่วนเกินทุน 1,400,000 บาท อยู่ในส่วนของเจ้าของ และอาจโอนไปกำไรสะสมเมื่อจำหน่ายในเวลาต่อมา โดยไม่ผ่านงบกำไรขาดทุน (12.25.2.2) ทางภาษี กำไร 300,000 บาท และส่วนเกินทุนไม่นำมาคำนวณกำไรสุทธิ (มาตรา 65 ทวิ (3), กค 0702/1683) ค่าเสื่อมราคาทางภาษีปี 2568–2571 ก่อนโอน ปีละ 225,000 บาท ไม่เปลี่ยน หลังโอนเป็นแนวการตีความสองแนว แนวที่ใช้: ไม่หักค่าเสื่อมราคาทางภาษีตั้งแต่ปี 2572 ระหว่างใช้วิธีมูลค่ายุติธรรม (ป.3/2527 ข้อ 2) ราคาทุนคงเหลือทางภาษี 3,600,000 บาท หักเมื่อขาย อีกแนว: หักจากราคาทุนต่อไปปีละ 225,000 บาท (มาตรา 65 ทวิ (3) ส่วนท้าย เทียบเคียง กค 0706/10178) ซึ่งมีความเสี่ยงที่จะถูกโต้แย้ง เพราะยังไม่พบข้อหารือที่ตอบตรง ภาษีรวมเท่ากัน ต่างที่จังหวะเวลา</p>
+      <p class="hint"><b>ข. สินทรัพย์ชีวภาพวิธีมูลค่ายุติธรรมหักต้นทุนในการขาย (22.14–22.16):</b> ฟาร์มมีเป็ดเนื้อ 5,000 ตัว ณ วันสิ้นรอบ ถ้ามีตลาดที่มีสภาพคล่อง ณ สถานที่และสภาพปัจจุบัน ใช้ราคาเสนอซื้อขายในตลาดนั้น (22.16.1) ราคา 80 บาทต่อตัว ต้นทุนในการขาย 5 บาทต่อตัว มูลค่า 375,000 บาท ถ้าไม่มีตลาดที่มีสภาพคล่อง ใช้วิธีใดวิธีหนึ่งหรือหลายวิธีในย่อหน้า 22.16.2 เช่น ราคาเทียบเคียงของกลุ่มอุตสาหกรรมต่อกิโลกรัม (22.16.2.3) 5,000 ตัว × 2.5 กิโลกรัม × 32 บาท = 400,000 บาท หักต้นทุนในการขาย 25,000 บาท ได้ 375,000 บาท การเปลี่ยนแปลงเข้างบกำไรขาดทุน (22.14) ทางภาษี กค 0706/10178 (6 ธ.ค. 2548) ตอบตามมาตรฐานที่ใช้ในขณะนั้นว่าส่วนที่ตีราคาเพิ่มไม่นำมาคำนวณ และส่วนที่ตีราคาต่ำลงไม่ถือเป็นรายจ่าย ใช้เทียบเคียงกับมาตรฐานฉบับนี้</p>
+      <p class="hint"><b>ค. ต้นทุนการกู้ยืมกับราคาทุนที่ใช้เปรียบเทียบ (13.3–13.4):</b> ถ้าอาคารในข้อ ก สร้างเองและราคาทุน 4,500,000 บาท รวมต้นทุนการกู้ยืมที่ต้องรวมเป็นราคาทุน 300,000 บาท แนวการตีความคือ ต้นทุนการกู้ยืมเป็นส่วนหนึ่งของมูลค่าตามบัญชีก่อนตีราคา จึงลดจำนวนส่วนเกินทุนหรือกำไรจากมูลค่ายุติธรรมครั้งแรก แต่ไม่กระทบมูลค่ายุติธรรม ทางภาษีต้นทุนการกู้ยืมที่รวมไว้เป็นส่วนหนึ่งของราคาทุนที่คิดค่าเสื่อมราคา บทที่ 13 ไม่ได้อ้างถึงการวัดมูลค่ายุติธรรม</p>
+      <p class="hint"><b>ง. การเริ่มใช้ทางเลือกเมื่อปรับใช้มาตรฐานฉบับนี้:</b> วิธีการตีราคาใหม่ตามบทที่ 10 ใช้วิธีเปลี่ยนทันทีเป็นต้นไป (28.10) ส่วนวิธีมูลค่ายุติธรรมตามบทที่ 12 รับรู้ผลกระทบสะสมย้อนหลังเป็นรายการปรับปรุงกำไรสะสม (หรือองค์ประกอบอื่นของส่วนของผู้ถือหุ้นตามความเหมาะสม) (28.11) ภายหลังจากนั้น การเริ่มวิธีการตีราคาใหม่ไม่ปรับย้อนหลังตามบทที่ 5 (5.12ก)</p>
+
+      <h3 id="S10.8">S10.8 เฉลยแบบฝึกหัดท้ายบท</h3>
+      <div class="tbl"><table><thead><tr><th class="num">ข้อ</th><th>คำตอบ</th><th>เหตุผล</th></tr></thead><tbody id="sKey"></tbody></table></div>
+      <div class="tbl"><table><thead><tr><th>โจทย์</th><th>แนวคำตอบ</th></tr></thead><tbody>
+        <tr><td>1</td><td>(ก) ราคาทุน = 1,500,000 − 50,000 + 45,000 + 15,000 + 25,000 + 40,000 = 1,575,000 บาท ค่าฝึกอบรม 20,000 เป็นค่าใช้จ่าย ภาษีซื้อ 104,650 ขอคืนได้จึงไม่รวม (10.5) บันทึก เดบิต เครื่องจักร 1,575,000 ภาษีซื้อ 104,650 ค่าฝึกอบรม 20,000 เครดิต เงินฝากธนาคาร 1,659,650 ประมาณการหนี้สินค่ารื้อถอน 40,000 (ข) ปีที่ 1: เครื่องยนต์ 1,000,000 + โครงสร้าง 600,000 = 1,600,000 บาท ปีที่ 4: เพิ่มการตรวจสอบสภาพ 900,000 ÷ 3 = 300,000 รวม 1,900,000 บาท บันทึก เดบิต เครื่องบิน – การตรวจสอบสภาพ 900,000 ค่าซ่อมบำรุง 150,000 เครดิต เงินฝากธนาคาร 1,050,000 (ค) มูลค่าตามบัญชีต้นปีที่ 6 = 3,375,000 ค่าเสื่อมราคาปีที่ 6 = (3,375,000 − 250,000) ÷ 10 = 312,500 บาท ไม่แก้งบการเงินปีก่อน (10.29) ทางภาษีหักได้ 225,000 บาท (ร้อยละ 5 ของราคาทุน ซึ่งเป็นเพดานอาคารถาวร แม้ได้รับอนุมัติก็หักเกินไม่ได้) บวกกลับ 87,500 บาท</td></tr>
+        <tr><td>2</td><td>10.17.1: เดบิต เครื่องจักร 840,000 เครดิต ค่าเสื่อมราคาสะสม 240,000 ส่วนเกินทุน 600,000 · 10.17.2: เดบิต ค่าเสื่อมราคาสะสม 1,200,000 เครดิต เครื่องจักร 1,200,000 และเดบิต เครื่องจักร 600,000 เครดิต ส่วนเกินทุน 600,000 ปีที่ 4 ค่าเสื่อมราคา (3,600,000 − 200,000) ÷ 7 = 485,714.29 บาท ทยอยโอน 85,714.29 บาท สิ้นปีที่ 4 แสดง 2.10 ที่ดิน อาคารและอุปกรณ์ 3,114,285.71 และ 5.6 ส่วนเกินทุน 514,285.71 หมายเหตุตาม 10.47: วันที่ตีราคา ผู้ประเมินราคาอิสระ มูลค่าตามบัญชีหากใช้วิธีราคาทุน 2,600,000 การเปลี่ยนแปลงส่วนเกินทุน และข้อจำกัดในการจ่ายให้ผู้ถือหุ้น</td></tr>
+        <tr><td>3</td><td>(ก) บัญชี 180,000 ภาษี 120,000 บวกกลับ 60,000 (พ.ร.ฎ. 145 ม.3) (ข) บัญชีขาดทุน 100,000 และกำไร 100,000 ทางภาษีบวกกลับและหักออก สุทธิ 0 บันทึก เดบิต ผลขาดทุนจากการลดมูลค่า 100,000 เครดิต ค่าเผื่อผลขาดทุนจากการลดมูลค่า 100,000 และโอนเป็นสินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย 900,000 สิ้นปี เดบิต สินทรัพย์ที่ถือไว้เพื่อขาย 100,000 เครดิต กลับรายการผลขาดทุน 100,000 (10.40.1–10.40.2) (ค) บวกกลับ 150,000 และหักค่าเสื่อมราคาทางภาษี 100,000 สุทธิ 50,000 (ป.58/2538 ข้อ 1, กค 0702/570) (ง) บัญชี 400,000 ภาษี 200,000 (เพดาน 1,000,000 พ.ร.ฎ. 145 ม.5) บวกกลับ 200,000 รวมปรับปรุงสุทธิบวกกลับ 310,000 บาท</td></tr>
+        <tr><td>4</td><td>(ก) ส่วนเพิ่มเข้าส่วนเกินทุน (10.20) ยังไม่เกิดขึ้นจริง ไม่ใช่กำไรที่จ่ายเป็นเงินปันผลได้ ต้องเปิดเผยข้อจำกัด (10.47.5) ทางภาษีไม่นำมารวมคำนวณ (65 ทวิ (3)) และเงินปันผลที่จ่ายจากกำไรส่วนที่ตีราคาเพิ่มไม่ได้รับยกเว้นตาม 65 ทวิ (10) (กค 0702/1683) (ข) ไม่ยอมรับ อายุการใช้ประโยชน์ต้องกำหนดจากปัจจัยในย่อหน้า 10.31 และวิธีต้องสะท้อนรูปแบบประโยชน์ (10.34) อัตราภาษีเป็นเพดาน ไม่ใช่อายุ ผู้ทำบัญชีควรอธิบายว่าผลต่างทางภาษีจัดการได้ด้วยกระดาษทำการ และการเปลี่ยนอัตราทางภาษีต้องขออนุมัติจากอธิบดี</td></tr>
+      </tbody></table></div>
+      <h3 id="S10.10">S10.10 ผลวิจัยปี 2569: ฉบับ 2554 มาตรการภาษีปัจจุบัน และงานของผู้สอบบัญชี</h3>
+      <h4>ก. ฉบับ 2554 เทียบฉบับปรับปรุง 2565 (เอกสารประกอบการอบรมของสภาวิชาชีพบัญชี 9 ธ.ค. 2565 สไลด์ที่ 43)</h4>
+      <div class="tbl"><table><thead><tr><th>เรื่อง</th><th>ฉบับ 2554 (ย่อหน้า 123–154)</th><th>ฉบับปรับปรุง 2565 บทที่ 10</th><th>ที่มา</th></tr></thead><tbody>
+        <tr><td>การวัดมูลค่าภายหลัง</td><td>ย่อหน้า 134 วิธีราคาทุนเท่านั้น</td><td>เลือกวิธีราคาทุนหรือวิธีการตีราคาใหม่ทั้งประเภท</td><td>นำประกาศ 42/2563 มารวม</td></tr>
+        <tr><td>อายุของที่ดิน</td><td>ที่ดินมีอายุไม่จำกัด</td><td>ที่ดินอาจมีอายุจำกัด เช่น เหมืองบนผิวดิน ที่ทิ้งขยะ (สไลด์ที่ 53)</td><td>แก้ไข</td></tr>
+        <tr><td>การลดมูลค่า</td><td>ย่อหน้า 136 ราคาขายหักต้นทุนในการขาย</td><td>เลือกใช้มูลค่าจากการใช้แทนได้ (10.38)</td><td>นำประกาศ 13/2555 มารวม</td></tr>
+        <tr><td>ถือไว้เพื่อขาย</td><td>ย่อหน้า 148–149</td><td>แก้การจัดประเภท ใช้ย่อหน้า 4.8</td><td>แก้ไข</td></tr>
+        <tr><td>มูลค่าตามบัญชี</td><td>ไม่มีนิยาม ("ราคาตามบัญชี")</td><td>เพิ่มนิยาม</td><td>แก้ไข</td></tr>
+        <tr><td>ส่วนประกอบ การทบทวนมูลค่าคงเหลือ</td><td>มีแล้ว (ย่อหน้า 137 142)</td><td>คงหลักการ</td><td>ไม่ใช่เรื่องใหม่</td></tr>
+        <tr><td>ถ้อยคำ</td><td>อายุการให้ประโยชน์ · การตัดรายการ</td><td>อายุการใช้ประโยชน์ · การเลิกรับรู้รายการ</td><td>สไลด์ที่ 13</td></tr>
+      </tbody></table></div>
+      <p>ตัวอย่างการตีราคาใหม่ในสไลด์ที่ 46–52 (เครื่องจักร 4,200,000 บาท) ใช้ตัวเลขเดียวกับตัวอย่างที่ 10.4ข และแท็บ 2 ของแอป สไลด์ที่ 30 ระบุว่าการเริ่มใช้วิธีการตีราคาใหม่ไม่ปรับย้อนหลัง เอกสารประกอบการอบรมไม่ถือเป็นส่วนหนึ่งของมาตรฐาน</p>
+      <h4>ข. มาตรการภาษีที่เกี่ยวข้อง ณ พฤศจิกายน 2569</h4>
+      <div class="tbl"><table><thead><tr><th>มาตรการ</th><th>สาระ</th><th>ผลต่อบัญชีตามบทที่ 10</th></tr></thead><tbody>
+        <tr><td>พ.ร.ฎ. ว่าด้วยการยกเว้นรัษฎากร (ฉบับที่ 808) พ.ศ. 2569 (ราชกิจจานุเบกษา 12 ต.ค. 2569)</td><td>หักรายจ่ายลงทุนและค่าใช้บริการระบบใบกำกับภาษีอิเล็กทรอนิกส์และใบรับอิเล็กทรอนิกส์ได้สองเท่า รายจ่าย 1 ม.ค. 2569–31 ธ.ค. 2570 (ข่าวกรมสรรพากร 14/2569)</td><td>ส่วนที่หักเพิ่มเป็นผลต่างถาวรทางภาษี ไม่เปลี่ยนราคาทุนและค่าเสื่อมราคาตามบัญชี</td></tr>
+        <tr><td>พ.ร.ฎ. (ฉบับที่ 805) พ.ศ. 2569</td><td>มาตรการติดตั้งระบบผลิตไฟฟ้าพลังงานแสงอาทิตย์บนหลังคาและการอนุรักษ์พลังงาน ไม่ใช่มาตรการค่าเสื่อมราคาเครื่องจักร</td><td>ตรวจผู้มีสิทธิในตัวบทก่อนใช้</td></tr>
+        <tr><td>ภาษีซื้อรถยนต์นั่ง</td><td>ต้องห้ามตามมาตรา 82/5 (6) และประกาศอธิบดีฯ เกี่ยวกับภาษีมูลค่าเพิ่ม (ฉบับที่ 42) ข้อ 2 (1) ถือเป็นต้นทุนหรือรายจ่ายได้ตามมาตรา 65 ตรี (6 ทวิ) (กค 0702/524 กค 0706/พ./7189)</td><td>รวมเป็นราคาทุนตามย่อหน้า 10.5.1 (ภาษีซื้อที่เรียกคืนไม่ได้)</td></tr>
+        <tr><td>การตีราคาเพิ่ม</td><td>มาตรา 65 ทวิ (3) ไม่นำส่วนที่ตีเพิ่มมาคำนวณ หักค่าเสื่อมราคาตามต้นทุนเดิม</td><td>ตัวอย่างสไลด์ที่ 49: บัญชี 485,714.29 ภาษี 400,000 บวกกลับ 85,714.29 บาท</td></tr>
+      </tbody></table></div>
+      <p class="hint">ยังไม่ยืนยัน: เงื่อนไขรายมาตราของฉบับที่ 808 และภาษีซื้อรวมอยู่ในเพดานหนึ่งล้านบาทของรถยนต์นั่งหรือไม่ ไม่พบข้อหารือปี 2563–2569 ที่เปลี่ยนแนวเดิมเรื่องค่าเสื่อมราคา</p>
+      <h4>ค. งานของผู้สอบบัญชี</h4>
+      <div class="tbl"><table><thead><tr><th>ความเสี่ยง</th><th>มาตรฐานการสอบบัญชี</th><th>วิธีตรวจหลัก</th></tr></thead><tbody>
+        <tr><td>การมีอยู่จริงและกรรมสิทธิ์</td><td>รหัส 500</td><td>ตรวจนับ ตรวจโฉนดและทะเบียน กระทบทะเบียนสินทรัพย์กับบัญชีคุม</td></tr>
+        <tr><td>อายุการใช้ประโยชน์ มูลค่าคงเหลือ การลดมูลค่า</td><td>รหัส 540 (ปรับปรุง)</td><td>ทดสอบข้อสมมติ เทียบกับการใช้งานจริงและประวัติการจำหน่าย</td></tr>
+        <tr><td>มูลค่ายุติธรรมจากผู้ประเมินราคา</td><td>รหัส 500 (ผู้เชี่ยวชาญของฝ่ายบริหาร) และรหัส 620 (ผู้เชี่ยวชาญของผู้สอบบัญชี)</td><td>ประเมินความรู้ความสามารถและความเที่ยงธรรม ข้อสมมติและวิธีประเมิน</td></tr>
+        <tr><td>กิจการขนาดเล็ก</td><td>ประกาศ 32/2568 มาตรฐานการสอบบัญชีสำหรับงบการเงินของกิจการที่มีความซับซ้อนน้อย (ทางเลือก)</td><td>ตามขอบเขตของมาตรฐานนั้น</td></tr>
+      </tbody></table></div>
+      <p class="hint">เปรียบเทียบเพื่อการศึกษา ไม่ใช่ข้อกำหนด: มาตรฐานการรายงานทางการเงินระหว่างประเทศ (International Financial Reporting Standards: IFRS) สำหรับกิจการขนาดกลางและขนาดย่อม (Small and Medium-sized Entities: SMEs) ฉบับที่ 3 หมวด 17 เพิ่มพืชเพื่อการให้ผลิตผลในขอบเขต ซึ่งบทที่ 10 ของไทยรวมไว้แล้วตั้งแต่ฉบับ 2565 และห้ามคิดค่าเสื่อมราคาตามรายได้ ซึ่งไม่ใช่ข้อกำหนดของบทที่ 10</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>ประกอบตำรา การบัญชีตามมาตรฐานการรายงานทางการเงินสำหรับกิจการที่ไม่มีส่วนได้เสียสาธารณะ (TFRS for NPAEs): หลักการและการประยุกต์ใช้ ฉบับปรับปรุง 2565 บทที่ 10 · Dr.VIT &amp; PD · ประมวลผลในเบราว์เซอร์เท่านั้น ผลลัพธ์เป็นเครื่องมือฝึกหัดและช่วยคิด ไม่ใช่ความเห็นทางวิชาชีพ</span>
+    <span>ตรวจคำตอบ: ตัวอย่างที่ 10.2–10.6 ในตำรา · ตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566) ตัวอย่างที่ 1–9 (ไม่ถือเป็นส่วนหนึ่งของมาตรฐาน)</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=(n,d=2)=>(Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:d});
+  const pct=(x,d=2)=>isFinite(x)?(x*100).toFixed(d)+'%':'–';
+  const val=el=>{const v=parseFloat(el.value);return isFinite(v)?v:0};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* ---------- shared renderers ---------- */
+  function je(title,lines,ref){
+    const rows=lines.map(l=>l.dr
+      ?`<tr><td>เดบิต ${esc(l.acct)}</td><td class="num dr-amt">${fmt(l.amt)}</td><td class="num"></td></tr>`
+      :`<tr><td class="cr">เครดิต ${esc(l.acct)}</td><td class="num"></td><td class="num cr-amt">${fmt(l.amt)}</td></tr>`).join('');
+    return `<div class="je"><div class="cap"><span>${esc(title)}</span><span>${esc(ref||'')}</span></div><div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">เดบิต</th><th class="num">เครดิต</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }
+  function adjust(required,prior){
+    const diff=required-prior;
+    if(Math.abs(diff)<0.005) return {diff:0,html:`<div class="why">ยอดค่าเผื่อคงเหลือเท่ากับยอดเป้าหมายแล้ว จึงไม่ต้องบันทึกรายการปรับปรุง</div>`};
+    if(diff>0) return {diff,html:je('รายการปรับปรุง ณ วันสิ้นงวด',[{dr:1,acct:'ค่าใช้จ่ายหนี้สงสัยจะสูญ',amt:diff},{dr:0,acct:'ค่าเผื่อหนี้สงสัยจะสูญ',amt:diff}],'ย่อหน้า 7.5')};
+    return {diff,html:je('รายการกลับรายการค่าเผื่อส่วนเกิน',[{dr:1,acct:'ค่าเผื่อหนี้สงสัยจะสูญ',amt:-diff},{dr:0,acct:'รายได้จากการกลับรายการผลขาดทุน',amt:-diff}],'ตัวอย่างที่ 7.4')};
+  }
+  const figs=items=>`<div class="figs">${items.map(([k,v,isPct])=>`<div class="fig"><div class="k">${esc(k)}</div><div class="v">${isPct?pct(v):fmt(v)}</div></div>`).join('')}</div>`;
+  const facts=(title,items)=>`<div class="facts"><h4>${esc(title)}</h4><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  const theory=(items,open)=>`<details class="theory"${open?' open':''}><summary>ทฤษฎีและมาตรฐานรองรับ</summary><dl>${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl></details>`;
+  function taxBox(expense){
+    if(expense<=0) return `<div class="tax"><b>ผลทางภาษี</b> การกลับรายการค่าเผื่อที่เคยบวกกลับเป็นรายจ่ายต้องห้ามแล้ว โดยทั่วไปนำมาหักออกในการคำนวณกำไรสุทธิทางภาษีเพื่อไม่ให้เสียภาษีซ้ำ ให้ตรวจกับกระดาษทำการภาษีของงวดก่อน</div>`;
+    return `<div class="tax"><b>ผลทางภาษี</b> ค่าใช้จ่ายหนี้สงสัยจะสูญ ${fmt(expense)} เป็นเงินสำรองซึ่งเป็นรายจ่ายต้องห้ามตามมาตรา 65 ตรี (1) ให้บวกกลับในการคำนวณกำไรสุทธิทางภาษี แต่ทางบัญชียังต้องตั้งครบ NPAEs ไม่ต้องรับรู้ภาษีเงินได้รอการตัดบัญชีจากผลต่างนี้</div>`;
+  }
+
+  /* ---------- tabs ---------- */
+  const tabs=[...document.querySelectorAll('nav.tabs button')];
+  const names=tabs.map(b=>b.dataset.tab);
+  function show(name){
+    tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+    document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==name);
+    try{localStorage.setItem('npaes10tab',name)}catch(e){}
+  }
+  tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+  let start='reg';
+  const h=(location.hash||'').slice(1);
+  if(names.includes(h)) start=h; else {try{const s=localStorage.getItem('npaes10tab'); if(names.includes(s)) start=s}catch(e){}}
+  show(start);
+
+  /* ---------- chapter 10 shared ---------- */
+  const NOTE={rg:null,rv:null,im:null,hf:null};const nsKick=()=>{if($('nsOut'))discCalc()};
+  function num(s){if(typeof s==='number')return s;s=String(s==null?'':s).trim().replace(/[,฿\s]/g,'');if(s===''||s==='-'||s==='–')return NaN;if(/^\(.*\)$/.test(s))s='-'+s.slice(1,-1);const v=parseFloat(s);return isFinite(v)?v:NaN}
+  const nz=v=>isFinite(v)?v:0;
+  function fmtD(d){return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`}
+  function parseDate(v){
+    if(v instanceof Date&&!isNaN(v)) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+    if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*86400000));return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}
+    const s=String(v||'').trim();if(!s) return null;
+    let m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+    if(m){let y=+m[1];if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[3])}
+    m=s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+    if(m){let y=+m[3];if(y<100)y+=y>50?2500:2000;if(y>2400)y-=543;return new Date(y,+m[2]-1,+m[1])}
+    return null;
+  }
+  function parseCSV(text){
+    const first=text.split('\n')[0];const delim=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');
+    const rows=[];let row=[],f='',q=false;
+    for(let i=0;i<text.length;i++){const ch=text[i];
+      if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+      else if(ch==='"')q=true; else if(ch===delim){row.push(f);f=''} else if(ch==='\n'){row.push(f);rows.push(row);row=[];f=''} else if(ch!=='\r') f+=ch}
+    if(f!==''||row.length){row.push(f);rows.push(row)}
+    return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+  }
+  function copyText(t,okId){const done=()=>{const e=$(okId);if(e){e.hidden=false;setTimeout(()=>{const x=$(okId);if(x)x.hidden=true},2000)}};
+    const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}ta.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,fb); else fb();}
+  const r2=x=>Math.round(x*100)/100;
+  function jeAuto(title,lines,ref){const L=lines.filter(l=>Math.abs(l.amt)>=0.005);if(!L.length)return '';
+    const dr=L.filter(l=>l.dr),cr=L.filter(l=>!l.dr);return je(title,dr.concat(cr),ref)}
+  const alertBox=(cls,html)=>`<div class="alert ${cls}">${html}</div>`;
+  const verdict=(cls,h,p)=>`<div class="verdict ${cls}"><h4>${esc(h)}</h4><div>${p}</div></div>`;
+
+  /* =========================================================
+     0 ASSET REGISTER
+     ========================================================= */
+  const RG={rows:[],wb:null};const RGANON={map:new Map()};
+  const RM={code:'rmCode',name:'rmName',cls:'rmCls',inD:'rmIn',cost:'rmCost',rv:'rmRv',life:'rmLife',meth:'rmMeth',acc:'rmAcc',out:'rmOut',proc:'rmProc'};
+  const RGROLE=[['code',/รหัส|code|asset ?no|เลขที่/i],['name',/ชื่อ|รายการ|name|description|รายละเอียด/i],['cls',/ประเภท|หมวด|class|category|กลุ่ม/i],
+    ['inD',/วันที่(ซื้อ|ได้มา|พร้อม|เริ่ม)|date.*(acq|service|purchase)|in.?service/i],['cost',/ราคาทุน|^cost|ต้นทุน/i],['rv',/มูลค่าคงเหลือ|ซาก|residual|salvage/i],
+    ['life',/อายุ|life|ปี$/i],['meth',/วิธี|method/i],['acc',/ค่าเสื่อม.*สะสม|accum/i],['out',/วันที่(จำหน่าย|ขาย|ตัด)|dispos.*date|date.*dispos/i],['proc',/(เงิน|ราคา).*(จำหน่าย|ขาย)|proceed/i]];
+  const RGTPL=['รหัส','ชื่อสินทรัพย์','ประเภท','วันที่พร้อมใช้','ราคาทุน','มูลค่าคงเหลือ','อายุการใช้ประโยชน์ (ปี)','วิธีคิดค่าเสื่อม','ค่าเสื่อมราคาสะสมต้นงวด','วันที่จำหน่าย','เงินที่ได้รับจากการจำหน่าย'].join('\t');
+  function rgSample(){
+    const H=RGTPL.split('\t');
+    const D=[['L01','ที่ดินโรงงาน บางพลี','ที่ดิน','01/03/2558',12000000,0,0,'','','',''],
+      ['B01','อาคารโรงงาน','อาคาร','01/07/2558',18000000,0,20,'เส้นตรง','','',''],
+      ['B02','อาคารสำนักงาน','อาคาร','01/01/2562',6000000,0,15,'เส้นตรง','','',''],
+      ['M01','เครื่องฉีดพลาสติก 1','เครื่องจักร','01/01/2559',3500000,0,8,'เส้นตรง','','',''],
+      ['M02','เครื่องฉีดพลาสติก 2','เครื่องจักร','01/04/2563',4800000,300000,10,'เส้นตรง','','',''],
+      ['M03','แม่พิมพ์ชุด A','เครื่องจักร','01/01/2566',900000,0,3,'เส้นตรง','','',''],
+      ['M04','เครื่องจักรสายการผลิตใหม่','เครื่องจักร','01/07/2568',6000000,500000,10,'เส้นตรง','','',''],
+      ['V01','รถบรรทุก 6 ล้อ – ตัวรถ','ยานพาหนะ','01/01/2564',3000000,0,10,'เส้นตรง','','',''],
+      ['V02','รถบรรทุก 6 ล้อ – เครื่องยนต์','ยานพาหนะ','01/01/2564',1000000,0,5,'เส้นตรง','','',''],
+      ['V03','รถยนต์นั่งผู้บริหาร','ยานพาหนะ','01/01/2565',2500000,0,5,'เส้นตรง','','',''],
+      ['V04','รถกระบะส่งของ','ยานพาหนะ','01/01/2561',750000,0,5,'เส้นตรง','','30/06/2568',180000],
+      ['E01','คอมพิวเตอร์ชุดบัญชี','อุปกรณ์สำนักงาน','01/01/2565',450000,0,3,'เส้นตรง','','',''],
+      ['E02','เครื่องปรับอากาศสำนักงาน','อุปกรณ์สำนักงาน','01/01/2567',280000,0,5,'ยอดคงเหลือลดลง','','','']];
+    return [H].concat(D);
+  }
+  function rgHeaders(){const h=RG.rows[(+$('rgHdr').value||1)-1]||[];return h.map((x,i)=>String(x||'').trim()||('คอลัมน์ '+(i+1)))}
+  function rgFill(){
+    const H=rgHeaders();const opt=`<option value="-1">— ไม่มี —</option>`+H.map((x,i)=>`<option value="${i}">${esc(x)}</option>`).join('');
+    Object.values(RM).forEach(id=>$(id).innerHTML=opt);const used=new Set();
+    ['acc','out','proc','rv','inD','cost','code','name','cls','life','meth'].forEach(r=>{const rx=RGROLE.find(x=>x[0]===r)[1];
+      const i=H.findIndex((x,k)=>!used.has(k)&&rx.test(x)&&!(r==='name'&&/รหัส|code/i.test(x))&&!(r==='cost'&&/สะสม/.test(x))&&!(r==='life'&&/คงเหลือ/.test(x))&&!(r==='inD'&&/จำหน่าย/.test(x)));
+      if(i>=0){used.add(i);$(RM[r]).value=i}});
+  }
+  function rgDetect(rows){for(let i=0;i<Math.min(rows.length,15);i++){const r=rows[i];const txt=r.filter(c=>typeof c==='string'&&c.trim()&&isNaN(num(c))).length;if(txt>=4)return i+1}return 1}
+  function rgAlias(n){if(!$('rgAnon').checked)return n;if(!RGANON.map.has(n))RGANON.map.set(n,'สินทรัพย์ '+String(RGANON.map.size+1).padStart(3,'0'));return RGANON.map.get(n)}
+  function taxRates(){const m=[];String($('rgTax').value).split(/[;\n]/).forEach(p=>{const k=p.split('=');if(k.length===2&&k[0].trim()){const v=parseFloat(k[1]);if(isFinite(v))m.push([k[0].trim(),v/100])}});return m}
+  function rateFor(cls,m){const hit=m.find(([k])=>k!=='อื่น'&&cls.includes(k));if(hit)return hit[1];const o=m.find(([k])=>k==='อื่น');return o?o[1]:0.2}
+  const DAY=86400000;const days=(a,b)=>Math.max(0,Math.round((b-a)/DAY));
+  const yfrac=(a,b)=>Math.max(0,(b.getFullYear()-a.getFullYear())+(b.getMonth()-a.getMonth())/12+(b.getDate()-a.getDate())/365);
+  function rgCalc(){
+    RGANON.map=new Map();const out=$('rgOut');
+    const yeD=parseDate($('rgDate').value)||new Date(2025,11,31);const fyS=new Date(yeD.getFullYear()-1,yeD.getMonth(),yeD.getDate()+1);
+    const fyEnd=new Date(yeD.getFullYear(),yeD.getMonth(),yeD.getDate()+1);const fyDays=days(fyS,fyEnd);
+    const c=k=>+$(RM[k]).value;const get=(r,k)=>c(k)>=0?r[c(k)]:'';
+    const hdr=(+$('rgHdr').value||1);const data=RG.rows.slice(hdr);const TR=taxRates();
+    const A=[],bad=[];
+    data.forEach((r,ix)=>{
+      const rawName=String(get(r,'name')||'').trim();const code=String(get(r,'code')||'').trim()||('#'+(ix+1));
+      const cost=num(get(r,'cost'));if(!isFinite(cost)||cost===0){if(rawName||code.charAt(0)!=='#')bad.push(code);return}
+      const inD=parseDate(get(r,'inD'));const cls=String(get(r,'cls')||'ไม่ระบุ').trim()||'ไม่ระบุ';
+      const rv=nz(num(get(r,'rv')));const life=nz(num(get(r,'life')));const meth=/ลดลง|declin|ddb|db/i.test(String(get(r,'meth')||''))?'db':'sl';
+      const outD=parseDate(get(r,'out'));const proc=nz(num(get(r,'proc')));const accIn=num(get(r,'acc'));
+      if(!inD){bad.push(code);return}
+      if(outD&&outD<fyS) return;
+      const isLand=/ที่ดิน|land/i.test(cls);const depr=life>0;
+      // accumulated at FY start
+      let acc0=0;
+      if(isFinite(accIn)) acc0=accIn;
+      else if(depr&&inD<fyS){const t=yfrac(inD,fyS);
+        if(meth==='sl') acc0=Math.min(cost-rv,(cost-rv)/life*t);
+        else {const rt=Math.min(1,2/life);acc0=Math.min(cost-rv,cost-cost*Math.pow(1-rt,t))}}
+      acc0=Math.max(0,acc0);
+      const sIn=inD>fyS?inD:fyS;const eOut=outD&&outD<fyEnd?new Date(outD.getFullYear(),outD.getMonth(),outD.getDate()+1):fyEnd;
+      const frac=depr&&sIn<eOut?Math.min(1,yfrac(sIn,eOut)):0;
+      let dep=0;if(depr){dep=meth==='sl'?(cost-rv)/life*frac:(cost-acc0)*Math.min(1,2/life)*frac;dep=Math.max(0,Math.min(dep,cost-rv-acc0))}
+      const acc1=acc0+dep;const disposed=!!(outD&&outD<fyEnd);const isAdd=inD>=fyS;
+      const carCap=/รถยนต์นั่ง|รถเก๋ง|passenger/i.test(rawName);const rate=isLand?0:rateFor(cls,TR);
+      const taxBase=carCap?Math.min(cost,1000000):cost;const taxMax=taxBase*rate*frac;const addBack=Math.max(0,dep-taxMax);
+      const nbv=cost-acc1;const gain=disposed?proc-nbv:0;
+      const flags=[];
+      if(isLand&&depr) flags.push(['warn','ที่ดินคิดค่าเสื่อมราคา']);
+      if(!isLand&&!depr) flags.push(['bad','ไม่มีอายุการใช้ประโยชน์']);
+      if(depr&&!disposed&&nbv<=rv+0.5&&inD<fyS) flags.push(['warn','ตัดหมดแต่ยังใช้งาน']);
+      if(addBack>0.5) flags.push(['warn','เร็วกว่าเพดานภาษี']);
+      if(carCap&&cost>1000000) flags.push(['warn','รถยนต์นั่งเกิน 1 ล้าน']);
+      if(disposed&&gain>0&&nbv<=rv+0.5) flags.push(['warn','ขายได้กำไรหลังตัดหมด']);
+      A.push({code,name:rgAlias(rawName||code),cls,inD,cost,rv,life,meth,acc0,dep,acc1,nbv,disposed,isAdd,proc,gain,rate,taxMax,addBack,flags,frac});
+    });
+    $('rgKeyWrap').hidden=!($('rgAnon').checked&&RGANON.map.size);
+    if(!A.length){NOTE.rg=null;nsKick();out.innerHTML=`<h2>ผลการคำนวณ</h2><p class="hint">ยังไม่พบรายการที่อ่านได้ ตรวจแถวหัวตารางและการจับคู่คอลัมน์ราคาทุนและวันที่พร้อมใช้</p>`;return}
+    const cl=[...new Set(A.map(a=>a.cls))];
+    const S=cl.map(k=>{const g=A.filter(a=>a.cls===k);const s=f=>g.reduce((t,a)=>t+f(a),0);
+      return {k,gB:s(a=>a.isAdd?0:a.cost),add:s(a=>a.isAdd?a.cost:0),dsp:s(a=>a.disposed?a.cost:0),aB:s(a=>a.acc0),dep:s(a=>a.dep),aD:s(a=>a.disposed?a.acc1:0),
+        book:s(a=>a.dep),tax:s(a=>Math.min(a.dep,a.taxMax)),ab:s(a=>a.addBack)}});
+    S.forEach(s=>{s.gE=s.gB+s.add-s.dsp;s.aE=s.aB+s.dep-s.aD;s.nB=s.gB-s.aB;s.nE=s.gE-s.aE});
+    const T=f=>S.reduce((t,s)=>t+s[f],0);
+    const full=A.filter(a=>a.flags.some(f=>f[1]==='ตัดหมดแต่ยังใช้งาน'));const fullCost=full.reduce((t,a)=>t+a.cost,0);
+    const disp=A.filter(a=>a.disposed);const totGain=disp.reduce((t,a)=>t+a.gain,0);
+    let al='';
+    if(bad.length) al+=alertBox('bad',`อ่านไม่ได้ ${bad.length} รายการ (ไม่มีราคาทุนหรือวันที่พร้อมใช้): ${esc(bad.slice(0,8).join(', '))}${bad.length>8?' …':''}`);
+    if(full.length) al+=alertBox('warn',`<b>ตัดค่าเสื่อมราคาหมดแล้วแต่ยังใช้งาน ${full.length} รายการ</b> ราคาทุนรวม ${fmt(fullCost)} บาท (${pct(fullCost/T('gE'),1)} ของราคาทุนสิ้นงวด) แสดงว่าอายุการใช้ประโยชน์ที่ใช้สั้นกว่าจริง ให้ทบทวนตามย่อหน้า 10.29 สำหรับสินทรัพย์ที่ซื้อใหม่ในประเภทเดียวกัน`);
+    if(T('ab')>0.5) al+=alertBox('warn',`<b>ค่าเสื่อมราคาเร็วกว่าเพดานภาษี</b> ต้องบวกกลับ ${fmt(T('ab'))} บาท ตรวจว่าอายุทางบัญชีมาจากหลักฐานตามตารางที่ 10.18 ไม่ใช่ตั้งให้ตรงกับภาษี`);
+    const gl=num($('rgGLc').value),gla=num($('rgGLa').value);
+    if(isFinite(gl)){const d=gl-T('gE');al+=alertBox(Math.abs(d)<1?'warn':'bad',Math.abs(d)<1?`ราคาทุนตามทะเบียนตรงกับบัญชีแยกประเภท`:`<b>ราคาทุนตามทะเบียนต่างจากบัญชีแยกประเภท ${fmt(d)} บาท</b> ต้องกระทบยอดก่อนใช้ตัวเลขในหมายเหตุ`)}
+    if(isFinite(gla)){const d=gla-T('aE');if(Math.abs(d)>=1)al+=alertBox('bad',`<b>ค่าเสื่อมราคาสะสมตามทะเบียนต่างจากบัญชีแยกประเภท ${fmt(d)} บาท</b>`)}
+    const row=s=>`<tr><td>${esc(s.k)}</td><td class="num">${fmt(s.gB)}</td><td class="num">${fmt(s.add)}</td><td class="num">${fmt(s.dsp?-s.dsp:0)}</td><td class="num">${fmt(s.gE)}</td><td class="num">${fmt(s.aB)}</td><td class="num">${fmt(s.dep)}</td><td class="num">${fmt(s.aD?-s.aD:0)}</td><td class="num">${fmt(s.aE)}</td><td class="num">${fmt(s.nE)}</td></tr>`;
+    const tot={k:'รวม',gB:T('gB'),add:T('add'),dsp:T('dsp'),gE:T('gE'),aB:T('aB'),dep:T('dep'),aD:T('aD'),aE:T('aE'),nE:T('nE')};
+    const roll=`<div class="tbl"><table><thead><tr><th>ประเภท</th><th class="num">ราคาทุนต้นงวด</th><th class="num">เพิ่ม</th><th class="num">จำหน่าย</th><th class="num">ราคาทุนสิ้นงวด</th><th class="num">ค่าเสื่อมสะสมต้นงวด</th><th class="num">ค่าเสื่อมราคา</th><th class="num">จำหน่าย</th><th class="num">ค่าเสื่อมสะสมสิ้นงวด</th><th class="num">มูลค่าตามบัญชี</th></tr></thead><tbody>${S.map(row).join('')}</tbody><tfoot>${row(tot).replace('<tr>','<tr>')}</tfoot></table></div>`;
+    const taxT=`<div class="tbl"><table><thead><tr><th>ประเภท</th><th class="num">เพดาน</th><th class="num">ค่าเสื่อมทางบัญชี</th><th class="num">หักได้ทางภาษี</th><th class="num">บวกกลับ</th></tr></thead><tbody>${S.map(s=>`<tr><td>${esc(s.k)}</td><td class="num">${pct(rateFor(s.k,TR),0)}</td><td class="num">${fmt(s.book)}</td><td class="num">${fmt(s.tax)}</td><td class="num">${fmt(s.ab)}</td></tr>`).join('')}</tbody><tfoot><tr><td>รวม</td><td></td><td class="num">${fmt(T('book'))}</td><td class="num">${fmt(T('tax'))}</td><td class="num">${fmt(T('ab'))}</td></tr></tfoot></table></div>`;
+    const flagged=A.filter(a=>a.flags.length);
+    const det=`<div class="tbl"><table><thead><tr><th>รหัส</th><th>ชื่อ</th><th class="num">ราคาทุน</th><th class="num">ค่าเสื่อมปีนี้</th><th class="num">มูลค่าตามบัญชี</th><th>สัญญาณ</th></tr></thead><tbody>${flagged.slice(0,40).map(a=>`<tr><td>${esc(a.code)}</td><td>${esc(a.name)}</td><td class="num">${fmt(a.cost)}</td><td class="num">${fmt(a.dep)}</td><td class="num">${fmt(a.disposed?0:a.nbv)}</td><td>${a.flags.map(f=>`<span class="pill ${f[0]}">${esc(f[1])}</span>`).join(' ')}</td></tr>`).join('')}</tbody></table></div>`;
+    const dispT=disp.length?`<h3>การจำหน่ายในงวด (ย่อหน้า 10.43)</h3><div class="tbl"><table><thead><tr><th>รหัส</th><th>ชื่อ</th><th class="num">ราคาทุน</th><th class="num">ค่าเสื่อมสะสม ณ วันจำหน่าย</th><th class="num">เงินที่ได้รับ</th><th class="num">กำไร (ขาดทุน)</th></tr></thead><tbody>${disp.map(a=>`<tr><td>${esc(a.code)}</td><td>${esc(a.name)}</td><td class="num">${fmt(a.cost)}</td><td class="num">${fmt(a.acc1)}</td><td class="num">${fmt(a.proc)}</td><td class="num">${fmt(a.gain)}</td></tr>`).join('')}</tbody></table></div>`:'';
+    const jeDep=jeAuto('รายการค่าเสื่อมราคาประจำงวด',S.filter(s=>s.dep>0.004).map(s=>({dr:1,acct:'ค่าเสื่อมราคา – '+s.k,amt:s.dep})).concat(S.filter(s=>s.dep>0.004).map(s=>({dr:0,acct:'ค่าเสื่อมราคาสะสม – '+s.k,amt:s.dep}))),'ย่อหน้า 10.25');
+    const yBE=yeD.getFullYear()+543;
+    NOTE.rg={A,S,cl,yeD,full,fullCost,TR};
+    out.innerHTML=`<h2>ผลการคำนวณ ปีสิ้นสุด ${fmtD(yeD)}</h2>
+      ${figs([['ราคาทุนสิ้นงวด',T('gE')],['ค่าเสื่อมราคาของงวด',T('dep')],['มูลค่าตามบัญชีสิ้นงวด',T('nE')]])}
+      ${al}
+      <h3>ตารางกระทบยอดมูลค่าตามบัญชี (ย่อหน้า 10.45.4)</h3>${roll}
+      ${dispT}
+      ${flagged.length?`<h3>รายการที่ควรทบทวน (${flagged.length})</h3>${det}`:''}
+      <h3>กระดาษทำการภาษี</h3>${taxT}
+      ${jeDep}
+      ${disp.length?jeAuto('รายการจำหน่ายสินทรัพย์ (รวม)',[{dr:1,acct:'เงินสด/ลูกหนี้',amt:disp.reduce((t,a)=>t+a.proc,0)},{dr:1,acct:'ค่าเสื่อมราคาสะสม',amt:disp.reduce((t,a)=>t+a.acc1,0)},{dr:totGain<0?1:0,acct:totGain<0?'ขาดทุนจากการจำหน่ายสินทรัพย์':'กำไรจากการจำหน่ายสินทรัพย์',amt:Math.abs(totGain)},{dr:0,acct:'ที่ดิน อาคารและอุปกรณ์',amt:disp.reduce((t,a)=>t+a.cost,0)}],'ย่อหน้า 10.41–10.43'):''}
+      <div class="note"><div class="cap">ร่างหมายเหตุนโยบายการบัญชี</div>ที่ดิน อาคารและอุปกรณ์แสดงด้วยราคาทุนหักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่า (ถ้ามี) ค่าเสื่อมราคาคำนวณโดยวิธีเส้นตรง${A.some(a=>a.meth==='db')?' และวิธียอดคงเหลือลดลงสำหรับบางรายการ':''} ตามอายุการใช้ประโยชน์โดยประมาณ ดังนี้ ${cl.filter(k=>!/ที่ดิน/.test(k)).map(k=>{const L=A.filter(a=>a.cls===k&&a.life>0).map(a=>a.life);return L.length?`${esc(k)} ${Math.min(...L)}${Math.max(...L)!==Math.min(...L)?'–'+Math.max(...L):''} ปี`:''}).filter(Boolean).join(' ')} ที่ดินไม่คิดค่าเสื่อมราคา กิจการทบทวนมูลค่าคงเหลือ อายุการใช้ประโยชน์ และวิธีคิดค่าเสื่อมราคาทุกสิ้นปี</div>
+      ${facts('ตัวเลขบอกอะไร',[
+        `ค่าเสื่อมราคาของงวด ${fmt(T('dep'))} บาท คิดเป็น ${pct(T('dep')/Math.max(1,T('gE')),1)} ของราคาทุนสิ้นงวด และมูลค่าตามบัญชีเหลือ ${pct(T('nE')/Math.max(1,T('gE')),1)} ของราคาทุน ยิ่งต่ำ สินทรัพย์ยิ่งเก่าและอาจใกล้ต้องลงทุนทดแทน`,
+        full.length?`สินทรัพย์ที่ตัดหมดแต่ยังใช้งานมีราคาทุน ${pct(fullCost/T('gE'),1)} ของราคาทุนรวม ยิ่งสัดส่วนสูง งบการเงินยิ่งแสดงสินทรัพย์ต่ำกว่าศักยภาพจริงและค่าเสื่อมราคาในอดีตสูงเกินไป`:'ไม่พบสินทรัพย์ที่ตัดหมดแต่ยังใช้งาน',
+        disp.length?`การจำหน่ายในงวดให้ผล${totGain>=0?'กำไร':'ขาดทุน'}รวม ${fmt(Math.abs(totGain))} บาท ${disp.some(a=>a.flags.length)?'การขายได้กำไรหลังตัดหมดซ้ำ ๆ บอกว่ามูลค่าคงเหลือหรืออายุที่ใช้ต่ำเกินไป':''}`:'ไม่มีรายการจำหน่ายในงวด',
+        `ผลต่างภาษีที่ต้องบวกกลับ ${fmt(T('ab'))} บาท เป็นผลต่างชั่วคราว จะหักคืนได้ในปีหลังเมื่อค่าเสื่อมทางบัญชีหมดก่อนทางภาษี`])}
+      <div class="tax"><b>ผลทางภาษี</b> ค่าเสื่อมราคาหักได้ไม่เกินอัตราตาม พ.ร.ฎ. (ฉบับที่ 145) และถ้าอัตราทางบัญชีต่ำกว่าเพดาน ให้หักตามบัญชี รถยนต์นั่งไม่เกิน 10 ที่นั่งคิดค่าเสื่อมราคาจากราคาไม่เกิน 1,000,000 บาท ตัวเลขในกระดาษทำการใช้เพดานที่กรอกไว้ ให้ตรวจกับประมวลรัษฎากรฉบับล่าสุดก่อนยื่นแบบ</div>
+      ${theory([['10.24–10.25','คิดค่าเสื่อมราคาอย่างมีระบบตลอดอายุ แยกส่วนประกอบที่มีนัยสำคัญ ไม่คิดค่าเสื่อมราคาที่ดิน'],['10.29','ทบทวนมูลค่าคงเหลือและอายุอย่างสม่ำเสมอ เปลี่ยนทันทีเป็นต้นไปเมื่อต่างอย่างมีสาระสำคัญ'],['10.30','เริ่มคิดเมื่อพร้อมใช้งาน หยุดเมื่อเลิกรับรู้หรือจัดประเภทเป็นถือไว้เพื่อขาย'],['10.43','กำไรขาดทุนจากการจำหน่าย = สิ่งตอบแทนสุทธิ − มูลค่าตามบัญชี'],['10.45.4','เปิดเผยราคาทุน ค่าเสื่อมสะสม ค่าเผื่อ ต้นงวดและสิ้นงวด และรายการกระทบยอด'],['ม.65 ทวิ (2)','หักค่าสึกหรอและค่าเสื่อมราคาตามหลักเกณฑ์ใน พ.ร.ฎ. 145']])}
+      <p class="hint">การคำนวณใช้สัดส่วนเดือนในงวด (เศษวันคิดตามวันจริง) ถ้าไม่ได้จับคู่ค่าเสื่อมสะสมต้นงวด แอปคำนวณจากวันที่พร้อมใช้ ปี พ.ศ. ${yBE}</p>`;nsKick();
+  }
+  function rgLoad(rows,label){RG.rows=rows.map(r=>r.map(c=>c==null?'':c));$('rgHdr').value=rgDetect(RG.rows);rgFill();$('rgStatus').textContent=label;rgCalc()}
+  $('rgFile').addEventListener('change',e=>{
+    const f=e.target.files[0];if(!f)return;const ext=f.name.split('.').pop().toLowerCase();const rdr=new FileReader();
+    if(ext==='csv'||ext==='txt'){rdr.onload=()=>{rgLoad(parseCSV(String(rdr.result).replace(/^﻿/,'')),`นำเข้า ${f.name}`);$('rgSheetWrap').hidden=true};rdr.readAsText(f,'utf-8');return}
+    if(typeof XLSX==='undefined'){$('rgStatus').textContent='กำลังโหลดตัวอ่านไฟล์ Excel (ต้องเชื่อมต่ออินเทอร์เน็ต)…';
+      const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      sc.onload=()=>{e.target.dispatchEvent(new Event('change'))};
+      sc.onerror=()=>{$('rgStatus').textContent='ออฟไลน์อยู่ จึงอ่านไฟล์ .xlsx ไม่ได้ ให้บันทึกเป็น CSV (UTF-8) แล้วนำเข้าอีกครั้ง'};
+      document.head.appendChild(sc);return}
+    rdr.onload=()=>{try{const wb=XLSX.read(new Uint8Array(rdr.result),{type:'array',cellDates:true});RG.wb=wb;
+      $('rgSheet').innerHTML=wb.SheetNames.map((n,i)=>`<option value="${i}">${esc(n)}</option>`).join('');$('rgSheetWrap').hidden=wb.SheetNames.length<2;
+      rgLoad(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''}),`นำเข้า ${f.name} · แผ่นงาน ${wb.SheetNames[0]}`)}
+      catch(err){$('rgStatus').textContent='เปิดไฟล์นี้ไม่ได้ ให้บันทึกเป็น CSV แล้วลองใหม่'}};
+    rdr.readAsArrayBuffer(f);});
+  $('rgSheet').addEventListener('change',()=>{const n=RG.wb.SheetNames[+$('rgSheet').value];rgLoad(XLSX.utils.sheet_to_json(RG.wb.Sheets[n],{header:1,raw:true,defval:''}),`แผ่นงาน ${n}`)});
+  $('rgSample').addEventListener('click',()=>{$('rgFile').value='';$('rgDate').value='2025-12-31';rgLoad(rgSample(),'ไฟล์ตัวอย่าง: ทะเบียนสินทรัพย์ บริษัท ตัวอย่างบรรจุภัณฑ์ จำกัด ปีสิ้นสุด 31 ธ.ค. 2568')});
+  $('rgTpl').addEventListener('click',()=>copyText(RGTPL,'rgTplOk'));
+  $('rgKey').addEventListener('click',()=>copyText(['รหัส\tชื่อสินทรัพย์'].concat([...RGANON.map].map(([n,c])=>c+'\t'+n)).join('\n'),'rgKeyOk'));
+  $('rgHdr').addEventListener('input',()=>{rgFill();rgCalc()});
+  ['rgDate','rgTax','rgGLc','rgGLa'].forEach(id=>$(id).addEventListener('input',rgCalc));
+  $('rgAnon').addEventListener('change',rgCalc);
+  Object.values(RM).forEach(id=>$(id).addEventListener('change',rgCalc));
+
+  /* =========================================================
+     1 COMPONENTS
+     ========================================================= */
+  const CP_SAMPLE=[{n:'ตัวรถ',c:3000000,l:10,v:0},{n:'เครื่องยนต์',c:1000000,l:5,v:0}];
+  let cp=CP_SAMPLE.map(o=>({...o}));
+  function cpRender(){
+    $('cpBody').innerHTML=cp.map((o,i)=>`<tr><td><input type="text" id="cp-n-${i}" value="${esc(o.n)}"></td><td><input class="num" type="number" id="cp-c-${i}" value="${o.c}"></td><td><input class="num" type="number" id="cp-l-${i}" value="${o.l}"></td><td><input class="num" type="number" id="cp-v-${i}" value="${o.v}"></td><td><button class="del" data-i="${i}" aria-label="ลบ">×</button></td></tr>`).join('');
+    cp.forEach((o,i)=>['n','c','l','v'].forEach(k=>$(`cp-${k}-${i}`).addEventListener('input',e=>{o[k]=k==='n'?e.target.value:val(e.target);if(k==='n')cpWhich();cpCalc()})));
+    document.querySelectorAll('#cpBody .del').forEach(b=>b.addEventListener('click',()=>{if(cp.length>1){cp.splice(+b.dataset.i,1);cpRender()}}));
+    cpWhich();cpCalc();
+  }
+  function cpWhich(){const s=$('cpWhich');const keep=+s.value;s.innerHTML=cp.map((o,i)=>`<option value="${i}">${esc(o.n||('ส่วนที่ '+(i+1)))}</option>`).join('');
+    s.value=String(isFinite(keep)&&keep<cp.length&&s.dataset.set?keep:(cp.length>1?1:0));s.dataset.set='1'}
+  function cpCalc(){
+    const out=$('cpOut');const tot=cp.reduce((t,o)=>t+o.c,0);if(!(tot>0)){out.innerHTML='<p class="hint">กรอกราคาทุนของส่วนประกอบ</p>';return}
+    const main=cp.reduce((m,o,i)=>o.c>cp[m].c?i:m,0);const dep=o=>o.l>0?(o.c-o.v)/o.l:0;
+    const rows=cp.map((o,i)=>{const sh=o.c/tot;const ld=i===main?0:Math.abs(o.l-cp[main].l)/Math.max(1,cp[main].l);
+      const mt=val($('cpMat'))/100;const dl=i!==main&&(o.l!==cp[main].l||o.v/Math.max(1,o.c)!==cp[main].v/Math.max(1,cp[main].c));const pass=i===main?'ส่วนหลัก':(sh>=mt&&dl?'แยกบันทึก':(dl?'พิจารณา':'รวมกับส่วนหลัก'));
+      const cls=pass==='แยกบันทึก'?'ok':pass==='พิจารณา'?'warn':pass==='ส่วนหลัก'?'ok':'bad';
+      return `<tr><td>${esc(o.n)}</td><td class="num">${pct(sh,1)}</td><td class="num">${i===main?'–':pct(ld,0)}</td><td class="num">${fmt(dep(o))}</td><td><span class="pill ${cls}">${pass}</span></td></tr>`}).join('');
+    const dC=cp.reduce((t,o)=>t+dep(o),0);const L1=val($('cpSingle'));const rvT=cp.reduce((t,o)=>t+o.v,0);const dS=L1>0?(tot-rvT)/L1:0;
+    const j=Math.min(cp.length-1,Math.max(0,+$('cpWhich').value||0));const k=Math.max(2,Math.round(val($('cpYear'))));const used=k-1;
+    const oj=cp[j];const accJ=Math.min(oj.c-oj.v,dep(oj)*used);const nbvJ=oj.c-accJ;const nw=val($('cpNew')),nl=val($('cpNewLife'));
+    const caComp=cp.reduce((t,o)=>t+o.c-Math.min(o.c-o.v,dep(o)*used),0);const caSingle=tot-Math.min(tot-rvT,dS*used);
+    const after=caComp-nbvJ+nw,afterS=caSingle+nw;const depAfter=dC-dep(oj)+(nl>0?nw/nl:0);
+    const lifeOver=used>oj.l;
+    out.innerHTML=`<h2>ผลการคำนวณ</h2>
+      ${figs([['ค่าเสื่อมราคาต่อปี (แยกส่วนประกอบ)',dC],['ค่าเสื่อมราคาต่อปี (หน่วยเดียว)',dS],['ผลขาดทุนจากการเปลี่ยนแทน',nbvJ]])}
+      <h3>ทดสอบเกณฑ์ส่วนประกอบ</h3>
+      <div class="tbl"><table><thead><tr><th>ส่วนประกอบ</th><th class="num">สัดส่วนราคาทุน</th><th class="num">อายุต่างจากส่วนหลัก</th><th class="num">ค่าเสื่อมต่อปี</th><th>ผล</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>รวม</td><td class="num">100%</td><td></td><td class="num">${fmt(dC)}</td><td></td></tr></tfoot></table></div>
+      ${lifeOver?alertBox('warn',`ส่วนประกอบที่เลือกครบอายุแล้วก่อนต้นปีที่ ${k} มูลค่าตามบัญชีเหลือเท่ามูลค่าคงเหลือ`):''}
+      <h3>เปลี่ยนแทน${esc(oj.n)}เมื่อต้นปีที่ ${k} (ย่อหน้า 10.10)</h3>
+      ${jeAuto('ตัดรายการชิ้นส่วนเดิม',[{dr:1,acct:'ค่าเสื่อมราคาสะสม – '+oj.n,amt:accJ},{dr:1,acct:'ผลขาดทุนจากการตัดจำหน่าย'+oj.n+'เดิม',amt:nbvJ},{dr:0,acct:'สินทรัพย์ – '+oj.n,amt:oj.c}],'ย่อหน้า 10.10, 10.44')}
+      ${jeAuto('รับรู้ชิ้นส่วนใหม่',[{dr:1,acct:'สินทรัพย์ – '+oj.n+' (ใหม่)',amt:nw},{dr:0,acct:'เงินสด/เจ้าหนี้',amt:nw}],'ย่อหน้า 10.2, 10.10')}
+      <div class="tbl"><table><thead><tr><th>มูลค่าตามบัญชี</th><th class="num">แยกส่วนประกอบ</th><th class="num">หน่วยเดียว</th></tr></thead><tbody>
+        <tr><td>สิ้นปีที่ ${used} ก่อนเปลี่ยนแทน</td><td class="num">${fmt(caComp)}</td><td class="num">${fmt(caSingle)}</td></tr>
+        <tr><td>หลังเปลี่ยนแทน</td><td class="num">${fmt(after)}</td><td class="num">${fmt(afterS)}</td></tr>
+        <tr><td>ค่าเสื่อมราคาต่อปีหลังเปลี่ยนแทน</td><td class="num">${fmt(depAfter)}</td><td class="num">${fmt(dS)}</td></tr></tbody></table></div>
+      ${facts('ตัวเลขบอกอะไร',[`ถ้าไม่แยกส่วนประกอบ มูลค่าตามบัญชีหลังเปลี่ยนแทนสูงกว่า ${fmt(afterS-after)} บาท เพราะยังรวม${esc(oj.n)}เดิมที่ไม่มีอยู่แล้ว`,
+        `ผลขาดทุน ${fmt(nbvJ)} บาทควรรับรู้ในปีที่เปลี่ยนแทน การไม่แยกส่วนประกอบจะเลื่อนผลขาดทุนนี้ไปกระจายในค่าเสื่อมราคาปีหลัง`,
+        `ค่าเสื่อมราคาแบบแยกส่วนประกอบสูงกว่าแบบหน่วยเดียว ${fmt(dC-dS)} บาทต่อปีในช่วงแรก สะท้อนว่าชิ้นส่วนอายุสั้นใช้ประโยชน์หมดเร็วกว่า`])}
+      <div class="tax"><b>ผลทางภาษี</b> ผลขาดทุนจากการตัดจำหน่ายชิ้นส่วนเดิมที่ไม่มีมูลค่าแล้วโดยทั่วไปหักเป็นรายจ่ายได้เมื่อมีหลักฐานการเลิกใช้หรือจำหน่าย ชิ้นส่วนใหม่เป็นรายจ่ายฝ่ายทุนตามมาตรา 65 ตรี (5) ต้องตั้งเป็นทรัพย์สินและหักค่าเสื่อมราคาไม่เกินเพดาน</div>
+      ${theory([['10.8','แยกบันทึกรายการที่มีอายุหรือรูปแบบประโยชน์ต่างกันอย่างมีสาระสำคัญ เช่น อาคารกับลิฟต์'],['10.10','รับรู้ต้นทุนการเปลี่ยนแทนเป็นสินทรัพย์และตัดมูลค่าตามบัญชีของชิ้นส่วนเดิม'],['10.11','การตรวจสอบสภาพครั้งใหญ่ปฏิบัติเช่นเดียวกับการเปลี่ยนแทน'],['10.24','คิดค่าเสื่อมราคาส่วนประกอบที่มีนัยสำคัญแยกกัน'],['3.13','ความมีสาระสำคัญพิจารณาทั้งขนาดและลักษณะของรายการ ใช้กำหนดเกณฑ์นัยสำคัญของส่วนประกอบตามนโยบายกิจการ'],['10.8 (การปันส่วน)','ปันส่วนรายจ่ายให้ทุกรายการที่รวมอยู่ตั้งแต่วันได้มา ราคาทุนของชิ้นส่วนที่ถูกเปลี่ยนจึงต้องมีในทะเบียน']])}`;
+  }
+  $('cpAdd').addEventListener('click',()=>{cp.push({n:'ส่วนประกอบใหม่',c:0,l:5,v:0});cpRender()});
+  $('cpSample').addEventListener('click',()=>{cp=CP_SAMPLE.map(o=>({...o}));$('cpSingle').value=10;$('cpYear').value=4;$('cpNew').value=1500000;$('cpNewLife').value=5;$('cpWhich').dataset.set='';cpRender()});
+  ['cpSingle','cpYear','cpNew','cpNewLife','cpMat'].forEach(id=>$(id).addEventListener('input',cpCalc));$('cpWhich').addEventListener('change',cpCalc);
+
+  /* =========================================================
+     2 REVALUATION
+     ========================================================= */
+  let rvE=[{t:3,fv:3600000},{t:5,fv:1400000}];
+  function rvRender(){
+    $('rvBody').innerHTML=rvE.map((e,i)=>`<tr><td>${i+1}</td><td><input class="num" type="number" id="rv-t-${i}" value="${e.t}" min="1"></td><td><input class="num" type="number" id="rv-f-${i}" value="${e.fv}"></td><td><button class="del" data-i="${i}" aria-label="ลบ">×</button></td></tr>`).join('');
+    rvE.forEach((e,i)=>{$(`rv-t-${i}`).addEventListener('input',x=>{e.t=Math.round(val(x.target));rvCalc()});$(`rv-f-${i}`).addEventListener('input',x=>{e.fv=val(x.target);rvCalc()})});
+    document.querySelectorAll('#rvBody .del').forEach(b=>b.addEventListener('click',()=>{if(rvE.length>1){rvE.splice(+b.dataset.i,1);rvRender()}}));
+    rvCalc();
+  }
+  function rvSim(p){
+    const land=p.land;const life=land?0:p.life;const ev=[...p.ev].filter(e=>e.t>0).sort((a,b)=>a.t-b.t);
+    let gross=p.cost,acc=0,sur=0,pl=0,trCum=0;const hist=life>0?(p.cost-p.rv)/life:0;let d=hist;let hCA=p.cost;
+    const yrs=[],evs=[];const last=ev.length?ev[ev.length-1].t:0;const maxY=Math.min(land?last+1:life,Math.max(last+1,1));
+    for(let y=1;y<=maxY;y++){
+      let dep=0,tr=0;
+      if(life>0&&y<=life){dep=r2(Math.max(0,Math.min(d,gross-acc-p.rv)));acc=r2(acc+dep);hCA-=hist;
+        if(p.tr==='ann'){tr=r2(Math.min(sur,Math.max(0,dep-hist)));sur-=tr;trCum+=tr}}
+      const e=ev.find(x=>x.t===y);let rec=null;
+      if(e){const ca=gross-acc;const diff=e.fv-ca;let toPL=0,toS=0;
+        if(diff>=0){toPL=Math.min(diff,pl);pl-=toPL;toS=diff-toPL;sur+=toS}
+        else{const dd=-diff;const fs=Math.min(dd,sur);sur-=fs;toS=-fs;toPL=-(dd-fs);pl+=dd-fs}
+        const g0=gross,a0=acc;
+        if(p.meth==='1'&&ca>0&&a0>0){const ratio=e.fv/ca;gross=g0*ratio;acc=a0*ratio}else{gross=e.fv;acc=0}
+        const rem=life-y;d=life>0&&rem>0?(e.fv-p.rv)/rem:0;
+        rec={n:evs.length+1,t:y,ca,fv:e.fv,diff,toS,toPL,dG:gross-g0,dA:acc-a0,g0,a0,gross,acc,sur,pl,d,hCA,meth:(p.meth==='1'&&ca>0&&a0>0)?'1':'2'};evs.push(rec)}
+      yrs.push({y,dep,hist:life>0&&y<=life?hist:0,tr,sur,ca:gross-acc,hCA:land?p.cost:hCA,ev:!!e});
+    }
+    return {yrs,evs,hist,trCum,sur,pl};
+  }
+  function rvCalc(){
+    const p={cost:val($('rvCost')),rv:val($('rvRv')),life:Math.round(val($('rvLife'))),meth:$('rvMeth').value,tr:$('rvTr').value,land:$('rvLand').checked,ev:rvE};
+    const out=$('rvOut');NOTE.rv=null;if(!(p.cost>0)){nsKick();out.innerHTML='<p class="hint">กรอกราคาทุน</p>';return}
+    if(!p.land&&!(p.life>0)){out.innerHTML='<p class="hint">กรอกอายุการใช้ประโยชน์ หรือเลือกว่าเป็นที่ดิน</p>';return}
+    const R=rvSim(p);NOTE.rv={R,p};const acct=p.land?'ที่ดิน':'สินทรัพย์';const nm=p.land?'ที่ดิน':'สินทรัพย์';
+    const evH=R.evs.map(e=>{
+      const L=[];
+      if(e.meth==='2'&&e.a0>0){L.push({dr:1,acct:'ค่าเสื่อมราคาสะสม',amt:e.a0});}
+      else if(e.dA) L.push({dr:e.dA<0?1:0,acct:'ค่าเสื่อมราคาสะสม',amt:Math.abs(e.dA)});
+      const dG=e.meth==='2'&&e.a0>0?e.dG:e.dG; // net change of gross
+      if(dG) L.push({dr:dG>0?1:0,acct:acct,amt:Math.abs(dG)});
+      if(e.toS) L.push({dr:e.toS<0?1:0,acct:'ส่วนเกินทุนจากการตีราคา'+nm,amt:Math.abs(e.toS)});
+      if(e.toPL) L.push({dr:e.toPL<0?1:0,acct:e.toPL<0?'ผลขาดทุนจากการตีราคา'+nm+' (P/L)':'ผลกำไรจากการตีราคา'+nm+' (P/L)',amt:Math.abs(e.toPL)});
+      return `<h3>ครั้งที่ ${e.n} · สิ้นปีที่ ${e.t}</h3>
+        <div class="tbl"><table><tbody>
+        <tr><td>มูลค่าตามบัญชีก่อนตีราคา</td><td class="num">${fmt(e.ca)}</td></tr>
+        <tr><td>มูลค่ายุติธรรม</td><td class="num">${fmt(e.fv)}</td></tr>
+        <tr><td>${e.diff>=0?'ส่วนเพิ่ม':'ส่วนลด'}</td><td class="num">${fmt(Math.abs(e.diff))}</td></tr>
+        <tr><td>เข้าส่วนเกินทุน (10.20/10.21)</td><td class="num">${fmt(e.toS)}</td></tr>
+        <tr><td>เข้างบกำไรขาดทุน</td><td class="num">${fmt(e.toPL)}</td></tr>
+        <tr><td>ราคาทุน / ค่าเสื่อมสะสม หลังตีราคา (${e.meth==='1'?'10.17.1':'10.17.2'})</td><td class="num">${fmt(e.gross)} / ${fmt(e.acc)}</td></tr>
+        ${p.land?'':`<tr><td>ค่าเสื่อมราคาต่อปีหลังตีราคา (10.27)</td><td class="num">${fmt(e.d)}</td></tr>`}
+        <tr><td>มูลค่าตามบัญชีหากใช้วิธีราคาทุน (10.47.3)</td><td class="num">${fmt(e.hCA)}</td></tr>
+        </tbody></table></div>${jeAuto('บันทึกการตีราคาใหม่ (รวมรายการ)',L,e.diff>=0?'ย่อหน้า 10.17, 10.20':'ย่อหน้า 10.17, 10.21')}`}).join('');
+    const sch=p.land?'':`<h3>ตารางค่าเสื่อมราคาและการโอนส่วนเกินทุน</h3><div class="tbl"><table><thead><tr><th>ปีที่</th><th class="num">ค่าเสื่อมราคา</th><th class="num">ตามราคาทุนเดิม</th><th class="num">โอนไปกำไรสะสม</th><th class="num">ส่วนเกินทุนคงเหลือ</th><th class="num">มูลค่าตามบัญชี</th><th class="num">ค่าเสื่อมราคาทางภาษี (ราคาทุน)</th><th class="num">ปรับในการคำนวณภาษี (+ บวกกลับ / − หักเพิ่ม)</th></tr></thead><tbody>${R.yrs.map(y=>`<tr><td>${y.y}${y.ev?' *':''}</td><td class="num">${fmt(y.dep)}</td><td class="num">${fmt(y.hist)}</td><td class="num">${fmt(y.tr)}</td><td class="num">${fmt(y.sur)}</td><td class="num">${fmt(y.ca)}</td><td class="num">${fmt(y.hist)}</td><td class="num">${fmt(r2(y.dep-y.hist))}</td></tr>`).join('')}</tbody></table></div><p class="hint">* ปีที่ตีราคาใหม่ ณ สิ้นปี ค่าเสื่อมราคาของปีนั้นคิดก่อนตีราคา · ค่าเสื่อมราคาทางภาษีคิดจากราคาทุนตามมาตรา 65 ทวิ (2) และ (3) โดยสมมติว่าอัตราทางบัญชีไม่เกินอัตราใน พ.ร.ฎ. ฉบับที่ 145 ผลกำไรหรือผลขาดทุนจากการตีราคาในงบกำไรขาดทุนปรับแยกต่างหาก</p>`;
+    const firstAfter=R.yrs.find(y=>y.tr>0);
+    const trJE=firstAfter?jeAuto(`โอนส่วนเกินทุนไปกำไรสะสม ปีที่ ${firstAfter.y}`,[{dr:1,acct:'ส่วนเกินทุนจากการตีราคา'+nm,amt:firstAfter.tr},{dr:0,acct:'กำไรสะสม',amt:firstAfter.tr}],'ย่อหน้า 10.22'):'';
+    const lastE=R.evs[R.evs.length-1];const addBack=R.yrs.filter(y=>y.dep>y.hist).map(y=>y.dep-y.hist);
+    const plTot=R.evs.reduce((t,e)=>t+e.toPL,0);
+    out.innerHTML=`<h2>ผลการคำนวณ</h2>
+      ${figs([['ส่วนเกินทุนคงเหลือ',R.sur],['ผลสุทธิในงบกำไรขาดทุนจากการตีราคา',plTot],['โอนไปกำไรสะสมแล้ว',R.trCum]])}
+      ${evH}${sch}${trJE}
+      <div class="note"><div class="cap">ข้อมูลที่ต้องเปิดเผย (10.47)</div>วันที่ตีราคาใหม่ครั้งล่าสุด: สิ้นปีที่ ${lastE?lastE.t:'–'} · ระบุว่าผู้ประเมินราคาอิสระมีส่วนร่วมหรือไม่ ถ้าไม่มี ให้อธิบายวิธีประมาณมูลค่ายุติธรรม · มูลค่าตามบัญชีหากใช้วิธีราคาทุน ${lastE?fmt(lastE.hCA):'–'} บาท · การเปลี่ยนแปลงของส่วนเกินทุนในระหว่างงวดและข้อจำกัดในการจ่ายให้ผู้ถือหุ้น</div><div class="note"><div class="cap">บรรทัดตามรายการย่อแบบ 2</div>สินทรัพย์แสดงใน 2.10 ที่ดิน อาคารและอุปกรณ์ · ส่วนเกินทุนสะสมแสดงใน 5.6 องค์ประกอบอื่นของส่วนของผู้ถือหุ้น (กรณีจัดทำงบกำไรขาดทุน) · การเปลี่ยนแปลงส่วนเกินทุนของงวดแสดงใน 16.2.1 ผลกำไร (ขาดทุน) จากการตีมูลค่าสินทรัพย์ใหม่ ซึ่งเป็นรายการที่จะไม่ถูกจัดประเภทใหม่ (กรณีจัดทำงบกำไรขาดทุนเบ็ดเสร็จ, 4.14.1, 4.16) · ผลขาดทุน (กลับรายการ) ในงบกำไรขาดทุนแสดงใน 8 ผลขาดทุน (กลับรายการ) จากการลดลงของมูลค่าสินทรัพย์ (งบแบบจำแนกตามธรรมชาติ)</div>
+      ${facts('ตัวเลขบอกอะไร',[
+        `ส่วนเกินทุน ${fmt(R.sur)} บาทอยู่ในส่วนของเจ้าของ ไม่ผ่านงบกำไรขาดทุน และจ่ายเป็นเงินปันผลไม่ได้จนกว่าจะโอนไปกำไรสะสม`,
+        p.land?'ที่ดินไม่คิดค่าเสื่อมราคา ส่วนเกินทุนจะโอนไปกำไรสะสมเมื่อขายที่ดินเท่านั้น':`ค่าเสื่อมราคาหลังตีราคาเพิ่มสูงกว่าตามราคาทุนเดิม ${addBack.length?fmt(addBack[0]):'0'} บาทต่อปี กำไรทางบัญชีจึงต่ำลงแม้กระแสเงินสดเท่าเดิม`,
+        R.evs.some(e=>e.toPL<0)?`การตีราคาลดลงเกินส่วนเกินทุนคงเหลือ ส่วนที่เกิน ${fmt(-R.evs.filter(e=>e.toPL<0).reduce((t,e)=>t+e.toPL,0))} บาทจึงเป็นผลขาดทุนในงบกำไรขาดทุน (10.21) ถ้าภายหลังตีราคาเพิ่ม ต้องกลับรายการผ่านงบกำไรขาดทุนก่อน (10.20)`:'ยังไม่มีผลขาดทุนจากการตีราคาในงบกำไรขาดทุน',
+        p.tr==='ann'?'การทยอยโอนทำให้ส่วนเกินทุนลดลงทุกปี เมื่อตีราคาลดในภายหลัง ส่วนที่หักจากส่วนเกินทุนได้จึงน้อยลงและผลขาดทุนในงบกำไรขาดทุนสูงขึ้น':'การโอนเมื่อเลิกใช้ทำให้ส่วนเกินทุนคงอยู่เต็มจำนวน ใช้รองรับการตีราคาลดในภายหลังได้มากกว่า'])}
+      <div class="tax"><b>ผลทางภาษี</b> มาตรา 65 ทวิ (3) ไม่ให้นำส่วนที่ตีราคาเพิ่มมารวมคำนวณ และไม่ให้หักค่าเสื่อมราคาของส่วนนั้น ${p.land?'':`ให้บวกกลับค่าเสื่อมราคาส่วนเกินปีละ ${addBack.length?fmt(addBack[0]):'0'} บาท `}ผลขาดทุนหรือผลกำไรจากการตีราคาในงบกำไรขาดทุนไม่ใช่รายจ่ายหรือรายได้ทางภาษี ให้บวกกลับหรือหักออก ราคาทุนทางภาษียังเป็น ${fmt(p.cost)} บาท NPAEs ไม่ต้องรับรู้ภาษีเงินได้รอการตัดบัญชี เว้นแต่เลือกปฏิบัติตาม TAS 12 (10.23)</div>
+      ${theory([['10.12, 10.18–10.19','เลือกนโยบายรายประเภท และตีราคาทุกรายการในประเภทเดียวกันพร้อมกัน'],['10.14, 10.16','ตีราคาสม่ำเสมอพอให้มูลค่าตามบัญชีไม่ต่างจากมูลค่ายุติธรรมอย่างมีสาระสำคัญ ทุก 3–5 ปีเพียงพอเมื่อเปลี่ยนแปลงน้อย'],['10.17.1 / 10.17.2','ปรับราคาทุนและค่าเสื่อมสะสมตามสัดส่วน หรือหักค่าเสื่อมสะสมออกก่อน'],['10.20','ส่วนเพิ่มเข้าส่วนเกินทุน เว้นแต่เป็นการกลับรายการขาดทุนที่เคยรับรู้ในงบกำไรขาดทุน'],['10.21','ส่วนลดเข้างบกำไรขาดทุน เว้นแต่มีส่วนเกินทุนของรายการเดียวกันให้หักก่อน'],['10.22','โอนส่วนเกินทุนไปกำไรสะสมโดยตรง เมื่อเลิกรับรู้ หรือทยอยโอนเท่าผลต่างค่าเสื่อมราคา'],['10.27','ค่าเสื่อมราคาคิดจากราคาที่ตีใหม่หักมูลค่าคงเหลือ'],['ตัวอย่างสภาฯ','ตัวอย่างที่ 1–6 ของตัวอย่างประกอบความเข้าใจ TFRS for NPAEs (ปรับปรุง 2565)']])}`;nsKick();
+  }
+  ['rvCost','rvRv','rvLife'].forEach(id=>$(id).addEventListener('input',rvCalc));['rvMeth','rvTr','rvLand'].forEach(id=>$(id).addEventListener('change',rvCalc));
+  $('rvAdd').addEventListener('click',()=>{const l=rvE[rvE.length-1];rvE.push({t:(l?l.t:0)+2,fv:l?l.fv:val($('rvCost'))});rvRender()});
+  $('rvS1').addEventListener('click',()=>{$('rvCost').value=4200000;$('rvRv').value=200000;$('rvLife').value=10;$('rvLand').checked=false;$('rvMeth').value='2';$('rvTr').value='end';rvE=[{t:3,fv:3600000},{t:5,fv:1400000}];$('rvTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566) ตัวอย่างที่ 5–6';rvRender()});
+  $('rvS2').addEventListener('click',()=>{$('rvCost').value=100000;$('rvRv').value=0;$('rvLife').value=0;$('rvLand').checked=true;$('rvMeth').value='2';$('rvTr').value='end';rvE=[{t:2,fv:150000},{t:5,fv:90000},{t:8,fv:130000}];$('rvTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566) ตัวอย่างที่ 4 (ที่ดิน)';rvRender()});
+
+  /* =========================================================
+     3 DECREASE IN VALUE
+     ========================================================= */
+  function imCalc(){
+    const out=$('imOut');const ind=[...document.querySelectorAll('#imInd input:checked')].map(x=>x.parentElement.textContent.trim());
+    const cost=val($('imCost')),acc=val($('imAcc')),prev=val($('imPrev')),rem=val($('imRem')),rv=val($('imRv'));
+    const ca=cost-acc-prev;const pol=$('imPol').value;const fvl=val($('imPrice'))-val($('imCts'));const viu=val($('imViu'));const rel=$('imRel').checked;
+    if(!ind.length){NOTE.im={loss:0,ind:[]};nsKick();out.innerHTML=`<h2>ผลการประเมิน</h2>${verdict('ok','ไม่มีข้อบ่งชี้ ไม่ต้องทดสอบ','ย่อหน้า 10.37 ใช้เมื่อมีข้อบ่งชี้ว่ามูลค่าลดลงอย่างถาวรเท่านั้น ให้บันทึกผลการประเมินข้อบ่งชี้ไว้ในกระดาษทำการ และเปิดเผยตามย่อหน้า 10.46.1 เมื่อมีข้อบ่งชี้')}`;return}
+    const meas=pol==='fv'?fvl:viu;const mName=pol==='fv'?'ราคาขายหักต้นทุนในการขาย':'มูลค่าจากการใช้';
+    if(!rel){NOTE.im={loss:0,ind,unrel:true};nsKick();out.innerHTML=`<h2>ผลการประเมิน</h2>${verdict('warn','ประมาณตัววัดได้ไม่น่าเชื่อถือ',`ย่อหน้า 10.37 ให้รับรู้ผลขาดทุนเมื่อประมาณราคาขายได้อย่างน่าเชื่อถือโดยไม่มีต้นทุนสูงเกินไป ${pol==='fv'?'ถ้าประมาณมูลค่าจากการใช้ได้อย่างน่าเชื่อถือ ให้พิจารณาใช้แทนตามย่อหน้า 10.38':'ถ้าประมาณราคาขายได้ ให้ใช้ตัววัดหลักตามย่อหน้า 10.37'} และเปิดเผยข้อบ่งชี้ตามย่อหน้า 10.46.1`)}`;return}
+    const loss=Math.max(0,ca-meas);const ca1=ca-loss;const dA=rem>0?Math.max(0,(ca1-rv)/rem):0;const d0=rem>0?Math.max(0,(cost-acc-rv)/rem):0;
+    const n=Math.max(0,Math.round(val($('imN'))));const caN=Math.max(rv,ca1-dA*Math.min(n,rem));const noLoss=Math.max(rv,(cost-acc)-d0*Math.min(n,rem));
+    const ra=val($('imNew'));const allow=prev+loss;const cap=$('imCap').checked;const gone=$('imGone').checked;
+    let rev=0;if(gone&&ra>caN){rev=Math.min((cap?Math.min(ra,noLoss):ra)-caN,allow);rev=Math.max(0,rev)}
+    const comps=($('imComp').value||'').split(/\n/).map(l=>l.split(',').map(x=>x.trim())).filter(a=>a.length>=4&&a[0]).map(a=>({n:a[0],ca:+a[1]||0,rv:+a[2]||0,rem:+a[3]||0}));
+    const cTot=comps.reduce((t,o)=>t+o.ca,0);const useC=comps.length>0&&Math.abs(cTot-ca)<1;
+    let compHtml='';let dComp=0;
+    if(comps.length&&!useC){compHtml=alertBox('warn',`ผลรวมมูลค่าตามบัญชีของส่วนประกอบ ${fmt(cTot)} บาท ไม่เท่ามูลค่าตามบัญชี ${fmt(ca)} บาท แอปจึงคิดเป็นรายการเดียว`)}
+    if(useC){const rr=comps.map(o=>{const al=loss*o.ca/cTot;const af=o.ca-al;const d=o.rem>0?Math.max(0,(af-o.rv)/o.rem):0;dComp+=d;return `<tr><td>${esc(o.n)}</td><td class="num">${fmt(o.ca)}</td><td class="num">${fmt(al)}</td><td class="num">${fmt(af)}</td><td class="num">${o.rem}</td><td class="num">${fmt(d)}</td></tr>`}).join('');
+      compHtml=`<h3>ค่าเสื่อมราคาปีถัดไปตามส่วนประกอบ (10.24, 10.36)</h3><div class="tbl"><table><thead><tr><th>ส่วนประกอบ</th><th class="num">มูลค่าตามบัญชีก่อน</th><th class="num">ค่าเผื่อที่ปันส่วน</th><th class="num">หลังหักค่าเผื่อ</th><th class="num">อายุคงเหลือ</th><th class="num">ค่าเสื่อมราคาปีถัดไป</th></tr></thead><tbody>${rr}<tr><td><b>รวม</b></td><td class="num"><b>${fmt(cTot)}</b></td><td class="num"><b>${fmt(loss)}</b></td><td class="num"><b>${fmt(ca-loss)}</b></td><td></td><td class="num"><b>${fmt(dComp)}</b></td></tr></tbody></table></div><p class="why">การปันส่วนค่าเผื่อตามสัดส่วนมูลค่าตามบัญชีเป็นแนวการตีความ ตารางนี้ตรงกับ S10.4 ส่วนตารางรายการเดียวด้านล่างใช้สาธิตกลไกการกลับรายการ</p>`}
+    NOTE.im={loss,ind,ca,meas,mName,pol};
+    out.innerHTML=`<h2>ผลการทดสอบ</h2>
+      ${figs([['มูลค่าตามบัญชี',ca],[mName,meas],['ผลขาดทุนจากการลดมูลค่า',loss]])}
+      ${loss>0?verdict('bad','รับรู้ผลขาดทุนจากการลดมูลค่า',`มูลค่าตามบัญชี ${fmt(ca)} บาทสูงกว่า${mName} ${fmt(meas)} บาท`):verdict('ok','ไม่ต้องรับรู้ผลขาดทุน',`${mName}ไม่ต่ำกว่ามูลค่าตามบัญชี`)}
+      ${pol==='fv'&&viu>fvl&&viu>0?alertBox('warn',`มูลค่าจากการใช้ ${fmt(viu)} บาทสูงกว่าราคาขายสุทธิ ย่อหน้า 10.38 อนุญาตให้ใช้แทนได้ถ้าประมาณได้อย่างน่าเชื่อถือ แต่ต้องเลือกเป็นนโยบายและใช้สม่ำเสมอ ไม่ใช่เลือกค่าที่ให้ผลดีกว่าเป็นครั้ง ๆ`):''}
+      ${jeAuto('บันทึกผลขาดทุนจากการลดมูลค่า',[{dr:1,acct:'ผลขาดทุนจากการลดมูลค่า (P/L)',amt:loss},{dr:0,acct:'ค่าเผื่อการลดลงของมูลค่า',amt:loss}],'ย่อหน้า 10.37')}
+      ${compHtml}<h3>ค่าเสื่อมราคาหลังรับรู้ผลขาดทุน${useC?' (คิดเป็นรายการเดียว เพื่อสาธิตการกลับรายการ)':''} (10.36 วรรคท้าย)</h3>
+      <div class="tbl"><table><tbody>
+        <tr><td>ค่าเสื่อมราคาต่อปี เดิม → ใหม่</td><td class="num">${fmt(d0)} → ${fmt(dA)}</td></tr>
+        <tr><td>มูลค่าตามบัญชีเมื่อผ่านไป ${n} ปี</td><td class="num">${fmt(caN)}</td></tr>
+        <tr><td>มูลค่าตามบัญชีหากไม่เคยลดมูลค่า</td><td class="num">${fmt(noLoss)}</td></tr>
+        <tr><td>ตัววัดที่ประมาณได้ใหม่</td><td class="num">${fmt(ra)}</td></tr>
+        <tr><td><b>กลับรายการได้</b>${cap?' (แนวการตีความ: ไม่เกินมูลค่าหากไม่เคยลดมูลค่า)':' (ไม่มีเพดาน: ไม่เกินยอดค่าเผื่อและตัววัด)'}</td><td class="num"><b>${fmt(rev)}</b></td></tr></tbody></table></div>
+      ${!gone?alertBox('warn','ข้อบ่งชี้เดิมยังปรากฏอยู่ จึงยังกลับรายการไม่ได้ (10.37 วรรคท้าย)'):''}
+      ${jeAuto('บันทึกกลับรายการ',[{dr:1,acct:'ค่าเผื่อการลดลงของมูลค่า',amt:rev},{dr:0,acct:'กลับรายการผลขาดทุนจากการลดมูลค่า (P/L)',amt:rev}],'ย่อหน้า 10.37')}${cap&&gone&&rev>0&&caN+rev>=noLoss-0.5&&allow-rev>0.5?jeAuto('ปิดค่าเผื่อส่วนที่เหลือกับค่าเสื่อมราคาสะสม',[{dr:1,acct:'ค่าเผื่อการลดลงของมูลค่า',amt:allow-rev},{dr:0,acct:'ค่าเสื่อมราคาสะสม',amt:allow-rev}],'10.13'):''}${cap&&gone&&rev>0&&caN+rev>=noLoss-0.5&&allow-rev>0.5?`<p class="why">ค่าเผื่อที่เหลือ ${fmt(allow-rev)} บาท คือส่วนของผลขาดทุนที่ทยอยกลับไปแล้วผ่านค่าเสื่อมราคาที่ลดลงตามวรรคท้ายของย่อหน้า 10.36 เมื่อปิดกับค่าเสื่อมราคาสะสม สินทรัพย์จะแสดงเท่าราคาทุนหักค่าเสื่อมราคาปกติ และค่าเสื่อมราคาปีต่อไปกลับเป็น ${fmt(d0)} บาท</p>`:''}
+      ${!cap&&gone&&caN+rev>noLoss+0.5?alertBox('warn',`มูลค่าตามบัญชีหลังกลับรายการ ${fmt(caN+rev)} บาท สูงกว่ามูลค่าตามบัญชีหากไม่เคยลดมูลค่า ${fmt(caN+rev-noLoss)} บาท ส่วนเกินนี้เท่ากับตีราคาเพิ่มผ่านงบกำไรขาดทุน ซึ่งขัดกับย่อหน้า 10.13 และ 10.20 จึงควรใช้เพดาน ${fmt(noLoss)} บาท`):''}
+      <div class="note"><div class="cap">ข้อมูลที่ต้องเปิดเผย</div>ข้อบ่งชี้ว่ามูลค่าลดลงอย่างถาวร: ${esc(ind.join(' · '))} (10.46.1) · ผลขาดทุนจากการลดมูลค่าและการกลับรายการแสดงในรายการกระทบยอด (10.45.4.4) · เกณฑ์การวัดมูลค่าและค่าเผื่อการลดลงของมูลค่า (10.45.1)</div>
+      ${facts('ตัวเลขบอกอะไร',[`ผลขาดทุน ${fmt(loss)} บาทเท่ากับ ${pct(ca?loss/ca:0,1)} ของมูลค่าตามบัญชี บอกว่าสินทรัพย์นี้จะสร้างประโยชน์ได้น้อยกว่าที่บันทึกไว้`,
+        `ค่าเสื่อมราคาปีต่อไปลดลง ${fmt(d0-dA)} บาทต่อปี กำไรปีหลังจึงสูงขึ้นบางส่วน ผู้ใช้งบควรดูผลรวมหลายปี ไม่ใช่ปีเดียว`,
+        cap?`เพดานทำให้กลับรายการได้ไม่เกิน ${fmt(Math.max(0,noLoss-caN))} บาท มูลค่าตามบัญชีจึงไม่สูงกว่าที่ควรเป็นหากไม่เคยลดมูลค่า`:'ย่อหน้า 10.37 ให้กลับรายการผลขาดทุนที่รับรู้ไว้เมื่อข้อบ่งชี้หมดไป และค่าเสื่อมราคาหลังกลับรายการคำนวณจากมูลค่าตามบัญชีใหม่'])}
+      <div class="tax"><b>ผลทางภาษี</b> ผลขาดทุนจากการลดมูลค่าเป็นค่าของทรัพย์สินที่ตีราคาต่ำลง ซึ่งไม่ให้ถือเป็นรายจ่ายตามมาตรา 65 ตรี (17) ให้บวกกลับผลขาดทุน ${fmt(loss)} บาท และหักออกเมื่อกลับรายการ ค่าเสื่อมราคาทางภาษียังคิดจากราคาทุนเดิม (${fmt(d0)} บาทต่อปีในกรณีนี้ ไม่เกินเพดาน) จึงต้องหักออกเพิ่มปีละ ${fmt(d0-dA)} บาท ผลขาดทุนส่วนที่เหลือหักได้เมื่อจำหน่ายหรือตัดจำหน่ายจริง ให้ตรวจถ้อยคำกฎหมายฉบับล่าสุด</div>
+      ${theory([['10.37','มีข้อบ่งชี้ว่าลดลงอย่างถาวร → รับรู้ผลขาดทุนเมื่อราคาขายหักต้นทุนในการขายต่ำกว่ามูลค่าตามบัญชี ไม่ต้องใช้ผู้ประเมินอิสระ และกลับรายการได้เมื่อข้อบ่งชี้หมดไป'],['10.38','ใช้มูลค่าจากการใช้ของสินทรัพย์ (ตามวิธีคำนวณที่ระบุในมาตรฐานการบัญชี ฉบับที่ 36) แทนราคาขายหักต้นทุนในการขายได้ หากประมาณมูลค่าจากการใช้ได้อย่างน่าเชื่อถือ'],['10.36 วรรคท้าย','คิดค่าเสื่อมราคาจากมูลค่าตามบัญชีหลังค่าเผื่อการลดลงของมูลค่า'],['10.46.1','เปิดเผยข้อบ่งชี้ว่ามูลค่าลดลงอย่างถาวร'],['10.37 วรรคท้าย','กลับรายการ "ผลขาดทุนดังกล่าว" ได้เมื่อข้อบ่งชี้หมดไป'],['8.4, 8.17, 10.40.2','หลักราคาทุนหรือมูลค่าที่ต่ำกว่า: กลับรายการได้เพียงให้มูลค่ากลับไปไม่เกิน "ราคาทุน" ซึ่งสำหรับ PPE คือราคาทุนหักค่าเสื่อมราคาปกติ'],['12.25.2.1–12.25.2.2','บทที่ 12 เขียนเพดานนี้ไว้ตรง ๆ: ส่วนที่รับรู้ในงบกำไรขาดทุนต้องไม่เกินมูลค่าที่ควรเป็น (สุทธิจากค่าเสื่อมราคา) หากไม่เคยรับรู้ผลขาดทุน ส่วนที่เหลือเข้าส่วนเกินทุน'],['ตัวอย่างประกอบความเข้าใจ บทที่ 10 ตัวอย่าง 3–4, 9 และบทที่ 12 ตัวอย่าง 4','ทุกตัวอย่างให้งบกำไรขาดทุนรับรู้การเพิ่มขึ้นได้เท่าผลขาดทุนที่เคยรับรู้ ส่วนเกินเป็นการตีราคาเพิ่ม'],['10.13, 10.20','วิธีราคาทุนไม่ให้มูลค่าสูงกว่าราคาทุนหักค่าเสื่อมราคา ส่วนเพิ่มเหนือนั้นรับรู้ได้เฉพาะวิธีตีราคาใหม่ในส่วนเกินทุน']])}`;nsKick();
+  }
+  ['imCost','imAcc','imPrev','imRem','imRv','imPrice','imCts','imViu','imN','imNew'].forEach(id=>$(id).addEventListener('input',imCalc));
+  ['imPol','imRel','imCap','imGone'].forEach(id=>$(id).addEventListener('change',imCalc));$('imComp').addEventListener('input',imCalc);
+  document.querySelectorAll('#imInd input').forEach(x=>x.addEventListener('change',imCalc));
+  $('imCFgo').addEventListener('click',()=>{const cf=$('imCF').value.split(/[,\s]+/).map(Number).filter(isFinite);const r=val($('imR'))/100;
+    const v=cf.reduce((t,c,i)=>t+c/Math.pow(1+r,i+1),0);$('imViu').value=Math.round(v*100)/100;$('imCFv').textContent=`มูลค่าปัจจุบัน ${fmt(v)} บาท (${cf.length} ปี)`;imCalc()});
+
+  /* =========================================================
+     4 HELD FOR SALE
+     ========================================================= */
+  function hfCalc(){
+    const out=$('hfOut');const cost=val($('hfCost')),nbv=val($('hfNbv')),rem=val($('hfRem')),m=val($('hfM'));
+    const dep=rem>0?nbv*Math.min(m,rem)/rem:0;const ca=nbv-dep;const fvl=val($('hfP'))-val($('hfC'));const meas=Math.min(ca,fvl);const loss=Math.max(0,ca-fvl);
+    const ye=val($('hfYe'));const pal=val($('hfPal'));
+    const seqV=[ye].concat(String($('hfYeM').value).split(/[,\s]+/).map(Number).filter(x=>isFinite(x)&&x>0));
+    let car=meas,cum=loss;const SEQ=seqV.map((v,i)=>{const b=car;let ch=0;if(v<car){ch=-(car-v);cum+=car-v;car=v}else if(v>car){ch=Math.min(v-car,cum);cum-=ch;car+=ch}return {i:i+1,b,v,ch,a:car,cum}});
+    const ycar=car;const ye2=ycar-meas;
+    const back=$('hfBack').checked;const cur=$('hfCur').checked;const sold=$('hfSold').checked&&!back;const net=val($('hfSp'))-val($('hfSc'));const g=net-ycar;const accAll=cost-nbv-pal+dep;
+    const ev=[...document.querySelectorAll('.hfE')];const miss=ev.filter(x=>!x.checked).length;
+    const HX=hxCalc({ca,loss,ye2,sold,g,fvl});NOTE.hf={cost,accAll,loss,meas,ycar,sold,ca,cur,back};
+    const hl=val($('hfLife'));const alw=Math.max(0,cost-accAll-ycar);const backH=back?`<h3>จัดประเภทกลับเป็นที่ดิน อาคารและอุปกรณ์</h3><p class="why">ระหว่างถือไว้เพื่อขายไม่มีค่าเสื่อมราคา (10.40.3) มูลค่าถูกควบคุมด้วยการวัดใหม่ทุกวันสิ้นงวด เมื่อเลิกแผนขาย ให้วัดมูลค่าครั้งสุดท้ายตามย่อหน้า 10.40.1–10.40.2 ได้ ${fmt(ycar)} บาท แล้วจัดประเภทกลับด้วยมูลค่านั้น เพราะสินทรัพย์ไม่เข้าย่อหน้า 10.39 แต่กลับเข้านิยามย่อหน้า 10.1 จากนั้นเริ่มคิดค่าเสื่อมราคาตลอดอายุที่เหลือ ${fmt(hl,0)} เดือน เดือนละ ${fmt(hl>0?ycar/hl:0)} บาท หรือปีละ ${fmt(hl>0?ycar/hl*12:0)} บาท (10.29, 10.30, 10.36)</p>${jeAuto('จัดประเภทกลับ',[{dr:1,acct:'ที่ดิน อาคารและอุปกรณ์',amt:cost},{dr:0,acct:'ค่าเสื่อมราคาสะสม',amt:accAll},{dr:0,acct:'ค่าเผื่อการลดลงของมูลค่า',amt:alw},{dr:0,acct:'สินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย',amt:ycar}],'ย่อหน้า 10.1, 10.39')}<div class="note"><div class="cap">การเปิดเผย</div>แสดงการจัดประเภทกลับในรายการกระทบยอดเป็นการเปลี่ยนแปลงอื่น (10.45.4.5) และอธิบายเหตุผลที่เลิกแผนขาย</div>`:'';
+    out.innerHTML=`<h2>ผลการคำนวณ</h2>
+      ${figs([['มูลค่าตามบัญชี ณ วันจัดประเภท',ca],['ราคาขายสุทธิ ณ วันจัดประเภท',fvl],['มูลค่าที่แสดง ณ วันสิ้นงวด',ycar]])}
+      ${miss?alertBox('bad',`ขาดหลักฐาน ${miss} รายการ การหยุดใช้งานอย่างเดียวไม่พอให้จัดประเภทตามย่อหน้า 10.39 ให้พิจารณาว่าเป็นข้อบ่งชี้การลดลงของมูลค่าตามย่อหน้า 10.37 แทน`):''}
+      ${jeAuto('ค่าเสื่อมราคาถึงวันจัดประเภท',[{dr:1,acct:'ค่าเสื่อมราคา',amt:dep},{dr:0,acct:'ค่าเสื่อมราคาสะสม',amt:dep}],'ย่อหน้า 10.30')}
+      ${jeAuto('ผลขาดทุนจากการลดมูลค่า ณ วันจัดประเภท',[{dr:1,acct:'ผลขาดทุนจากการลดมูลค่า (P/L)',amt:loss},{dr:0,acct:'ค่าเผื่อผลขาดทุนจากการลดมูลค่า',amt:loss}],'ย่อหน้า 10.40.1')}
+      ${jeAuto('จัดประเภทเป็นสินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย',[{dr:1,acct:'สินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย',amt:meas},{dr:1,acct:'ค่าเสื่อมราคาสะสม',amt:accAll},{dr:1,acct:'ค่าเผื่อผลขาดทุนจากการลดมูลค่า',amt:loss+pal},{dr:0,acct:'ที่ดิน อาคารและอุปกรณ์',amt:cost}],'ย่อหน้า 10.40')}
+      <h3>วัดมูลค่า ณ วันสิ้นงวด (10.40.1–10.40.2)</h3>
+      <p class="why">ทุกวันสิ้นงวด เปรียบเทียบ <b>มูลค่าตามบัญชีของสินทรัพย์ถือไว้เพื่อขาย ณ วันนั้น</b> (ไม่มีค่าเสื่อมราคาระหว่างถือ) กับราคาที่คาดว่าจะขายได้สุทธิใหม่ ถ้าต่ำกว่า รับรู้ผลขาดทุนเพิ่มทันที ถ้าสูงกว่า รับรู้ผลกำไรได้ไม่เกินยอดผลขาดทุนจากการลดมูลค่าสะสมที่เคยรับรู้ก่อนหน้านี้ (10.40.2) ตามตัวอย่างที่ 8–9 ในตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566) มูลค่าที่แสดงจึงไม่เกินมูลค่าตามบัญชี ณ วันจัดประเภท ${fmt(ca)} บาท</p>
+      <div class="tbl"><table><thead><tr><th>วันสิ้นงวดที่</th><th class="num">มูลค่าตามบัญชีก่อนวัด</th><th class="num">ราคาขายสุทธิ</th><th class="num">ขาดทุน / กำไร</th><th class="num">มูลค่าที่แสดง</th><th class="num">ขาดทุนสะสมคงเหลือ</th></tr></thead><tbody>
+      <tr><td>วันจัดประเภท</td><td class="num">${fmt(ca)}</td><td class="num">${fmt(fvl)}</td><td class="num">${fmt(-loss||0)}</td><td class="num">${fmt(meas)}</td><td class="num">${fmt(loss)}</td></tr>
+      ${SEQ.map(r=>`<tr><td>${r.i}</td><td class="num">${fmt(r.b)}</td><td class="num">${fmt(r.v)}</td><td class="num">${fmt(r.ch||0)}</td><td class="num">${fmt(r.a)}</td><td class="num">${fmt(r.cum)}</td></tr>`).join('')}</tbody></table></div>
+      ${SEQ.some(r=>r.v>r.b&&r.ch<r.v-r.b)?alertBox('warn','ราคาขายสุทธิบางงวดสูงกว่ามูลค่าที่แสดงเกินผลขาดทุนสะสม ส่วนที่เกินรับรู้ไม่ได้ (10.40.2) เพราะไม่ได้ตีราคาเพิ่ม'):''}
+      ${SEQ.filter(r=>r.ch).map(r=>jeAuto(`วันสิ้นงวดที่ ${r.i}: ${r.ch<0?'ผลขาดทุนเพิ่มเติม':'กลับรายการผลขาดทุน'}`,r.ch<0?[{dr:1,acct:'ผลขาดทุนจากการลดมูลค่า (P/L)',amt:-r.ch},{dr:0,acct:'สินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย',amt:-r.ch}]:[{dr:1,acct:'สินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย',amt:r.ch},{dr:0,acct:'กลับรายการผลขาดทุนจากการลดมูลค่า (P/L)',amt:r.ch}],r.ch<0?'ย่อหน้า 10.40.1':'ย่อหน้า 10.40.2')).join('')}
+      ${sold?`<h3>การขาย (10.40.4)</h3>${jeAuto('บันทึกการขาย',[{dr:1,acct:HX.wht?'เงินสด (สุทธิจากต้นทุนในการขายและภาษีหัก ณ ที่จ่าย)':'เงินสด (สุทธิจากต้นทุนในการขาย)',amt:net-HX.wht},{dr:1,acct:'ภาษีเงินได้ถูกหัก ณ ที่จ่าย',amt:HX.wht},{dr:g<0?1:0,acct:g<0?'ผลขาดทุนจากการขายสินทรัพย์':'ผลกำไรจากการขายสินทรัพย์',amt:Math.abs(g)},{dr:0,acct:'สินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย',amt:ycar}],'ย่อหน้า 10.40.4')}`:''}
+      ${backH}
+      ${facts('ตัวเลขบอกอะไร',[($('hxType').value==='imm'||!(rem>1)?'หยุดคิดค่าเสื่อมราคาตั้งแต่วันจัดประเภท (10.40.3) ส่วนที่เป็นที่ดินไม่คิดค่าเสื่อมราคาอยู่แล้ว':`หยุดคิดค่าเสื่อมราคาตั้งแต่วันจัดประเภท (10.40.3) ค่าเสื่อมราคาที่ไม่ต้องบันทึกในช่วงที่ยังไม่ขายคือ ${fmt(rem>0?nbv/rem:0)} บาทต่อเดือน`),
+        (cur?'แสดงเป็นรายการแยกในงบแสดงฐานะการเงิน ภายใต้สินทรัพย์หมุนเวียน เพราะคาดว่าจะขายภายใน 12 เดือน (10.40.5, 4.8.1.4)':'แสดงเป็นรายการแยกในงบแสดงฐานะการเงิน ภายใต้สินทรัพย์ไม่หมุนเวียน เพราะคาดว่าจะขายเกิน 12 เดือน ต่างจาก IFRS 5 ที่แสดงเป็นรายการหมุนเวียนเสมอ (10.40.5, 4.8)'),
+        sold?`ผล${g<0?'ขาดทุน':'กำไร'}จากการขาย ${fmt(Math.abs(g))} บาท สะท้อนความแม่นของการประมาณราคาขายสุทธิ ณ วันสิ้นงวด`:'ยังไม่ขาย ต้องวัดมูลค่าใหม่ทุกวันสิ้นงวดจนกว่าจะขาย'])}
+      ${HX.html}
+      ${theory([['10.39','จัดประเภทเมื่อมูลค่าตามบัญชีจะได้รับคืนส่วนใหญ่จากการขาย'],['10.40.1','วัดด้วยจำนวนที่ต่ำกว่าระหว่างมูลค่าตามบัญชีกับราคาขายสุทธิ รับรู้ผลขาดทุนทันที'],['10.40.2','ผลกำไรภายหลังรับรู้ได้ไม่เกินผลขาดทุนสะสม'],['10.40.3','ไม่บันทึกค่าเสื่อมราคาระหว่างถือไว้เพื่อขาย'],['10.40.5','แยกแสดง จัดเป็นหมุนเวียนหรือไม่หมุนเวียนตามบทที่ 4'],['ตัวอย่างสภาฯ','ตัวอย่างที่ 8 และ 9'],['ม.65 ทวิ (4), 79/3','ราคาตลาดเมื่อขายต่ำกว่าราคาตลาดโดยไม่มีเหตุผลทางธุรกิจรองรับ'],['ม.91/2 (6), ป.82/2542','ภาษีธุรกิจเฉพาะการขายอสังหาริมทรัพย์ของนิติบุคคล'],['ม.69 ทวิ, 69 ตรี','ภาษีหัก ณ ที่จ่าย 1% เมื่อโอนอสังหาริมทรัพย์']])}`;nsKick();
+  }
+  ['hfCost','hfNbv','hfRem','hfM','hfP','hfC','hfYe','hfYeM','hfPal','hfSp','hfSc'].forEach(id=>$(id).addEventListener('input',hfCalc));
+  $('hfSold').addEventListener('change',hfCalc);['hfCur','hfBack'].forEach(id=>$(id).addEventListener('change',hfCalc));$('hfLife').addEventListener('input',hfCalc);document.querySelectorAll('.hfE').forEach(x=>x.addEventListener('change',hfCalc));
+  const hfSet=o=>{Object.entries(o).forEach(([k,v])=>{if(k==='sold')$('hfSold').checked=v;else if(k==='tag')$('hfTag').textContent=v;else $(k).value=v});hfCalc()};
+  $('hfS1').addEventListener('click',()=>hfSet({hfCost:600000,hfNbv:480000,hfRem:48,hfM:6,hfP:450000,hfC:10000,hfYe:430000,hfSp:430000,hfSc:12000,sold:true,tag:'ข้อมูลตัวอย่าง: ตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566) ตัวอย่างที่ 8'}));
+  $('hfS2').addEventListener('click',()=>hfSet({hfCost:1200000,hfNbv:1000000,hfRem:120,hfM:0,hfP:900000,hfC:0,hfYe:1020000,hfSp:0,hfSc:0,hfLife:108,sold:false,tag:'ข้อมูลตัวอย่าง: ตัวอย่างประกอบความเข้าใจของสภาวิชาชีพบัญชี (20 ก.ย. 2566) ตัวอย่างที่ 9'}));
+
+  /* =========================================================
+     5 DISMANTLING
+     ========================================================= */
+  function dsCalc(){
+    const out=$('dsOut');const base=val($('dsBase')),fv=val($('dsFv')),n=Math.max(1,Math.round(val($('dsN')))),r=val($('dsR'))/100,life=Math.max(1,val($('dsLife'))),rv=val($('dsRv'));const disc=$('dsDisc').checked;
+    const pv=disc?fv/Math.pow(1+r,n):fv;const cost=base+pv;const dep=(cost-rv)/life;const depD=pv/life;
+    const rows=[];let b=pv;for(let y=1;y<=n;y++){const i=disc?b*r:0;rows.push({y,b,i,e:b+i});b+=i}
+    const show=n<=12?rows:rows.slice(0,3).concat([null]).concat(rows.slice(-2));
+    out.innerHTML=`<h2>ผลการคำนวณ</h2>
+      ${figs([['ประมาณการหนี้สินเริ่มแรก',pv],['ราคาทุนสินทรัพย์',cost],['ค่าเสื่อมราคาต่อปี',dep]])}
+      ${disc?alertBox('warn',`กำลังแสดงแบบคิดลดเพื่อเปรียบเทียบกับ TAS 37 ราคาทุนและประมาณการหนี้สินต่ำกว่าแนว NPAEs ${fmt(fv-pv)} บาท บทที่ 16 ของ NPAEs ใช้ประมาณการที่ดีที่สุด ณ วันสิ้นงวด (16.12–16.13) โดยไม่ได้กำหนดให้คิดลด`):''}
+      ${jeAuto('รับรู้สินทรัพย์และภาระรื้อถอน',[{dr:1,acct:'ที่ดิน อาคารและอุปกรณ์',amt:cost},{dr:0,acct:'เงินสด/เจ้าหนี้',amt:base},{dr:0,acct:'ประมาณการหนี้สินค่ารื้อถอน',amt:pv}],'ย่อหน้า 10.5.3')}
+      ${jeAuto('ค่าเสื่อมราคาปีที่ 1',[{dr:1,acct:'ค่าเสื่อมราคา',amt:dep},{dr:0,acct:'ค่าเสื่อมราคาสะสม',amt:dep}],'ย่อหน้า 10.25')}
+      ${disc?jeAuto('ดอกเบี้ยจากการเพิ่มขึ้นของประมาณการหนี้สินปีที่ 1',[{dr:1,acct:'ต้นทุนทางการเงิน',amt:rows[0].i},{dr:0,acct:'ประมาณการหนี้สินค่ารื้อถอน',amt:rows[0].i}],'บทที่ 16'):''}
+      <h3>ตารางประมาณการหนี้สิน</h3>
+      <div class="tbl"><table><thead><tr><th>ปีที่</th><th class="num">ยอดต้นปี</th><th class="num">ดอกเบี้ย</th><th class="num">ยอดสิ้นปี</th><th class="num">บวกกลับทางภาษี</th></tr></thead><tbody>${show.map(x=>x?`<tr><td>${x.y}</td><td class="num">${fmt(x.b)}</td><td class="num">${fmt(x.i)}</td><td class="num">${fmt(x.e)}</td><td class="num">${fmt(x.i+(x.y<=life?depD:0))}</td></tr>`:'<tr><td colspan="5">…</td></tr>').join('')}</tbody></table></div>
+      ${facts('ตัวเลขบอกอะไร',[`ภาระรื้อถอนเพิ่มราคาทุน ${pct(base?pv/base:0,2)} และเพิ่มค่าเสื่อมราคาปีละ ${fmt(depD)} บาท ต้นทุนการเลิกใช้สินทรัพย์จึงถูกกระจายตลอดอายุแทนการรับรู้ก้อนเดียวในปีสุดท้าย`,
+        disc?`ดอกเบี้ยรวมตลอด ${n} ปีเท่ากับ ${fmt(fv-pv)} บาท ทำให้ประมาณการหนี้สินเพิ่มจนเท่าค่ารื้อถอนที่คาดไว้ ณ วันรื้อถอน`:'ตามแนว NPAEs ไม่คิดลด จึงไม่มีดอกเบี้ย และต้องทบทวนประมาณการทุกวันสิ้นงวด (16.12)',
+        'ทบทวนประมาณการทุกสิ้นปี ถ้าค่ารื้อถอนหรืออัตราคิดลดเปลี่ยน ให้ใช้วิธีของบทที่ 16 และพิจารณาผลต่อราคาทุนสินทรัพย์'])}
+      <div class="tax"><b>ผลทางภาษี</b> ประมาณการหนี้สินเป็นเงินสำรองตามมาตรา 65 ตรี (1) หักไม่ได้จนกว่าจะจ่ายจริง ให้บวกกลับค่าเสื่อมราคาส่วนต้นทุนรื้อถอนปีละ ${fmt(depD)} บาท${disc?` และดอกเบี้ย (ปีที่ 1 = ${fmt(rows[0].i)} บาท)`:''} แล้วหักเป็นรายจ่ายในปีที่จ่ายค่ารื้อถอนจริง</div>
+      ${theory([['10.5.3','ราคาทุนรวมต้นทุนที่ประมาณที่ดีที่สุดสำหรับการรื้อ ขนย้าย และบูรณะสถานที่ ซึ่งเป็นภาระผูกพันเมื่อได้มาหรือจากการใช้'],['10.33','ต้นทุนรื้อถอนที่รวมในที่ดินต้องคิดค่าเสื่อมราคาตลอดระยะเวลาที่ได้รับประโยชน์'],['บทที่ 16','การวัดมูลค่าประมาณการหนี้สินและการทบทวน'],['16.12–16.13','ประมาณการที่ดีที่สุด คือจำนวนที่สมเหตุสมผลที่จะจ่ายเพื่อชำระหรือโอนภาระให้บุคคลที่สาม ณ วันสิ้นงวด ไม่ได้กำหนดให้คิดลด'],['16.15','เปิดเผยประมาณการหนี้สินต้นงวด สิ้นงวด และการเปลี่ยนแปลง']])}`;
+  }
+  ['dsBase','dsFv','dsN','dsR','dsLife','dsRv'].forEach(id=>$(id).addEventListener('input',dsCalc));$('dsDisc').addEventListener('change',dsCalc);
+
+  /* =========================================================
+     6 POLICY DECISION
+     ========================================================= */
+  const DQ=['ประเภทสินทรัพย์นี้มีข้อมูลตลาดหรือผู้ประเมินที่ให้มูลค่ายุติธรรมได้อย่างน่าเชื่อถือ (10.14)',
+    'ผู้ใช้งบการเงินหลักต้องการมูลค่าปัจจุบัน เช่น เงื่อนไขสินเชื่อผูกกับส่วนของเจ้าของ แผนระดมทุน หรือแผนเปลี่ยนไปใช้ TFRS for PAEs ภายใน 3–5 ปี',
+    'มูลค่ายุติธรรมต่างจากมูลค่าตามบัญชีของประเภทนี้อย่างมีสาระสำคัญ จนการแสดงด้วยราคาทุนจะกระทบการตัดสินใจของผู้ใช้งบการเงิน (3.13)',
+    'กิจการรับภาระตีราคาทุกรายการในประเภทนี้พร้อมกันและทบทวนทุกสิ้นปีได้ (10.16, 10.18–10.19)',
+    'ผู้บริหารยอมรับว่าส่วนเกินทุนจ่ายเป็นเงินปันผลไม่ได้ ค่าเสื่อมราคาจะสูงขึ้น และต้องกระทบยอดภาษีทุกปี'];
+  function dcRender(){$('dcQ').innerHTML=DQ.map((q,i)=>`<div><div style="font-size:15px;margin-bottom:4px"><b>${i+1}.</b> ${esc(q)}</div><label style="display:inline-flex;margin-right:18px"><input type="radio" name="dq${i}" value="y"${i<3?' checked':''}><span>ใช่</span></label><label style="display:inline-flex"><input type="radio" name="dq${i}" value="n"${i>=3?' checked':''}><span>ไม่</span></label></div>`).join('');
+    document.querySelectorAll('#dcQ input').forEach(x=>x.addEventListener('change',dcCalc));dcCalc()}
+  function dcCalc(){
+    const a=DQ.map((q,i)=>{const s=document.querySelector(`input[name="dq${i}"]:checked`);return s?s.value:'n'});const stop=a.indexOf('n');const cls=$('dcCls').value||'ประเภทนี้';
+    const why=['วัดมูลค่ายุติธรรมไม่ได้อย่างน่าเชื่อถือ ย่อหน้า 10.14 ไม่อนุญาตให้ใช้วิธีตีราคาใหม่','ผู้ใช้หลักไม่ต้องการมูลค่าปัจจุบัน ประโยชน์ของข้อมูลไม่คุ้มต้นทุน','มูลค่ายุติธรรมใกล้เคียงมูลค่าตามบัญชี การตีราคาไม่เปลี่ยนภาพงบการเงินอย่างมีสาระสำคัญ','กิจการไม่พร้อมตีราคาทั้งประเภทและทบทวนต่อเนื่อง ซึ่งเป็นเงื่อนไขของมาตรฐาน','ผลต่อเงินปันผล กำไร และภาษีไม่เป็นที่ยอมรับของผู้บริหาร'];
+    $('dcOut').innerHTML=`<h2>ข้อเสนอสำหรับ${esc(cls)}</h2>
+      ${stop<0?verdict('ok','เลือกวิธีตีราคาใหม่ได้','ตอบ "ใช่" ครบทั้งห้าข้อ วิธีตีราคาใหม่ให้ข้อมูลที่มีประโยชน์กว่าต้นทุนที่เพิ่มขึ้น ใช้แท็บ 2 เพื่อคำนวณรายการบันทึกบัญชีและข้อมูลเปิดเผย'):verdict('warn','ใช้วิธีราคาทุน',`หยุดที่ข้อ ${stop+1}: ${why[stop]}`)}
+      <div class="note"><div class="cap">ร่างนโยบายการบัญชี</div>${stop<0?`${esc(cls)}แสดงด้วยราคาที่ตีใหม่ ซึ่งคือมูลค่ายุติธรรม ณ วันที่ตีราคาใหม่หักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่าที่เกิดขึ้นภายหลัง กิจการตีราคาใหม่โดยผู้ประเมินราคาอิสระอย่างน้อยทุก 3–5 ปี หรือเมื่อมูลค่ายุติธรรมต่างจากมูลค่าตามบัญชีอย่างมีสาระสำคัญ ส่วนที่เพิ่มขึ้นรับรู้ในส่วนเกินทุนจากการตีราคาสินทรัพย์ในส่วนของเจ้าของ`:`${esc(cls)}แสดงด้วยราคาทุนหักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่า (ถ้ามี)`}</div>
+      ${facts('ผลที่ตามมาของการเลือก',stop<0?['ต้องเปิดเผยตามย่อหน้า 10.47 รวมทั้งมูลค่าตามบัญชีหากใช้วิธีราคาทุน','ส่วนเกินทุนไม่ใช่รายได้ทางภาษี และค่าเสื่อมราคาส่วนเพิ่มต้องบวกกลับทุกปี (ม.65 ทวิ (3))','อัตราส่วนหนี้สินต่อทุนดีขึ้น แต่ ROA และกำไรต่อปีลดลงเพราะค่าเสื่อมราคาสูงขึ้น','การเปลี่ยนนโยบายต้องพิจารณาตามบทที่ 5']:['งบการเงินอาจแสดงสินทรัพย์ต่ำกว่ามูลค่าปัจจุบันมาก ให้พิจารณาเปิดเผยข้อมูลเพิ่มเติมโดยสมัครใจหากผู้ใช้ต้องการ','ยังต้องประเมินข้อบ่งชี้การลดลงของมูลค่าตามย่อหน้า 10.37','บัญชีกับภาษีใช้ราคาทุนเดียวกัน ผลต่างภาษีน้อยกว่า','ทบทวนผังตัดสินใจเมื่อสถานการณ์เปลี่ยน เช่น เริ่มมีแผนระดมทุน'])}
+      ${theory([['10.12','เลือกวิธีราคาทุนหรือวิธีตีราคาใหม่ ใช้เหมือนกันทุกรายการในประเภทเดียวกัน'],['10.14–10.16','เงื่อนไขมูลค่ายุติธรรมที่น่าเชื่อถือ ผู้ประเมินอิสระ และความถี่'],['10.47','ข้อมูลเปิดเผยเพิ่มเติมเมื่อใช้วิธีตีราคาใหม่'],['ตารางที่ 10.16','ผังตัดสินใจห้าคำถามจากย่อหน้า 10.12–10.19 และ 3.13, 3.15']])}`;
+  }
+  $('dcCls').addEventListener('input',dcCalc);
+
+
+  /* =========================================================
+     4b TAX ON SALE OF HELD-FOR-SALE ASSETS
+     ========================================================= */
+  function hxCalc(o){
+    const imm=$('hxType').value==='imm';const app=val($('hxApp'));const sbtR=val($('hxSbt'))/100;const share=val($('hxShare'))/100;
+    const bro=val($('hxBro'))/100;const oth=val($('hxOth'));const vat=$('hxVat').checked;const rel=$('hxRel').checked;
+    const mkt=num($('hxMkt').value);const tn=num($('hxTnbv').value);
+    const price=o.sold?val($('hfSp')):val($('hfP'));const base=imm?Math.max(price,app):price;
+    const sbt=imm?base*sbtR:0;const fee=imm?app*0.02*share:0;const stamp=imm&&sbt<=0?Math.ceil(base/200):0;
+    const wht=imm?base*0.01:0;const brk=price*bro;const vatBase=isFinite(mkt)&&mkt>price?mkt:price;const vatAmt=!imm&&vat?vatBase*0.07:0;
+    const costs=sbt+fee+stamp+brk+oth;const tnbv=isFinite(tn)?tn:o.ca;const tGain=price-costs-tnbv;const mAdj=rel&&isFinite(mkt)&&mkt>price?mkt-price:0;
+    const cash=price+vatAmt-wht-costs;const bookG=o.sold?o.g:0;
+    const sbtHint=imm&&price<app?'ราคาขายต่ำกว่าราคาประเมิน ภาษีธุรกิจเฉพาะ อากร และภาษีหัก ณ ที่จ่ายคิดจากราคาประเมิน':'';
+    const rows=[[imm?'ภาษีธุรกิจเฉพาะรวมภาษีท้องถิ่น':'ภาษีธุรกิจเฉพาะ',sbt,imm?`${fmt(base)} × ${fmt(sbtR*100,2)}% · ม.91/2 (6)`:'ไม่ใช่อสังหาริมทรัพย์'],
+      ['ค่าธรรมเนียมการโอนส่วนของผู้ขาย',fee,imm?`ราคาประเมิน × 2% × ${fmt(share*100,0)}% (ค่าธรรมเนียมกรมที่ดิน)`:'–'],
+      ['อากรแสตมป์',stamp,imm?(sbt>0?'ได้รับยกเว้นเพราะเสียภาษีธุรกิจเฉพาะ':'1 บาทต่อ 200 บาท ลักษณะ 28 (ข)'):'–'],
+      ['ค่านายหน้า',brk,`${fmt(bro*100,2)}% ของราคาขาย`],['ต้นทุนในการขายอื่น',oth,'']];
+    const html=`<h3>กระดาษทำการภาษีจากการขาย${o.sold?'':' (ตามราคาที่คาดว่าจะขายได้)'}</h3>
+      ${sbtHint?alertBox('warn',sbtHint):''}
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">บาท</th><th>ฐานคำนวณ</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td>${r[0]}</td><td class="num">${fmt(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}
+      </tbody><tfoot><tr><td>ต้นทุนในการขายที่ผู้ขายรับภาระ</td><td class="num">${fmt(costs)}</td><td></td></tr></tfoot></table></div>
+      <div class="tbl"><table><tbody>
+        <tr><td>ภาษีมูลค่าเพิ่มที่ต้องเรียกเก็บจากผู้ซื้อ (ไม่ใช่ต้นทุน)</td><td class="num">${fmt(vatAmt)}</td></tr>
+        <tr><td>ภาษีเงินได้ถูกหัก ณ ที่จ่าย 1% (เครดิตภาษี ไม่ใช่ต้นทุน)</td><td class="num">${fmt(wht)}</td></tr>
+        <tr><td>เงินสดสุทธิที่ผู้ขายได้รับ</td><td class="num">${fmt(cash)}</td></tr>
+        <tr><td>ราคาทุนคงเหลือทางภาษี</td><td class="num">${fmt(tnbv)}</td></tr>
+        <tr><td>กำไร (ขาดทุน) จากการขายทางภาษี</td><td class="num">${fmt(tGain)}</td></tr>
+        ${o.sold?`<tr><td>กำไร (ขาดทุน) จากการขายทางบัญชี</td><td class="num">${fmt(bookG)}</td></tr>`:''}
+      </tbody></table></div>
+      <h3>รายการปรับปรุงในการคำนวณกำไรสุทธิทางภาษี</h3>
+      <div class="tbl"><table><thead><tr><th>รายการ</th><th class="num">บวกกลับ (หักออก)</th><th>ฐาน</th></tr></thead><tbody>
+        <tr><td>ผลขาดทุนจากการลดมูลค่า ณ วันจัดประเภท</td><td class="num">${fmt(o.loss)}</td><td>ม.65 ตรี (17)</td></tr>
+        <tr><td>${o.ye2>=0?'กลับรายการผลขาดทุน ณ วันสิ้นงวด':'ผลขาดทุนเพิ่ม ณ วันสิ้นงวด'}</td><td class="num">${fmt(o.ye2?-o.ye2:0)}</td><td>ไม่ใช่รายได้หรือรายจ่ายทางภาษี</td></tr>
+        ${o.sold?`<tr><td>ผลต่างกำไรจากการขาย ภาษี − บัญชี</td><td class="num">${fmt(tGain-bookG)}</td><td>ราคาทุนทางภาษีต่างจากมูลค่าที่แสดง</td></tr>`:''}
+        ${mAdj?`<tr><td>ความเสี่ยงประเมินตามราคาตลาด</td><td class="num">${fmt(mAdj)}</td><td>ม.65 ทวิ (4)</td></tr>`:''}
+      </tbody></table></div>
+      ${mAdj?alertBox('bad',`ขายให้ผู้ที่เกี่ยวข้องกันต่ำกว่าราคาตลาด ${fmt(mAdj)} บาท เจ้าพนักงานประเมินอาจใช้ราคาตลาดตามมาตรา 65 ทวิ (4)${!imm&&vat?' และฐานภาษีมูลค่าเพิ่มต้องไม่ต่ำกว่าราคาตลาดตามมาตรา 79/3 แอปคำนวณภาษีมูลค่าเพิ่มจากราคาตลาดแล้ว':''} เก็บรายงานประเมินราคาและเหตุผลของราคาไว้ในแฟ้มภาษี`):''}
+      <div class="tax"><b>ผลทางภาษี</b> การจัดประเภทเป็นถือไว้เพื่อขายไม่ใช่การจำหน่าย ราคาทุนทางภาษีไม่เปลี่ยน ค่าเสื่อมราคาที่หยุดบันทึกทางบัญชี แนวการตีความคือ ไม่หักเพิ่มในแบบ ภ.ง.ด.50 เพราะราคาทุนคงเหลือจะหักได้เมื่อขาย ${imm?'อสังหาริมทรัพย์ที่ใช้ในกิจการเสียภาษีธุรกิจเฉพาะ จึงไม่อยู่ในบังคับภาษีมูลค่าเพิ่ม ถ้าเป็นอาคารที่สร้างเองและขายภายใน 3 ปีนับแต่เดือนที่สร้างเสร็จ ภาษีซื้อจากการก่อสร้างเป็นภาษีซื้อต้องห้าม':(vat?'ผู้ประกอบการจดทะเบียนที่ยังประกอบกิจการต้องออกใบกำกับภาษีและนำภาษีขายไปรวมในแบบ ภ.พ.30':'ไม่ได้จดทะเบียนภาษีมูลค่าเพิ่ม ไม่ต้องเรียกเก็บภาษีมูลค่าเพิ่ม')} อัตราภาษีธุรกิจเฉพาะอาจถูกลดเป็นการชั่วคราวตามพระราชกฤษฎีกา ให้ตรวจอัตรา ณ วันโอน</div>`;
+    return {html,costs,wht};
+  }
+  ['hxType','hxVat','hxRel'].forEach(id=>$(id).addEventListener('change',hfCalc));
+  ['hxApp','hxSbt','hxShare','hxBro','hxOth','hxTnbv','hxMkt'].forEach(id=>$(id).addEventListener('input',hfCalc));
+  $('hxUse').addEventListener('click',()=>{const o={ca:0,loss:0,ye2:0,sold:$('hfSold').checked,g:0};const c=hxCalc(o).costs;$('hfSc').value=r2(c);$('hfC').value=r2(c);hfCalc();const e=$('hxUsed');e.hidden=false;setTimeout(()=>{const x=$('hxUsed');if(x)x.hidden=true},2000)});
+  const hxSet=o=>{Object.entries(o).forEach(([k,v])=>{const e=$(k);if(e.type==='checkbox')e.checked=v;else e.value=v});hfCalc()};
+  $('hfS1').addEventListener('click',()=>hxSet({hxType:'mov',hxApp:0,hxBro:0,hxOth:12000,hxTnbv:'',hxMkt:'',hxVat:true,hxRel:false,hfYeM:'',hfPal:0}));
+  $('hfS2').addEventListener('click',()=>hxSet({hxType:'mov',hxApp:0,hxBro:0,hxOth:0,hxTnbv:'',hxMkt:'',hxVat:true,hxRel:false,hfYeM:'',hfPal:0}));
+  $('hfS3').addEventListener('click',()=>{hfSet({hfCost:14000000,hfNbv:10400000,hfRem:1,hfM:0,hfP:12000000,hfC:820500,hfYe:11179500,hfSp:12000000,hfSc:820500,sold:true,tag:'ข้อมูลฝึกหัด (ที่ดินและอาคารสำนักงาน)'});
+    hxSet({hxType:'imm',hxApp:13500000,hxSbt:3.3,hxShare:50,hxBro:2,hxOth:0,hxTnbv:'',hxMkt:'',hxVat:true,hxRel:false,hfYeM:'',hfPal:0})});
+
+  /* =========================================================
+     7 DISCLOSURE NOTE
+     ========================================================= */
+  let NSTXT='';
+  function discCalc(){
+    const out=$('nsOut');const R=NOTE.rg;const u=+$('nsUnit').value||1;const uN=u===1?'บาท':'พันบาท';const f=x=>fmt(x/u,u===1?2:0);const fp=x=>Math.abs(x)<0.005?'–':(x<0?`(${f(-x)})`:f(x));
+    const sel=$('nsCls');const keep=sel.value;
+    if(!R){out.innerHTML='<h2>ร่างหมายเหตุ</h2><p class="hint">ต้องมีข้อมูลทะเบียนสินทรัพย์ในแท็บ 0 ก่อน</p>';NSTXT='';return}
+    const cls=R.S.map(s=>s.k);sel.innerHTML=cls.map(k=>`<option>${esc(k)}</option>`).join('');sel.value=cls.includes(keep)?keep:(cls.find(k=>/อาคาร/.test(k))||cls[0]);
+    const tgt=sel.value;const useH=$('nsHfs').checked&&NOTE.hf;const useI=$('nsImp').checked&&NOTE.im&&NOTE.im.loss>0;const useR=$('nsRev').checked&&NOTE.rv;
+    const C=R.S.map(s=>{const c={...s,hfC:0,hfA:0,alB:0,alL:0,alH:0};
+      if(c.k===tgt){if(useH){if(NOTE.hf.back){c.alL+=Math.max(0,NOTE.hf.cost-NOTE.hf.accAll-NOTE.hf.ycar)}else{c.hfC=NOTE.hf.cost;c.hfA=NOTE.hf.accAll;c.alL+=NOTE.hf.loss;c.alH=NOTE.hf.loss}}if(useI)c.alL+=NOTE.im.loss}
+      c.gE2=c.gB+c.add-c.dsp-c.hfC;c.aE2=c.aB+c.dep-c.aD-c.hfA;c.alE=c.alB+c.alL-c.alH;c.nB2=c.gB-c.aB-c.alB;c.nE2=c.gE2-c.aE2-c.alE;return c});
+    const tot=k=>C.reduce((t,c)=>t+c[k],0);const hasAl=C.some(c=>c.alL||c.alH);const hasH=C.some(c=>c.hfC);
+    const yBE=R.yeD.getFullYear()+543;const d1=`1 ม.ค. ${yBE}`,d2=`31 ธ.ค. ${yBE}`;
+    const line=(lab,k,neg,bold)=>({lab,v:C.map(c=>neg?-c[k]:c[k]),t:neg?-tot(k):tot(k),bold});
+    const L=[line(`ราคาทุน ${d1}`,'gB'),line('ซื้อเพิ่ม','add'),line('จำหน่าย','dsp',1)];
+    if(hasH)L.push(line('โอนไปสินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย','hfC',1));
+    L.push(line(`ราคาทุน ${d2}`,'gE2',0,1),line(`ค่าเสื่อมราคาสะสม ${d1}`,'aB'),line('ค่าเสื่อมราคาสำหรับปี','dep'),line('จำหน่าย','aD',1));
+    if(hasH)L.push(line('โอนไปสินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย','hfA',1));
+    L.push(line(`ค่าเสื่อมราคาสะสม ${d2}`,'aE2',0,1));
+    if(hasAl)L.push(line(`ค่าเผื่อการลดลงของมูลค่า ${d1}`,'alB'),line('ผลขาดทุนจากการลดมูลค่า','alL'),...(hasH?[line('โอนไปถือไว้เพื่อขาย','alH',1)]:[]),line(`ค่าเผื่อการลดลงของมูลค่า ${d2}`,'alE',0,1));
+    L.push(line(`มูลค่าตามบัญชี ${d1}`,'nB2',0,1),line(`มูลค่าตามบัญชี ${d2}`,'nE2',0,1));
+    const neg=C.filter(c=>c.gE2<-0.5||c.aE2<-0.5);
+    const lifeTxt=R.cl.filter(k=>!/ที่ดิน/.test(k)).map(k=>{const Ls=R.A.filter(a=>a.cls===k&&a.life>0).map(a=>a.life);return Ls.length?`${k} ${Math.min(...Ls)}${Math.max(...Ls)!==Math.min(...Ls)?'–'+Math.max(...Ls):''} ปี`:''}).filter(Boolean).join(' ');
+    const db=R.A.some(a=>a.meth==='db');const co=$('nsCo').value||'กิจการ';
+    const rv=useR?NOTE.rv:null;const lastE=rv&&rv.R.evs.length?rv.R.evs[rv.R.evs.length-1]:null;
+    const pol=`${useR?`${tgt}แสดงด้วยราคาที่ตีใหม่ ซึ่งคือมูลค่ายุติธรรม ณ วันที่ตีราคาใหม่หักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่าที่เกิดขึ้นภายหลัง ส่วนที่เพิ่มขึ้นจากการตีราคาใหม่รับรู้ในส่วนเกินทุนจากการตีราคาสินทรัพย์ในส่วนของเจ้าของ ที่ดิน อาคารและอุปกรณ์ประเภทอื่น`:'ที่ดิน อาคารและอุปกรณ์'}แสดงด้วยราคาทุนหักค่าเสื่อมราคาสะสมและค่าเผื่อการลดลงของมูลค่า (ถ้ามี) ค่าเสื่อมราคาคำนวณโดยวิธีเส้นตรง${db?' ยกเว้นบางรายการใช้วิธียอดคงเหลือลดลง':''} ตามอายุการใช้ประโยชน์โดยประมาณ ดังนี้ ${lifeTxt} ที่ดินไม่คิดค่าเสื่อมราคา กิจการทบทวนมูลค่าคงเหลือ อายุการใช้ประโยชน์ และวิธีคิดค่าเสื่อมราคาทุกสิ้นปี${hasH?' สินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขายวัดมูลค่าด้วยจำนวนที่ต่ำกว่าระหว่างมูลค่าตามบัญชีกับราคาที่คาดว่าจะขายได้สุทธิจากต้นทุนในการขาย และไม่คิดค่าเสื่อมราคา':''}`;
+    const im=NOTE.im;const indTxt=useI?`ในปี ${yBE} ${tgt}มีข้อบ่งชี้ว่ามูลค่าลดลงอย่างถาวร ได้แก่ ${im.ind.join(' ')} กิจการรับรู้ผลขาดทุนจากการลดมูลค่า ${f(im.loss)} ${uN} โดยใช้${im.mName}เป็นตัววัด`:'ไม่มีข้อบ่งชี้ว่าที่ดิน อาคารและอุปกรณ์มีมูลค่าลดลงอย่างถาวร';
+    const colOK=$('nsNoCol').checked||($('nsCol').value.trim()&&isFinite(num($('nsColA').value)));const comOK=$('nsNoCom').checked||isFinite(num($('nsCom').value));
+    const colTxt=$('nsNoCol').checked?'ไม่มีที่ดิน อาคารและอุปกรณ์ที่ใช้เป็นหลักประกันหนี้สิน':(colOK?`${$('nsCol').value.trim()} มูลค่าตามบัญชี ${f(num($('nsColA').value))} ${uN} ใช้เป็นหลักประกัน${$('nsColL').value.trim()?' '+$('nsColL').value.trim():'หนี้สิน'}`:'[ระบุสินทรัพย์ที่ใช้เป็นหลักประกัน มูลค่าตามบัญชี และหนี้สินที่ค้ำประกัน]');
+    const comTxt=$('nsNoCom').checked?'ไม่มีภาระผูกพันตามสัญญาเพื่อให้ได้มาซึ่งที่ดิน อาคารและอุปกรณ์':(comOK?`กิจการมีภาระผูกพันตามสัญญาเพื่อให้ได้มาซึ่งที่ดิน อาคารและอุปกรณ์ ${f(num($('nsCom').value))} ${uN}`:'[ระบุภาระผูกพันตามสัญญา หรือระบุว่าไม่มี]');
+    const revTxt=useR&&lastE?`${tgt}ตีราคาใหม่ครั้งล่าสุด ณ ${$('nsRvDate').value} ${$('nsRvBy').value==='ind'?'โดยผู้ประเมินราคาอิสระ':'โดยฝ่ายบริหาร ใช้'+$('nsRvM').value} (10.47.1–10.47.2) หากแสดงด้วยวิธีราคาทุน มูลค่าตามบัญชีจะเท่ากับ ${f(lastE.hCA)} ${uN} (10.47.3) การตีราคาครั้งล่าสุดทำให้${lastE.diff>=0?'มูลค่าเพิ่มขึ้น':'มูลค่าลดลง'} ${f(Math.abs(lastE.diff))} ${uN} รับรู้ในส่วนเกินทุน ${fp(lastE.toS)} ${uN} และในงบกำไรขาดทุน ${fp(lastE.toPL)} ${uN} (10.47.4) ส่วนเกินทุนจากการตีราคาสินทรัพย์คงเหลือ ${f(rv.R.sur)} ${uN} ไม่สามารถนำไปจ่ายเป็นเงินปันผลได้จนกว่าจะโอนไปกำไรสะสมเมื่อจำหน่ายหรือทยอยโอนตามการใช้ (10.47.5)`:'';
+    const hfTxt=useH?`ในปี ${yBE} กิจการจัดประเภท${tgt}ซึ่งมีราคาทุน ${f(NOTE.hf.cost)} ${uN} เป็นสินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย วัดมูลค่า ${f(NOTE.hf.ycar)} ${uN}${NOTE.hf.loss?` หลังรับรู้ผลขาดทุนจากการลดมูลค่า ${f(NOTE.hf.loss)} ${uN}`:''} และแยกแสดงในงบแสดงฐานะการเงิน${NOTE.hf.cur?'เป็นรายการหมุนเวียน เพราะคาดว่าจะขายภายใน 12 เดือน':'เป็นรายการไม่หมุนเวียน เพราะคาดว่าจะขายเกิน 12 เดือน'} (10.40.5, 4.8)${NOTE.hf.back?' ต่อมา ณ วันสิ้นงวด กิจการเลิกแผนขายและจัดประเภทกลับเป็นที่ดิน อาคารและอุปกรณ์ เพราะกลับมาใช้ประโยชน์ตามนิยามในย่อหน้า 10.1':''}`:'';
+    const estTxt=$('nsEst').checked?($('nsEstT').value.trim()||'[ระบุลักษณะและจำนวนเงินของการเปลี่ยนแปลงประมาณการ]'):'';
+    const volTxt=$('nsVolFull').checked&&R.fullCost>0?`ข้อมูลเพิ่มเติม: สินทรัพย์ที่ตัดค่าเสื่อมราคาหมดแล้วแต่ยังใช้งานอยู่มีราคาทุน ${f(R.fullCost)} ${uN}`:'';
+    const chk=[['4.19.2, 10.45.1','เกณฑ์การวัดมูลค่า','ok'],['10.45.2–10.45.3','วิธีคิดค่าเสื่อมราคาและอายุ',lifeTxt?'ok':'warn'],['10.45.4','ราคาทุน ค่าเสื่อมสะสม และรายการกระทบยอดรายประเภท',neg.length?'bad':'ok'],
+      ['10.45.4.2','โอนไปถือไว้เพื่อขาย',hasH?'ok':'na'],['10.45.4.4','ผลขาดทุนและการกลับรายการ',hasAl?'ok':'na'],['10.46.1','ข้อบ่งชี้การลดลงของมูลค่า','ok'],
+      ['10.46.2','หลักประกัน',colOK?'ok':'warn'],['10.46.3','ภาระผูกพันตามสัญญา',comOK?'ok':'warn'],['10.47','ข้อมูลการตีราคาใหม่',useR?(lastE?'ok':'warn'):'na'],
+      ['10.40.5','แยกแสดงสินทรัพย์ถือไว้เพื่อขาย',hasH?'ok':'na'],['บทที่ 5','การเปลี่ยนแปลงประมาณการ',$('nsEst').checked?($('nsEstT').value.trim()?'ok':'warn'):'na']];
+    const pill={ok:['ok','ครบ'],warn:['warn','ต้องกรอก'],bad:['bad','ตรวจ'],na:['ok','ไม่เกี่ยวข้อง']};
+    const head=['',...C.map(c=>c.k),'รวม'];
+    const tbl=`<div class="tbl"><table><thead><tr>${head.map((h,i)=>`<th${i?' class="num"':''}>${esc(h)}</th>`).join('')}</tr></thead><tbody>${L.map(l=>`<tr${l.bold?' style="font-weight:600"':''}><td style="min-width:13em">${esc(l.lab)}</td>${l.v.map(v=>`<td class="num">${fp(v)}</td>`).join('')}<td class="num">${fp(l.t)}</td></tr>`).join('')}</tbody></table></div>`;
+    out.innerHTML=`<h2>ร่างหมายเหตุ: ที่ดิน อาคารและอุปกรณ์</h2>
+      ${neg.length?alertBox('bad',`ยอดสิ้นงวดของ${esc(neg.map(c=>c.k).join(', '))}ติดลบหลังนำผลจากแท็บอื่นเข้า ตรวจว่าเลือกประเภทถูกต้อง และข้อมูลในแท็บ 3–4 เป็นสินทรัพย์ในทะเบียนนี้`):''}
+      <div class="note"><div class="cap">นโยบายการบัญชี (4.19.2, 10.45.1–10.45.3)</div>${esc(pol)}</div>
+      <h3>${esc(co)} · ที่ดิน อาคารและอุปกรณ์ (หน่วย: ${uN})</h3>${tbl}
+      <div class="note"><div class="cap">ข้อมูลอื่นที่ต้องเปิดเผย</div><ul style="margin:0;padding-left:20px">${[indTxt+' (10.46.1)',colTxt+' (10.46.2)',comTxt+' (10.46.3)',revTxt,hfTxt,estTxt,volTxt].filter(Boolean).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>
+      <h3>รายการตรวจสอบการเปิดเผยข้อมูล (ตารางที่ 10.22)</h3>
+      <div class="tbl"><table><thead><tr><th>ย่อหน้า</th><th>รายการ</th><th>สถานะ</th></tr></thead><tbody>${chk.map(c=>`<tr><td>${c[0]}</td><td>${c[1]}</td><td><span class="pill ${pill[c[2]][0]}">${pill[c[2]][1]}</span></td></tr>`).join('')}</tbody></table></div>
+      ${facts('ตัวเลขบอกอะไร',[`ผู้ใช้งบเห็นว่ากิจการลงทุนเพิ่ม ${f(tot('add'))} ${uN} ขณะที่ค่าเสื่อมราคาสำหรับปี ${f(tot('dep'))} ${uN} ${tot('add')>tot('dep')?'กิจการลงทุนมากกว่าการเสื่อมสภาพ ฐานสินทรัพย์จึงขยายตัว':'กิจการลงทุนน้อยกว่าการเสื่อมสภาพ ฐานสินทรัพย์หดตัวและอาจต้องลงทุนทดแทนในอนาคต'}`,
+        `มูลค่าตามบัญชีสิ้นงวดเท่ากับ ${pct(tot('nE2')/Math.max(1,tot('gE2')),1)} ของราคาทุน ธนาคารมักใช้สัดส่วนนี้ประกอบการประเมินอายุของสินทรัพย์ค้ำประกัน`,
+        'ข้อมูลหลักประกันและภาระผูกพันไม่มีในทะเบียนสินทรัพย์ ต้องดึงจากสัญญาเงินกู้และสัญญาซื้อ และตรวจกับหนังสือยืนยันยอดจากธนาคาร'])}
+      ${theory([['4.19','โครงสร้างหมายเหตุ: ข้อความว่าใช้ TFRS for NPAEs นโยบายการบัญชี ข้อมูลที่กำหนดเฉพาะ และข้อมูลอื่น เช่น ภาระผูกพัน'],['10.45','รายการต่อประเภท: เกณฑ์การวัดมูลค่า วิธีคิดค่าเสื่อม อายุ และรายการกระทบยอด'],['10.46','ข้อบ่งชี้การลดมูลค่า หลักประกัน ภาระผูกพัน'],['10.47','ข้อมูลเพิ่มเติมเมื่อใช้วิธีตีราคาใหม่'],['10.40.5','แยกแสดงสินทรัพย์ไม่หมุนเวียนที่ถือไว้เพื่อขาย']])}`;
+    const tx=[`${co}`,'หมายเหตุ ที่ดิน อาคารและอุปกรณ์','',pol,'',`(หน่วย: ${uN})`,head.join('\t'),...L.map(l=>[l.lab,...l.v.map(fp),fp(l.t)].join('\t')),'',...[indTxt,colTxt,comTxt,revTxt,hfTxt,estTxt,volTxt].filter(Boolean)];
+    NSTXT=tx.join('\n');
+  }
+  ['nsHfs','nsImp','nsRev','nsCls','nsUnit','nsRvBy','nsNoCol','nsNoCom','nsVolFull','nsEst'].forEach(id=>$(id).addEventListener('change',discCalc));
+  ['nsCo','nsRvDate','nsRvM','nsCol','nsColA','nsColL','nsCom','nsEstT'].forEach(id=>$(id).addEventListener('input',discCalc));
+  $('nsCopy').addEventListener('click',()=>copyText(NSTXT,'nsCopied'));
+  $('nsSample').addEventListener('click',()=>{$('nsCol').value='ที่ดินและอาคารโรงงาน';$('nsColA').value=20550000;$('nsColL').value='เงินกู้ยืมระยะยาวจากธนาคาร วงเงิน 15,000,000 บาท';$('nsCom').value=1800000;$('nsNoCol').checked=false;$('nsNoCom').checked=false;$('nsVolFull').checked=true;discCalc()});
+  rgLoad(rgSample(),'ยังไม่ได้เลือกไฟล์ แสดงไฟล์ตัวอย่าง: ทะเบียนสินทรัพย์ บริษัท ตัวอย่างบรรจุภัณฑ์ จำกัด ปีสิ้นสุด 31 ธ.ค. 2568');
+  cpRender();rvRender();imCalc();hfCalc();dsCalc();dcRender();
+  function ceCalc(){const c=val($('ceCost')),rv=val($('ceRv')),L=val($('ceLife')),u=val($('ceUsed')),rem=val($('ceRem')),rvn=val($('ceRvN'));
+    const d0=L>0?(c-rv)/L:0;const acc=Math.min(c-rv,d0*u);const ca=c-acc;const d1=rem>0?Math.max(0,(ca-rvn)/rem):0;
+    $('ceOut').innerHTML=`<div class="tbl"><table><tbody><tr><td>ค่าเสื่อมราคาต่อปีเดิม</td><td class="num">${fmt(d0)}</td></tr><tr><td>มูลค่าตามบัญชี ณ วันทบทวน</td><td class="num">${fmt(ca)}</td></tr><tr><td><b>ค่าเสื่อมราคาต่อปีใหม่</b> (${fmt(ca)} − ${fmt(rvn)}) ÷ ${rem}</td><td class="num"><b>${fmt(d1)}</b></td></tr><tr><td>ผลต่อกำไรปีนี้เทียบประมาณการเดิม</td><td class="num">${fmt(d0-d1)}</td></tr></tbody></table></div><p class="why">ใช้วิธีเปลี่ยนทันทีเป็นต้นไป (10.29, 10.35) ไม่ปรับงบการเงินงวดก่อน และเปิดเผยลักษณะและจำนวนของการเปลี่ยนแปลงประมาณการตามบทที่ 5 (5.16) ทางภาษี ค่าเสื่อมราคาที่หักได้ต้องไม่เกินอัตราใน พ.ร.ฎ. ฉบับที่ 145 มาตรา 4</p>`}
+  ['ceCost','ceRv','ceLife','ceUsed','ceRem','ceRvN'].forEach(id=>$(id).addEventListener('input',ceCalc));
+  $('ceEx').addEventListener('click',()=>{const v={ceCost:1800000,ceRv:100000,ceLife:10,ceUsed:2,ceRem:5,ceRvN:100000};Object.entries(v).forEach(([k,x])=>$(k).value=x);ceCalc()});
+  ceCalc();
+  /* ---------- new manuscript examples (บทที่ 10 ฉบับ 26-10-69) ---------- */
+  $('cpEx').addEventListener('click',()=>{cp=[{n:'ตัวเครื่อง',c:1800000,l:10,v:100000},{n:'มอเตอร์และชุดขับเคลื่อน',c:340000,l:5,v:0}];$('cpSingle').value=10;$('cpYear').value=6;$('cpNew').value=340000;$('cpNewLife').value=5;$('cpWhich').dataset.set='';$('cpTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 10.2 เครื่องจักร ก';cpRender()});
+  $('rvExB').addEventListener('click',()=>{$('rvCost').value=4200000;$('rvRv').value=200000;$('rvLife').value=10;$('rvLand').checked=false;$('rvMeth').value='2';$('rvTr').value='ann';rvE=[{t:3,fv:3600000}];$('rvTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 10.4ข เครื่องจักร (ตัวอย่างที่ 5 ของสภาวิชาชีพบัญชี 20 ก.ย. 2566 หน้า 32–35) เปลี่ยนวิธีปรับค่าเสื่อมราคาสะสมเป็น 10.17.1 เพื่อเทียบได้';rvRender()});
+  $('rvEx').addEventListener('click',()=>{$('rvCost').value=7500000;$('rvRv').value=0;$('rvLife').value=0;$('rvLand').checked=true;$('rvMeth').value='2';$('rvTr').value='end';rvE=[{t:2,fv:8300000},{t:3,fv:7000000}];$('rvTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 10.4 ที่ดิน (ได้มา 1 ม.ค. 2568 ตีราคาสิ้นปีที่ 2 และ 3)';rvRender()});
+  $('imEx').addEventListener('click',()=>{const set={imCost:2260000,imAcc:876000,imPrev:0,imRem:4,imRv:100000,imPrice:1080000,imCts:30000,imViu:1200000,imN:1,imNew:1250000};Object.entries(set).forEach(([k,v])=>$(k).value=v);$('imComp').value='ตัวเครื่อง, 1188000, 100000, 4\nมอเตอร์, 136000, 0, 2\nการตรวจสอบสภาพ, 60000, 0, 1';$('imPol').value='viu';$('imRel').checked=true;document.querySelectorAll('#imInd input').forEach(x=>x.checked=(x.value==='use'));$('imTag').textContent='ข้อมูลตัวอย่าง: ตัวอย่างที่ 10.5 เครื่องจักร ก ณ 31 ธ.ค. 2570 (ราคาทุนรวมการตรวจสอบสภาพ 2,260,000 ค่าเสื่อมราคาสะสม 876,000)';imCalc()});
+  $('hfEx').addEventListener('click',()=>{hfSet({hfCost:1500000,hfNbv:600000,hfRem:24,hfM:9,hfP:360000,hfC:10000,hfYe:365000,hfSp:380000,hfSc:10000,hfPal:0,sold:true,tag:'ข้อมูลตัวอย่าง: ตัวอย่างที่ 10.6 รถบรรทุก (จัดประเภท 30 ก.ย. 2570)'});hxSet({hxType:'mov',hxApp:0,hxBro:0,hxOth:10000,hxTnbv:'',hxMkt:'',hxVat:true,hxRel:false})});
+
+  /* ---------- 8 QUIZ ---------- */
+  const QZ=[["LO 10.1", "จำ", "รายการใดไม่ถือเป็นส่วนประกอบของราคาทุนของเครื่องจักรตามย่อหน้า 10.5", ["ก. อากรขาเข้า", "ข. ค่าติดตั้งและฐานรากเครื่องจักร", "ค. ประมาณการค่ารื้อถอนที่เป็นภาระผูกพัน", "ง. ค่าฝึกอบรมพนักงานให้ใช้เครื่อง"], 3, "ย่อหน้า 10.5 ให้ราคาทุนรวมราคาซื้อหลังหักส่วนลด อากรขาเข้าและภาษีซื้อที่เรียกคืนไม่ได้ ต้นทุนทางตรงเพื่อให้สินทรัพย์อยู่ในสถานที่และสภาพที่พร้อมใช้งาน และต้นทุนการรื้อ การขนย้าย และการบูรณะสถานที่ ค่าฝึกอบรมพนักงานไม่ได้ทำให้สินทรัพย์อยู่ในสภาพพร้อมใช้งาน จึงเป็นค่าใช้จ่าย", "10.1"], ["LO 10.1", "เข้าใจ", "กิจการซื้อที่ดินพร้อมอาคารในราคาเดียว ตามมาตรฐานกิจการต้องปฏิบัติอย่างไร", ["ก. บันทึกรวมเป็นรายการเดียว และคิดค่าเสื่อมราคาทั้งจำนวน", "ข. แยกบันทึกที่ดินกับอาคาร และคิดค่าเสื่อมราคาเฉพาะอาคาร", "ค. บันทึกรวมเป็นรายการเดียว และไม่คิดค่าเสื่อมราคา", "ง. บันทึกเป็นอสังหาริมทรัพย์เพื่อการลงทุนทั้งจำนวน"], 1, "ย่อหน้า 10.8 และ 10.32 ให้แยกบันทึกอาคารออกจากที่ดินแม้ได้มาพร้อมกัน ที่ดินมีอายุการใช้ประโยชน์ไม่จำกัดจึงไม่คิดค่าเสื่อมราคา ยกเว้นบางกรณี เช่น พื้นที่ทิ้งขยะ (10.32–10.33)", "10.1"], ["LO 10.2", "ประยุกต์ใช้", "รายจ่ายใดต้องรับรู้เป็นค่าใช้จ่ายในงบกำไรขาดทุนเมื่อเกิดขึ้น", ["ก. ค่าซ่อมแซมและบำรุงรักษาที่เกิดขึ้นเป็นประจำ", "ข. ต้นทุนการตรวจสอบสภาพครั้งใหญ่ที่เข้าเกณฑ์การรับรู้", "ค. ต้นทุนเปลี่ยนแทนส่วนประกอบที่เข้าเกณฑ์การรับรู้รายการ", "ง. ชิ้นส่วนอะไหล่สำคัญที่ใช้งานได้มากกว่าหนึ่งรอบระยะเวลารายงาน"], 0, "ย่อหน้า 10.9 ห้ามรวมค่าซ่อมแซมและบำรุงรักษาที่เกิดขึ้นเป็นประจำในมูลค่าตามบัญชี ข้อ ข. ค. และ ง. รับรู้เป็นสินทรัพย์ตามย่อหน้า 10.11, 10.10 และ 10.3", "10.2"], ["LO 10.3", "ประยุกต์ใช้", "ต้นปีที่ 3 กิจการทบทวนอายุการใช้ประโยชน์คงเหลือของเครื่องจักรจาก 8 ปีเป็น 5 ปี มูลค่าตามบัญชี 1,460,000 บาท มูลค่าคงเหลือ 100,000 บาท ค่าเสื่อมราคาปีที่ 3 วิธีเส้นตรงเท่ากับเท่าใด", ["ก. 170,000 บาท", "ข. 182,500 บาท", "ค. 272,000 บาท", "ง. 292,000 บาท"], 2, "ย่อหน้า 10.29 ให้คำนวณค่าเสื่อมราคาใหม่โดยใช้วิธีเปลี่ยนทันทีเป็นต้นไป (1,460,000 − 100,000) ÷ 5 = 272,000 บาท ไม่ปรับย้อนหลัง", "10.3"], ["LO 10.4", "เข้าใจ", "กิจการใช้วิธีราคาทุนกับที่ดินมาตลอด ปีนี้เลือกเปลี่ยนเป็นวิธีการตีราคาใหม่ ข้อใดถูกต้อง", ["ก. ปรับย้อนหลังงบการเงินปีก่อนตามบทที่ 5", "ข. ไม่ปรับย้อนหลัง บันทึกส่วนที่ตีเพิ่ม ณ วันที่ตีราคาใหม่", "ค. ห้ามเปลี่ยน เพราะต้องใช้นโยบายเดิมตลอดไป", "ง. เลือกตีราคาใหม่เฉพาะแปลงที่ราคาเพิ่มขึ้นได้"], 1, "ย่อหน้า 5.12ก ให้การเริ่มใช้ราคาที่ตีใหม่ตามบทที่ 10 เป็นการเปลี่ยนแปลงนโยบายการบัญชีเกี่ยวกับการปรับมูลค่าตามบทดังกล่าว ไม่ปรับย้อนหลังตามบทที่ 5 และย่อหน้า 10.18–10.19 ให้ตีราคาทุกรายการในประเภทเดียวกัน", "10.4"], ["LO 10.4", "วิเคราะห์", "ที่ดินราคาทุน 7,500,000 บาท ตีราคาใหม่ครั้งแรกเป็น 8,300,000 บาท ปีต่อมาตีราคาเป็น 7,000,000 บาท ผลต่องบกำไรขาดทุนในปีต่อมาเท่ากับเท่าใด", ["ก. ขาดทุน 1,300,000 บาท", "ข. ขาดทุน 800,000 บาท", "ค. ขาดทุน 500,000 บาท", "ง. ไม่มีผล เพราะรับรู้ในส่วนของเจ้าของทั้งหมด"], 2, "ย่อหน้า 10.21 ให้นำส่วนที่ลดลงไปหักส่วนเกินทุนจากการตีราคาสินทรัพย์ของรายการเดียวกันก่อน 800,000 บาท ส่วนที่เหลือ 500,000 บาทรับรู้ในงบกำไรขาดทุน", "10.4"], ["LO 10.5", "วิเคราะห์", "เครื่องจักรมูลค่าตามบัญชี 1,384,000 บาท มีข้อบ่งชี้ว่ามูลค่าลดลงอย่างถาวร ราคาขายหักต้นทุนในการขาย 1,050,000 บาท และกิจการประมาณมูลค่าจากการใช้ได้อย่างน่าเชื่อถือ 1,200,000 บาท หากกิจการใช้ทางเลือกตามย่อหน้า 10.38 ผลขาดทุนจากการลดมูลค่าเท่ากับเท่าใด", ["ก. 0 บาท", "ข. 184,000 บาท", "ค. 334,000 บาท", "ง. 150,000 บาท"], 1, "ย่อหน้า 10.38 ให้พิจารณามูลค่าจากการใช้ของสินทรัพย์แทนราคาขายหักต้นทุนในการขายได้ หากประมาณได้อย่างน่าเชื่อถือ 1,384,000 − 1,200,000 = 184,000 บาท ถ้าใช้ราคาขายหักต้นทุนในการขายตามย่อหน้า 10.37 จะเท่ากับ 334,000 บาท", "10.5"], ["LO 10.6", "ประเมินค่า", "บริษัทซื้อรถยนต์นั่ง 7 ที่นั่ง ราคาทุน 1,600,000 บาท ใช้งานในการบริหาร อายุการใช้ประโยชน์ 5 ปี วิธีเส้นตรง ข้อใดถูกต้องเกี่ยวกับการคำนวณกำไรสุทธิทางภาษีในแต่ละปี", ["ก. หักได้ปีละ 320,000 บาท เท่าค่าเสื่อมราคาทางบัญชี", "ข. หักได้ปีละ 200,000 บาท และบวกกลับ 120,000 บาท", "ค. หักค่าเสื่อมราคาไม่ได้ทั้งจำนวน", "ง. หักได้ปีละ 400,000 บาท ตามอัตราร้อยละ 25"], 1, "มาตรา 65 ทวิ (2) ให้หักค่าเสื่อมราคาตามพระราชกฤษฎีกา และมาตรา 5 ของพระราชกฤษฎีกาฉบับที่ 145 ให้คำนวณจากมูลค่าต้นทุนเฉพาะส่วนที่ไม่เกินหนึ่งล้านบาท 1,000,000 ÷ 5 = 200,000 บาท ผลต่าง 120,000 บาทบวกกลับ", "10.6"]];
+  window.__QZ=QZ;
+  $('qBox').innerHTML=QZ.map((q,i)=>`<div class="q"><div class="lab">ข้อ ${i+1} [${q[0]} · ${q[1]}]</div><div>${esc(q[2])}</div>${q[3].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="fb" id="qf${i}"></div></div>`).join('');
+  $('sKey').innerHTML=QZ.map((q,i)=>`<tr><td class="num">${i+1}</td><td>${esc(q[3][q[4]])}</td><td>${esc(q[5])}</td></tr>`).join('');
+  $('qChk').addEventListener('click',qCheck);
+  $('qClr').addEventListener('click',()=>{document.querySelectorAll('#qBox input').forEach(x=>x.checked=false);QZ.forEach((q,i)=>$('qf'+i).innerHTML='');$('qOut').innerHTML=''});
+  function qCheck(){
+    let sc=0;const lo={};
+    QZ.forEach((q,i)=>{const s=document.querySelector(`input[name="q${i}"]:checked`);const ok=s&&+s.value===q[4];if(ok)sc++;
+      lo[q[0]]=lo[q[0]]||{n:0,ok:0,sec:q[6]};lo[q[0]].n++;if(ok)lo[q[0]].ok++;
+      $('qf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
+    const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'<span class="pill warn">กลับไปอ่านหัวข้อ '+lo[k].sec+'</span>'}</td></tr>`).join('');
+    $('qOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div><div class="fig"><div class="k">LO ที่บรรลุ</div><div class="v">${Object.values(lo).filter(x=>x.ok===x.n).length}/${Object.keys(lo).length}</div></div></div><div class="tbl" style="margin-top:10px"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  const goS=()=>{const m=(location.hash||'').match(/^#(S10\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  goS();window.addEventListener('hashchange',goS);
+
+})();
+</script>
+
+</body></html>
