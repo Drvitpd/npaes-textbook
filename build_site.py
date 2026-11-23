@@ -13,7 +13,7 @@ GATE = '''<style>#gate{position:fixed;inset:0;background:#F2F7FB;z-index:99999;d
 #gate .row{display:flex;gap:6px}#gate input[type=password],#gate input[type=text]{flex:1;font-size:16px;padding:9px 10px;border:1px solid #b8c4d4;border-radius:6px}
 #gate button{font-family:inherit;font-size:15px;border:0;border-radius:6px;padding:9px 14px;cursor:pointer}#gate .sh{background:#E3E9F1;color:#1F3864}#gate .go{background:#1F3864;color:#fff;width:100%;margin-top:12px}
 #gate label{font-size:13px;display:flex;gap:6px;align-items:center;margin-top:10px}#gate .err{color:#A93226;font-size:13px;min-height:18px;margin-top:8px}</style>
-<div id="gate"><div class="gb"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>''' + TITLE + '''</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
+<div id="gate"><div class="gb"><img src="logo-drvitpd.png" alt="Dr.VIT &amp; PD" style="height:46px;max-width:100%;margin-bottom:6px"><h2>แอปประจำตำรา</h2><p>สำหรับผู้อ่านตำรา<br><b>''' + TITLE + '''</b><br>ใส่รหัสเข้าแอปที่พิมพ์ไว้ในตำรา</p>
 <div class="row"><input id="gk" type="password" autocomplete="off" placeholder="รหัสเข้าแอป"><button class="sh" type="button" onclick="var i=document.getElementById('gk');i.type=i.type==='password'?'text':'password'">แสดง</button></div>
 <label><input id="gr" type="checkbox"> จำรหัสในเครื่องนี้</label><button class="go" type="button" id="gg">เปิดแอป</button><div class="err" id="ge"></div></div></div>
 <script>(function(){var H="''' + H + '''",K="npaes_gate";
@@ -23,7 +23,7 @@ async function chk(){var v=document.getElementById('gk').value.replace(/[\\s\\-]
 var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
 if(h===H){try{(document.getElementById('gr').checked?localStorage:sessionStorage).setItem(K,H)}catch(e){}ok();}else{document.getElementById('ge').textContent='รหัสไม่ถูกต้อง โปรดดูรหัสที่พิมพ์ไว้ในตำรา';}}
 document.getElementById('gg').onclick=chk;document.getElementById('gk').addEventListener('keydown',function(e){if(e.key==='Enter')chk();});})();</script>'''
-NAV = '<div style="font-family:Sarabun,sans-serif;font-size:13px;padding:8px 14px;background:#1F3864"><a href="index.html" style="color:#fff;text-decoration:none">← สารบัญแอปประจำตำรา</a></div>'
+NAV = '<div style="font-family:Sarabun,sans-serif;font-size:13px;padding:6px 14px;background:#fff;border-bottom:3px solid #1F3864;display:flex;align-items:center;justify-content:space-between;gap:10px"><a href="index.html" style="color:#1F3864;text-decoration:none;font-weight:700">← สารบัญแอปประจำตำรา</a><img src="logo-drvitpd.png" alt="Dr.VIT &amp; PD" style="height:26px"></div>'
 os.makedirs('docs/qr', exist_ok=True)
 MOB = '<style>@media (max-width:640px){body *{min-width:0}table{display:block;overflow-x:auto;max-width:100%}th,td{white-space:normal}select,input,img,svg{max-width:100%}}</style>'
 for n in T:
