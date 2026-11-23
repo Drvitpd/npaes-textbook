@@ -687,7 +687,7 @@ footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px s
 <script>
 (function(){
   window.__cLoad();window.__bLoad();
-  const goS=()=>{const m=(location.hash||'').match(/^#(S6\.\d)$/);if(m){window.__show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  const goS=()=>{const m=(location.hash||'').match(/^#(S6\.\d+)$/);if(m){window.__show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
   goS();window.addEventListener('hashchange',goS);
 })();
 </script>

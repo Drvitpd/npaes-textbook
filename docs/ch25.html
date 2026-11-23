@@ -482,7 +482,7 @@ document.getElementById('gg').onclick=chk;document.getElementById('gk').addEvent
       $('zf'+i).innerHTML=s?`<span class="${ok?'ok-t':'bad-t'}">${ok?'ถูก':'ยังไม่ถูก'}</span> · ${esc(q[5])}`:'<span class="bad-t">ยังไม่ได้ตอบ</span>'});
     const rows=Object.keys(lo).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`<tr><td>${k}</td><td class="num">${lo[k].ok}/${lo[k].n}</td><td>${lo[k].ok===lo[k].n?'<span class="pill ok">บรรลุ</span>':'กลับไปอ่านหัวข้อที่ '+esc(lo[k].miss.length>1?lo[k].miss[0]+'–'+lo[k].miss[lo[k].miss.length-1]:lo[k].miss[0])+' ของตำรา'}</td></tr>`).join('');
     $('zOut').innerHTML=`<div class="figs"><div class="fig"><div class="k">คะแนน</div><div class="v">${sc}/${QZ.length}</div></div><div class="fig"><div class="k">ร้อยละ</div><div class="v">${Math.round(sc/QZ.length*100)}</div></div></div><div class="tbl"><table><thead><tr><th>LO</th><th class="num">ถูก</th><th>ผล</th></tr></thead><tbody>${rows}</tbody></table></div>`}
-  const goS=()=>{const m=(location.hash||'').match(/^#(S25\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}else{const h=(location.hash||'').slice(1);if(names.includes(h))show(h)}};
+  const goS=()=>{const m=(location.hash||'').match(/^#(S25\.\d+)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}else{const h=(location.hash||'').slice(1);if(names.includes(h))show(h)}};
   goS();window.addEventListener('hashchange',goS);
 })();
 </script>

@@ -446,7 +446,7 @@ footer.foot{margin-top:22px;font-size:13.5px;color:var(--muted);border-top:1px s
       ${facts('สิ่งที่ควรทำต่อ',[done<QZ.length?'ตอบให้ครบทุกข้อก่อนสรุปผล':(ok===QZ.length?'ผ่านทุกข้อ ทำกรณีศึกษา 1.1 ต่อเพื่อฝึก LO 1.6 ระดับประเมินค่า':'กลับไปอ่านหัวข้อตามตาราง แล้วทำข้อที่ผิดอีกครั้ง'),'LO 1.6 วัดด้วยกรณีศึกษาพร้อมเกณฑ์ให้คะแนน ไม่อยู่ในแบบทดสอบปรนัยนี้'])}`;
   }
   oLoad('ex');tRender('all');qRender();
-  const goS=()=>{const m=(location.hash||'').match(/^#(S1\.\d)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
+  const goS=()=>{const m=(location.hash||'').match(/^#(S1\.\d+)$/);if(m){show('sup');const el=document.getElementById(m[1]);if(el)el.scrollIntoView()}};
   goS();window.addEventListener('hashchange',goS);
 })();
 </script>
